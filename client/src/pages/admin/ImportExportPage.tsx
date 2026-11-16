@@ -6,6 +6,7 @@ import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
 import { useToast } from '../../context/ToastContext';
 import { Alert, Spinner, TextArea } from '../../components/ui';
+import { CharacterImportExport } from './CharacterImportExport';
 
 /** Akzeptiert ein Array von Zaubern oder ein Export-Objekt { spells: [...] }. */
 function extractSpells(raw: unknown): unknown[] | null {
@@ -93,6 +94,9 @@ export function ImportExportPage() {
   };
 
   return (
+    <div className="space-y-10">
+    <section>
+    <h2 className="mb-4 text-xl font-bold">{t('admin.spellsSection')}</h2>
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
       <section className="parchment h-fit p-6">
         <h2 className="text-lg font-bold">{t('admin.export')}</h2>
@@ -203,6 +207,12 @@ export function ImportExportPage() {
           </div>
         )}
       </section>
+    </div>
+    </section>
+    <section>
+      <h2 className="mb-4 text-xl font-bold">{t('admin.charactersSection')}</h2>
+      <CharacterImportExport />
+    </section>
     </div>
   );
 }

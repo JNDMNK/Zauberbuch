@@ -18,6 +18,8 @@ import { usersRouter } from './routes/users';
 import { spellbooksRouter } from './routes/spellbooks';
 import { charactersRouter } from './routes/characters';
 
+const LARGE_BODY_PATHS = new Set(['/api/characters/import', '/api/characters/import/preview']);
+
 function parseTrustProxy(value: string): boolean | number | string {
   if (value === 'true') return true;
   if (value === 'false') return false;
@@ -56,7 +58,9 @@ export function createApp(options: { accessLog?: boolean } = {}) {
     app.use(morgan(':remote-addr :method :url :status :res[content-length] - :response-time ms', { stream: logger.stream }));
   }
 
-  app.use(express.json({ limit: '12mb' }));
+  const jsonParser = express.json({ limit: '12mb' });
+  // Charakter-Import parst seinen (evtl. großen) Body selbst – erst nach der Admin-Prüfung
+  app.use((req, res, next) => (LARGE_BODY_PATHS.has(req.path) ? next() : jsonParser(req, res, next)));
   app.use(cookieParser());
 
   const api = express.Router();

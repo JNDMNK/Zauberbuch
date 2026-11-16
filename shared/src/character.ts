@@ -280,3 +280,50 @@ export function carrying(sheet: CharacterSheet) {
     state: total > str * 10 ? 'heavy' : total > str * 5 ? 'encumbered' : 'normal',
   } as const;
 }
+
+// ---------------------------------------------------------------- Export / Import (nur Admin)
+
+export const CHARACTER_EXPORT_FORMAT = 'zauberbuch-characters';
+
+export interface CharacterExportEntry {
+  /** Benutzername des Besitzers */
+  owner: string;
+  name: string;
+  createdAt?: string;
+  data: CharacterSheet;
+}
+
+export interface CharacterExportFile {
+  format: typeof CHARACTER_EXPORT_FORMAT;
+  version: 1;
+  exportedAt: string;
+  characters: CharacterExportEntry[];
+}
+
+export const characterImportSchema = z.object({
+  characters: z.array(z.unknown()).min(1).max(2000),
+  /** Ziel für Bögen, deren Besitzer es nicht (mehr) gibt; null = solche Bögen überspringen */
+  fallbackOwnerId: z.string().min(1).max(100).nullable().optional().default(null),
+  duplicates: z.enum(['skip', 'create']).optional().default('skip'),
+});
+
+export type CharacterImportStatus = 'new' | 'duplicate' | 'no_owner' | 'invalid';
+
+export interface CharacterImportPreviewItem {
+  index: number;
+  name: string;
+  owner: string | null;
+  targetUser: string | null;
+  status: CharacterImportStatus;
+}
+
+export interface CharacterImportPreview {
+  items: CharacterImportPreviewItem[];
+  summary: Record<CharacterImportStatus, number> & { total: number };
+}
+
+export interface CharacterImportResult {
+  created: number;
+  skipped: number;
+  invalid: number;
+}

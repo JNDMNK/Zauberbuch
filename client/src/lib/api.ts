@@ -1,6 +1,8 @@
 import type {
   AppConfigDto,
   CharacterDto,
+  CharacterImportPreview,
+  CharacterImportResult,
   CharacterSheet,
   CharacterSummaryDto,
   ImportPreviewResult,
@@ -120,4 +122,8 @@ export const api = {
   saveCharacter: (id: string, data: CharacterSheet) => request<{ character: CharacterDto }>('PUT', `/api/characters/${id}`, { data }),
   duplicateCharacter: (id: string) => request<{ character: CharacterDto }>('POST', `/api/characters/${id}/duplicate`),
   deleteCharacter: (id: string) => request<void>('DELETE', `/api/characters/${id}`),
+  characterImportPreview: (characters: unknown[], fallbackOwnerId: string | null) =>
+    request<CharacterImportPreview>('POST', '/api/characters/import/preview', { characters, fallbackOwnerId }),
+  importCharacters: (characters: unknown[], fallbackOwnerId: string | null, duplicates: 'skip' | 'create') =>
+    request<CharacterImportResult>('POST', '/api/characters/import', { characters, fallbackOwnerId, duplicates }),
 };

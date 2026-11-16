@@ -1,8 +1,14 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import type { Character, User } from '@prisma/client';
 import {
+  CHARACTER_EXPORT_FORMAT,
+  characterImportSchema,
   characterSheetSchema,
   createCharacterSchema,
+  type CharacterExportFile,
+  type CharacterImportPreview,
+  type CharacterImportPreviewItem,
+  type CharacterImportResult,
   isEditorRole,
   updateCharacterSchema,
   type CharacterDto,
@@ -12,7 +18,7 @@ import {
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { forbidden, notFound } from '../lib/errors';
-import { requireAuth, requireEditor } from '../middleware/auth';
+import { requireAdmin, requireAuth, requireEditor } from '../middleware/auth';
 
 /**
  * Charakterbögen: Jeder Benutzer verwaltet beliebig viele eigene Charaktere.
@@ -73,6 +79,101 @@ charactersRouter.get('/all', requireEditor, async (_req, res) => {
     orderBy: [{ user: { username: 'asc' } }, { name: 'asc' }],
   });
   res.json({ characters: list.map((c) => toSummary(c as unknown as Character, c.user)) });
+});
+
+// ---------------------------------------------------------------- Export / Import (nur Admin)
+
+charactersRouter.get('/export', requireAdmin, async (_req, res) => {
+  const list = await prisma.character.findMany({
+    include: { user: { select: { username: true } } },
+    orderBy: [{ user: { username: 'asc' } }, { name: 'asc' }],
+  });
+  const body: CharacterExportFile = {
+    format: CHARACTER_EXPORT_FORMAT,
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    characters: list.map((c) => ({
+      owner: c.user.username,
+      name: c.name,
+      createdAt: c.createdAt.toISOString(),
+      data: parseSheet(c.data),
+    })),
+  };
+  const date = new Date().toISOString().slice(0, 10);
+  res.setHeader('Content-Disposition', `attachment; filename="zauberbuch-charaktere-${date}.json"`);
+  res.json(body);
+});
+
+const largeJson = express.json({ limit: '100mb' });
+
+interface AnalyzedEntry {
+  item: CharacterImportPreviewItem;
+  sheet?: CharacterSheet;
+  userId?: string;
+}
+
+async function analyzeImport(raw: unknown[], fallbackOwnerId: string | null): Promise<AnalyzedEntry[]> {
+  const users = await prisma.user.findMany({ select: { id: true, username: true } });
+  const byName = new Map(users.map((u) => [u.username.toLowerCase(), u]));
+  const fallback = fallbackOwnerId ? users.find((u) => u.id === fallbackOwnerId) ?? null : null;
+  const existing = await prisma.character.findMany({ select: { userId: true, name: true } });
+  const taken = new Set(existing.map((c) => `${c.userId}\u0000${c.name.trim().toLowerCase()}`));
+
+  return raw.map((entry, index) => {
+    const e = (entry && typeof entry === 'object' ? entry : null) as { owner?: unknown; name?: unknown; data?: unknown } | null;
+    const ownerName = typeof e?.owner === 'string' ? e.owner : null;
+    if (!e || !e.data || typeof e.data !== 'object' || Array.isArray(e.data)) {
+      return { item: { index, name: typeof e?.name === 'string' ? e.name : '', owner: ownerName, targetUser: null, status: 'invalid' } };
+    }
+    const sheet = characterSheetSchema.parse(e.data);
+    const name = sheet.identity.name;
+    const target = (ownerName && byName.get(ownerName.toLowerCase())) || fallback;
+    if (!target) {
+      return { item: { index, name, owner: ownerName, targetUser: null, status: 'no_owner' }, sheet };
+    }
+    const key = `${target.id}\u0000${name.trim().toLowerCase()}`;
+    const status = taken.has(key) ? 'duplicate' : 'new';
+    taken.add(key); // Dubletten innerhalb der Datei ebenfalls erkennen
+    return { item: { index, name, owner: ownerName, targetUser: target.username, status }, sheet, userId: target.id };
+  });
+}
+
+charactersRouter.post('/import/preview', requireAdmin, largeJson, async (req, res) => {
+  const { characters, fallbackOwnerId } = validate(characterImportSchema, req.body);
+  const analyzed = await analyzeImport(characters, fallbackOwnerId);
+  const items = analyzed.map((a) => a.item);
+  const count = (s: CharacterImportPreviewItem['status']) => items.filter((i) => i.status === s).length;
+  const body: CharacterImportPreview = {
+    items,
+    summary: { total: items.length, new: count('new'), duplicate: count('duplicate'), no_owner: count('no_owner'), invalid: count('invalid') },
+  };
+  res.json(body);
+});
+
+charactersRouter.post('/import', requireAdmin, largeJson, async (req, res) => {
+  const { characters, fallbackOwnerId, duplicates } = validate(characterImportSchema, req.body);
+  const analyzed = await analyzeImport(characters, fallbackOwnerId);
+  const result: CharacterImportResult = { created: 0, skipped: 0, invalid: 0 };
+  const toCreate = analyzed.filter((a) => {
+    if (a.item.status === 'invalid') {
+      result.invalid++;
+      return false;
+    }
+    if (a.item.status === 'no_owner' || (a.item.status === 'duplicate' && duplicates === 'skip')) {
+      result.skipped++;
+      return false;
+    }
+    return true;
+  });
+  await prisma.$transaction(
+    toCreate.map((a) =>
+      prisma.character.create({
+        data: { userId: a.userId!, ...summaryFields(a.sheet!), data: JSON.stringify(a.sheet) },
+      }),
+    ),
+  );
+  result.created = toCreate.length;
+  res.json(result);
 });
 
 charactersRouter.post('/', async (req, res) => {

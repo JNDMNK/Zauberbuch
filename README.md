@@ -99,7 +99,7 @@ setzen (der Benutzer wird dabei auf allen Geräten abgemeldet) und Benutzer lös
 | Zauberbücher aller Benutzer ansehen | – | ✔ | ✔ |
 | Eigene Charakterbögen anlegen und bearbeiten | ✔ | ✔ | ✔ |
 | Charakterbögen aller Benutzer ansehen (nur lesen) | – | ✔ | ✔ |
-| JSON-Import und -Export | – | – | ✔ |
+| JSON-Import und -Export (Zauber und Charakterbögen) | – | – | ✔ |
 | Benutzer anlegen, Rollen ändern, Passwörter setzen, löschen | – | – | ✔ |
 
 Der erste Admin wird beim Start aus `ADMIN_USERNAME`/`ADMIN_PASSWORD` angelegt. Der letzte Admin
@@ -124,6 +124,33 @@ Rettungswürfe, Fertigkeiten, passive Wahrnehmung, Initiative, Angriffsbonus, Za
 Änderungen werden automatisch gespeichert (kurz nach der letzten Eingabe sowie beim Verlassen der Seite).
 Bilder werden im Browser verkleinert und mit dem Bogen gespeichert. Admin und Dungeon Master sehen alle
 Bögen unter **Verwaltung → Charakterbögen** – nur lesend. Der Bogen lässt sich über das Drucker-Symbol drucken.
+
+### Export & Import der Charakterbögen (Admin)
+
+Unter **Verwaltung → Import / Export → Charakterbögen** exportiert der Admin alle Bögen aller Benutzer als
+eine JSON-Datei (inkl. Porträts und Symbole) – z. B. als Sicherung oder für einen Umzug. Beim Import zeigt
+eine Vorschau jeden Bogen mit Status:
+
+- **Zuordnung:** Jeder Bogen wird über den Benutzernamen (`owner`) wieder seinem Spieler zugeordnet.
+  Bögen, deren Spieler es nicht gibt, werden übersprungen oder einem wählbaren Benutzer zugeordnet.
+- **Dubletten:** Vorhandene Charaktere werden nie überschrieben. Gibt es beim selben Spieler bereits einen
+  Charakter mit gleichem Namen, wird der Bogen übersprungen oder auf Wunsch trotzdem neu angelegt.
+- Ungültige Werte im Bogen werden wie beim Speichern bereinigt.
+
+Format:
+
+```json
+{
+  "format": "zauberbuch-characters",
+  "version": 1,
+  "exportedAt": "2026-01-01T12:00:00.000Z",
+  "characters": [
+    { "owner": "jan", "name": "Vaelor Blackcoil", "data": { "identity": { "name": "Vaelor Blackcoil", "level": 3 }, "abilities": { "int": 17 } } }
+  ]
+}
+```
+
+`data` ist der komplette Bogen; fehlende Felder werden mit Standardwerten gefüllt.
 
 ## Umgebungsvariablen
 
@@ -351,6 +378,9 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `POST /api/characters/:id/duplicate` | Besitzer | Kopie anlegen |
 | `DELETE /api/characters/:id` | Besitzer | Charakter löschen |
 | `GET /api/characters/all` | DM/Admin | Alle Charaktere mit Besitzer |
+| `GET /api/characters/export` | Admin | Alle Charakterbögen als JSON-Datei |
+| `POST /api/characters/import/preview` | Admin | `{ characters: [...], fallbackOwnerId? }` → Status je Bogen |
+| `POST /api/characters/import` | Admin | `{ characters: [...], fallbackOwnerId?, duplicates: "skip" \| "create" }` |
 | `GET /api/users` | Admin | Benutzerliste |
 | `POST /api/users` | Admin | `{ username, email?, password, role? }` – Benutzer anlegen |
 | `PATCH /api/users/:id` | Admin | `{ role?: "admin" \| "dungeonmaster" \| "user", password? }` (letzter Admin geschützt) |
