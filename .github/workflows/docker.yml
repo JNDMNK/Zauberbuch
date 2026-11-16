@@ -1,5 +1,12 @@
 name: Build & Push Docker Image
 
+# Baut das Image bei jedem Push auf main und bei Tags v*.*.* und pusht es nach
+# ghcr.io/<owner>/zauberbuch (Tags: latest bzw. Version).
+#
+# amd64 wird immer gebaut. arm64 optional: Repository-Variable BUILD_ARM64=true setzen
+# (Settings → Secrets and variables → Actions → Variables). arm64 wird nativ auf einem
+# ARM-Runner gebaut, nicht per QEMU – Prisma bricht unter Emulation ab.
+
 on:
   push:
     branches: [main]
@@ -12,18 +19,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  REGISTRY: ghcr.io
-  # Für reine amd64-Builds (schneller) auf "linux/amd64" reduzieren
-  PLATFORMS: linux/amd64,linux/arm64
-
 jobs:
   test:
     name: Typecheck & Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: lts/*
           cache: npm
@@ -33,41 +35,128 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  docker:
-    name: Docker Image
-    needs: test
+  prepare:
+    name: Vorbereitung
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+    outputs:
+      image: ${{ steps.vars.outputs.image }}
+      version: ${{ steps.vars.outputs.version }}
+      matrix: ${{ steps.vars.outputs.matrix }}
+      push: ${{ steps.vars.outputs.push }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Version bestimmen
-        id: version
+      - uses: actions/checkout@v5
+      - id: vars
+        env:
+          BUILD_ARM64: ${{ vars.BUILD_ARM64 }}
         run: |
+          # ghcr.io verlangt Kleinbuchstaben im Image-Namen
+          echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/zauberbuch" >> "$GITHUB_OUTPUT"
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
           else
             echo "version=$(node -p "require('./package.json').version")-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           fi
+          matrix='[{"platform":"linux/amd64","runner":"ubuntu-latest"}'
+          if [[ "${BUILD_ARM64,,}" == "true" ]]; then
+            matrix+=',{"platform":"linux/arm64","runner":"ubuntu-24.04-arm"}'
+          fi
+          echo "matrix=${matrix}]" >> "$GITHUB_OUTPUT"
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "push=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "push=true" >> "$GITHUB_OUTPUT"
+          fi
 
-      - uses: docker/setup-qemu-action@v3
+  build:
+    name: Image (${{ matrix.platform }})
+    needs: [test, prepare]
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Plattform-Kennung
+        id: plat
+        run: echo "pair=${PLATFORM//\//-}" >> "$GITHUB_OUTPUT"
+        env:
+          PLATFORM: ${{ matrix.platform }}
+
       - uses: docker/setup-buildx-action@v3
 
       - name: Login bei ghcr.io
-        if: github.event_name != 'pull_request'
+        if: needs.prepare.outputs.push == 'true'
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Tags & Labels
+      - name: Build (und Push per Digest)
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            APP_VERSION=${{ needs.prepare.outputs.version }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ needs.prepare.outputs.version }}
+          outputs: ${{ needs.prepare.outputs.push == 'true' && format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true', needs.prepare.outputs.image) || 'type=cacheonly' }}
+          cache-from: type=gha,scope=${{ steps.plat.outputs.pair }}
+          cache-to: type=gha,mode=max,scope=${{ steps.plat.outputs.pair }}
+
+      - name: Digest exportieren
+        if: needs.prepare.outputs.push == 'true'
+        run: |
+          mkdir -p "${RUNNER_TEMP}/digests"
+          touch "${RUNNER_TEMP}/digests/${DIGEST#sha256:}"
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+
+      - uses: actions/upload-artifact@v4
+        if: needs.prepare.outputs.push == 'true'
+        with:
+          name: digests-${{ steps.plat.outputs.pair }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    name: Manifest & Tags
+    needs: [prepare, build]
+    if: needs.prepare.outputs.push == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tags bestimmen
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/zauberbuch
+          images: ${{ needs.prepare.outputs.image }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=semver,pattern={{version}}
@@ -75,15 +164,17 @@ jobs:
             type=semver,pattern={{major}}
             type=sha,format=short
 
-      - name: Build & Push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: ${{ env.PLATFORMS }}
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            APP_VERSION=${{ steps.version.outputs.version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      - name: Multi-Arch-Manifest erstellen und pushen
+        working-directory: ${{ runner.temp }}/digests
+        env:
+          IMAGE: ${{ needs.prepare.outputs.image }}
+        run: |
+          docker buildx imagetools create \
+            $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf "${IMAGE}@sha256:%s " *)
+
+      - name: Image prüfen
+        env:
+          IMAGE: ${{ needs.prepare.outputs.image }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: docker buildx imagetools inspect "${IMAGE}:${VERSION}"

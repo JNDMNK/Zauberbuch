@@ -351,22 +351,29 @@ npm run typecheck   # TypeScript-Prüfung aller Pakete
 docker build -t zauberbuch:latest --build-arg APP_VERSION=1.0.0 .
 ```
 
-**Multi-Arch (amd64 + arm64) mit buildx:**
+**arm64 (z. B. Raspberry Pi):** Das Image lässt sich für arm64 bauen, allerdings **nativ auf
+einem ARM-Rechner**. Unter QEMU-Emulation (`--platform linux/arm64` auf einem x86-Host) bricht
+`prisma generate` ab.
 
 ```bash
-docker buildx create --use --name zauberbuch-builder
-docker buildx build --platform linux/amd64,linux/arm64 \
-  -t ghcr.io/jndmnk/zauberbuch:latest --push .
+# auf einem arm64-Host
+docker build -t zauberbuch:latest .
 ```
 
 **GitHub Actions:** `.github/workflows/docker.yml` führt Typecheck und Tests aus und baut das Image
-bei jedem Push auf `main` sowie bei Tags `v*.*.*` für `linux/amd64` und `linux/arm64`. Es wird nach
-`ghcr.io/jndmnk/zauberbuch` gepusht:
+bei jedem Push auf `main` sowie bei Tags `v*.*.*`. Es wird nach `ghcr.io/jndmnk/zauberbuch` gepusht:
 
 | Ereignis | Tags |
 |---|---|
 | Push auf `main` | `latest`, `sha-<kurz>` |
 | Tag `v1.2.3` | `1.2.3`, `1.2`, `1`, `sha-<kurz>` |
+
+Standardmäßig wird nur `linux/amd64` gebaut (das reicht für Unraid). Für ein zusätzliches
+`linux/arm64`-Image unter *Settings → Secrets and variables → Actions → Variables* die
+Repository-Variable `BUILD_ARM64` mit dem Wert `true` anlegen. arm64 wird dann nativ auf dem
+GitHub-Runner `ubuntu-24.04-arm` gebaut, und beide Varianten werden zu einem Multi-Arch-Manifest
+zusammengeführt. (Je nach GitHub-Plan sind ARM-Runner für private Repositories ggf. kostenpflichtig.)
+Pull Requests werden nur gebaut, nicht gepusht.
 
 Release erstellen:
 
