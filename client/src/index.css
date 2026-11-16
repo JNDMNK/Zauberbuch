@@ -137,6 +137,56 @@
   }
 }
 
+/* Charakterbogen */
+@layer components {
+  .sheet-box {
+    @apply rounded-xl border-2 border-parchment-500/70 bg-parchment-50/80 px-3 py-3 shadow-sm dark:border-night-700 dark:bg-night-800/80;
+  }
+  .sheet-label {
+    @apply block font-display text-[10px] font-bold uppercase tracking-wider text-parchment-800 dark:text-parchment-400;
+  }
+  .sheet-input {
+    @apply w-full rounded-md border border-parchment-300 bg-white/60 px-2 py-1 font-serif text-base text-ink focus:border-parchment-700 focus:outline-none focus:ring-2 focus:ring-parchment-500/30 disabled:cursor-default disabled:border-transparent disabled:bg-transparent dark:border-night-700 dark:bg-night-950/50 dark:text-parchment-100 dark:disabled:bg-transparent;
+  }
+  .sheet-textarea {
+    @apply sheet-input min-h-[5rem] resize-y leading-relaxed;
+  }
+  .sheet-table {
+    @apply w-full border-collapse text-sm;
+  }
+  .sheet-table th {
+    @apply px-1 pb-1 text-left font-display text-[10px] font-bold uppercase tracking-wider text-parchment-800 dark:text-parchment-400;
+  }
+  .sheet-table td {
+    @apply px-1 py-0.5 align-middle;
+  }
+  .sheet-table tr.sheet-subrow td {
+    @apply pb-2;
+  }
+  /* Zahlenfelder ohne Spinner */
+  .character-sheet input[type='number'] {
+    -moz-appearance: textfield;
+  }
+  .character-sheet input[type='number']::-webkit-inner-spin-button,
+  .character-sheet input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+@media print {
+  header,
+  footer {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+  }
+  .sheet-box {
+    break-inside: avoid;
+  }
+}
+
 /* Markdown-Inhalte */
 .prose-spell {
   @apply space-y-3 leading-relaxed;

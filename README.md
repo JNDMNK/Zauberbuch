@@ -11,6 +11,9 @@ Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutze
   (z. B. „8W6 Feuer“), Detail als Modal **und** unter `/spells/:slug`
 - 📕 „Mein Zauberbuch“: persönliche Sammlung pro Benutzer (Herz auf der Karte, serverseitig gespeichert,
   optimistisches UI-Update) mit denselben Such- und Filterfunktionen
+- 📜 **Charakterbogen**: beliebig viele Charaktere pro Benutzer im Aufbau des D&D-5e-Bogens (Charakter,
+  Merkmale & Inventar, Hintergrund, Zauber) mit automatischer Berechnung, Autospeichern, Porträt/Symbol
+  und Verknüpfung der Zauber mit der Bibliothek
 - 👥 Rollen **Benutzer**, **Dungeon Master** und **Admin** (siehe [Rollen & Benutzer](#rollen--benutzer))
 - 🔒 Ohne Anmeldung keine Daten – die Startseite ist der Login, es gibt keine Selbstregistrierung
 - 🌍 DE/EN-Umschalter für Oberfläche **und** Zaubertexte (pro Benutzer gespeichert, Gäste im localStorage);
@@ -94,11 +97,33 @@ setzen (der Benutzer wird dabei auf allen Geräten abgemeldet) und Benutzer lös
 | Eigenes Zauberbuch („Mein Zauberbuch“) führen | ✔ | ✔ | ✔ |
 | Zauber anlegen, bearbeiten, duplizieren, löschen | – | ✔ | ✔ |
 | Zauberbücher aller Benutzer ansehen | – | ✔ | ✔ |
+| Eigene Charakterbögen anlegen und bearbeiten | ✔ | ✔ | ✔ |
+| Charakterbögen aller Benutzer ansehen (nur lesen) | – | ✔ | ✔ |
 | JSON-Import und -Export | – | – | ✔ |
 | Benutzer anlegen, Rollen ändern, Passwörter setzen, löschen | – | – | ✔ |
 
 Der erste Admin wird beim Start aus `ADMIN_USERNAME`/`ADMIN_PASSWORD` angelegt. Der letzte Admin
 kann weder herabgestuft noch gelöscht werden.
+
+## Charakterbogen
+
+Unter **Charakterbogen** legt jeder Benutzer beliebig viele Charaktere an (bis zu 50). Der Bogen ist wie der
+D&D-5e-Charakterbogen in vier Reiter gegliedert:
+
+| Reiter | Inhalt |
+|---|---|
+| **Charakter** | Klasse & Stufe, Hintergrund, Volk, EP · Attribute · Inspiration, Übungsbonus · Rettungswürfe und Fertigkeiten (Kreis anklicken: nicht geübt → geübt → Expertise) · RK, Initiative, Bewegungsrate · Trefferpunkte, Trefferwürfel, Todesrettungswürfe · Angriffe · Persönlichkeit · Übungen & Sprachen · Klassenmerkmale |
+| **Merkmale & Inventar** | Volksmerkmale, Sinne, Lebensstil, Hoch-/Weitsprung, Feinde, weitere Merkmale · Inventar mit Teilgewicht, eingestimmte Gegenstände, Münzen, Traglast |
+| **Hintergrund** | Alter, Glaube, Größe, Gewicht, Gesinnung, Aussehen … · Porträt und Symbol (Bild-Upload) · Verbündete, Aussehen, Hintergrundgeschichte, zusätzliche Ausrüstung, Werdegang |
+| **Zauber** | Zauberwirkende Klasse und Attribut · Zauberplätze je Grad (verbrauchte Plätze anklickbar, „lange Rast“ setzt zurück) · Zauberlisten mit „vorbereitet“, Namensvorschlägen aus der Bibliothek, Link zur Zauberbeschreibung und Übernahme aus „Mein Zauberbuch“ |
+
+**Automatisch berechnet** werden Attributsmodifikatoren, Übungsbonus (aus der Gesamtstufe, überschreibbar),
+Rettungswürfe, Fertigkeiten, passive Wahrnehmung, Initiative, Angriffsbonus, Zauber-Rettungswurf-SG und
+-Angriffsbonus, Sprungweiten, Gewichte (50 Münzen = 1 lb) und Traglastgrenzen.
+
+Änderungen werden automatisch gespeichert (kurz nach der letzten Eingabe sowie beim Verlassen der Seite).
+Bilder werden im Browser verkleinert und mit dem Bogen gespeichert. Admin und Dungeon Master sehen alle
+Bögen unter **Verwaltung → Charakterbögen** – nur lesend. Der Bogen lässt sich über das Drucker-Symbol drucken.
 
 ## Umgebungsvariablen
 
@@ -318,6 +343,14 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `POST /api/favorites` | User | `{ spellId }` – Zauber ins Zauberbuch aufnehmen |
 | `DELETE /api/favorites/:spellId` | User | Zauber aus dem Zauberbuch entfernen |
 | `GET /api/spellbooks` | DM/Admin | Alle Benutzer mit Anzahl der Zauber im Zauberbuch |
+| `GET /api/spells/names` | User | Alle Zaubernamen (slug, Grad, DE/EN) für Vorschläge |
+| `GET /api/characters` | User | Eigene Charaktere (Übersicht) |
+| `POST /api/characters` | User | `{ name? }` – neuen Charakterbogen anlegen |
+| `GET /api/characters/:id` | Besitzer, DM/Admin | Bogen inkl. `data` und `canEdit` |
+| `PUT /api/characters/:id` | Besitzer | `{ data }` – kompletten Bogen speichern (wird validiert/bereinigt) |
+| `POST /api/characters/:id/duplicate` | Besitzer | Kopie anlegen |
+| `DELETE /api/characters/:id` | Besitzer | Charakter löschen |
+| `GET /api/characters/all` | DM/Admin | Alle Charaktere mit Besitzer |
 | `GET /api/users` | Admin | Benutzerliste |
 | `POST /api/users` | Admin | `{ username, email?, password, role? }` – Benutzer anlegen |
 | `PATCH /api/users/:id` | Admin | `{ role?: "admin" \| "dungeonmaster" \| "user", password? }` (letzter Admin geschützt) |
@@ -370,7 +403,8 @@ Die API-Tests (Vitest + Supertest) laufen gegen eine eigene, temporäre SQLite-D
 Passwortwechsel, keine Selbstregistrierung, Login-Pflicht), Benutzerverwaltung und Rollen
 (Admin/Dungeon Master/Benutzer), Suche & Filter (sprachübergreifend, Grad, Klasse, Zauberzeit,
 Sortierung, Paginierung), Verwaltung (CRUD, Duplizieren, Import mit Dublettenprüfung, Export) sowie
-Zauberbücher (eigene und fremde) ab.
+Zauberbücher (eigene und fremde) sowie Charakterbögen (Rechte, Bereinigung ungültiger Werte, Lesezugriff
+für DM/Admin) ab.
 
 ```bash
 npm run typecheck   # TypeScript-Prüfung aller Pakete

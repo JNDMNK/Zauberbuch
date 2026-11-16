@@ -16,6 +16,7 @@ import { spellsRouter } from './routes/spells';
 import { favoritesRouter } from './routes/favorites';
 import { usersRouter } from './routes/users';
 import { spellbooksRouter } from './routes/spellbooks';
+import { charactersRouter } from './routes/characters';
 
 function parseTrustProxy(value: string): boolean | number | string {
   if (value === 'true') return true;
@@ -55,7 +56,7 @@ export function createApp(options: { accessLog?: boolean } = {}) {
     app.use(morgan(':remote-addr :method :url :status :res[content-length] - :response-time ms', { stream: logger.stream }));
   }
 
-  app.use(express.json({ limit: '10mb' }));
+  app.use(express.json({ limit: '12mb' }));
   app.use(cookieParser());
 
   const api = express.Router();
@@ -86,6 +87,7 @@ export function createApp(options: { accessLog?: boolean } = {}) {
   api.use('/favorites', favoritesRouter);
   api.use('/users', usersRouter);
   api.use('/spellbooks', spellbooksRouter);
+  api.use('/characters', charactersRouter);
 
   api.use((_req, _res, next) => next(new HttpError(404, 'not_found', 'API route not found')));
 

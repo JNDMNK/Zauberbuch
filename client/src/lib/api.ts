@@ -1,5 +1,8 @@
 import type {
   AppConfigDto,
+  CharacterDto,
+  CharacterSheet,
+  CharacterSummaryDto,
   ImportPreviewResult,
   ImportResult,
   Locale,
@@ -48,6 +51,24 @@ async function request<T>(method: string, url: string, body?: unknown, signal?: 
   return data as T;
 }
 
+export interface SpellNameDto {
+  slug: string;
+  level: number;
+  de: string | null;
+  en: string | null;
+}
+
+/** Speichern beim Verlassen der Seite (keepalive überlebt das Schließen des Tabs) */
+export function saveCharacterKeepalive(id: string, data: CharacterSheet) {
+  return fetch(`/api/characters/${id}`, {
+    method: 'PUT',
+    keepalive: true,
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'zauberbuch' },
+    body: JSON.stringify({ data }),
+  }).catch(() => undefined);
+}
+
 export interface AdminUserDto extends UserDto {
   favoriteCount: number;
 }
@@ -89,4 +110,14 @@ export const api = {
   deleteUser: (id: string) => request<void>('DELETE', `/api/users/${id}`),
 
   spellbooks: () => request<{ owners: SpellbookOwnerDto[] }>('GET', '/api/spellbooks'),
+
+  spellNames: () => request<{ spells: SpellNameDto[] }>('GET', '/api/spells/names'),
+
+  characters: () => request<{ characters: CharacterSummaryDto[] }>('GET', '/api/characters'),
+  allCharacters: () => request<{ characters: CharacterSummaryDto[] }>('GET', '/api/characters/all'),
+  character: (id: string) => request<{ character: CharacterDto }>('GET', `/api/characters/${id}`),
+  createCharacter: (name?: string) => request<{ character: CharacterDto }>('POST', '/api/characters', { name }),
+  saveCharacter: (id: string, data: CharacterSheet) => request<{ character: CharacterDto }>('PUT', `/api/characters/${id}`, { data }),
+  duplicateCharacter: (id: string) => request<{ character: CharacterDto }>('POST', `/api/characters/${id}/duplicate`),
+  deleteCharacter: (id: string) => request<void>('DELETE', `/api/characters/${id}`),
 };

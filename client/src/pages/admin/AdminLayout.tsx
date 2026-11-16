@@ -22,6 +22,10 @@ export function AdminLayout() {
           <BookHeart className="h-4 w-4" />
           {t('admin.spellbooks')}
         </NavLink>
+        <NavLink to="/admin/characters" className={cls}>
+          <ScrollText className="h-4 w-4" />
+          {t('admin.characters')}
+        </NavLink>
         {isAdmin && (
           <>
             <NavLink to="/admin/import-export" className={cls}>

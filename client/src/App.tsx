@@ -13,6 +13,9 @@ import { SpellFormPage } from './pages/admin/SpellFormPage';
 import { ImportExportPage } from './pages/admin/ImportExportPage';
 import { UsersPage } from './pages/admin/UsersPage';
 import { SpellbooksPage, UserSpellbookPage } from './pages/admin/SpellbooksPage';
+import { CharactersAdminPage } from './pages/admin/CharactersAdminPage';
+import { CharactersPage } from './pages/CharactersPage';
+import { CharacterSheetPage } from './pages/CharacterSheetPage';
 import { EDITOR_ROLES } from '@zauberbuch/shared';
 
 export default function App() {
@@ -38,6 +41,8 @@ export default function App() {
             <Route path="favorites" element={<Navigate to="/spellbook" replace />} />
             <Route path="register" element={<Navigate to="/" replace />} />
             <Route path="spells/:slug" element={<SpellPage />} />
+            <Route path="characters" element={<CharactersPage />} />
+            <Route path="characters/:id" element={<CharacterSheetPage />} />
             <Route path="account" element={<AccountPage />} />
             <Route
               path="admin"
@@ -53,6 +58,7 @@ export default function App() {
               <Route path="spells/:slug/edit" element={<SpellFormPage />} />
               <Route path="spellbooks" element={<SpellbooksPage />} />
               <Route path="spellbooks/:userId" element={<UserSpellbookPage />} />
+              <Route path="characters" element={<CharactersAdminPage />} />
               <Route
                 path="import-export"
                 element={

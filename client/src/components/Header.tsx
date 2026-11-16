@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BookHeart, BookOpen, ChevronDown, LogOut, Menu, Moon, Settings, Shield, Sun, UserRound, X } from 'lucide-react';
+import { BookHeart, BookOpen, ChevronDown, LogOut, Menu, Moon, ScrollText, Settings, Shield, Sun, UserRound, X } from 'lucide-react';
 import { LOCALES } from '@zauberbuch/shared';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -124,6 +124,10 @@ export function Header() {
       <NavLink to="/spellbook" className={navCls}>
         <BookHeart className="h-4 w-4" />
         {t('nav.favorites')}
+      </NavLink>
+      <NavLink to="/characters" className={navCls}>
+        <ScrollText className="h-4 w-4" />
+        {t('nav.characters')}
       </NavLink>
       {isEditor && (
         <NavLink to="/admin" className={navCls}>

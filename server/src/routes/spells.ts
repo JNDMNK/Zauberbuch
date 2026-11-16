@@ -66,6 +66,22 @@ spellsRouter.get('/', async (req, res) => {
   res.json(body);
 });
 
+/** Alle Zaubernamen (für Autovervollständigung im Charakterbogen) */
+spellsRouter.get('/names', async (_req, res) => {
+  const spells = await prisma.spell.findMany({
+    select: { slug: true, level: true, translations: { select: { locale: true, name: true } } },
+    orderBy: { sortNameDe: 'asc' },
+  });
+  res.json({
+    spells: spells.map((s) => ({
+      slug: s.slug,
+      level: s.level,
+      de: s.translations.find((t) => t.locale === 'de')?.name ?? null,
+      en: s.translations.find((t) => t.locale === 'en')?.name ?? null,
+    })),
+  });
+});
+
 spellsRouter.get('/sources', async (_req, res) => {
   const rows = await prisma.spell.findMany({
     distinct: ['source'],
