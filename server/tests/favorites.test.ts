@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { app, CSRF, registerUser, request, resetDb } from './helpers';
+import { app, CSRF, createUser, loginAs, request, resetDb } from './helpers';
 
 describe('Favoriten', () => {
   let fireballId: string;
@@ -7,8 +7,9 @@ describe('Favoriten', () => {
 
   beforeAll(async () => {
     await resetDb({ seed: true });
-    fireballId = (await request(app).get('/api/spells/fireball')).body.spell.id;
-    shieldId = (await request(app).get('/api/spells/shield')).body.spell.id;
+    const admin = await loginAs('admin', 'admin-password');
+    fireballId = (await admin.get('/api/spells/fireball')).body.spell.id;
+    shieldId = (await admin.get('/api/spells/shield')).body.spell.id;
   });
 
   it('ist für Gäste nicht verfügbar', async () => {
@@ -18,8 +19,8 @@ describe('Favoriten', () => {
   });
 
   it('fügt Favoriten hinzu, listet und filtert sie und entfernt sie wieder', async () => {
-    const { agent } = await registerUser('aragorn');
-    const { agent: other } = await registerUser('legolas');
+    const { agent } = await createUser('aragorn');
+    const { agent: other } = await createUser('legolas');
 
     expect((await agent.post('/api/favorites').set(CSRF).send({ spellId: fireballId })).status).toBe(201);
     // idempotent
@@ -47,16 +48,39 @@ describe('Favoriten', () => {
   });
 
   it('meldet 404 für unbekannte Zauber', async () => {
-    const { agent } = await registerUser('gimli');
+    const { agent } = await createUser('gimli');
     expect((await agent.post('/api/favorites').set(CSRF).send({ spellId: 'nope' })).status).toBe(404);
   });
 
   it('entfernt Favoriten, wenn der Zauber gelöscht wird', async () => {
-    const { agent } = await registerUser('boromir');
+    const { agent } = await createUser('boromir');
     await agent.post('/api/favorites').set(CSRF).send({ spellId: shieldId });
-    const admin = request.agent(app);
-    await admin.post('/api/auth/login').set(CSRF).send({ identifier: 'admin', password: 'admin-password' });
+    const admin = await loginAs('admin', 'admin-password');
     expect((await admin.delete(`/api/spells/${shieldId}`).set(CSRF)).status).toBe(204);
     expect((await agent.get('/api/favorites')).body.spellIds).toEqual([]);
+  });
+
+  it('lässt Dungeon Master und Admin die Zauberbücher anderer Benutzer sehen', async () => {
+    const { agent: owner, user } = await createUser('frodo');
+    await owner.post('/api/favorites').set(CSRF).send({ spellId: fireballId });
+    const { agent: dm } = await createUser('elrond', 'dungeonmaster');
+    const { agent: other } = await createUser('sam');
+
+    const list = await dm.get('/api/spellbooks');
+    expect(list.status).toBe(200);
+    expect(list.body.owners).toContainEqual({ id: user.id, username: 'frodo', role: 'user', spellCount: 1 });
+
+    const book = await dm.get(`/api/spells?owner=${user.id}`);
+    expect(book.status).toBe(200);
+    expect(book.body.items.map((s: { slug: string }) => s.slug)).toEqual(['fireball']);
+    // isFavorite bezieht sich weiterhin auf das eigene Zauberbuch des Betrachters
+    expect(book.body.items[0].isFavorite).toBe(false);
+
+    const admin = await loginAs('admin', 'admin-password');
+    expect((await admin.get(`/api/spells?owner=${user.id}`)).body.total).toBe(1);
+
+    // Normale Benutzer dürfen fremde Zauberbücher nicht sehen
+    expect((await other.get('/api/spellbooks')).status).toBe(403);
+    expect((await other.get(`/api/spells?owner=${user.id}`)).status).toBe(403);
   });
 });

@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { User } from '@prisma/client';
+import { isEditorRole } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { AUTH_COOKIE, verifyToken } from '../lib/auth';
 import { forbidden, unauthorized } from '../lib/errors';
@@ -34,6 +35,13 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
 export function requireAdmin(req: Request, _res: Response, next: NextFunction) {
   if (!req.user) return next(unauthorized());
   if (req.user.role !== 'admin') return next(forbidden());
+  next();
+}
+
+/** Admin oder Dungeon Master: Zauber pflegen und Zauberbücher aller Benutzer sehen. */
+export function requireEditor(req: Request, _res: Response, next: NextFunction) {
+  if (!req.user) return next(unauthorized());
+  if (!isEditorRole(req.user.role)) return next(forbidden());
   next();
 }
 

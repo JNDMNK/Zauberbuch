@@ -86,7 +86,10 @@ export function filtersToParams(f: SpellFilters): URLSearchParams {
 }
 
 /** Wandelt UI-Filter in API-Parameter für GET /api/spells um. */
-export function filtersToApiParams(f: SpellFilters, opts: { lang: string; page: number; pageSize: number; favoritesOnly?: boolean }) {
+export function filtersToApiParams(
+  f: SpellFilters,
+  opts: { lang: string; page: number; pageSize: number; favoritesOnly?: boolean; ownerId?: string },
+) {
   const sp = new URLSearchParams();
   if (f.q.trim()) sp.set('query', f.q.trim());
   if (f.level.length) sp.set('level', f.level.join(','));
@@ -99,6 +102,7 @@ export function filtersToApiParams(f: SpellFilters, opts: { lang: string; page: 
   }
   if (f.source) sp.set('source', f.source);
   if (f.favorites || opts.favoritesOnly) sp.set('favorites', 'true');
+  if (opts.ownerId) sp.set('owner', opts.ownerId);
   sp.set('sort', f.sort);
   sp.set('order', f.order);
   sp.set('lang', opts.lang);

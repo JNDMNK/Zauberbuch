@@ -5,11 +5,10 @@
   },
   "nav": {
     "spells": "Zauber",
-    "favorites": "Meine Favoriten",
+    "favorites": "Mein Zauberbuch",
     "admin": "Verwaltung",
     "account": "Mein Konto",
     "login": "Anmelden",
-    "register": "Registrieren",
     "logout": "Abmelden",
     "language": "Sprache",
     "theme": "Farbschema",
@@ -62,8 +61,8 @@
     "description": "Beschreibung",
     "fallbackBadge": "nur {{lang}}",
     "fallbackHint": "Für diesen Zauber gibt es keine Übersetzung in deiner Sprache; angezeigt wird die {{lang}} Fassung.",
-    "addFavorite": "Zu Favoriten hinzufügen",
-    "removeFavorite": "Aus Favoriten entfernen",
+    "addFavorite": "Zu meinem Zauberbuch hinzufügen",
+    "removeFavorite": "Aus meinem Zauberbuch entfernen",
     "loginForFavorites": "Melde dich an, um Favoriten zu speichern.",
     "notFound": "Dieser Zauber wurde nicht gefunden.",
     "openFull": "Als eigene Seite öffnen",
@@ -121,10 +120,11 @@
     "results_other": "{{count}} Zauber",
     "noResults": "Keine Zauber gefunden.",
     "noResultsHint": "Passe die Suche oder die Filter an.",
-    "noFavorites": "Du hast noch keine Favoriten.",
-    "noFavoritesHint": "Tippe auf das Herz einer Zauberkarte, um sie hier zu sammeln.",
+    "noFavorites": "Dein Zauberbuch ist noch leer.",
+    "noFavoritesHint": "Tippe auf das Herz einer Zauberkarte, um den Zauber in dein Zauberbuch aufzunehmen.",
     "loadMore": "Mehr laden",
-    "end": "Das Ende des Zauberbuchs ist erreicht."
+    "end": "Das Ende des Zauberbuchs ist erreicht.",
+    "emptySpellbook": "Dieses Zauberbuch ist leer."
   },
   "filter": {
     "title": "Filter",
@@ -140,7 +140,7 @@
     "source": "Quelle",
     "homebrewOnly": "Nur Homebrew",
     "officialOnly": "Ohne Homebrew",
-    "favoritesOnly": "Nur Favoriten",
+    "favoritesOnly": "Nur Mein Zauberbuch",
     "required": "erforderlich",
     "excluded": "ausgeschlossen",
     "triHint": "Klick: erforderlich → ausgeschlossen → egal",
@@ -156,20 +156,17 @@
   },
   "auth": {
     "loginTitle": "Anmelden",
-    "registerTitle": "Registrieren",
     "identifier": "Benutzername oder E-Mail",
     "username": "Benutzername",
     "email": "E-Mail",
     "password": "Passwort",
     "passwordConfirm": "Passwort wiederholen",
     "passwordMismatch": "Die Passwörter stimmen nicht überein.",
-    "noAccount": "Noch kein Konto?",
-    "haveAccount": "Bereits registriert?",
-    "registrationDisabled": "Die Registrierung ist auf diesem Server deaktiviert.",
     "loginSubmit": "Anmelden",
-    "registerSubmit": "Konto erstellen",
     "welcome": "Willkommen, {{name}}!",
-    "loggedOut": "Du wurdest abgemeldet."
+    "loggedOut": "Du wurdest abgemeldet.",
+    "noSelfRegistration": "Zugänge werden vom Administrator vergeben.",
+    "loginIntro": "Melde dich an, um die Zauberbibliothek zu öffnen."
   },
   "account": {
     "title": "Mein Konto",
@@ -184,7 +181,8 @@
   },
   "role": {
     "admin": "Admin",
-    "user": "Benutzer"
+    "user": "Benutzer",
+    "dungeonmaster": "Dungeon Master"
   },
   "admin": {
     "title": "Verwaltung",
@@ -240,9 +238,9 @@
     "runImport": "Importieren",
     "importDone": "Import abgeschlossen: {{created}} angelegt, {{updated}} aktualisiert, {{skipped}} übersprungen, {{invalid}} ungültig.",
     "usersTitle": "Benutzerverwaltung",
-    "favorites": "Favoriten",
+    "favorites": "Zauberbuch",
     "created": "Angelegt",
-    "deleteUserConfirm": "Soll der Benutzer „{{name}}“ wirklich gelöscht werden? Seine Favoriten gehen verloren.",
+    "deleteUserConfirm": "Soll der Benutzer „{{name}}“ wirklich gelöscht werden? Sein Zauberbuch geht verloren.",
     "userDeleted": "Benutzer gelöscht",
     "roleChanged": "Rolle geändert",
     "you": "du",
@@ -253,7 +251,22 @@
     "damageDiceHint": "z. B. 8d6, 1d4+1, 2d8+1d6, 1d4+mod (Zauberattributsmodifikator). Leer lassen, wenn der Zauber keinen Schaden macht.",
     "damageType": "Schadensart",
     "noDamage": "– kein Schaden –",
-    "damagePreview": "Anzeige"
+    "damagePreview": "Anzeige",
+    "spellbooks": "Zauberbücher",
+    "spellbooksTitle": "Zauberbücher der Benutzer",
+    "spellbooksHint": "Wähle einen Benutzer, um sein Zauberbuch anzusehen.",
+    "spellbookOf": "Zauberbuch von {{name}}",
+    "spellCount_one": "{{count}} Zauber",
+    "spellCount_other": "{{count}} Zauber",
+    "backToSpellbooks": "Alle Zauberbücher",
+    "newUser": "Neuer Benutzer",
+    "createUser": "Benutzer anlegen",
+    "userCreated": "Benutzer „{{name}}“ angelegt",
+    "setPassword": "Passwort setzen",
+    "setPasswordFor": "Neues Passwort für „{{name}}“",
+    "passwordSet": "Passwort gesetzt. Der Benutzer wurde auf allen Geräten abgemeldet.",
+    "emailOptional": "E-Mail (optional)",
+    "rolesHint": "Benutzer: Zauber ansehen und eigenes Zauberbuch führen · Dungeon Master: zusätzlich Zauber pflegen und alle Zauberbücher ansehen · Admin: zusätzlich Benutzer, Import und Export verwalten"
   },
   "errors": {
     "unknown": "Unbekannter Fehler.",
@@ -264,7 +277,6 @@
     "invalid_credentials": "Benutzername/E-Mail oder Passwort ist falsch.",
     "username_taken": "Dieser Benutzername ist bereits vergeben.",
     "email_taken": "Diese E-Mail-Adresse wird bereits verwendet.",
-    "registration_disabled": "Die Registrierung ist deaktiviert.",
     "too_many_requests": "Zu viele Versuche. Bitte warte einige Minuten.",
     "wrong_password": "Das aktuelle Passwort ist falsch.",
     "slug_taken": "Dieser Slug ist bereits vergeben.",
@@ -293,7 +305,8 @@
     "password_required": "Bitte Passwort angeben.",
     "damage_dice_invalid": "Ungültiger Würfelausdruck, z. B. 8d6 oder 1d4+1.",
     "damage_type_required": "Bitte eine Schadensart wählen.",
-    "damage_dice_required": "Bitte einen Würfelausdruck angeben."
+    "damage_dice_required": "Bitte einen Würfelausdruck angeben.",
+    "nothing_to_update": "Es wurde nichts geändert."
   },
   "damageType": {
     "acid": "Säure",

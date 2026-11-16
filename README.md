@@ -1,20 +1,23 @@
 # 📖 Zauberbuch – DnD 5e Spell Library
 
 Eine selbst gehostete Bibliothek für D&D-5e-Zauber: durchsuchen, filtern, als Fantasy-Karten ansehen
-und als Favoriten speichern. Zauber (inkl. Homebrew) werden zweisprachig (DE/EN) über eine
-Admin-Oberfläche gepflegt. Läuft als einzelner Docker-Container – optimiert für **Unraid**.
+und im eigenen **Zauberbuch** sammeln. Zauber (inkl. Homebrew) werden zweisprachig (DE/EN) über eine
+Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutzer legt der Admin an. Läuft als einzelner Docker-Container – optimiert für **Unraid**.
 
 - 🔎 Live-Suche über Name und Beschreibung, **sprachübergreifend** („Feuerball“ findet auch „Fireball“)
 - 🎚️ Filter: Grad (Mehrfachauswahl), Schule, Klasse, Schadensart, Konzentration, Ritual, Komponenten, Zauberzeit,
-  Quelle/Homebrew, nur Favoriten – Sortierung nach Name, Grad, Schule; Filter stehen in der URL
+  Quelle/Homebrew, nur Mein Zauberbuch – Sortierung nach Name, Grad, Schule; Filter stehen in der URL
 - 🃏 Responsives Karten-Grid im Pergament-Stil, Akzentfarbe je Schule, Schaden/Heilung direkt auf der Karte
   (z. B. „8W6 Feuer“), Detail als Modal **und** unter `/spells/:slug`
-- ❤️ Favoriten pro Benutzer (serverseitig, optimistisches UI-Update), eigene Seite „Meine Favoriten“
+- 📕 „Mein Zauberbuch“: persönliche Sammlung pro Benutzer (Herz auf der Karte, serverseitig gespeichert,
+  optimistisches UI-Update) mit denselben Such- und Filterfunktionen
+- 👥 Rollen **Benutzer**, **Dungeon Master** und **Admin** (siehe [Rollen & Benutzer](#rollen--benutzer))
+- 🔒 Ohne Anmeldung keine Daten – die Startseite ist der Login, es gibt keine Selbstregistrierung
 - 🌍 DE/EN-Umschalter für Oberfläche **und** Zaubertexte (pro Benutzer gespeichert, Gäste im localStorage);
   fehlende Übersetzungen fallen auf die andere Sprache zurück (mit Hinweis-Badge)
 - 🌙 Dark-/Light-Mode
-- 🛠️ Admin: Zauber anlegen/bearbeiten/duplizieren/löschen, Markdown-Editor mit Vorschau, DE/EN-Tabs,
-  JSON-Import (Vorschau + Dublettenprüfung) und -Export, Benutzerverwaltung
+- 🛠️ Verwaltung: Zauber anlegen/bearbeiten/duplizieren/löschen, Markdown-Editor mit Vorschau, DE/EN-Tabs,
+  Zauberbücher aller Benutzer ansehen, JSON-Import (Vorschau + Dublettenprüfung) und -Export, Benutzerverwaltung
 - 🔐 bcrypt, JWT im httpOnly-Cookie (SameSite=Lax) + CSRF-Header, Rate-Limiting, helmet
 - 🐳 Multi-Stage-Dockerfile, PUID/PGID/UMASK, automatische Migrationen mit DB-Sicherung, Healthcheck
 
@@ -24,15 +27,16 @@ Admin-Oberfläche gepflegt. Läuft als einzelner Docker-Container – optimiert 
 
 1. [Schnellstart (docker compose)](#schnellstart-docker-compose)
 2. [Installation auf Unraid](#installation-auf-unraid)
-3. [Umgebungsvariablen](#umgebungsvariablen)
-4. [Daten, Backup & Wiederherstellung](#daten-backup--wiederherstellung)
-5. [Reverse Proxy](#reverse-proxy-nginx-proxy-manager--swag)
-6. [JSON-Importformat](#json-importformat)
-7. [REST-API](#rest-api)
-8. [Lokale Entwicklung ohne Docker](#lokale-entwicklung-ohne-docker)
-9. [Tests](#tests)
-10. [Image bauen & veröffentlichen](#image-bauen--veröffentlichen)
-11. [Projektstruktur](#projektstruktur)
+3. [Rollen & Benutzer](#rollen--benutzer)
+4. [Umgebungsvariablen](#umgebungsvariablen)
+5. [Daten, Backup & Wiederherstellung](#daten-backup--wiederherstellung)
+6. [Reverse Proxy](#reverse-proxy-nginx-proxy-manager--swag)
+7. [JSON-Importformat](#json-importformat)
+8. [REST-API](#rest-api)
+9. [Lokale Entwicklung ohne Docker](#lokale-entwicklung-ohne-docker)
+10. [Tests](#tests)
+11. [Image bauen & veröffentlichen](#image-bauen--veröffentlichen)
+12. [Projektstruktur](#projektstruktur)
 
 ---
 
@@ -45,8 +49,9 @@ cp .env.example .env        # Admin-Passwort und DATA_PATH anpassen!
 docker compose up -d
 ```
 
-Danach ist die App unter **http://SERVER-IP:8080/** erreichbar. Mit `ADMIN_USERNAME` / `ADMIN_PASSWORD`
-anmelden – der Bereich **Verwaltung** erscheint in der Kopfzeile.
+Danach ist die App unter **http://SERVER-IP:8080/** erreichbar – die Startseite ist der Login.
+Mit `ADMIN_USERNAME` / `ADMIN_PASSWORD` anmelden; unter **Verwaltung → Benutzer** legst du weitere
+Benutzer an.
 
 Standardmäßig baut `docker compose` das Image lokal. Um das fertige Image aus der GitHub Container
 Registry zu verwenden, in der `.env` `ZAUBERBUCH_IMAGE=ghcr.io/jndmnk/zauberbuch:latest` setzen und
@@ -76,6 +81,25 @@ Mit dem Plugin „Docker Compose Manager“ einen neuen Stack anlegen, den Inhal
 `docker-compose.yml` einfügen und unter „Edit Stack → ENV File“ die Werte aus `.env.example`
 setzen (mindestens `ZAUBERBUCH_IMAGE` und `ADMIN_PASSWORD`). Dann **Compose Up**.
 
+## Rollen & Benutzer
+
+Ohne Anmeldung sind keine Daten sichtbar – weder in der Oberfläche noch über die API. Eine
+Selbstregistrierung gibt es nicht: Benutzer legt der Admin unter **Verwaltung → Benutzer → Neuer Benutzer**
+an (Benutzername, optional E-Mail, Passwort, Rolle). Dort kann er auch Rollen ändern, Passwörter neu
+setzen (der Benutzer wird dabei auf allen Geräten abgemeldet) und Benutzer löschen.
+
+| Recht | Benutzer | Dungeon Master | Admin |
+|---|:---:|:---:|:---:|
+| Zauber suchen, filtern, ansehen | ✔ | ✔ | ✔ |
+| Eigenes Zauberbuch („Mein Zauberbuch“) führen | ✔ | ✔ | ✔ |
+| Zauber anlegen, bearbeiten, duplizieren, löschen | – | ✔ | ✔ |
+| Zauberbücher aller Benutzer ansehen | – | ✔ | ✔ |
+| JSON-Import und -Export | – | – | ✔ |
+| Benutzer anlegen, Rollen ändern, Passwörter setzen, löschen | – | – | ✔ |
+
+Der erste Admin wird beim Start aus `ADMIN_USERNAME`/`ADMIN_PASSWORD` angelegt. Der letzte Admin
+kann weder herabgestuft noch gelöscht werden.
+
 ## Umgebungsvariablen
 
 | Variable | Standard | Beschreibung |
@@ -89,7 +113,6 @@ setzen (mindestens `ZAUBERBUCH_IMAGE` und `ADMIN_PASSWORD`). Dann **Compose Up**
 | `ADMIN_USERNAME` | *(leer)* | Erster Admin; wird nur angelegt, wenn noch **kein** Admin existiert. Existiert der Benutzer bereits, wird er zum Admin befördert |
 | `ADMIN_PASSWORD` | *(leer)* | Passwort des ersten Admins (mind. 8 Zeichen empfohlen) |
 | `ADMIN_EMAIL` | *(leer)* | Optionale E-Mail des ersten Admins |
-| `ALLOW_REGISTRATION` | `true` | Selbstregistrierung erlauben (`true`/`false`) |
 | `DEFAULT_LANGUAGE` | `de` | Sprache für Gäste ohne gespeicherte Auswahl (`de`/`en`) |
 | `SEED_EXAMPLES` | `false` (Image) / `true` (Compose, Template) | Legt 5 Beispielzauber an, solange die Datenbank leer ist |
 
@@ -98,7 +121,7 @@ Weitere, optionale Variablen:
 | Variable | Standard | Beschreibung |
 |---|---|---|
 | `TRUST_PROXY` | `1` | Express-`trust proxy` (Anzahl Proxy-Hops, `true`/`false` oder Subnetz, z. B. `loopback, 172.16.0.0/12`) |
-| `AUTH_RATE_LIMIT_MAX` | `10` | Max. Login-/Registrierungsversuche pro IP und Zeitfenster |
+| `AUTH_RATE_LIMIT_MAX` | `10` | Max. Login-Versuche pro IP und Zeitfenster |
 | `AUTH_RATE_LIMIT_WINDOW_MIN` | `15` | Zeitfenster des Rate-Limits in Minuten |
 | `JWT_EXPIRES_IN` | `7d` | Gültigkeit der Login-Tokens |
 | `COOKIE_MAX_AGE_DAYS` | `7` | Lebensdauer des Login-Cookies in Tagen |
@@ -264,7 +287,8 @@ importiert; der Import läuft in einer Transaktion. Maximal 5000 Zauber bzw. 10 
 
 ## REST-API
 
-Alle Endpunkte liegen unter `/api` und sprechen JSON. Fehler haben das Format
+Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/api/config` und
+`/api/auth/login|logout|me` erfordern alle eine Anmeldung. Fehler haben das Format
 `{ "error": { "code": "…", "message": "…", "details": [...] } }` mit passenden Statuscodes
 (400 Validierung, 401 nicht angemeldet, 403 keine Berechtigung/CSRF, 404, 409 Konflikt, 429 Rate-Limit).
 
@@ -274,33 +298,35 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Fehler haben das Format
 | Methode & Pfad | Recht | Beschreibung |
 |---|---|---|
 | `GET /api/health` | – | Healthcheck (prüft DB-Verbindung) |
-| `GET /api/config` | – | `allowRegistration`, `defaultLanguage`, `version` |
-| `POST /api/auth/register` | – | `{ username, email, password, language? }` |
+| `GET /api/config` | – | `defaultLanguage`, `version` |
 | `POST /api/auth/login` | – | `{ identifier, password }` – identifier = Benutzername oder E-Mail |
 | `POST /api/auth/logout` | – | Cookie löschen |
 | `GET /api/auth/me` | – | Aktueller Benutzer oder `null` |
 | `PATCH /api/auth/me` | User | `{ language: "de" \| "en" }` |
 | `POST /api/auth/password` | User | `{ currentPassword, newPassword }` – meldet andere Sitzungen ab |
-| `GET /api/spells` | – | Suche & Filter, paginiert (siehe unten) |
-| `GET /api/spells/sources` | – | Liste aller Quellen |
-| `GET /api/spells/:slug` | – | Zauber mit vollständigen Texten |
-| `POST /api/spells` | Admin | Zauber anlegen (Body = Importformat eines Zaubers) |
-| `PUT /api/spells/:id` | Admin | Zauber aktualisieren |
-| `POST /api/spells/:id/duplicate` | Admin | Kopie mit slug `…-copy` anlegen |
-| `DELETE /api/spells/:id` | Admin | Zauber löschen |
+| `GET /api/spells` | User | Suche & Filter, paginiert (siehe unten) |
+| `GET /api/spells/sources` | User | Liste aller Quellen |
+| `GET /api/spells/:slug` | User | Zauber mit vollständigen Texten |
+| `POST /api/spells` | DM/Admin | Zauber anlegen (Body = Importformat eines Zaubers) |
+| `PUT /api/spells/:id` | DM/Admin | Zauber aktualisieren |
+| `POST /api/spells/:id/duplicate` | DM/Admin | Kopie mit slug `…-copy` anlegen |
+| `DELETE /api/spells/:id` | DM/Admin | Zauber löschen |
 | `GET /api/spells/export` | Admin | JSON-Export aller Zauber |
 | `POST /api/spells/import/preview` | Admin | `{ spells: [...] }` → Status je Eintrag |
 | `POST /api/spells/import` | Admin | `{ spells: [...], mode: "skip" \| "overwrite" }` |
-| `GET /api/favorites` | User | `{ spellIds: [...] }` |
-| `POST /api/favorites` | User | `{ spellId }` |
-| `DELETE /api/favorites/:spellId` | User | Favorit entfernen |
+| `GET /api/favorites` | User | Eigenes Zauberbuch: `{ spellIds: [...] }` |
+| `POST /api/favorites` | User | `{ spellId }` – Zauber ins Zauberbuch aufnehmen |
+| `DELETE /api/favorites/:spellId` | User | Zauber aus dem Zauberbuch entfernen |
+| `GET /api/spellbooks` | DM/Admin | Alle Benutzer mit Anzahl der Zauber im Zauberbuch |
 | `GET /api/users` | Admin | Benutzerliste |
-| `PATCH /api/users/:id` | Admin | `{ role: "admin" \| "user" }` (letzter Admin geschützt) |
+| `POST /api/users` | Admin | `{ username, email?, password, role? }` – Benutzer anlegen |
+| `PATCH /api/users/:id` | Admin | `{ role?: "admin" \| "dungeonmaster" \| "user", password? }` (letzter Admin geschützt) |
 | `DELETE /api/users/:id` | Admin | Benutzer löschen (nicht sich selbst, nicht den letzten Admin) |
 
 Parameter für `GET /api/spells` (Listen als Komma-Liste, z. B. `level=0,3`):
 `query`, `level`, `school`, `class`, `castingTime`, `damageType`, `concentration`, `ritual`, `verbal`, `somatic`,
-`material`, `homebrew` (je `true`/`false`), `source`, `favorites=true` (nur angemeldet),
+`material`, `homebrew` (je `true`/`false`), `source`, `favorites=true` (eigenes Zauberbuch),
+`owner=<userId>` (Zauberbuch eines Benutzers, nur DM/Admin),
 `sort=name|level|school`, `order=asc|desc`, `lang=de|en` (Sortiersprache), `page`, `pageSize` (max. 100).
 
 Beispiel: `GET /api/spells?query=feuer&level=3&class=wizard&sort=level`
@@ -340,10 +366,11 @@ npm test
 ```
 
 Die API-Tests (Vitest + Supertest) laufen gegen eine eigene, temporäre SQLite-Datenbank
-(`server/tests/.tmp`) und decken Authentifizierung (Registrierung, Login per Name/E-Mail, Logout,
-CSRF, Passwortwechsel, Rollen), Suche & Filter (sprachübergreifend, Grad, Klasse, Zauberzeit,
-Sortierung, Paginierung), Verwaltung (CRUD, Duplizieren, Import mit Dublettenprüfung, Export) und
-Favoriten ab.
+(`server/tests/.tmp`) und decken Authentifizierung (Login per Name/E-Mail, Logout, CSRF,
+Passwortwechsel, keine Selbstregistrierung, Login-Pflicht), Benutzerverwaltung und Rollen
+(Admin/Dungeon Master/Benutzer), Suche & Filter (sprachübergreifend, Grad, Klasse, Zauberzeit,
+Sortierung, Paginierung), Verwaltung (CRUD, Duplizieren, Import mit Dublettenprüfung, Export) sowie
+Zauberbücher (eigene und fremde) ab.
 
 ```bash
 npm run typecheck   # TypeScript-Prüfung aller Pakete
@@ -409,8 +436,8 @@ zauberbuch/
 ├── client/                 # React + Vite + Tailwind + react-i18next
 │   └── src/
 │       ├── components/     # Karten, Detail/Modal, Filter, Header …
-│       ├── pages/          # Liste/Favoriten, Detail, Login, Konto, admin/*
-│       ├── context/        # Auth+Favoriten, Theme, Toasts
+│       ├── pages/          # Liste/Mein Zauberbuch, Detail, Login, Konto, admin/*
+│       ├── context/        # Auth + Zauberbuch, Theme, Toasts
 │       ├── i18n/locales/   # de.json, en.json
 │       └── lib/            # API-Client, Filter↔URL, Übersetzungs-Fallback
 ├── docker/                 # entrypoint.sh (PUID/PGID/UMASK) + start.sh (Backup, Migration)

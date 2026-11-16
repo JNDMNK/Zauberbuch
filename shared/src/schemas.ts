@@ -132,6 +132,8 @@ export const spellQuerySchema = z.object({
   homebrew: boolParam,
   source: z.string().trim().max(100).optional(),
   favorites: boolParam,
+  /** Zauberbuch (Favoriten) eines bestimmten Benutzers – nur für Admin/Dungeon Master */
+  owner: z.string().trim().min(1).max(100).optional(),
   sort: z.enum(SORT_FIELDS).optional().default('name'),
   order: z.enum(['asc', 'desc']).optional().default('asc'),
   lang: z.enum(LOCALES).optional(),
@@ -149,13 +151,25 @@ export const usernameSchema = z
 
 export const passwordSchema = z.string().min(8, 'password_too_short').max(200, 'password_too_long');
 
-export const registerSchema = z.object({
+const optionalEmail = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(200)
+  .refine((v) => v === '' || z.string().email().safeParse(v).success, 'email_invalid')
+  .transform((v) => (v === '' ? null : v))
+  .optional()
+  .nullable();
+
+/** Benutzer anlegen (nur Admin – keine Selbstregistrierung) */
+export const createUserSchema = z.object({
   username: usernameSchema,
-  email: z.string().trim().toLowerCase().email('email_invalid').max(200),
+  email: optionalEmail,
   password: passwordSchema,
+  role: z.enum(ROLES).default('user'),
   language: z.enum(LOCALES).optional(),
 });
-export type RegisterInput = z.infer<typeof registerSchema>;
+export type CreateUserInput = z.infer<typeof createUserSchema>;
 
 export const loginSchema = z.object({
   /** Benutzername oder E-Mail */
@@ -174,9 +188,13 @@ export const updateMeSchema = z.object({
   language: z.enum(LOCALES),
 });
 
-export const updateUserSchema = z.object({
-  role: z.enum(ROLES),
-});
+/** Benutzer ändern (nur Admin): Rolle und/oder neues Passwort */
+export const updateUserSchema = z
+  .object({
+    role: z.enum(ROLES).optional(),
+    password: passwordSchema.optional(),
+  })
+  .refine((v) => v.role !== undefined || v.password !== undefined, { message: 'nothing_to_update' });
 
 export const favoriteSchema = z.object({
   spellId: z.string().min(1).max(100),

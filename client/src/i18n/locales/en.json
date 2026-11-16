@@ -5,11 +5,10 @@
   },
   "nav": {
     "spells": "Spells",
-    "favorites": "My Favorites",
+    "favorites": "My Spellbook",
     "admin": "Admin",
     "account": "My Account",
     "login": "Log in",
-    "register": "Sign up",
     "logout": "Log out",
     "language": "Language",
     "theme": "Theme",
@@ -62,8 +61,8 @@
     "description": "Description",
     "fallbackBadge": "{{lang}} only",
     "fallbackHint": "This spell has no translation in your language; showing the {{lang}} version.",
-    "addFavorite": "Add to favorites",
-    "removeFavorite": "Remove from favorites",
+    "addFavorite": "Add to my spellbook",
+    "removeFavorite": "Remove from my spellbook",
     "loginForFavorites": "Log in to save favorites.",
     "notFound": "This spell could not be found.",
     "openFull": "Open as page",
@@ -121,10 +120,11 @@
     "results_other": "{{count}} spells",
     "noResults": "No spells found.",
     "noResultsHint": "Try adjusting your search or filters.",
-    "noFavorites": "You have no favorites yet.",
-    "noFavoritesHint": "Tap the heart on a spell card to collect it here.",
+    "noFavorites": "Your spellbook is still empty.",
+    "noFavoritesHint": "Tap the heart on a spell card to add the spell to your spellbook.",
     "loadMore": "Load more",
-    "end": "You have reached the end of the spellbook."
+    "end": "You have reached the end of the spellbook.",
+    "emptySpellbook": "This spellbook is empty."
   },
   "filter": {
     "title": "Filters",
@@ -140,7 +140,7 @@
     "source": "Source",
     "homebrewOnly": "Homebrew only",
     "officialOnly": "No homebrew",
-    "favoritesOnly": "Favorites only",
+    "favoritesOnly": "Only my spellbook",
     "required": "required",
     "excluded": "excluded",
     "triHint": "Click: required → excluded → any",
@@ -156,20 +156,17 @@
   },
   "auth": {
     "loginTitle": "Log in",
-    "registerTitle": "Sign up",
     "identifier": "Username or email",
     "username": "Username",
     "email": "Email",
     "password": "Password",
     "passwordConfirm": "Repeat password",
     "passwordMismatch": "Passwords do not match.",
-    "noAccount": "No account yet?",
-    "haveAccount": "Already registered?",
-    "registrationDisabled": "Registration is disabled on this server.",
     "loginSubmit": "Log in",
-    "registerSubmit": "Create account",
     "welcome": "Welcome, {{name}}!",
-    "loggedOut": "You have been logged out."
+    "loggedOut": "You have been logged out.",
+    "noSelfRegistration": "Accounts are created by the administrator.",
+    "loginIntro": "Log in to open the spell library."
   },
   "account": {
     "title": "My Account",
@@ -184,7 +181,8 @@
   },
   "role": {
     "admin": "Admin",
-    "user": "User"
+    "user": "User",
+    "dungeonmaster": "Dungeon Master"
   },
   "admin": {
     "title": "Administration",
@@ -240,9 +238,9 @@
     "runImport": "Import",
     "importDone": "Import finished: {{created}} created, {{updated}} updated, {{skipped}} skipped, {{invalid}} invalid.",
     "usersTitle": "User management",
-    "favorites": "Favorites",
+    "favorites": "Spellbook",
     "created": "Created",
-    "deleteUserConfirm": "Really delete the user “{{name}}”? Their favorites will be lost.",
+    "deleteUserConfirm": "Really delete the user “{{name}}”? Their spellbook will be lost.",
     "userDeleted": "User deleted",
     "roleChanged": "Role changed",
     "you": "you",
@@ -253,7 +251,22 @@
     "damageDiceHint": "e.g. 8d6, 1d4+1, 2d8+1d6, 1d4+mod (spellcasting modifier). Leave empty if the spell deals no damage.",
     "damageType": "Damage type",
     "noDamage": "– no damage –",
-    "damagePreview": "Display"
+    "damagePreview": "Display",
+    "spellbooks": "Spellbooks",
+    "spellbooksTitle": "User spellbooks",
+    "spellbooksHint": "Choose a user to view their spellbook.",
+    "spellbookOf": "{{name}}’s spellbook",
+    "spellCount_one": "{{count}} spell",
+    "spellCount_other": "{{count}} spells",
+    "backToSpellbooks": "All spellbooks",
+    "newUser": "New user",
+    "createUser": "Create user",
+    "userCreated": "User “{{name}}” created",
+    "setPassword": "Set password",
+    "setPasswordFor": "New password for “{{name}}”",
+    "passwordSet": "Password set. The user has been logged out on all devices.",
+    "emailOptional": "Email (optional)",
+    "rolesHint": "User: view spells and keep a personal spellbook · Dungeon Master: also manage spells and view all spellbooks · Admin: also manage users, import and export"
   },
   "errors": {
     "unknown": "Unknown error.",
@@ -264,7 +277,6 @@
     "invalid_credentials": "Username/email or password is incorrect.",
     "username_taken": "This username is already taken.",
     "email_taken": "This email address is already in use.",
-    "registration_disabled": "Registration is disabled.",
     "too_many_requests": "Too many attempts. Please wait a few minutes.",
     "wrong_password": "The current password is incorrect.",
     "slug_taken": "This slug is already taken.",
@@ -293,7 +305,8 @@
     "password_required": "Please enter your password.",
     "damage_dice_invalid": "Invalid dice expression, e.g. 8d6 or 1d4+1.",
     "damage_type_required": "Please choose a damage type.",
-    "damage_dice_required": "Please enter a dice expression."
+    "damage_dice_required": "Please enter a dice expression.",
+    "nothing_to_update": "Nothing was changed."
   },
   "damageType": {
     "acid": "Acid",

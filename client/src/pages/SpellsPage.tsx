@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowDownAZ, ArrowUpAZ, Heart, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { ArrowDownAZ, ArrowUpAZ, BookHeart, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import type { SortField, SpellDto } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { countActiveFilters, filtersToParams, parseFilters, type SpellFilters } from '../lib/filters';
@@ -29,7 +29,16 @@ function SkeletonCard() {
   );
 }
 
-export function SpellsPage({ favoritesPage = false }: { favoritesPage?: boolean }) {
+interface SpellsPageProps {
+  /** Eigenes Zauberbuch („Mein Zauberbuch“) */
+  favoritesPage?: boolean;
+  /** Zauberbuch eines anderen Benutzers (Admin/Dungeon Master) */
+  owner?: { id: string; username: string };
+  /** Zusätzliche Elemente über der Überschrift (z. B. Zurück-Link) */
+  header?: React.ReactNode;
+}
+
+export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageProps) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -71,17 +80,19 @@ export function SpellsPage({ favoritesPage = false }: { favoritesPage?: boolean 
   }, []);
 
   const lang = asLocale(i18n.language);
-  const search = useSpellSearch(filters, { lang, favoritesOnly: favoritesPage, enabled: !(filters.favorites && !user) });
+  const search = useSpellSearch(filters, { lang, favoritesOnly: favoritesPage, ownerId: owner?.id, enabled: !(filters.favorites && !user) });
   const sentinelRef = useInfiniteScroll(search.loadMore, search.hasMore && !search.loading && !search.error, search.items.length);
 
   const onFavoriteChange = useCallback(
     (spell: SpellDto, isFav: boolean) => {
-      if (!isFav && (favoritesPage || filters.favorites)) search.removeItem(spell.id);
+      if (!isFav && !owner && (favoritesPage || filters.favorites)) search.removeItem(spell.id);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [favoritesPage, filters.favorites, search.removeItem],
+    [favoritesPage, owner, filters.favorites, search.removeItem],
   );
 
+  // Innerhalb der Verwaltung (Zauberbuch eines Benutzers) gibt es bereits eine h1
+  const Heading = owner ? 'h2' : 'h1';
   const activeCount = countActiveFilters(filters, { ignoreFavorites: favoritesPage });
   const firstLoad = search.loading && search.items.length === 0;
 
@@ -90,18 +101,19 @@ export function SpellsPage({ favoritesPage = false }: { favoritesPage?: boolean 
       filters={filters}
       onChange={(f) => update(f)}
       sources={sources}
-      showFavoritesToggle={Boolean(user)}
-      favoritesPage={favoritesPage}
+      showFavoritesToggle={Boolean(user) && !owner}
+      favoritesPage={favoritesPage || Boolean(owner)}
     />
   );
 
   return (
     <div>
       <div className="mb-5 flex flex-col gap-1">
-        <h1 className="flex items-center gap-2 text-2xl font-bold sm:text-3xl">
-          {favoritesPage ? <Heart className="h-7 w-7 text-red-600" /> : <Sparkles className="h-7 w-7 text-parchment-600" />}
-          {favoritesPage ? t('nav.favorites') : t('nav.spells')}
-        </h1>
+        {header}
+        <Heading className="flex items-center gap-2 text-2xl font-bold sm:text-3xl">
+          {favoritesPage || owner ? <BookHeart className="h-7 w-7 text-red-700 dark:text-red-400" /> : <Sparkles className="h-7 w-7 text-parchment-600" />}
+          {owner ? t('admin.spellbookOf', { name: owner.username }) : favoritesPage ? t('nav.favorites') : t('nav.spells')}
+        </Heading>
       </div>
 
       <div className="flex gap-6">
@@ -184,10 +196,14 @@ export function SpellsPage({ favoritesPage = false }: { favoritesPage?: boolean 
           ) : search.items.length === 0 ? (
             <div className="parchment px-6 py-16 text-center">
               <p className="font-display text-xl font-bold">
-                {favoritesPage && !filters.q && activeCount === 0 ? t('search.noFavorites') : t('search.noResults')}
+                {owner && !filters.q && activeCount === 0
+                  ? t('search.emptySpellbook')
+                  : favoritesPage && !filters.q && activeCount === 0
+                    ? t('search.noFavorites')
+                    : t('search.noResults')}
               </p>
               <p className="mt-2 text-parchment-700 dark:text-parchment-400">
-                {favoritesPage && !filters.q && activeCount === 0 ? t('search.noFavoritesHint') : t('search.noResultsHint')}
+                {owner && !filters.q && activeCount === 0 ? '' : favoritesPage && !filters.q && activeCount === 0 ? t('search.noFavoritesHint') : t('search.noResultsHint')}
               </p>
             </div>
           ) : (

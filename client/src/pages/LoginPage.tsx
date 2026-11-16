@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { loginSchema } from '@zauberbuch/shared';
 import { useAuth } from '../context/AuthContext';
@@ -7,9 +7,14 @@ import { useToast } from '../context/ToastContext';
 import { errorMessage, fieldMessage } from '../lib/errors';
 import { Alert, Field, Spinner, TextInput } from '../components/ui';
 
-export function AuthCard({ title, children }: { title: string; children: React.ReactNode }) {
+export function AuthCard({ title, intro, children }: { title: string; intro?: string; children: React.ReactNode }) {
   return (
-    <div className="mx-auto mt-6 max-w-md">
+    <div className="mx-auto mt-6 max-w-md sm:mt-12">
+      <div className="mb-6 flex flex-col items-center text-center">
+        <img src="/favicon.svg" alt="" className="h-20 w-20 drop-shadow" />
+        <p className="mt-3 font-display text-3xl font-bold tracking-wider">Zauberbuch</p>
+        {intro && <p className="mt-1 italic text-parchment-700 dark:text-parchment-400">{intro}</p>}
+      </div>
       <div className="parchment p-6 sm:p-8">
         <h1 className="text-center text-2xl font-bold">{title}</h1>
         <div className="divider-ornament" aria-hidden>
@@ -23,7 +28,7 @@ export function AuthCard({ title, children }: { title: string; children: React.R
 
 export function LoginPage() {
   const { t } = useTranslation();
-  const { user, login, config } = useAuth();
+  const { user, login } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,7 +63,7 @@ export function LoginPage() {
   };
 
   return (
-    <AuthCard title={t('auth.loginTitle')}>
+    <AuthCard title={t('auth.loginTitle')} intro={t('auth.loginIntro')}>
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         {error ? <Alert>{errorMessage(t, error)}</Alert> : null}
         <Field label={t('auth.identifier')} error={fieldMessage(t, errors.identifier)}>
@@ -75,14 +80,7 @@ export function LoginPage() {
           {busy && <Spinner className="h-4 w-4" />}
           {t('auth.loginSubmit')}
         </button>
-        {config?.allowRegistration && (
-          <p className="text-center text-sm">
-            {t('auth.noAccount')}{' '}
-            <Link to="/register" className="font-semibold underline">
-              {t('nav.register')}
-            </Link>
-          </p>
-        )}
+        <p className="text-center text-sm italic text-parchment-700 dark:text-parchment-400">{t('auth.noSelfRegistration')}</p>
       </form>
     </AuthCard>
   );

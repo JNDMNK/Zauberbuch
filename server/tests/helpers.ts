@@ -27,13 +27,12 @@ export async function loginAs(identifier: string, password: string) {
   return agent;
 }
 
-export async function registerUser(username: string, password = 'password123') {
-  const agent = request.agent(app);
-  const res = await agent
-    .post('/api/auth/register')
-    .set(CSRF)
-    .send({ username, email: `${username}@example.com`, password });
-  if (res.status !== 201) throw new Error(`Register failed: ${res.status} ${JSON.stringify(res.body)}`);
+/** Legt per Admin-API einen Benutzer an und liefert einen eingeloggten Agent. */
+export async function createUser(username: string, role: 'user' | 'dungeonmaster' | 'admin' = 'user', password = 'password123') {
+  const admin = await loginAs('admin', 'admin-password');
+  const res = await admin.post('/api/users').set(CSRF).send({ username, email: `${username}@example.com`, password, role });
+  if (res.status !== 201) throw new Error(`Create user failed: ${res.status} ${JSON.stringify(res.body)}`);
+  const agent = await loginAs(username, password);
   return { agent, user: res.body.user as { id: string } };
 }
 

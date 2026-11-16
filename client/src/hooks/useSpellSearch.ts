@@ -15,10 +15,13 @@ interface State {
 }
 
 /** Serverseitige Suche mit Infinite Scroll (Seiten werden angehängt). */
-export function useSpellSearch(filters: SpellFilters, opts: { lang: string; favoritesOnly?: boolean; enabled?: boolean }) {
+export function useSpellSearch(
+  filters: SpellFilters,
+  opts: { lang: string; favoritesOnly?: boolean; ownerId?: string; enabled?: boolean },
+) {
   const [state, setState] = useState<State>({ items: [], total: 0, page: 0, totalPages: 1, loading: true, error: null });
   const abortRef = useRef<AbortController | null>(null);
-  const key = JSON.stringify([filters, opts.lang, opts.favoritesOnly]);
+  const key = JSON.stringify([filters, opts.lang, opts.favoritesOnly, opts.ownerId]);
   const enabled = opts.enabled !== false;
 
   const fetchPage = useCallback(
@@ -33,6 +36,7 @@ export function useSpellSearch(filters: SpellFilters, opts: { lang: string; favo
           page,
           pageSize: PAGE_SIZE,
           favoritesOnly: opts.favoritesOnly,
+          ownerId: opts.ownerId,
         });
         const res = await api.spells(params, controller.signal);
         setState((s) => ({

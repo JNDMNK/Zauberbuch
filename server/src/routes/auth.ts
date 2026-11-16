@@ -1,16 +1,11 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import {
-  changePasswordSchema,
-  loginSchema,
-  registerSchema,
-  updateMeSchema,
-} from '@zauberbuch/shared';
+import { changePasswordSchema, loginSchema, updateMeSchema } from '@zauberbuch/shared';
 import { config } from '../config';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { clearAuthCookie, hashPassword, setAuthCookie, signToken, verifyPassword } from '../lib/auth';
-import { badRequest, conflict, forbidden, HttpError, unauthorized } from '../lib/errors';
+import { badRequest, HttpError, unauthorized } from '../lib/errors';
 import { toUserDto } from '../lib/users';
 import { requireAuth } from '../middleware/auth';
 
@@ -28,31 +23,6 @@ const authLimiter = rateLimit({
 // Dummy-Hash, damit Login-Antwortzeiten nicht verraten, ob ein Benutzer existiert
 let dummyHash: Promise<string> | null = null;
 const getDummyHash = () => (dummyHash ??= hashPassword('zauberbuch-dummy-password'));
-
-authRouter.post('/register', authLimiter, async (req, res) => {
-  if (!config.allowRegistration) throw forbidden('registration_disabled', 'Registration is disabled');
-  const input = validate(registerSchema, req.body);
-  const existing = await prisma.user.findFirst({
-    where: { OR: [{ username: input.username }, { email: input.email }] },
-  });
-  if (existing) {
-    throw conflict(
-      existing.username === input.username ? 'username_taken' : 'email_taken',
-      'User already exists',
-    );
-  }
-  const user = await prisma.user.create({
-    data: {
-      username: input.username,
-      email: input.email,
-      passwordHash: await hashPassword(input.password),
-      role: 'user',
-      language: input.language ?? config.defaultLanguage,
-    },
-  });
-  setAuthCookie(req, res, signToken(user.id, user.tokenVersion));
-  res.status(201).json({ user: toUserDto(user) });
-});
 
 authRouter.post('/login', authLimiter, async (req, res) => {
   const input = validate(loginSchema, req.body);

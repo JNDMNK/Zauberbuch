@@ -41,7 +41,7 @@ RUN --mount=type=cache,target=/root/.npm \
 FROM base AS runtime
 ARG APP_VERSION=1.0.0
 LABEL org.opencontainers.image.title="Zauberbuch" \
-      org.opencontainers.image.description="DnD 5e Spell Library – Zauber durchsuchen, filtern und als Favoriten speichern" \
+      org.opencontainers.image.description="DnD 5e Spell Library – Zauber durchsuchen, filtern und im eigenen Zauberbuch sammeln" \
       org.opencontainers.image.version="${APP_VERSION}" \
       org.opencontainers.image.licenses="MIT"
 
@@ -56,7 +56,6 @@ ENV NODE_ENV=production \
     PORT=8080 \
     DATA_DIR=/data \
     DATABASE_URL=file:/data/zauberbuch.db \
-    ALLOW_REGISTRATION=true \
     DEFAULT_LANGUAGE=de \
     SEED_EXAMPLES=false \
     JWT_SECRET= \

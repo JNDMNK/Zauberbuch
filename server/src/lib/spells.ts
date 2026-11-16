@@ -211,6 +211,8 @@ export function buildSpellWhere(q: SpellQuery, userId?: string): Prisma.SpellWhe
   if (q.homebrew !== undefined) and.push({ isHomebrew: q.homebrew });
   if (q.source) and.push({ source: q.source });
   if (q.favorites && userId) and.push({ favorites: { some: { userId } } });
+  // Zauberbuch eines anderen Benutzers (Berechtigung prüft die Route)
+  if (q.owner) and.push({ favorites: { some: { userId: q.owner } } });
   return and.length ? { AND: and } : {};
 }
 

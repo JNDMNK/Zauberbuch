@@ -58,7 +58,6 @@ export interface ApiErrorBody {
 }
 
 export interface AppConfigDto {
-  allowRegistration: boolean;
   defaultLanguage: Locale;
   version: string;
 }
@@ -81,4 +80,11 @@ export interface ImportResult {
   updated: number;
   skipped: number;
   invalid: number;
+}
+
+export interface SpellbookOwnerDto {
+  id: string;
+  username: string;
+  role: Role;
+  spellCount: number;
 }

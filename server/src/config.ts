@@ -22,7 +22,6 @@ export const config = {
   logDir: path.join(dataDir, 'logs'),
   uploadDir: path.join(dataDir, 'uploads'),
   backupDir: path.join(dataDir, 'backups'),
-  allowRegistration: bool(process.env.ALLOW_REGISTRATION, true),
   defaultLanguage: (process.env.DEFAULT_LANGUAGE === 'en' ? 'en' : 'de') as Locale,
   seedExamples: bool(process.env.SEED_EXAMPLES, false),
   adminUsername: process.env.ADMIN_USERNAME?.trim() || '',

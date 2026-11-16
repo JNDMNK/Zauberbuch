@@ -9,7 +9,7 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/JNDMNK/zauberbuch/issues</Support>
   <Project>https://github.com/JNDMNK/zauberbuch</Project>
-  <Overview>Zauberbuch – eine Bibliothek für D&amp;D-5e-Zauber. Zauber durchsuchen (deutsch und englisch, sprachübergreifend), nach Grad, Schule, Klasse, Konzentration, Ritual, Komponenten und Zauberzeit filtern, als Fantasy-Karten ansehen und als Favoriten speichern. Eigene Zauber und Homebrew werden über eine Admin-Oberfläche gepflegt (inkl. JSON-Import/-Export). Alle Daten (SQLite-Datenbank, automatische Sicherungen, Logs) liegen unter /data. Beim ersten Start wird der Admin aus ADMIN_USERNAME/ADMIN_PASSWORD angelegt.</Overview>
+  <Overview>Zauberbuch – eine Bibliothek für D&amp;D-5e-Zauber. Zauber durchsuchen (deutsch und englisch, sprachübergreifend), nach Grad, Schule, Klasse, Schadensart, Konzentration, Ritual, Komponenten und Zauberzeit filtern, als Fantasy-Karten ansehen und im eigenen Zauberbuch sammeln. Zugang nur mit Anmeldung; Benutzer legt der Admin an. Rollen: Benutzer, Dungeon Master (pflegt Zauber und sieht alle Zauberbücher) und Admin (zusätzlich Benutzerverwaltung und JSON-Import/-Export). Alle Daten (SQLite-Datenbank, automatische Sicherungen, Logs) liegen unter /data. Beim ersten Start wird der Admin aus ADMIN_USERNAME/ADMIN_PASSWORD angelegt.</Overview>
   <Category>Tools: HomeAutomation:</Category>
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/JNDMNK/zauberbuch/main/zauberbuch.xml</TemplateURL>
@@ -25,7 +25,6 @@
   <Config Name="Daten (appdata)" Target="/data" Default="/mnt/user/appdata/zauberbuch" Mode="rw" Description="Persistente Daten: SQLite-Datenbank, Sicherungen (backups/), Logs (logs/), Uploads (uploads/) und das generierte JWT-Secret" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/zauberbuch</Config>
   <Config Name="Admin-Benutzername" Target="ADMIN_USERNAME" Default="admin" Mode="" Description="Benutzername des ersten Admins. Wird nur angelegt, wenn noch kein Admin existiert." Type="Variable" Display="always" Required="true" Mask="false">admin</Config>
   <Config Name="Admin-Passwort" Target="ADMIN_PASSWORD" Default="" Mode="" Description="Passwort des ersten Admins (mind. 8 Zeichen). Nach dem ersten Login in der App änderbar." Type="Variable" Display="always" Required="true" Mask="true"></Config>
-  <Config Name="Registrierung erlauben" Target="ALLOW_REGISTRATION" Default="true|false" Mode="" Description="Dürfen sich neue Benutzer selbst registrieren? (true/false)" Type="Variable" Display="always" Required="false" Mask="false">true</Config>
   <Config Name="Standardsprache" Target="DEFAULT_LANGUAGE" Default="de|en" Mode="" Description="Sprache für Gäste ohne gespeicherte Auswahl (de/en)" Type="Variable" Display="always" Required="false" Mask="false">de</Config>
   <Config Name="Beispielzauber anlegen" Target="SEED_EXAMPLES" Default="true|false" Mode="" Description="Legt beim ersten Start 5 Beispielzauber (DE/EN) an, solange die Datenbank leer ist (true/false)" Type="Variable" Display="always" Required="false" Mask="false">true</Config>
   <Config Name="Zeitzone" Target="TZ" Default="Europe/Berlin" Mode="" Description="Zeitzone für Logs und Sicherungsnamen" Type="Variable" Display="advanced" Required="false" Mask="false">Europe/Berlin</Config>

@@ -15,6 +15,7 @@ import { authRouter } from './routes/auth';
 import { spellsRouter } from './routes/spells';
 import { favoritesRouter } from './routes/favorites';
 import { usersRouter } from './routes/users';
+import { spellbooksRouter } from './routes/spellbooks';
 
 function parseTrustProxy(value: string): boolean | number | string {
   if (value === 'true') return true;
@@ -74,7 +75,6 @@ export function createApp(options: { accessLog?: boolean } = {}) {
 
   api.get('/config', (_req, res) => {
     const body: AppConfigDto = {
-      allowRegistration: config.allowRegistration,
       defaultLanguage: config.defaultLanguage,
       version: config.version,
     };
@@ -85,6 +85,7 @@ export function createApp(options: { accessLog?: boolean } = {}) {
   api.use('/spells', spellsRouter);
   api.use('/favorites', favoritesRouter);
   api.use('/users', usersRouter);
+  api.use('/spellbooks', spellbooksRouter);
 
   api.use((_req, _res, next) => next(new HttpError(404, 'not_found', 'API route not found')));
 

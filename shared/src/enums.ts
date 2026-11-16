@@ -30,8 +30,13 @@ export type CastingTime = (typeof CASTING_TIMES)[number];
 export const LOCALES = ['de', 'en'] as const;
 export type Locale = (typeof LOCALES)[number];
 
-export const ROLES = ['admin', 'user'] as const;
+export const ROLES = ['admin', 'dungeonmaster', 'user'] as const;
 export type Role = (typeof ROLES)[number];
+
+/** Rollen, die Zauber anlegen/bearbeiten/löschen und die Zauberbücher aller Benutzer sehen dürfen. */
+export const EDITOR_ROLES: readonly Role[] = ['admin', 'dungeonmaster'];
+export const isEditorRole = (role: string | undefined | null): boolean =>
+  !!role && (EDITOR_ROLES as readonly string[]).includes(role);
 
 export const SORT_FIELDS = ['name', 'level', 'school'] as const;
 export type SortField = (typeof SORT_FIELDS)[number];

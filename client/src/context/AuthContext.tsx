@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { AppConfigDto, Locale, UserDto } from '@zauberbuch/shared';
+import { isEditorRole, type AppConfigDto, type Locale, type UserDto } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { storedLanguage, storeLanguage } from '../i18n';
 import { asLocale } from '../lib/spellText';
@@ -19,9 +19,10 @@ interface AuthApi {
   config: AppConfigDto | null;
   loading: boolean;
   isAdmin: boolean;
+  /** Admin oder Dungeon Master */
+  isEditor: boolean;
   language: Locale;
   login: (identifier: string, password: string) => Promise<UserDto>;
-  register: (data: { username: string; email: string; password: string }) => Promise<UserDto>;
   logout: () => Promise<void>;
   setUser: (user: UserDto) => void;
   setLanguage: (lang: Locale) => void;
@@ -92,15 +93,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [applyUser],
   );
 
-  const register = useCallback(
-    async (data: { username: string; email: string; password: string }) => {
-      const { user: u } = await api.register({ ...data, language: asLocale(i18n.language) });
-      applyUser(u);
-      return u;
-    },
-    [applyUser, i18n],
-  );
-
   const logout = useCallback(async () => {
     await api.logout().catch(() => undefined);
     applyUser(null);
@@ -148,9 +140,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       config,
       loading,
       isAdmin: user?.role === 'admin',
+      isEditor: isEditorRole(user?.role),
       language: asLocale(i18n.language),
       login,
-      register,
       logout,
       setUser: setUserState,
       setLanguage,
@@ -158,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isFavorite: (id) => favoriteIds.has(id),
       toggleFavorite,
     }),
-    [user, config, loading, i18n.language, login, register, logout, setLanguage, favoriteIds, toggleFavorite],
+    [user, config, loading, i18n.language, login, logout, setLanguage, favoriteIds, toggleFavorite],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -6,6 +6,7 @@ import type {
   PaginatedSpells,
   Role,
   SpellDto,
+  SpellbookOwnerDto,
   SpellInput,
   UserDto,
 } from '@zauberbuch/shared';
@@ -57,8 +58,6 @@ export const api = {
   me: () => request<{ user: UserDto | null }>('GET', '/api/auth/me'),
   login: (identifier: string, password: string) =>
     request<{ user: UserDto }>('POST', '/api/auth/login', { identifier, password }),
-  register: (data: { username: string; email: string; password: string; language?: Locale }) =>
-    request<{ user: UserDto }>('POST', '/api/auth/register', data),
   logout: () => request<void>('POST', '/api/auth/logout'),
   updateMe: (language: Locale) => request<{ user: UserDto }>('PATCH', '/api/auth/me', { language }),
   changePassword: (currentPassword: string, newPassword: string) =>
@@ -83,6 +82,11 @@ export const api = {
   removeFavorite: (spellId: string) => request<void>('DELETE', `/api/favorites/${encodeURIComponent(spellId)}`),
 
   users: () => request<{ users: AdminUserDto[] }>('GET', '/api/users'),
-  updateUser: (id: string, role: Role) => request<{ user: UserDto }>('PATCH', `/api/users/${id}`, { role }),
+  createUser: (data: { username: string; email: string; password: string; role: Role }) =>
+    request<{ user: AdminUserDto }>('POST', '/api/users', data),
+  updateUser: (id: string, data: { role?: Role; password?: string }) =>
+    request<{ user: UserDto }>('PATCH', `/api/users/${id}`, data),
   deleteUser: (id: string) => request<void>('DELETE', `/api/users/${id}`),
+
+  spellbooks: () => request<{ owners: SpellbookOwnerDto[] }>('GET', '/api/spellbooks'),
 };

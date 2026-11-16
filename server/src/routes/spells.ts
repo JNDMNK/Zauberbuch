@@ -12,8 +12,8 @@ import {
 } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
-import { conflict, notFound, unauthorized } from '../lib/errors';
-import { requireAdmin } from '../middleware/auth';
+import { conflict, forbidden, notFound } from '../lib/errors';
+import { requireAdmin, requireAuth, requireEditor } from '../middleware/auth';
 import {
   buildSpellOrderBy,
   buildSpellWhere,
@@ -24,8 +24,12 @@ import {
   updateSpell,
 } from '../lib/spells';
 import { config } from '../config';
+import { isEditorRole } from '@zauberbuch/shared';
 
 export const spellsRouter = Router();
+
+// Ohne Anmeldung sind keine Zauberdaten sichtbar
+spellsRouter.use(requireAuth);
 
 async function favoriteIdsFor(userId: string | undefined, spellIds: string[]): Promise<Set<string>> {
   if (!userId || spellIds.length === 0) return new Set();
@@ -38,7 +42,7 @@ async function favoriteIdsFor(userId: string | undefined, spellIds: string[]): P
 
 spellsRouter.get('/', async (req, res) => {
   const q = validate(spellQuerySchema, req.query);
-  if (q.favorites && !req.user) throw unauthorized();
+  if (q.owner && !isEditorRole(req.user!.role)) throw forbidden();
   const lang: Locale = q.lang ?? (req.user?.language as Locale | undefined) ?? config.defaultLanguage;
   const where = buildSpellWhere(q, req.user?.id);
   const [total, spells] = await prisma.$transaction([
@@ -164,7 +168,7 @@ spellsRouter.get('/:slug', async (req, res) => {
   res.json({ spell: toSpellDto(spell, { full: true, isFavorite: favIds.has(spell.id) }) });
 });
 
-spellsRouter.post('/', requireAdmin, async (req, res) => {
+spellsRouter.post('/', requireEditor, async (req, res) => {
   const input = validate(spellInputSchema, req.body);
   if (await prisma.spell.findUnique({ where: { slug: input.slug } })) {
     throw conflict('slug_taken', 'A spell with this slug already exists');
@@ -173,7 +177,7 @@ spellsRouter.post('/', requireAdmin, async (req, res) => {
   res.status(201).json({ spell: toSpellDto(spell, { full: true }) });
 });
 
-spellsRouter.put('/:id', requireAdmin, async (req, res) => {
+spellsRouter.put('/:id', requireEditor, async (req, res) => {
   const input = validate(spellInputSchema, req.body);
   const existing = await prisma.spell.findUnique({ where: { id: String(req.params.id) } });
   if (!existing) throw notFound('spell_not_found', 'Spell not found');
@@ -184,7 +188,7 @@ spellsRouter.put('/:id', requireAdmin, async (req, res) => {
   res.json({ spell: toSpellDto(spell, { full: true }) });
 });
 
-spellsRouter.post('/:id/duplicate', requireAdmin, async (req, res) => {
+spellsRouter.post('/:id/duplicate', requireEditor, async (req, res) => {
   const existing = await prisma.spell.findUnique({ where: { id: String(req.params.id) }, include: spellInclude });
   if (!existing) throw notFound('spell_not_found', 'Spell not found');
   const input = toSpellInput(existing);
@@ -201,7 +205,7 @@ spellsRouter.post('/:id/duplicate', requireAdmin, async (req, res) => {
   res.status(201).json({ spell: toSpellDto(spell, { full: true }) });
 });
 
-spellsRouter.delete('/:id', requireAdmin, async (req, res) => {
+spellsRouter.delete('/:id', requireEditor, async (req, res) => {
   const existing = await prisma.spell.findUnique({ where: { id: String(req.params.id) } });
   if (!existing) throw notFound('spell_not_found', 'Spell not found');
   await prisma.spell.delete({ where: { id: existing.id } });

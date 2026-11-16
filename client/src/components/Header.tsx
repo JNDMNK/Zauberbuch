@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, ChevronDown, Heart, LogIn, LogOut, Menu, Moon, Settings, Shield, Sun, UserRound, X } from 'lucide-react';
+import { BookHeart, BookOpen, ChevronDown, LogOut, Menu, Moon, Settings, Shield, Sun, UserRound, X } from 'lucide-react';
 import { LOCALES } from '@zauberbuch/shared';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -101,7 +101,7 @@ function UserMenu() {
 
 export function Header() {
   const { t } = useTranslation();
-  const { user, isAdmin, config } = useAuth();
+  const { user, isEditor } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -114,19 +114,18 @@ export function Header() {
         : 'text-ink hover:bg-parchment-200/80 dark:text-parchment-100 dark:hover:bg-night-700'
     }`;
 
-  const links = (
+  // Ohne Anmeldung gibt es keine Navigation – die Startseite ist der Login
+  const links = !user ? null : (
     <>
       <NavLink to="/" end className={navCls}>
         <BookOpen className="h-4 w-4" />
         {t('nav.spells')}
       </NavLink>
-      {user && (
-        <NavLink to="/favorites" className={navCls}>
-          <Heart className="h-4 w-4" />
-          {t('nav.favorites')}
-        </NavLink>
-      )}
-      {isAdmin && (
+      <NavLink to="/spellbook" className={navCls}>
+        <BookHeart className="h-4 w-4" />
+        {t('nav.favorites')}
+      </NavLink>
+      {isEditor && (
         <NavLink to="/admin" className={navCls}>
           <Shield className="h-4 w-4" />
           {t('nav.admin')}
@@ -149,42 +148,17 @@ export function Header() {
         <div className="ml-auto flex items-center gap-1.5">
           <LanguageSwitch />
           <ThemeToggle />
-          {user ? (
-            <UserMenu />
-          ) : (
-            <div className="hidden items-center gap-1 sm:flex">
-              <Link to="/login" className="btn-ghost !px-3">
-                <LogIn className="h-4 w-4" />
-                {t('nav.login')}
-              </Link>
-              {config?.allowRegistration && (
-                <Link to="/register" className="btn-primary !px-3">
-                  {t('nav.register')}
-                </Link>
-              )}
-            </div>
-          )}
+          <UserMenu />
+          {user && (
           <button type="button" className="btn-icon md:hidden" onClick={() => setMobileOpen((o) => !o)} aria-expanded={mobileOpen} aria-label={t('nav.menu')}>
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
+          )}
         </div>
       </div>
-      {mobileOpen && (
+      {mobileOpen && user && (
         <nav className="flex flex-col gap-1 border-t border-parchment-400/60 px-4 py-3 md:hidden dark:border-night-700">
           {links}
-          {!user && (
-            <>
-              <NavLink to="/login" className={navCls}>
-                <LogIn className="h-4 w-4" />
-                {t('nav.login')}
-              </NavLink>
-              {config?.allowRegistration && (
-                <NavLink to="/register" className={navCls}>
-                  {t('nav.register')}
-                </NavLink>
-              )}
-            </>
-          )}
         </nav>
       )}
     </header>
