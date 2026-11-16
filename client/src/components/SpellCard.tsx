@@ -9,6 +9,7 @@ import { castingTimeLabel, durationLabel, levelSchoolLabel, rangeLabel } from '.
 import { ComponentIcons } from './ComponentIcons';
 import { FavoriteButton } from './FavoriteButton';
 import { SpellBadges } from './SpellBadges';
+import { DamageValue } from './DamageValue';
 
 interface Props {
   spell: SpellDto;
@@ -68,6 +69,14 @@ function SpellCardImpl({ spell, onFavoriteChange }: Props) {
             <dd className="line-clamp-2 min-w-0">{value}</dd>
           </div>
         ))}
+        {spell.damage && (
+          <div className="flex items-baseline gap-2 pt-0.5">
+            <dt className="sr-only">{spell.damage.type === 'healing' ? t('spell.healing') : t('spell.damage')}</dt>
+            <dd className="min-w-0">
+              <DamageValue damage={spell.damage} srLabel={false} />
+            </dd>
+          </div>
+        )}
       </dl>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-parchment-300/70 px-4 py-3 dark:border-night-700">
         <ComponentIcons components={spell.components} />

@@ -1,4 +1,4 @@
-import type { CastingTime, Locale, Role, School, SpellClass } from './enums';
+import type { CastingTime, DamageType, Locale, Role, School, SpellClass } from './enums';
 
 export interface SpellTranslationDto {
   name: string;
@@ -24,6 +24,8 @@ export interface SpellDto {
   classes: SpellClass[];
   source: string;
   isHomebrew: boolean;
+  /** Schaden/Heilung, z. B. { dice: "8d6", type: "fire" } – null, wenn nicht vorhanden */
+  damage: { dice: string; type: DamageType } | null;
   translations: Partial<Record<Locale, SpellTranslationDto>>;
   isFavorite: boolean;
   createdAt: string;

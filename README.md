@@ -5,9 +5,10 @@ und als Favoriten speichern. Zauber (inkl. Homebrew) werden zweisprachig (DE/EN)
 Admin-Oberfläche gepflegt. Läuft als einzelner Docker-Container – optimiert für **Unraid**.
 
 - 🔎 Live-Suche über Name und Beschreibung, **sprachübergreifend** („Feuerball“ findet auch „Fireball“)
-- 🎚️ Filter: Grad (Mehrfachauswahl), Schule, Klasse, Konzentration, Ritual, Komponenten, Zauberzeit,
+- 🎚️ Filter: Grad (Mehrfachauswahl), Schule, Klasse, Schadensart, Konzentration, Ritual, Komponenten, Zauberzeit,
   Quelle/Homebrew, nur Favoriten – Sortierung nach Name, Grad, Schule; Filter stehen in der URL
-- 🃏 Responsives Karten-Grid im Pergament-Stil, Akzentfarbe je Schule, Detail als Modal **und** unter `/spells/:slug`
+- 🃏 Responsives Karten-Grid im Pergament-Stil, Akzentfarbe je Schule, Schaden/Heilung direkt auf der Karte
+  (z. B. „8W6 Feuer“), Detail als Modal **und** unter `/spells/:slug`
 - ❤️ Favoriten pro Benutzer (serverseitig, optimistisches UI-Update), eigene Seite „Meine Favoriten“
 - 🌍 DE/EN-Umschalter für Oberfläche **und** Zaubertexte (pro Benutzer gespeichert, Gäste im localStorage);
   fehlende Übersetzungen fallen auf die andere Sprache zurück (mit Hinweis-Badge)
@@ -180,7 +181,8 @@ Die App ist für den Betrieb unter einer eigenen (Sub-)Domain ausgelegt, nicht u
 
 Unter **Verwaltung → Import / Export** können Zauber als JSON importiert werden. Akzeptiert wird
 entweder ein **Array von Zaubern** oder ein **Export-Objekt** mit dem Feld `spells` (genau das Format
-des JSON-Exports – Export und Import sind also verlustfrei austauschbar):
+des JSON-Exports – Export und Import sind also verlustfrei austauschbar). Ältere Dateien ohne
+`damageDice`/`damageType` bleiben gültig:
 
 ```json
 {
@@ -201,6 +203,8 @@ des JSON-Exports – Export und Import sind also verlustfrei austauschbar):
       "classes": ["sorcerer", "wizard"],
       "source": "SRD",
       "isHomebrew": false,
+      "damageDice": "8d6",
+      "damageType": "fire",
       "translations": {
         "de": {
           "name": "Feuerball",
@@ -237,6 +241,8 @@ des JSON-Exports – Export und Import sind also verlustfrei austauschbar):
 | `classes` | enum[] | ✔ | Beliebig viele aus `bard` (Barde), `druid` (Druide), `warlock` (Hexenmeister), `cleric` (Kleriker), `wizard` (Magier), `paladin` (Paladin), `ranger` (Waldläufer), `sorcerer` (Zauberer), `artificer` (Artificer); darf leer sein |
 | `source` | string | ✔ | Quelle, z. B. `SRD`, `PHB`, `Homebrew` |
 | `isHomebrew` | bool | ✔ | Homebrew-Badge und -Filter |
+| `damageDice` | string \| null | – | Schaden bzw. Heilung als Würfelausdruck: Würfel (`8d6`, auch `8W6`), ganze Zahlen und `mod` (Zauberattributsmodifikator), verbunden mit `+`/`-`, z. B. `1d4+1`, `2d8+1d6`, `1d4+mod`. Wird normalisiert gespeichert (klein, ohne Leerzeichen) und je Sprache angezeigt (DE „1W4 + Mod.“, EN „1d4 + mod“). |
+| `damageType` | enum \| null | wenn `damageDice` | `acid` (Säure), `bludgeoning` (Wucht), `cold` (Kälte), `fire` (Feuer), `force` (Energie), `lightning` (Blitz), `necrotic` (Nekrotisch), `piercing` (Stich), `poison` (Gift), `psychic` (Psychisch), `radiant` (Gleißend), `slashing` (Hieb), `thunder` (Schall) oder `healing` (Heilung). `damageDice` und `damageType` werden nur gemeinsam angegeben. |
 | `translations.de` / `translations.en` | object \| null | mind. eine | Texte je Sprache (siehe unten) |
 
 Felder je Übersetzung:
@@ -293,7 +299,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Fehler haben das Format
 | `DELETE /api/users/:id` | Admin | Benutzer löschen (nicht sich selbst, nicht den letzten Admin) |
 
 Parameter für `GET /api/spells` (Listen als Komma-Liste, z. B. `level=0,3`):
-`query`, `level`, `school`, `class`, `castingTime`, `concentration`, `ritual`, `verbal`, `somatic`,
+`query`, `level`, `school`, `class`, `castingTime`, `damageType`, `concentration`, `ritual`, `verbal`, `somatic`,
 `material`, `homebrew` (je `true`/`false`), `source`, `favorites=true` (nur angemeldet),
 `sort=name|level|school`, `order=asc|desc`, `lang=de|en` (Sortiersprache), `page`, `pageSize` (max. 100).
 

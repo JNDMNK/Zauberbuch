@@ -41,6 +41,8 @@ model Spell {
   duration      String
   source        String             @default("Homebrew")
   isHomebrew    Boolean            @default(false)
+  damageDice    String? // Würfelausdruck, z. B. "8d6", "1d4+mod"
+  damageType    String? // acid | bludgeoning | cold | fire | force | lightning | necrotic | piercing | poison | psychic | radiant | slashing | thunder | healing
   // Denormalisierte Hilfsfelder für sprachübergreifende Suche und Sortierung
   searchText    String             @default("")
   sortNameDe    String             @default("")
@@ -54,6 +56,7 @@ model Spell {
   @@index([level])
   @@index([school])
   @@index([castingTime])
+  @@index([damageType])
   @@index([sortNameDe])
   @@index([sortNameEn])
 }

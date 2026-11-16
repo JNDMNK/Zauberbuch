@@ -63,6 +63,19 @@ describe('Zauber – Suche & Filter', () => {
     expect((await request(app).get('/api/spells/does-not-exist')).status).toBe(404);
   });
 
+  it('liefert Schaden/Heilung und filtert nach Schadensart', async () => {
+    const fb = await request(app).get('/api/spells/fireball');
+    expect(fb.body.spell.damage).toEqual({ dice: '8d6', type: 'fire' });
+    const shield = await request(app).get('/api/spells/shield');
+    expect(shield.body.spell.damage).toBeNull();
+
+    const fire = await request(app).get('/api/spells?damageType=fire,force');
+    expect(fire.body.items.map((s: { slug: string }) => s.slug).sort()).toEqual(['fireball', 'magic-missile']);
+    const heal = await request(app).get('/api/spells?damageType=healing');
+    expect(heal.body.items.map((s: { slug: string }) => s.slug)).toEqual(['healing-word']);
+    expect(heal.body.items[0].damage).toEqual({ dice: '1d4+mod', type: 'healing' });
+  });
+
   it('weist ungültige Abfrageparameter ab', async () => {
     expect((await request(app).get('/api/spells?sort=evil')).status).toBe(400);
   });
@@ -88,6 +101,32 @@ describe('Zauber – Verwaltung', () => {
 
     const found = await request(app).get('/api/spells?homebrew=true');
     expect(found.body.items.map((s: { slug: string }) => s.slug)).toEqual(['test-spell']);
+  });
+
+  it('normalisiert und validiert Schadenswerte', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    const ok = await admin
+      .post('/api/spells')
+      .set(CSRF)
+      .send(makeSpell({ slug: 'dmg-ok', damageDice: ' 2W8 + 1d6 + Mod ', damageType: 'radiant' }));
+    expect(ok.status).toBe(201);
+    expect(ok.body.spell.damage).toEqual({ dice: '2d8+1d6+mod', type: 'radiant' });
+
+    const bad = await admin.post('/api/spells').set(CSRF).send(makeSpell({ slug: 'dmg-bad', damageDice: 'viel', damageType: 'fire' }));
+    expect(bad.status).toBe(400);
+    expect(bad.body.error.details).toContainEqual({ path: 'damageDice', message: 'damage_dice_invalid' });
+
+    const noType = await admin.post('/api/spells').set(CSRF).send(makeSpell({ slug: 'dmg-notype', damageDice: '1d6' }));
+    expect(noType.status).toBe(400);
+    expect(noType.body.error.details).toContainEqual({ path: 'damageType', message: 'damage_type_required' });
+
+    // Leerer Würfelausdruck ohne Art = kein Schaden
+    const none = await admin.post('/api/spells').set(CSRF).send(makeSpell({ slug: 'dmg-none', damageDice: '', damageType: null }));
+    expect(none.status).toBe(201);
+    expect(none.body.spell.damage).toBeNull();
+
+    await admin.delete(`/api/spells/${ok.body.spell.id}`).set(CSRF);
+    await admin.delete(`/api/spells/${none.body.spell.id}`).set(CSRF);
   });
 
   it('aktualisiert, dupliziert und löscht Zauber', async () => {
@@ -126,5 +165,9 @@ describe('Zauber – Verwaltung', () => {
     expect(exp.status).toBe(200);
     expect(exp.body.format).toBe('zauberbuch-spells');
     expect(exp.body.spells.length).toBe(7);
+    const fbExport = exp.body.spells.find((sp: { slug: string }) => sp.slug === 'fireball');
+    expect(fbExport).toMatchObject({ damageDice: null, damageType: null }); // durch Import überschrieben
+    const mm = exp.body.spells.find((sp: { slug: string }) => sp.slug === 'magic-missile');
+    expect(mm).toMatchObject({ damageDice: '1d4+1', damageType: 'force' });
   });
 });

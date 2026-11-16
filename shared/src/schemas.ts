@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CASTING_TIMES, CLASSES, LOCALES, ROLES, SCHOOLS, SORT_FIELDS } from './enums';
+import { CASTING_TIMES, CLASSES, DAMAGE_TYPES, LOCALES, ROLES, SCHOOLS, SORT_FIELDS } from './enums';
 
 const trimmed = (max: number) => z.string().trim().max(max);
 
@@ -9,6 +9,25 @@ export const slugSchema = z
   .min(1, 'slug_required')
   .max(120)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'slug_invalid');
+
+/**
+ * Würfelausdruck für Schaden/Heilung, z. B. "8d6", "1d4+1", "2d8 + 1d6", "1d4+mod".
+ * Erlaubt sind Würfel (NdM, auch "W" statt "d"), ganze Zahlen und "mod" (Zauberattributsmodifikator),
+ * verbunden mit + oder -. Wird normalisiert gespeichert: Kleinbuchstaben, "d", ohne Leerzeichen.
+ */
+const DICE_TERM = String.raw`(?:\d{0,3}d\d{1,3}|\d{1,4}|mod)`;
+const DICE_RE = new RegExp(`^${DICE_TERM}(?:[+-]${DICE_TERM}){0,7}$`);
+
+export function normalizeDice(input: string): string {
+  return input.trim().toLowerCase().replace(/w/g, 'd').replace(/\s+/g, '');
+}
+
+export const damageDiceSchema = z
+  .string()
+  .max(60)
+  .transform(normalizeDice)
+  .refine((v) => v === '' || DICE_RE.test(v), 'damage_dice_invalid')
+  .transform((v) => (v === '' ? null : v));
 
 export const spellTranslationSchema = z.object({
   name: trimmed(200).min(1, 'name_required'),
@@ -39,6 +58,9 @@ export const spellInputSchema = z
     classes: z.array(z.enum(CLASSES)).max(CLASSES.length),
     source: trimmed(100).min(1, 'source_required'),
     isHomebrew: z.boolean(),
+    /** Schaden/Heilung (optional): Würfelausdruck + Art – beide oder keins */
+    damageDice: damageDiceSchema.optional().nullable(),
+    damageType: z.enum(DAMAGE_TYPES).optional().nullable(),
     translations: z
       .object({
         de: spellTranslationSchema.optional().nullable(),
@@ -47,6 +69,12 @@ export const spellInputSchema = z
       .refine((t) => Boolean(t.de || t.en), { message: 'translation_required' }),
   })
   .superRefine((spell, ctx) => {
+    if (spell.damageDice && !spell.damageType) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['damageType'], message: 'damage_type_required' });
+    }
+    if (spell.damageType && !spell.damageDice) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['damageDice'], message: 'damage_dice_required' });
+    }
     if (spell.components.material) {
       const hasMaterial = LOCALES.some((l) => spell.translations[l]?.materialDescription?.trim());
       if (!hasMaterial) {
@@ -95,6 +123,7 @@ export const spellQuerySchema = z.object({
   school: csv(SCHOOLS),
   class: csv(CLASSES),
   castingTime: csv(CASTING_TIMES),
+  damageType: csv(DAMAGE_TYPES),
   concentration: boolParam,
   ritual: boolParam,
   verbal: boolParam,

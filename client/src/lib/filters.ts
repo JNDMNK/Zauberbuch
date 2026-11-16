@@ -1,9 +1,11 @@
 import {
   CASTING_TIMES,
   CLASSES,
+  DAMAGE_TYPES,
   SCHOOLS,
   SORT_FIELDS,
   type CastingTime,
+  type DamageType,
   type School,
   type SortField,
   type SpellClass,
@@ -18,6 +20,7 @@ export interface SpellFilters {
   school: School[];
   class: SpellClass[];
   castingTime: CastingTime[];
+  damageType: DamageType[];
   concentration: Tri;
   ritual: Tri;
   verbal: Tri;
@@ -49,6 +52,7 @@ export function parseFilters(sp: URLSearchParams): SpellFilters {
     school: csv(sp.get('school'), SCHOOLS),
     class: csv(sp.get('class'), CLASSES),
     castingTime: csv(sp.get('castingTime'), CASTING_TIMES),
+    damageType: csv(sp.get('damageType'), DAMAGE_TYPES),
     concentration: tri(sp.get('concentration')),
     ritual: tri(sp.get('ritual')),
     verbal: tri(sp.get('verbal')),
@@ -70,6 +74,7 @@ export function filtersToParams(f: SpellFilters): URLSearchParams {
   if (f.school.length) sp.set('school', f.school.join(','));
   if (f.class.length) sp.set('class', f.class.join(','));
   if (f.castingTime.length) sp.set('castingTime', f.castingTime.join(','));
+  if (f.damageType.length) sp.set('damageType', f.damageType.join(','));
   for (const key of ['concentration', 'ritual', 'verbal', 'somatic', 'material', 'homebrew'] as const) {
     if (f[key] !== undefined) sp.set(key, String(f[key]));
   }
@@ -88,6 +93,7 @@ export function filtersToApiParams(f: SpellFilters, opts: { lang: string; page: 
   if (f.school.length) sp.set('school', f.school.join(','));
   if (f.class.length) sp.set('class', f.class.join(','));
   if (f.castingTime.length) sp.set('castingTime', f.castingTime.join(','));
+  if (f.damageType.length) sp.set('damageType', f.damageType.join(','));
   for (const key of ['concentration', 'ritual', 'verbal', 'somatic', 'material', 'homebrew'] as const) {
     if (f[key] !== undefined) sp.set(key, String(f[key]));
   }
@@ -102,7 +108,7 @@ export function filtersToApiParams(f: SpellFilters, opts: { lang: string; page: 
 }
 
 export function countActiveFilters(f: SpellFilters, opts: { ignoreFavorites?: boolean } = {}): number {
-  let n = f.level.length + f.school.length + f.class.length + f.castingTime.length;
+  let n = f.level.length + f.school.length + f.class.length + f.castingTime.length + f.damageType.length;
   for (const key of ['concentration', 'ritual', 'verbal', 'somatic', 'material', 'homebrew'] as const) {
     if (f[key] !== undefined) n++;
   }

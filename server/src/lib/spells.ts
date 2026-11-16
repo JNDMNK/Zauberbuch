@@ -10,6 +10,7 @@ import {
   type School,
   type SpellClass,
   type CastingTime,
+  type DamageType,
 } from '@zauberbuch/shared';
 import { prisma } from './prisma';
 
@@ -58,6 +59,8 @@ function spellData(input: SpellInput) {
     duration: input.duration,
     source: input.source,
     isHomebrew: input.isHomebrew,
+    damageDice: input.damageDice ?? null,
+    damageType: input.damageDice ? (input.damageType ?? null) : null,
     searchText: buildSearchText(input),
     ...sortNames(input),
   };
@@ -149,6 +152,7 @@ export function toSpellDto(spell: SpellWithRelations, opts: { full?: boolean; is
     classes: spell.classes.map((c) => c.className as SpellClass).sort(),
     source: spell.source,
     isHomebrew: spell.isHomebrew,
+    damage: spell.damageDice && spell.damageType ? { dice: spell.damageDice, type: spell.damageType as DamageType } : null,
     translations,
     isFavorite: opts.isFavorite ?? false,
     createdAt: spell.createdAt.toISOString(),
@@ -184,6 +188,8 @@ export function toSpellInput(spell: SpellWithRelations): SpellInput {
     classes: spell.classes.map((c) => c.className as SpellClass).sort(),
     source: spell.source,
     isHomebrew: spell.isHomebrew,
+    damageDice: spell.damageDice,
+    damageType: spell.damageType as DamageType | null,
     translations,
   };
 }
@@ -196,6 +202,7 @@ export function buildSpellWhere(q: SpellQuery, userId?: string): Prisma.SpellWhe
   if (q.school.length) and.push({ school: { in: q.school } });
   if (q.class.length) and.push({ classes: { some: { className: { in: q.class } } } });
   if (q.castingTime.length) and.push({ castingTime: { in: q.castingTime } });
+  if (q.damageType.length) and.push({ damageType: { in: q.damageType } });
   if (q.concentration !== undefined) and.push({ concentration: q.concentration });
   if (q.ritual !== undefined) and.push({ ritual: q.ritual });
   if (q.verbal !== undefined) and.push({ verbal: q.verbal });

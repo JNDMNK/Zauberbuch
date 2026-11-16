@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RotateCcw } from 'lucide-react';
-import { CASTING_TIMES, CLASSES, LEVELS, SCHOOLS } from '@zauberbuch/shared';
+import { CASTING_TIMES, CLASSES, DAMAGE_TYPES, LEVELS, SCHOOLS } from '@zauberbuch/shared';
 import { countActiveFilters, toggleInList, type SpellFilters, type Tri } from '../lib/filters';
 import { SCHOOL_COLORS } from '../lib/schools';
 
@@ -62,6 +62,7 @@ export function FilterPanel({ filters, onChange, sources, showFavoritesToggle, f
       school: [],
       class: [],
       castingTime: [],
+      damageType: [],
       concentration: undefined,
       ritual: undefined,
       verbal: undefined,
@@ -130,6 +131,16 @@ export function FilterPanel({ filters, onChange, sources, showFavoritesToggle, f
             {t(`castingTime.${ct}`)}
           </Chip>
         ))}
+      </Section>
+
+      <Section title={t('filter.damageType')}>
+        {[...DAMAGE_TYPES]
+          .sort((a, b) => (a === 'healing' ? 1 : b === 'healing' ? -1 : t(`damageType.${a}`).localeCompare(t(`damageType.${b}`))))
+          .map((d) => (
+            <Chip key={d} active={filters.damageType.includes(d)} onClick={() => set('damageType', toggleInList(filters.damageType, d))}>
+              {t(`damageType.${d}`)}
+            </Chip>
+          ))}
       </Section>
 
       <Section title={t('filter.components')}>

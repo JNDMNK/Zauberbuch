@@ -68,7 +68,9 @@
     "notFound": "This spell could not be found.",
     "openFull": "Open as page",
     "copyLink": "Copy link",
-    "linkCopied": "Link copied"
+    "linkCopied": "Link copied",
+    "damage": "Damage",
+    "healing": "Healing"
   },
   "langName": {
     "de": "German",
@@ -149,7 +151,8 @@
     "asc": "Ascending",
     "desc": "Descending",
     "active_one": "{{count}} active filter",
-    "active_other": "{{count}} active filters"
+    "active_other": "{{count}} active filters",
+    "damageType": "Damage type"
   },
   "auth": {
     "loginTitle": "Log in",
@@ -244,7 +247,13 @@
     "roleChanged": "Role changed",
     "you": "you",
     "filterSpells": "Filter spells …",
-    "count": "{{count}} spells"
+    "count": "{{count}} spells",
+    "damageSection": "Damage / Healing",
+    "damageDice": "Dice",
+    "damageDiceHint": "e.g. 8d6, 1d4+1, 2d8+1d6, 1d4+mod (spellcasting modifier). Leave empty if the spell deals no damage.",
+    "damageType": "Damage type",
+    "noDamage": "– no damage –",
+    "damagePreview": "Display"
   },
   "errors": {
     "unknown": "Unknown error.",
@@ -281,6 +290,28 @@
     "password_too_short": "At least 8 characters.",
     "password_too_long": "At most 200 characters.",
     "identifier_required": "Please enter your username or email.",
-    "password_required": "Please enter your password."
+    "password_required": "Please enter your password.",
+    "damage_dice_invalid": "Invalid dice expression, e.g. 8d6 or 1d4+1.",
+    "damage_type_required": "Please choose a damage type.",
+    "damage_dice_required": "Please enter a dice expression."
+  },
+  "damageType": {
+    "acid": "Acid",
+    "bludgeoning": "Bludgeoning",
+    "cold": "Cold",
+    "fire": "Fire",
+    "force": "Force",
+    "lightning": "Lightning",
+    "necrotic": "Necrotic",
+    "piercing": "Piercing",
+    "poison": "Poison",
+    "psychic": "Psychic",
+    "radiant": "Radiant",
+    "slashing": "Slashing",
+    "thunder": "Thunder",
+    "healing": "Healing"
+  },
+  "damage": {
+    "mod": "mod"
   }
 }

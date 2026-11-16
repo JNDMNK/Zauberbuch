@@ -37,3 +37,22 @@ export const SORT_FIELDS = ['name', 'level', 'school'] as const;
 export type SortField = (typeof SORT_FIELDS)[number];
 
 export const LEVELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+
+/** Schadensarten (5e) plus "healing" für Heilzauber. */
+export const DAMAGE_TYPES = [
+  'acid',
+  'bludgeoning',
+  'cold',
+  'fire',
+  'force',
+  'lightning',
+  'necrotic',
+  'piercing',
+  'poison',
+  'psychic',
+  'radiant',
+  'slashing',
+  'thunder',
+  'healing',
+] as const;
+export type DamageType = (typeof DAMAGE_TYPES)[number];

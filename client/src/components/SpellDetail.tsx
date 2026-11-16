@@ -10,6 +10,7 @@ import { FavoriteButton } from './FavoriteButton';
 import { Markdown } from './Markdown';
 import { SpellBadges } from './SpellBadges';
 import { useToast } from '../context/ToastContext';
+import { DamageValue } from './DamageValue';
 
 interface Props {
   spell: SpellDto;
@@ -78,6 +79,16 @@ export function SpellDetail({ spell, headingId, actions }: Props) {
               <dd>{s.value}</dd>
             </div>
           ))}
+          {spell.damage && (
+            <div>
+              <dt className="font-display text-xs font-bold uppercase tracking-wider text-parchment-700 dark:text-parchment-400">
+                {spell.damage.type === 'healing' ? t('spell.healing') : t('spell.damage')}
+              </dt>
+              <dd>
+                <DamageValue damage={spell.damage} srLabel={false} />
+              </dd>
+            </div>
+          )}
           <div>
             <dt className="font-display text-xs font-bold uppercase tracking-wider text-parchment-700 dark:text-parchment-400">
               {t('spell.components')}

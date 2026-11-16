@@ -5,11 +5,14 @@ import { ArrowLeft, Copy, Save, Trash2 } from 'lucide-react';
 import {
   CASTING_TIMES,
   CLASSES,
+  DAMAGE_TYPES,
   LEVELS,
   LOCALES,
   SCHOOLS,
+  damageDiceSchema,
   spellInputSchema,
   type CastingTime,
+  type DamageType,
   type Locale,
   type School,
   type SpellClass,
@@ -19,6 +22,7 @@ import {
 import { api, ApiError } from '../../lib/api';
 import { errorMessage, fieldMessage } from '../../lib/errors';
 import { slugify, toggleInList } from '../../lib/filters';
+import { DamageValue } from '../../components/DamageValue';
 import { useToast } from '../../context/ToastContext';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { MarkdownEditor } from '../../components/MarkdownEditor';
@@ -47,6 +51,8 @@ interface FormState {
   classes: SpellClass[];
   source: string;
   isHomebrew: boolean;
+  damageDice: string;
+  damageType: DamageType | '';
   translations: Record<Locale, TranslationForm>;
 }
 
@@ -73,6 +79,8 @@ const emptyForm = (): FormState => ({
   classes: [],
   source: 'Homebrew',
   isHomebrew: true,
+  damageDice: '',
+  damageType: '',
   translations: { de: emptyTranslation(), en: emptyTranslation() },
 });
 
@@ -104,6 +112,8 @@ function fromSpell(spell: SpellDto): FormState {
     classes: [...spell.classes],
     source: spell.source,
     isHomebrew: spell.isHomebrew,
+    damageDice: spell.damage?.dice ?? '',
+    damageType: spell.damage?.type ?? '',
     translations,
   };
 }
@@ -126,7 +136,7 @@ function toInput(form: FormState): unknown {
           higherLevels: t.higherLevels || null,
         };
   }
-  return { ...form, translations };
+  return { ...form, damageDice: form.damageDice.trim() || null, damageType: form.damageType || null, translations };
 }
 
 export function SpellFormPage() {
@@ -265,6 +275,10 @@ export function SpellFormPage() {
 
   const err = (path: string) => fieldMessage(t, errors[path]);
   const tr = form.translations[tab];
+  // Live-Vorschau des Schadenswerts, sobald Würfel und Art gültig sind
+  const dicePreview = damageDiceSchema.safeParse(form.damageDice);
+  const damagePreview =
+    dicePreview.success && dicePreview.data && form.damageType ? { dice: dicePreview.data, type: form.damageType } : null;
 
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-6">
@@ -385,6 +399,49 @@ export function SpellFormPage() {
             </div>
           </fieldset>
         </div>
+
+        <fieldset>
+          <legend className="label">{t('admin.damageSection')}</legend>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,14rem)_minmax(0,14rem)_1fr] md:items-start">
+            <Field label={t('admin.damageDice')} error={err('damageDice')}>
+              {(id) => (
+                <TextInput
+                  id={id}
+                  value={form.damageDice}
+                  onChange={(e) => update({ damageDice: e.target.value })}
+                  invalid={!!errors.damageDice}
+                  placeholder="8d6"
+                  className="font-mono"
+                  autoComplete="off"
+                />
+              )}
+            </Field>
+            <Field label={t('admin.damageType')} error={err('damageType')}>
+              {(id) => (
+                <select
+                  id={id}
+                  className={`input ${errors.damageType ? 'input-error' : ''}`}
+                  value={form.damageType}
+                  onChange={(e) => update({ damageType: e.target.value as DamageType | '' })}
+                >
+                  <option value="">{t('admin.noDamage')}</option>
+                  {[...DAMAGE_TYPES]
+                    .sort((a, b) => (a === 'healing' ? 1 : b === 'healing' ? -1 : t(`damageType.${a}`).localeCompare(t(`damageType.${b}`))))
+                    .map((d) => (
+                      <option key={d} value={d}>
+                        {t(`damageType.${d}`)}
+                      </option>
+                    ))}
+                </select>
+              )}
+            </Field>
+            <div>
+              <span className="label">{t('admin.damagePreview')}</span>
+              <div className="flex min-h-[42px] items-center">{damagePreview ? <DamageValue damage={damagePreview} /> : <span className="text-parchment-600">–</span>}</div>
+            </div>
+          </div>
+          <p className="mt-1 text-xs text-parchment-700 dark:text-parchment-400">{t('admin.damageDiceHint')}</p>
+        </fieldset>
 
         <fieldset>
           <legend className="label">{t('spell.classes')}</legend>

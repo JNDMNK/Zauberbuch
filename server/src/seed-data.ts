@@ -18,6 +18,8 @@ export const exampleSpells: SpellInput[] = [
     classes: ['sorcerer', 'wizard'],
     source: 'SRD',
     isHomebrew: false,
+    damageDice: '8d6',
+    damageType: 'fire',
     translations: {
       de: {
         name: 'Feuerball',
@@ -56,6 +58,8 @@ export const exampleSpells: SpellInput[] = [
     classes: ['sorcerer', 'wizard'],
     source: 'SRD',
     isHomebrew: false,
+    damageDice: '1d4+1',
+    damageType: 'force',
     translations: {
       de: {
         name: 'Magisches Geschoss',
@@ -92,6 +96,8 @@ export const exampleSpells: SpellInput[] = [
     classes: ['bard', 'cleric', 'druid'],
     source: 'SRD',
     isHomebrew: false,
+    damageDice: '1d4+mod',
+    damageType: 'healing',
     translations: {
       de: {
         name: 'Heilendes Wort',
@@ -131,7 +137,7 @@ export const exampleSpells: SpellInput[] = [
     translations: {
       de: {
         name: 'Schild',
-        castingTimeText: '1 Reaktion, die du ausführst, wenn du von einem Angriff getroffen wirst oder Ziel des Zaubers *Magisches Geschoss* bist',
+        castingTimeText: '1 Reaktion, die du ausführst, wenn du von einem Angriff getroffen wirst oder Ziel des Zaubers „Magisches Geschoss“ bist',
         rangeText: 'Selbst',
         durationText: '1 Runde',
         description:
@@ -139,7 +145,7 @@ export const exampleSpells: SpellInput[] = [
       },
       en: {
         name: 'Shield',
-        castingTimeText: '1 reaction, which you take when you are hit by an attack or targeted by the *magic missile* spell',
+        castingTimeText: '1 reaction, which you take when you are hit by an attack or targeted by the magic missile spell',
         rangeText: 'Self',
         durationText: '1 round',
         description:

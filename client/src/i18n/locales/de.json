@@ -68,7 +68,9 @@
     "notFound": "Dieser Zauber wurde nicht gefunden.",
     "openFull": "Als eigene Seite öffnen",
     "copyLink": "Link kopieren",
-    "linkCopied": "Link kopiert"
+    "linkCopied": "Link kopiert",
+    "damage": "Schaden",
+    "healing": "Heilung"
   },
   "langName": {
     "de": "Deutsch",
@@ -149,7 +151,8 @@
     "asc": "Aufsteigend",
     "desc": "Absteigend",
     "active_one": "{{count}} aktiver Filter",
-    "active_other": "{{count}} aktive Filter"
+    "active_other": "{{count}} aktive Filter",
+    "damageType": "Schadensart"
   },
   "auth": {
     "loginTitle": "Anmelden",
@@ -244,7 +247,13 @@
     "roleChanged": "Rolle geändert",
     "you": "du",
     "filterSpells": "Zauber filtern …",
-    "count": "{{count}} Zauber"
+    "count": "{{count}} Zauber",
+    "damageSection": "Schaden / Heilung",
+    "damageDice": "Würfel",
+    "damageDiceHint": "z. B. 8d6, 1d4+1, 2d8+1d6, 1d4+mod (Zauberattributsmodifikator). Leer lassen, wenn der Zauber keinen Schaden macht.",
+    "damageType": "Schadensart",
+    "noDamage": "– kein Schaden –",
+    "damagePreview": "Anzeige"
   },
   "errors": {
     "unknown": "Unbekannter Fehler.",
@@ -281,6 +290,28 @@
     "password_too_short": "Mindestens 8 Zeichen.",
     "password_too_long": "Höchstens 200 Zeichen.",
     "identifier_required": "Bitte Benutzername oder E-Mail angeben.",
-    "password_required": "Bitte Passwort angeben."
+    "password_required": "Bitte Passwort angeben.",
+    "damage_dice_invalid": "Ungültiger Würfelausdruck, z. B. 8d6 oder 1d4+1.",
+    "damage_type_required": "Bitte eine Schadensart wählen.",
+    "damage_dice_required": "Bitte einen Würfelausdruck angeben."
+  },
+  "damageType": {
+    "acid": "Säure",
+    "bludgeoning": "Wucht",
+    "cold": "Kälte",
+    "fire": "Feuer",
+    "force": "Energie",
+    "lightning": "Blitz",
+    "necrotic": "Nekrotisch",
+    "piercing": "Stich",
+    "poison": "Gift",
+    "psychic": "Psychisch",
+    "radiant": "Gleißend",
+    "slashing": "Hieb",
+    "thunder": "Schall",
+    "healing": "Heilung"
+  },
+  "damage": {
+    "mod": "Mod."
   }
 }
