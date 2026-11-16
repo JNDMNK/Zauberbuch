@@ -109,7 +109,11 @@ jobs:
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.version=${{ needs.prepare.outputs.version }}
-          outputs: ${{ needs.prepare.outputs.push == 'true' && format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true', needs.prepare.outputs.image) || 'type=cacheonly' }}
+          outputs: ${{ needs.prepare.outputs.push == 'true' && format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true,oci-mediatypes=false', needs.prepare.outputs.image) || 'type=cacheonly' }}
+          # Klassisches Docker-Manifest ohne Attestierungen – die Update-Prüfung von Unraid
+          # erkennt OCI-Indizes mit Provenance-Einträgen sonst nicht ("not available")
+          provenance: false
+          sbom: false
           cache-from: type=gha,scope=${{ steps.plat.outputs.pair }}
           cache-to: type=gha,mode=max,scope=${{ steps.plat.outputs.pair }}
 
