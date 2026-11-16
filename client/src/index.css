@@ -1,0 +1,189 @@
+@import '@fontsource/cinzel/500.css';
+@import '@fontsource/cinzel/700.css';
+@import '@fontsource/eb-garamond/400.css';
+@import '@fontsource/eb-garamond/400-italic.css';
+@import '@fontsource/eb-garamond/600.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply min-h-screen bg-parchment-100 font-serif text-[17px] text-ink antialiased dark:bg-night-900 dark:text-parchment-100;
+    background-image:
+      radial-gradient(ellipse at top, rgba(255, 250, 235, 0.9), transparent 60%),
+      radial-gradient(ellipse at bottom right, rgba(192, 149, 85, 0.18), transparent 50%);
+    background-attachment: fixed;
+  }
+  .dark body {
+    background-image:
+      radial-gradient(ellipse at top, rgba(123, 70, 199, 0.12), transparent 55%),
+      radial-gradient(ellipse at bottom right, rgba(192, 149, 85, 0.08), transparent 50%);
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-wide;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-parchment-600 ring-offset-2 ring-offset-parchment-100 dark:ring-parchment-300 dark:ring-offset-night-900;
+  }
+}
+
+@layer components {
+  /* Pergament-Karte */
+  .parchment {
+    @apply relative rounded-xl border border-parchment-400/70 bg-parchment-50 shadow-card dark:border-night-700 dark:bg-night-800;
+    background-image:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 40%),
+      radial-gradient(circle at 15% 10%, rgba(214, 180, 116, 0.25), transparent 45%),
+      radial-gradient(circle at 90% 95%, rgba(162, 120, 67, 0.2), transparent 50%);
+  }
+  .dark .parchment {
+    background-image:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 40%),
+      radial-gradient(circle at 15% 10%, rgba(192, 149, 85, 0.08), transparent 45%);
+  }
+
+  .spell-card {
+    --accent: #a27843;
+    @apply parchment flex h-full flex-col overflow-hidden transition duration-200 hover:-translate-y-0.5 hover:shadow-cardhover;
+  }
+  .spell-card::before {
+    content: '';
+    @apply absolute inset-x-0 top-0 h-1.5;
+    background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 50%, transparent));
+  }
+  .spell-card::after {
+    content: '';
+    @apply pointer-events-none absolute inset-1.5 rounded-lg border;
+    border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+
+  .accent-text {
+    color: var(--accent);
+  }
+  .dark .accent-text {
+    color: color-mix(in srgb, var(--accent) 65%, white);
+  }
+
+  .divider-ornament {
+    @apply my-2 flex items-center gap-2 text-parchment-500 dark:text-parchment-700;
+  }
+  .divider-ornament::before,
+  .divider-ornament::after {
+    content: '';
+    @apply h-px flex-1 bg-gradient-to-r from-transparent via-parchment-400 to-transparent dark:via-parchment-800;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-display text-sm font-semibold tracking-wide transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-parchment-800 text-parchment-50 shadow hover:bg-parchment-900 dark:bg-parchment-300 dark:text-ink dark:hover:bg-parchment-200;
+  }
+  .btn-secondary {
+    @apply btn border border-parchment-400 bg-parchment-50/70 text-ink hover:bg-parchment-200 dark:border-night-700 dark:bg-night-800 dark:text-parchment-100 dark:hover:bg-night-700;
+  }
+  .btn-danger {
+    @apply btn bg-red-700 text-white hover:bg-red-800;
+  }
+  .btn-ghost {
+    @apply btn text-ink hover:bg-parchment-200/70 dark:text-parchment-100 dark:hover:bg-night-700;
+  }
+  .btn-icon {
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-parchment-200/80 dark:hover:bg-night-700;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-parchment-400 bg-white/70 px-3 py-2 font-serif text-base text-ink placeholder:text-parchment-600/70 focus:border-parchment-700 focus:outline-none focus:ring-2 focus:ring-parchment-500/40 dark:border-night-700 dark:bg-night-950/60 dark:text-parchment-100 dark:placeholder:text-parchment-700;
+  }
+  .input-error {
+    @apply border-red-500 focus:border-red-600 focus:ring-red-500/30;
+  }
+  .label {
+    @apply mb-1 block font-display text-xs font-semibold uppercase tracking-wider text-parchment-800 dark:text-parchment-300;
+  }
+
+  .chip {
+    @apply inline-flex cursor-pointer select-none items-center gap-1 rounded-full border px-3 py-1 text-sm transition;
+  }
+  .chip-off {
+    @apply chip border-parchment-400/80 bg-parchment-50/60 text-ink hover:bg-parchment-200 dark:border-night-700 dark:bg-night-800 dark:text-parchment-200 dark:hover:bg-night-700;
+  }
+  .chip-on {
+    @apply chip border-parchment-800 bg-parchment-800 text-parchment-50 dark:border-parchment-300 dark:bg-parchment-300 dark:text-ink;
+  }
+  .chip-no {
+    @apply chip border-red-700/70 bg-red-50 text-red-800 line-through decoration-1 dark:border-red-800 dark:bg-red-950/60 dark:text-red-200;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider;
+  }
+
+  .table-base {
+    @apply w-full text-left text-sm;
+  }
+  .table-base th {
+    @apply border-b border-parchment-400 px-3 py-2 font-display text-xs uppercase tracking-wider text-parchment-800 dark:border-night-700 dark:text-parchment-300;
+  }
+  .table-base td {
+    @apply border-b border-parchment-300/60 px-3 py-2 align-middle dark:border-night-700/60;
+  }
+}
+
+/* Markdown-Inhalte */
+.prose-spell {
+  @apply space-y-3 leading-relaxed;
+}
+.prose-spell p {
+  @apply my-0;
+}
+.prose-spell strong {
+  @apply font-semibold text-ink dark:text-parchment-50;
+}
+.prose-spell ul {
+  @apply list-disc space-y-1 pl-6;
+}
+.prose-spell ol {
+  @apply list-decimal space-y-1 pl-6;
+}
+.prose-spell h1,
+.prose-spell h2,
+.prose-spell h3,
+.prose-spell h4 {
+  @apply mt-4 font-display text-base font-bold;
+}
+.prose-spell table {
+  @apply w-full border-collapse text-sm;
+}
+.prose-spell th,
+.prose-spell td {
+  @apply border border-parchment-400 px-2 py-1 dark:border-night-700;
+}
+.prose-spell th {
+  @apply bg-parchment-200/70 dark:bg-night-700;
+}
+.prose-spell a {
+  @apply text-parchment-800 underline dark:text-parchment-300;
+}
+.prose-spell blockquote {
+  @apply border-l-4 border-parchment-400 pl-3 italic;
+}
+.prose-spell code {
+  @apply rounded bg-parchment-200 px-1 text-sm dark:bg-night-700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

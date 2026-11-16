@@ -1,0 +1,154 @@
+import { z } from 'zod';
+import { CASTING_TIMES, CLASSES, LOCALES, ROLES, SCHOOLS, SORT_FIELDS } from './enums';
+
+const trimmed = (max: number) => z.string().trim().max(max);
+
+export const slugSchema = z
+  .string()
+  .trim()
+  .min(1, 'slug_required')
+  .max(120)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'slug_invalid');
+
+export const spellTranslationSchema = z.object({
+  name: trimmed(200).min(1, 'name_required'),
+  materialDescription: trimmed(1000).optional().nullable(),
+  castingTimeText: trimmed(200).optional().nullable(),
+  rangeText: trimmed(200).optional().nullable(),
+  durationText: trimmed(200).optional().nullable(),
+  description: z.string().trim().min(1, 'description_required').max(20000),
+  higherLevels: z.string().trim().max(10000).optional().nullable(),
+});
+export type SpellTranslationInput = z.infer<typeof spellTranslationSchema>;
+
+export const spellInputSchema = z
+  .object({
+    slug: slugSchema,
+    level: z.number().int().min(0).max(9),
+    school: z.enum(SCHOOLS),
+    castingTime: z.enum(CASTING_TIMES),
+    range: trimmed(100).min(1, 'range_required'),
+    components: z.object({
+      verbal: z.boolean(),
+      somatic: z.boolean(),
+      material: z.boolean(),
+    }),
+    concentration: z.boolean(),
+    ritual: z.boolean(),
+    duration: trimmed(100).min(1, 'duration_required'),
+    classes: z.array(z.enum(CLASSES)).max(CLASSES.length),
+    source: trimmed(100).min(1, 'source_required'),
+    isHomebrew: z.boolean(),
+    translations: z
+      .object({
+        de: spellTranslationSchema.optional().nullable(),
+        en: spellTranslationSchema.optional().nullable(),
+      })
+      .refine((t) => Boolean(t.de || t.en), { message: 'translation_required' }),
+  })
+  .superRefine((spell, ctx) => {
+    if (spell.components.material) {
+      const hasMaterial = LOCALES.some((l) => spell.translations[l]?.materialDescription?.trim());
+      if (!hasMaterial) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['translations'],
+          message: 'material_required',
+        });
+      }
+    }
+  });
+export type SpellInput = z.infer<typeof spellInputSchema>;
+
+export const spellImportSchema = z.object({
+  mode: z.enum(['skip', 'overwrite']).default('skip'),
+  spells: z.array(z.unknown()).min(1).max(5000),
+});
+
+const csv = <T extends readonly [string, ...string[]]>(values: T) =>
+  z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((v) => {
+      if (v === undefined) return [] as T[number][];
+      const arr = (Array.isArray(v) ? v : v.split(',')).map((s) => s.trim()).filter(Boolean);
+      return arr.filter((s): s is T[number] => (values as readonly string[]).includes(s));
+    });
+
+const boolParam = z
+  .enum(['true', 'false', '1', '0'])
+  .optional()
+  .transform((v) => (v === undefined ? undefined : v === 'true' || v === '1'));
+
+export const spellQuerySchema = z.object({
+  query: z.string().trim().max(200).optional().default(''),
+  level: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((v) => {
+      if (v === undefined) return [] as number[];
+      const arr = Array.isArray(v) ? v : v.split(',');
+      return arr
+        .map((s) => Number.parseInt(s, 10))
+        .filter((n) => Number.isInteger(n) && n >= 0 && n <= 9);
+    }),
+  school: csv(SCHOOLS),
+  class: csv(CLASSES),
+  castingTime: csv(CASTING_TIMES),
+  concentration: boolParam,
+  ritual: boolParam,
+  verbal: boolParam,
+  somatic: boolParam,
+  material: boolParam,
+  homebrew: boolParam,
+  source: z.string().trim().max(100).optional(),
+  favorites: boolParam,
+  sort: z.enum(SORT_FIELDS).optional().default('name'),
+  order: z.enum(['asc', 'desc']).optional().default('asc'),
+  lang: z.enum(LOCALES).optional(),
+  page: z.coerce.number().int().min(1).max(100000).optional().default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).optional().default(24),
+});
+export type SpellQuery = z.infer<typeof spellQuerySchema>;
+
+export const usernameSchema = z
+  .string()
+  .trim()
+  .min(3, 'username_too_short')
+  .max(32, 'username_too_long')
+  .regex(/^[a-zA-Z0-9_.-]+$/, 'username_invalid');
+
+export const passwordSchema = z.string().min(8, 'password_too_short').max(200, 'password_too_long');
+
+export const registerSchema = z.object({
+  username: usernameSchema,
+  email: z.string().trim().toLowerCase().email('email_invalid').max(200),
+  password: passwordSchema,
+  language: z.enum(LOCALES).optional(),
+});
+export type RegisterInput = z.infer<typeof registerSchema>;
+
+export const loginSchema = z.object({
+  /** Benutzername oder E-Mail */
+  identifier: z.string().trim().min(1, 'identifier_required').max(200),
+  password: z.string().min(1, 'password_required').max(200),
+});
+export type LoginInput = z.infer<typeof loginSchema>;
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1).max(200),
+  newPassword: passwordSchema,
+});
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
+export const updateMeSchema = z.object({
+  language: z.enum(LOCALES),
+});
+
+export const updateUserSchema = z.object({
+  role: z.enum(ROLES),
+});
+
+export const favoriteSchema = z.object({
+  spellId: z.string().min(1).max(100),
+});

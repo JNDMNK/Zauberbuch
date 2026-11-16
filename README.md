@@ -1,2 +1,415 @@
-# Zauberbuch
-DnD Webapp für Zauber
+# 📖 Zauberbuch – DnD 5e Spell Library
+
+Eine selbst gehostete Bibliothek für D&D-5e-Zauber: durchsuchen, filtern, als Fantasy-Karten ansehen
+und als Favoriten speichern. Zauber (inkl. Homebrew) werden zweisprachig (DE/EN) über eine
+Admin-Oberfläche gepflegt. Läuft als einzelner Docker-Container – optimiert für **Unraid**.
+
+- 🔎 Live-Suche über Name und Beschreibung, **sprachübergreifend** („Feuerball“ findet auch „Fireball“)
+- 🎚️ Filter: Grad (Mehrfachauswahl), Schule, Klasse, Konzentration, Ritual, Komponenten, Zauberzeit,
+  Quelle/Homebrew, nur Favoriten – Sortierung nach Name, Grad, Schule; Filter stehen in der URL
+- 🃏 Responsives Karten-Grid im Pergament-Stil, Akzentfarbe je Schule, Detail als Modal **und** unter `/spells/:slug`
+- ❤️ Favoriten pro Benutzer (serverseitig, optimistisches UI-Update), eigene Seite „Meine Favoriten“
+- 🌍 DE/EN-Umschalter für Oberfläche **und** Zaubertexte (pro Benutzer gespeichert, Gäste im localStorage);
+  fehlende Übersetzungen fallen auf die andere Sprache zurück (mit Hinweis-Badge)
+- 🌙 Dark-/Light-Mode
+- 🛠️ Admin: Zauber anlegen/bearbeiten/duplizieren/löschen, Markdown-Editor mit Vorschau, DE/EN-Tabs,
+  JSON-Import (Vorschau + Dublettenprüfung) und -Export, Benutzerverwaltung
+- 🔐 bcrypt, JWT im httpOnly-Cookie (SameSite=Lax) + CSRF-Header, Rate-Limiting, helmet
+- 🐳 Multi-Stage-Dockerfile, PUID/PGID/UMASK, automatische Migrationen mit DB-Sicherung, Healthcheck
+
+---
+
+## Inhalt
+
+1. [Schnellstart (docker compose)](#schnellstart-docker-compose)
+2. [Installation auf Unraid](#installation-auf-unraid)
+3. [Umgebungsvariablen](#umgebungsvariablen)
+4. [Daten, Backup & Wiederherstellung](#daten-backup--wiederherstellung)
+5. [Reverse Proxy](#reverse-proxy-nginx-proxy-manager--swag)
+6. [JSON-Importformat](#json-importformat)
+7. [REST-API](#rest-api)
+8. [Lokale Entwicklung ohne Docker](#lokale-entwicklung-ohne-docker)
+9. [Tests](#tests)
+10. [Image bauen & veröffentlichen](#image-bauen--veröffentlichen)
+11. [Projektstruktur](#projektstruktur)
+
+---
+
+## Schnellstart (docker compose)
+
+```bash
+git clone https://github.com/JNDMNK/zauberbuch.git
+cd zauberbuch
+cp .env.example .env        # Admin-Passwort und DATA_PATH anpassen!
+docker compose up -d
+```
+
+Danach ist die App unter **http://SERVER-IP:8080/** erreichbar. Mit `ADMIN_USERNAME` / `ADMIN_PASSWORD`
+anmelden – der Bereich **Verwaltung** erscheint in der Kopfzeile.
+
+Standardmäßig baut `docker compose` das Image lokal. Um das fertige Image aus der GitHub Container
+Registry zu verwenden, in der `.env` `ZAUBERBUCH_IMAGE=ghcr.io/jndmnk/zauberbuch:latest` setzen und
+`docker compose pull && docker compose up -d` ausführen.
+
+> Außerhalb von Unraid in der `.env` z. B. `DATA_PATH=./data` setzen.
+
+## Installation auf Unraid
+
+### Variante A: Docker-Template (empfohlen)
+
+1. Sicherstellen, dass das Image `ghcr.io/jndmnk/zauberbuch` veröffentlicht und öffentlich ist
+   (siehe [Image bauen & veröffentlichen](#image-bauen--veröffentlichen)).
+2. Template auf den Unraid-USB-Stick kopieren:
+   ```bash
+   cp zauberbuch.xml /boot/config/plugins/dockerMan/templates-user/my-zauberbuch.xml
+   ```
+3. In der Unraid-Oberfläche **Docker → Add Container → Template: Zauberbuch** wählen,
+   **Admin-Passwort** setzen und **Apply** klicken.
+4. Über das Container-Icon → **WebUI** öffnen.
+
+Die Daten liegen unter `/mnt/user/appdata/zauberbuch`. Die App läuft als `nobody:users` (99:100).
+
+### Variante B: Docker Compose Manager
+
+Mit dem Plugin „Docker Compose Manager“ einen neuen Stack anlegen, den Inhalt von
+`docker-compose.yml` einfügen und unter „Edit Stack → ENV File“ die Werte aus `.env.example`
+setzen (mindestens `ZAUBERBUCH_IMAGE` und `ADMIN_PASSWORD`). Dann **Compose Up**.
+
+## Umgebungsvariablen
+
+| Variable | Standard | Beschreibung |
+|---|---|---|
+| `PUID` | `99` | Benutzer-ID, unter der die App läuft (Unraid: `nobody`) |
+| `PGID` | `100` | Gruppen-ID (Unraid: `users`) |
+| `UMASK` | `022` | UMASK für neu angelegte Dateien |
+| `TZ` | `Europe/Berlin` | Zeitzone (Logs, Namen der Sicherungen) |
+| `PORT` | `8080` | Interner HTTP-Port |
+| `JWT_SECRET` | *(leer)* | Schlüssel für Login-Tokens. Leer ⇒ wird beim ersten Start zufällig erzeugt und in `/data/jwt_secret` gespeichert |
+| `ADMIN_USERNAME` | *(leer)* | Erster Admin; wird nur angelegt, wenn noch **kein** Admin existiert. Existiert der Benutzer bereits, wird er zum Admin befördert |
+| `ADMIN_PASSWORD` | *(leer)* | Passwort des ersten Admins (mind. 8 Zeichen empfohlen) |
+| `ADMIN_EMAIL` | *(leer)* | Optionale E-Mail des ersten Admins |
+| `ALLOW_REGISTRATION` | `true` | Selbstregistrierung erlauben (`true`/`false`) |
+| `DEFAULT_LANGUAGE` | `de` | Sprache für Gäste ohne gespeicherte Auswahl (`de`/`en`) |
+| `SEED_EXAMPLES` | `false` (Image) / `true` (Compose, Template) | Legt 5 Beispielzauber an, solange die Datenbank leer ist |
+
+Weitere, optionale Variablen:
+
+| Variable | Standard | Beschreibung |
+|---|---|---|
+| `TRUST_PROXY` | `1` | Express-`trust proxy` (Anzahl Proxy-Hops, `true`/`false` oder Subnetz, z. B. `loopback, 172.16.0.0/12`) |
+| `AUTH_RATE_LIMIT_MAX` | `10` | Max. Login-/Registrierungsversuche pro IP und Zeitfenster |
+| `AUTH_RATE_LIMIT_WINDOW_MIN` | `15` | Zeitfenster des Rate-Limits in Minuten |
+| `JWT_EXPIRES_IN` | `7d` | Gültigkeit der Login-Tokens |
+| `COOKIE_MAX_AGE_DAYS` | `7` | Lebensdauer des Login-Cookies in Tagen |
+| `BCRYPT_ROUNDS` | `12` | bcrypt-Kostenfaktor |
+| `KEEP_BACKUPS` | `5` | Anzahl der aufbewahrten automatischen DB-Sicherungen |
+| `LOG_TO_FILE` | `true` | Logs zusätzlich nach `/data/logs/zauberbuch.log` schreiben (Rotation ab 10 MB) |
+| `DATABASE_URL` | `file:/data/zauberbuch.db` | SQLite-Datei (nur in Sonderfällen ändern) |
+
+## Daten, Backup & Wiederherstellung
+
+Alle persistenten Daten liegen **ausschließlich unter `/data`** (Unraid: `/mnt/user/appdata/zauberbuch`):
+
+```
+/data
+├── zauberbuch.db          # SQLite-Datenbank (+ -wal/-shm im Betrieb)
+├── jwt_secret             # automatisch erzeugtes JWT-Secret (falls JWT_SECRET leer)
+├── backups/               # automatische Sicherungen vor Migrationen
+├── logs/zauberbuch.log    # Access- und App-Log
+└── uploads/               # reserviert für Datei-Uploads
+```
+
+**Automatische Sicherung:** Beim Containerstart prüft `start.sh` mit `prisma migrate status`, ob
+Migrationen ausstehen (z. B. nach einem Update). Ist das der Fall, wird **vor** `prisma migrate deploy`
+eine konsistente Kopie der Datenbank (`sqlite3 .backup`) als
+`/data/backups/zauberbuch-JJJJMMTT-HHMMSS.db` abgelegt. Es werden die letzten 5 Sicherungen behalten.
+
+**Manuelle Sicherung im laufenden Betrieb:**
+
+```bash
+docker exec zauberbuch sqlite3 /data/zauberbuch.db ".backup '/data/backups/manuell-$(date +%F).db'"
+```
+
+Alternativ den Container stoppen und den kompletten Ordner `/mnt/user/appdata/zauberbuch` sichern
+(z. B. mit dem Unraid-Plugin „Appdata Backup“). Zusätzlich lässt sich unter
+**Verwaltung → Import / Export** jederzeit ein JSON-Export aller Zauber herunterladen.
+
+**Wiederherstellung:**
+
+```bash
+docker stop zauberbuch
+cd /mnt/user/appdata/zauberbuch
+rm -f zauberbuch.db-wal zauberbuch.db-shm
+cp backups/zauberbuch-20250101-120000.db zauberbuch.db
+docker start zauberbuch
+```
+
+## Reverse Proxy (Nginx Proxy Manager / SWAG)
+
+Die App setzt `trust proxy` (Standard: ein Proxy-Hop), wertet also `X-Forwarded-Proto` und
+`X-Forwarded-For` aus. Hinter einem HTTPS-Proxy wird das Login-Cookie automatisch mit `Secure`
+gesetzt, und das Rate-Limiting sieht die echte Client-IP.
+
+- **Nginx Proxy Manager:** Proxy Host → Forward Hostname `zauberbuch` (oder Server-IP), Port `8080`,
+  „Block Common Exploits“ und SSL aktivieren. Weitere Einstellungen sind nicht nötig.
+- **SWAG:** Beispiel `/config/nginx/proxy-confs/zauberbuch.subdomain.conf`:
+
+  ```nginx
+  server {
+      listen 443 ssl;
+      listen [::]:443 ssl;
+      server_name zauberbuch.*;
+      include /config/nginx/ssl.conf;
+      client_max_body_size 10m;
+
+      location / {
+          include /config/nginx/proxy.conf;
+          include /config/nginx/resolver.conf;
+          set $upstream_app zauberbuch;
+          set $upstream_port 8080;
+          set $upstream_proto http;
+          proxy_pass $upstream_proto://$upstream_app:$upstream_port;
+      }
+  }
+  ```
+
+Bei mehreren hintereinandergeschalteten Proxys `TRUST_PROXY` auf die Anzahl der Hops setzen.
+Die App ist für den Betrieb unter einer eigenen (Sub-)Domain ausgelegt, nicht unter einem Unterpfad.
+
+## JSON-Importformat
+
+Unter **Verwaltung → Import / Export** können Zauber als JSON importiert werden. Akzeptiert wird
+entweder ein **Array von Zaubern** oder ein **Export-Objekt** mit dem Feld `spells` (genau das Format
+des JSON-Exports – Export und Import sind also verlustfrei austauschbar):
+
+```json
+{
+  "format": "zauberbuch-spells",
+  "version": 1,
+  "exportedAt": "2025-01-01T12:00:00.000Z",
+  "spells": [
+    {
+      "slug": "fireball",
+      "level": 3,
+      "school": "evocation",
+      "castingTime": "action",
+      "range": "150 ft",
+      "components": { "verbal": true, "somatic": true, "material": true },
+      "concentration": false,
+      "ritual": false,
+      "duration": "instantaneous",
+      "classes": ["sorcerer", "wizard"],
+      "source": "SRD",
+      "isHomebrew": false,
+      "translations": {
+        "de": {
+          "name": "Feuerball",
+          "castingTimeText": "1 Aktion",
+          "rangeText": "45 m",
+          "durationText": "Unmittelbar",
+          "materialDescription": "Eine winzige Kugel aus Fledermausguano und Schwefel",
+          "description": "Ein heller Lichtstreif … **8W6 Feuerschaden** …",
+          "higherLevels": "Auf höheren Graden steigt der Schaden um **1W6** je Grad über dem 3."
+        },
+        "en": {
+          "name": "Fireball",
+          "description": "A bright streak flashes … **8d6 fire damage** …"
+        }
+      }
+    }
+  ]
+}
+```
+
+### Felder
+
+| Feld | Typ | Pflicht | Beschreibung |
+|---|---|---|---|
+| `slug` | string | ✔ | Eindeutige ID für die URL; nur `a-z`, `0-9` und `-` (z. B. `magic-missile`). **Dubletten werden über den slug erkannt.** |
+| `level` | int | ✔ | `0` = Zaubertrick, `1`–`9` |
+| `school` | enum | ✔ | `abjuration` (Bannmagie), `conjuration` (Beschwörung), `divination` (Erkenntniszauber), `evocation` (Hervorrufung), `illusion` (Illusion), `necromancy` (Nekromantie), `transmutation` (Verwandlung), `enchantment` (Verzauberung) |
+| `castingTime` | enum | ✔ | Kategorie für den Filter: `action`, `bonus_action`, `reaction`, `longer` |
+| `range` | string | ✔ | Sprachunabhängige Reichweite, z. B. `150 ft`, `self`, `touch` (Anzeige-Fallback) |
+| `components` | object | ✔ | `{ "verbal": bool, "somatic": bool, "material": bool }` |
+| `concentration` | bool | ✔ | Konzentration erforderlich |
+| `ritual` | bool | ✔ | Als Ritual wirkbar |
+| `duration` | string | ✔ | Sprachunabhängige Dauer, z. B. `instantaneous`, `1 minute` (Anzeige-Fallback) |
+| `classes` | enum[] | ✔ | Beliebig viele aus `bard` (Barde), `druid` (Druide), `warlock` (Hexenmeister), `cleric` (Kleriker), `wizard` (Magier), `paladin` (Paladin), `ranger` (Waldläufer), `sorcerer` (Zauberer), `artificer` (Artificer); darf leer sein |
+| `source` | string | ✔ | Quelle, z. B. `SRD`, `PHB`, `Homebrew` |
+| `isHomebrew` | bool | ✔ | Homebrew-Badge und -Filter |
+| `translations.de` / `translations.en` | object \| null | mind. eine | Texte je Sprache (siehe unten) |
+
+Felder je Übersetzung:
+
+| Feld | Pflicht | Beschreibung |
+|---|---|---|
+| `name` | ✔ | Name des Zaubers |
+| `description` | ✔ | Beschreibung in **Markdown** |
+| `higherLevels` | – | „Auf höheren Graden“ in Markdown |
+| `castingTimeText` | – | Anzeigetext der Zauberzeit, z. B. „1 Aktion“ (sonst die übersetzte Kategorie) |
+| `rangeText` | – | Anzeigetext der Reichweite, z. B. „45 m“ (sonst `range`) |
+| `durationText` | – | Anzeigetext der Dauer, z. B. „Konzentration, bis zu 1 Minute“ (sonst `duration`) |
+| `materialDescription` | wenn `components.material` | Beschreibung der Materialkomponente (in mindestens einer Sprache) |
+
+**Ablauf:** Datei auswählen oder JSON einfügen → *Vorschau erstellen* zeigt je Eintrag den Status
+**Neu**, **Dublette** (slug existiert bereits) oder **Ungültig** (mit Fehlermeldungen) → Umgang mit
+Dubletten wählen (*Überspringen* oder *Überschreiben*) → *Importieren*. Ungültige Einträge werden nie
+importiert; der Import läuft in einer Transaktion. Maximal 5000 Zauber bzw. 10 MB pro Import.
+
+## REST-API
+
+Alle Endpunkte liegen unter `/api` und sprechen JSON. Fehler haben das Format
+`{ "error": { "code": "…", "message": "…", "details": [...] } }` mit passenden Statuscodes
+(400 Validierung, 401 nicht angemeldet, 403 keine Berechtigung/CSRF, 404, 409 Konflikt, 429 Rate-Limit).
+
+**CSRF:** Schreibende Anfragen (POST/PUT/PATCH/DELETE) benötigen den Header
+`X-Requested-With: zauberbuch`. Das Cookie ist zusätzlich `SameSite=Lax` und `httpOnly`.
+
+| Methode & Pfad | Recht | Beschreibung |
+|---|---|---|
+| `GET /api/health` | – | Healthcheck (prüft DB-Verbindung) |
+| `GET /api/config` | – | `allowRegistration`, `defaultLanguage`, `version` |
+| `POST /api/auth/register` | – | `{ username, email, password, language? }` |
+| `POST /api/auth/login` | – | `{ identifier, password }` – identifier = Benutzername oder E-Mail |
+| `POST /api/auth/logout` | – | Cookie löschen |
+| `GET /api/auth/me` | – | Aktueller Benutzer oder `null` |
+| `PATCH /api/auth/me` | User | `{ language: "de" \| "en" }` |
+| `POST /api/auth/password` | User | `{ currentPassword, newPassword }` – meldet andere Sitzungen ab |
+| `GET /api/spells` | – | Suche & Filter, paginiert (siehe unten) |
+| `GET /api/spells/sources` | – | Liste aller Quellen |
+| `GET /api/spells/:slug` | – | Zauber mit vollständigen Texten |
+| `POST /api/spells` | Admin | Zauber anlegen (Body = Importformat eines Zaubers) |
+| `PUT /api/spells/:id` | Admin | Zauber aktualisieren |
+| `POST /api/spells/:id/duplicate` | Admin | Kopie mit slug `…-copy` anlegen |
+| `DELETE /api/spells/:id` | Admin | Zauber löschen |
+| `GET /api/spells/export` | Admin | JSON-Export aller Zauber |
+| `POST /api/spells/import/preview` | Admin | `{ spells: [...] }` → Status je Eintrag |
+| `POST /api/spells/import` | Admin | `{ spells: [...], mode: "skip" \| "overwrite" }` |
+| `GET /api/favorites` | User | `{ spellIds: [...] }` |
+| `POST /api/favorites` | User | `{ spellId }` |
+| `DELETE /api/favorites/:spellId` | User | Favorit entfernen |
+| `GET /api/users` | Admin | Benutzerliste |
+| `PATCH /api/users/:id` | Admin | `{ role: "admin" \| "user" }` (letzter Admin geschützt) |
+| `DELETE /api/users/:id` | Admin | Benutzer löschen (nicht sich selbst, nicht den letzten Admin) |
+
+Parameter für `GET /api/spells` (Listen als Komma-Liste, z. B. `level=0,3`):
+`query`, `level`, `school`, `class`, `castingTime`, `concentration`, `ritual`, `verbal`, `somatic`,
+`material`, `homebrew` (je `true`/`false`), `source`, `favorites=true` (nur angemeldet),
+`sort=name|level|school`, `order=asc|desc`, `lang=de|en` (Sortiersprache), `page`, `pageSize` (max. 100).
+
+Beispiel: `GET /api/spells?query=feuer&level=3&class=wizard&sort=level`
+
+## Lokale Entwicklung ohne Docker
+
+Voraussetzung: Node.js ≥ 20 (empfohlen: aktuelle LTS).
+
+```bash
+npm install
+cp server/.env.example server/.env
+npm run prisma:deploy --workspace server     # legt ./data/zauberbuch.db an
+npm run dev                                  # Backend :8080 + Vite :5173
+```
+
+Dann **http://localhost:5173** öffnen; Vite leitet `/api` an das Backend weiter.
+Frontend und Backend lassen sich auch getrennt starten (`npm run dev:server`, `npm run dev:client`).
+
+Schemaänderungen: `server/prisma/schema.prisma` anpassen und
+`npm run prisma:migrate --workspace server -- --name beschreibung` ausführen. Die neue Migration unter
+`server/prisma/migrations/` committen – sie wird im Container beim nächsten Start automatisch
+angewendet (mit vorheriger Sicherung).
+
+Produktions-Build ohne Docker:
+
+```bash
+npm run build                                 # Server-Bundle + Frontend
+cd server && DATA_DIR=../data DATABASE_URL=file:../../data/zauberbuch.db npm start
+```
+
+Der Server liefert das gebaute Frontend aus `client/dist` mit aus.
+
+## Tests
+
+```bash
+npm test
+```
+
+Die API-Tests (Vitest + Supertest) laufen gegen eine eigene, temporäre SQLite-Datenbank
+(`server/tests/.tmp`) und decken Authentifizierung (Registrierung, Login per Name/E-Mail, Logout,
+CSRF, Passwortwechsel, Rollen), Suche & Filter (sprachübergreifend, Grad, Klasse, Zauberzeit,
+Sortierung, Paginierung), Verwaltung (CRUD, Duplizieren, Import mit Dublettenprüfung, Export) und
+Favoriten ab.
+
+```bash
+npm run typecheck   # TypeScript-Prüfung aller Pakete
+```
+
+## Image bauen & veröffentlichen
+
+**Lokal (amd64):**
+
+```bash
+docker build -t zauberbuch:latest --build-arg APP_VERSION=1.0.0 .
+```
+
+**Multi-Arch (amd64 + arm64) mit buildx:**
+
+```bash
+docker buildx create --use --name zauberbuch-builder
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t ghcr.io/jndmnk/zauberbuch:latest --push .
+```
+
+**GitHub Actions:** `.github/workflows/docker.yml` führt Typecheck und Tests aus und baut das Image
+bei jedem Push auf `main` sowie bei Tags `v*.*.*` für `linux/amd64` und `linux/arm64`. Es wird nach
+`ghcr.io/jndmnk/zauberbuch` gepusht:
+
+| Ereignis | Tags |
+|---|---|
+| Push auf `main` | `latest`, `sha-<kurz>` |
+| Tag `v1.2.3` | `1.2.3`, `1.2`, `1`, `sha-<kurz>` |
+
+Release erstellen:
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+Nach dem ersten Push das Paket unter *GitHub → Packages → zauberbuch → Package settings* auf
+**Public** stellen, damit Unraid es ohne Login ziehen kann.
+
+## Projektstruktur
+
+```
+zauberbuch/
+├── shared/                 # gemeinsame Enums, zod-Schemas & Typen (Frontend + Backend)
+│   └── src/{enums,schemas,types}.ts
+├── server/                 # Express + Prisma (TypeScript, gebündelt mit esbuild)
+│   ├── prisma/             # schema.prisma + Migrationen
+│   ├── src/
+│   │   ├── routes/         # auth, spells, favorites, users
+│   │   ├── middleware/     # Auth, Rollen, CSRF
+│   │   ├── lib/            # Prisma, JWT/bcrypt, Suche, Logger, Fehler
+│   │   ├── app.ts          # Express-App (helmet, trust proxy, statisches Frontend)
+│   │   ├── bootstrap.ts    # erster Admin, Beispielzauber
+│   │   └── index.ts        # Start
+│   └── tests/              # Vitest + Supertest
+├── client/                 # React + Vite + Tailwind + react-i18next
+│   └── src/
+│       ├── components/     # Karten, Detail/Modal, Filter, Header …
+│       ├── pages/          # Liste/Favoriten, Detail, Login, Konto, admin/*
+│       ├── context/        # Auth+Favoriten, Theme, Toasts
+│       ├── i18n/locales/   # de.json, en.json
+│       └── lib/            # API-Client, Filter↔URL, Übersetzungs-Fallback
+├── docker/                 # entrypoint.sh (PUID/PGID/UMASK) + start.sh (Backup, Migration)
+├── Dockerfile
+├── docker-compose.yml
+├── zauberbuch.xml          # Unraid-Template
+└── .github/workflows/docker.yml
+```
+
+## Lizenz & Hinweise
+
+Code unter MIT-Lizenz (siehe `LICENSE`). Die Beispielzauber sind eigene, gekürzte Zusammenfassungen
+angelehnt an das *System Reference Document 5.1* von Wizards of the Coast LLC
+(CC-BY-4.0, https://creativecommons.org/licenses/by/4.0/). Dungeons & Dragons ist eine Marke von
+Wizards of the Coast; dieses Projekt ist nicht offiziell mit Wizards of the Coast verbunden.

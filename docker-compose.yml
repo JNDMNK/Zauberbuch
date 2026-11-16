@@ -1,0 +1,33 @@
+# Zauberbuch – docker compose (auch für das Unraid-Plugin "Docker Compose Manager")
+#
+# Standard: Image wird lokal aus diesem Repository gebaut.
+# Fertiges Image aus der GitHub Container Registry verwenden:
+#   ZAUBERBUCH_IMAGE=ghcr.io/jndmnk/zauberbuch:latest in .env setzen
+#   und "docker compose pull && docker compose up -d" ausführen.
+
+services:
+  zauberbuch:
+    image: ${ZAUBERBUCH_IMAGE:-zauberbuch:latest}
+    build:
+      context: .
+      args:
+        APP_VERSION: ${APP_VERSION:-1.0.0}
+    container_name: zauberbuch
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-8080}:8080"
+    environment:
+      PUID: ${PUID:-99}
+      PGID: ${PGID:-100}
+      UMASK: ${UMASK:-022}
+      TZ: ${TZ:-Europe/Berlin}
+      PORT: 8080
+      JWT_SECRET: ${JWT_SECRET:-}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme123}
+      ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-true}
+      DEFAULT_LANGUAGE: ${DEFAULT_LANGUAGE:-de}
+      SEED_EXAMPLES: ${SEED_EXAMPLES:-true}
+    volumes:
+      # Unraid: /mnt/user/appdata/zauberbuch ; sonst z. B. ./data
+      - ${DATA_PATH:-/mnt/user/appdata/zauberbuch}:/data

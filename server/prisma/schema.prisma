@@ -1,0 +1,96 @@
+// Zauberbuch – Prisma-Schema (SQLite)
+// Hinweis: SQLite kennt in Prisma keine Listen; Enums werden als String gespeichert und
+// über die gemeinsamen zod-Schemas (shared/src/enums.ts) validiert.
+
+generator client {
+  provider      = "prisma-client-js"
+  // "native" genügt: Der Client wird im Docker-Build auf der jeweiligen Zielplattform (amd64/arm64, musl) erzeugt
+  binaryTargets = ["native"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(cuid())
+  username     String     @unique
+  email        String?    @unique
+  passwordHash String
+  role         String     @default("user") // "admin" | "user"
+  language     String     @default("de") // "de" | "en"
+  tokenVersion Int        @default(0) // erhöht sich bei Passwortänderung -> alte JWTs ungültig
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  favorites    Favorite[]
+}
+
+model Spell {
+  id            String             @id @default(cuid())
+  slug          String             @unique
+  level         Int // 0 = Zaubertrick, 1-9
+  school        String // abjuration | conjuration | divination | evocation | illusion | necromancy | transmutation | enchantment
+  castingTime   String // action | bonus_action | reaction | longer
+  range         String
+  verbal        Boolean            @default(false)
+  somatic       Boolean            @default(false)
+  material      Boolean            @default(false)
+  concentration Boolean            @default(false)
+  ritual        Boolean            @default(false)
+  duration      String
+  source        String             @default("Homebrew")
+  isHomebrew    Boolean            @default(false)
+  // Denormalisierte Hilfsfelder für sprachübergreifende Suche und Sortierung
+  searchText    String             @default("")
+  sortNameDe    String             @default("")
+  sortNameEn    String             @default("")
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  translations  SpellTranslation[]
+  classes       SpellClassLink[]
+  favorites     Favorite[]
+
+  @@index([level])
+  @@index([school])
+  @@index([castingTime])
+  @@index([sortNameDe])
+  @@index([sortNameEn])
+}
+
+model SpellTranslation {
+  id                  String  @id @default(cuid())
+  spellId             String
+  locale              String // "de" | "en"
+  name                String
+  materialDescription String?
+  castingTimeText     String?
+  rangeText           String?
+  durationText        String?
+  description         String
+  higherLevels        String?
+  spell               Spell   @relation(fields: [spellId], references: [id], onDelete: Cascade)
+
+  @@unique([spellId, locale])
+  @@index([locale])
+}
+
+model SpellClassLink {
+  spellId   String
+  className String // bard | druid | warlock | cleric | wizard | paladin | ranger | sorcerer | artificer
+  spell     Spell  @relation(fields: [spellId], references: [id], onDelete: Cascade)
+
+  @@id([spellId, className])
+  @@index([className])
+}
+
+model Favorite {
+  userId    String
+  spellId   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spell     Spell    @relation(fields: [spellId], references: [id], onDelete: Cascade)
+
+  @@id([userId, spellId])
+  @@index([spellId])
+}
