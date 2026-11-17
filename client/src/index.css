@@ -198,7 +198,7 @@
      Bewusst über die Grundschriftgröße (alle Maße in rem) statt CSS-zoom – Safari berechnet zoom
      beim Drucken fehlerhaft (überlappende Kästen). */
   html:has(.character-sheet) {
-    font-size: 10.4px;
+    font-size: 10px;
   }
   .character-sheet {
     font-size: 1.0625rem;

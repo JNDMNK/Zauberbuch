@@ -369,7 +369,7 @@ export function MainTab() {
   const { sheet } = useSheet();
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-      <div className="grid grid-cols-[7.25rem_1fr] gap-3 lg:col-span-4">
+      <div className="grid grid-cols-[7.25rem_1fr] content-start gap-3 lg:col-span-4">
         <AbilityColumn />
         <SavesAndSkills />
         <div className="sheet-box col-span-2 flex items-center gap-3 !py-2">
@@ -383,7 +383,7 @@ export function MainTab() {
           <Proficiencies />
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-4 lg:col-span-8 lg:grid-cols-2">
+      <div className="grid grid-cols-1 content-start gap-4 lg:col-span-8 lg:grid-cols-2">
         <CombatBlock />
         <Personality />
         <div className="lg:col-span-2">
