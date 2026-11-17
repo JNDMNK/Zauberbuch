@@ -33,10 +33,17 @@ export function SpellDetail({ spell, headingId, actions }: Props) {
     }
   };
 
+  // „Konzentration, “ nur voranstellen, wenn der Text es nicht schon enthält (z. B. importierte Buchtexte)
+  const durationWithConcentration = () => {
+    const d = durationLabel(spell, text);
+    if (!spell.concentration || /^(konzentration|concentration)/i.test(d.trim())) return d;
+    return `${t('spell.concentration')}, ${d}`;
+  };
+
   const stats = [
     { label: t('spell.castingTime'), value: castingTimeLabel(t, spell, text) },
     { label: t('spell.range'), value: rangeLabel(spell, text) },
-    { label: t('spell.duration'), value: (spell.concentration ? `${t('spell.concentration')}, ` : '') + durationLabel(spell, text) },
+    { label: t('spell.duration'), value: durationWithConcentration() },
   ];
 
   return (
