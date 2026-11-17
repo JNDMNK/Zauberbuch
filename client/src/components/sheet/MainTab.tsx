@@ -78,7 +78,7 @@ function AbilityColumn() {
     <div className="flex flex-col gap-3">
       {ABILITIES.map((a) => (
         <div key={a} className="sheet-box flex flex-col items-center !px-2 !py-2">
-          <span className="sheet-label w-full break-words text-center !text-[9px] hyphens-auto" lang={i18n.language}>{t(`sheet.ability.${a}`)}</span>
+          <span className="sheet-label w-full break-words text-center !text-[0.5625rem] hyphens-auto" lang={i18n.language}>{t(`sheet.ability.${a}`)}</span>
           <Computed value={formatModifier(abilityModifier(sheet.abilities[a]))} className="font-display text-3xl font-bold" />
           <NF path={['abilities', a]} min={1} max={30} className="w-16" inputClassName="!rounded-full !py-0.5 text-sm" />
         </div>
@@ -235,7 +235,7 @@ function Attacks() {
   return (
     <Box label={t('sheet.attacks')}>
       <div className="overflow-x-auto">
-        <table className="sheet-table min-w-[640px]">
+        <table className="sheet-table min-w-[40rem]">
           <thead>
             <tr>
               <th className="w-[26%]">{t('sheet.attack.name')}</th>

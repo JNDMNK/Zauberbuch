@@ -50,7 +50,7 @@ export function CoinsAndLoad() {
           <NF key={k} path={['coins', k]} label={t(`sheet.coins.${k}`)} min={0} inputClassName="font-display !text-lg font-bold" />
         ))}
       </div>
-      <p className="text-[11px] text-parchment-700 dark:text-parchment-400">{t('sheet.coinsHint')}</p>
+      <p className="text-[0.6875rem] text-parchment-700 dark:text-parchment-400">{t('sheet.coinsHint')}</p>
       <dl className="space-y-1.5 text-sm">
         <div>
           <dt className="sheet-label">{t('sheet.totalWeight')}</dt>
