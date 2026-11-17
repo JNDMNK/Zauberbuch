@@ -14,18 +14,24 @@ datasource db {
 }
 
 model User {
-  id           String     @id @default(cuid())
-  username     String     @unique
-  email        String?    @unique
-  passwordHash String
-  role         String     @default("user") // "admin" | "user"
-  language     String     @default("de") // "de" | "en"
-  tokenVersion Int        @default(0) // erhöht sich bei Passwortänderung -> alte JWTs ungültig
-  canEditSpells Boolean   @default(false) // Zusatzrecht: Zauber anlegen/bearbeiten/duplizieren (ohne Löschen)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  favorites    Favorite[]
-  characters   Character[]
+  id                String         @id @default(cuid())
+  username          String         @unique
+  email             String?        @unique
+  passwordHash      String
+  role              String         @default("user") // "admin" | "user"
+  language          String         @default("de") // "de" | "en"
+  tokenVersion      Int            @default(0) // erhöht sich bei Passwortänderung -> alte JWTs ungültig
+  canEditSpells     Boolean        @default(false) // Zusatzrecht: Zauber anlegen/bearbeiten/duplizieren (ohne Löschen)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  favorites         Favorite[]
+  characters        Character[]
+  storyMemberships  StoryMember[]
+  boardPosts        BoardPost[]    @relation("BoardPostAuthor")
+  boardPostsEdited  BoardPost[]    @relation("BoardPostEditor")
+  boardPostsDeleted BoardPost[]    @relation("BoardPostDeleter")
+  boardComments     BoardComment[]
+  boardReads        BoardRead[]
 }
 
 model Spell {
@@ -114,4 +120,94 @@ model Character {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// ---- Infotafel ----
+
+/**
+ * Geschichte (Story/Kampagne) mit eigener Infotafel; Admin und Dungeon Master verwalten sie.
+ */
+model Story {
+  id          String        @id @default(cuid())
+  name        String
+  description String        @default("")
+  archived    Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  members     StoryMember[]
+  posts       BoardPost[]
+  reads       BoardRead[]
+}
+
+/**
+ * Mitspieler einer Geschichte (Admin und Dungeon Master sehen alle Geschichten)
+ */
+model StoryMember {
+  storyId   String
+  userId    String
+  createdAt DateTime @default(now())
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([storyId, userId])
+  @@index([userId])
+}
+
+model BoardPost {
+  id          String         @id @default(cuid())
+  storyId     String
+  story       Story          @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  /**
+   * null = Ersteller wurde gelöscht (Beitrag bleibt erhalten)
+   */
+  authorId    String?
+  author      User?          @relation("BoardPostAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  title       String         @default("")
+  body        String
+  category    String         @default("general") // general | dates | places | npcs | quests | items | lore
+  searchText  String         @default("")
+  pinned      Boolean        @default(false)
+  pinnedAt    DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  editedAt    DateTime?
+  editedById  String?
+  editedBy    User?          @relation("BoardPostEditor", fields: [editedById], references: [id], onDelete: SetNull)
+  /**
+   * Papierkorb: gelöschte Beiträge kann der Admin 90 Tage lang wiederherstellen
+   */
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?          @relation("BoardPostDeleter", fields: [deletedById], references: [id], onDelete: SetNull)
+  comments    BoardComment[]
+
+  @@index([storyId, deletedAt, createdAt])
+  @@index([deletedAt])
+}
+
+model BoardComment {
+  id        String    @id @default(cuid())
+  postId    String
+  post      BoardPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  body      String
+  createdAt DateTime  @default(now())
+  editedAt  DateTime?
+
+  @@index([postId, createdAt])
+}
+
+/**
+ * Zuletzt gelesen – für den Ungelesen-Zähler
+ */
+model BoardRead {
+  userId     String
+  storyId    String
+  lastReadAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story      Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@id([userId, storyId])
+  @@index([storyId])
 }

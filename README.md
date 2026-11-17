@@ -14,6 +14,8 @@ Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutze
 - 📜 **Charakterbogen**: beliebig viele Charaktere pro Benutzer im Aufbau des D&D-5e-Bogens (Charakter,
   Merkmale & Inventar, Hintergrund, Zauber) mit automatischer Berechnung, Autospeichern, Porträt/Symbol
   und Verknüpfung der Zauber mit der Bibliothek
+- 🗒️ **Infotafel** pro Geschichte: Mitspieler halten wichtige Infos fest – mit Kategorien, Suche, Kommentaren,
+  angehefteten Beiträgen, Ungelesen-Zähler und Papierkorb (siehe [Infotafel](#infotafel))
 - 👥 Rollen **Benutzer**, **Dungeon Master** und **Admin** (siehe [Rollen & Benutzer](#rollen--benutzer))
 - 🔒 Ohne Anmeldung keine Daten – die Startseite ist der Login, es gibt keine Selbstregistrierung
 - 🌍 DE/EN-Umschalter für Oberfläche **und** Zaubertexte (pro Benutzer gespeichert, Gäste im localStorage);
@@ -31,6 +33,7 @@ Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutze
 1. [Schnellstart (docker compose)](#schnellstart-docker-compose)
 2. [Installation auf Unraid](#installation-auf-unraid)
 3. [Rollen & Benutzer](#rollen--benutzer)
+   - [Infotafel](#infotafel)
 4. [Umgebungsvariablen](#umgebungsvariablen)
 5. [Daten, Backup & Wiederherstellung](#daten-backup--wiederherstellung)
 6. [Reverse Proxy](#reverse-proxy-nginx-proxy-manager--swag)
@@ -101,8 +104,15 @@ setzen (der Benutzer wird dabei auf allen Geräten abgemeldet) und Benutzer lös
 | Zauberbücher aller Benutzer ansehen | – | ✔ | ✔ |
 | Eigene Charakterbögen anlegen und bearbeiten | ✔ | ✔ | ✔ |
 | Charakterbögen aller Benutzer ansehen (nur lesen) | – | ✔ | ✔ |
-| JSON-Import und -Export (Zauber, Benutzer, Charakterbögen) | – | – | ✔ |
+| Infotafel: Geschichten lesen und Beiträge/Kommentare schreiben | (✔)² | ✔ | ✔ |
+| Infotafel: fremde Beiträge/Kommentare bearbeiten und löschen, anheften | – | ✔ | ✔ |
+| Infotafel: Geschichten anlegen, Mitspieler zuordnen, archivieren | – | ✔ | ✔ |
+| Infotafel: Geschichten löschen, Papierkorb (wiederherstellen) | – | – | ✔ |
+| JSON-Import und -Export (Zauber, Benutzer, Charakterbögen, Infotafel) | – | – | ✔ |
 | Benutzer anlegen, Rollen ändern, Passwörter setzen, löschen | – | – | ✔ |
+
+² Nur in Geschichten, in denen der Benutzer als Mitspieler eingetragen ist. Eigene Beiträge und Kommentare
+darf jeder selbst bearbeiten und löschen.
 
 ¹ Nur mit dem Zusatzrecht **„Zauber bearbeiten“**, das der Admin pro Benutzer unter **Verwaltung → Benutzer**
 per Häkchen vergibt (auch direkt beim Anlegen). Der Benutzer behält ansonsten seine Rechte: In der Verwaltung
@@ -186,6 +196,35 @@ Format:
 ```
 
 `data` ist der komplette Bogen; fehlende Felder werden mit Standardwerten gefüllt.
+
+## Infotafel
+
+Unter **Infotafel** halten die Spieler wichtige Infos zum Spiel fest – Termine, Orte, NSCs, Quests, Gegenstände,
+Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Gruppen parallel spielen können.
+
+- **Geschichten** legen Admin und Dungeon Master unter **Geschichten verwalten** an und ordnen die Mitspieler
+  zu. Benutzer sehen nur Geschichten, in denen sie Mitspieler sind; Admin und Dungeon Master sehen alle.
+  Abgeschlossene Geschichten lassen sich **archivieren** (lesbar, aber schreibgeschützt; über „Archivierte
+  anzeigen“ einblendbar). Endgültig löschen kann eine Geschichte nur der Admin.
+- **Beiträge** haben einen optionalen Titel, eine **Kategorie** und Text mit Markdown. **Ersteller und
+  Zeitstempel** setzt der Server automatisch; Änderungen werden mit „bearbeitet am … von …“ gekennzeichnet.
+  Ändern und löschen dürfen der Ersteller, Dungeon Master und Admin. Lange Beiträge werden eingeklappt.
+- **Anheften** (📌, Dungeon Master und Admin) hält wichtige Beiträge oben.
+- **Kommentare** unter jedem Beitrag; dieselben Rechte wie bei Beiträgen.
+- **Suche** über Beiträge und Kommentare, **Filter** nach Kategorie.
+- **Ungelesen-Zähler** am Reiter und an jeder Geschichte (neue Beiträge und Kommentare anderer seit dem letzten
+  Öffnen). Die Tafel aktualisiert sich automatisch alle 30 Sekunden.
+- **Papierkorb:** Gelöschte Beiträge kann der Admin unter **Infotafel → Papierkorb** **90 Tage** lang
+  wiederherstellen; danach werden sie automatisch endgültig entfernt. Gelöschte Kommentare sind sofort weg.
+- Wird ein Benutzer gelöscht, bleiben seine Beiträge erhalten („gelöschter Benutzer“).
+
+### Export & Import der Infotafel (Admin)
+
+Unter **Verwaltung → Import / Export → Infotafel** exportiert der Admin alle Geschichten mit Mitspielern,
+Beiträgen und Kommentaren (ohne Papierkorb). Ersteller und Mitspieler werden über den Benutzernamen gespeichert –
+nach einer Neuinstallation daher **zuerst die Benutzer importieren**. Beim Import werden Geschichten mit gleichem
+Namen zusammengeführt; bereits vorhandene Beiträge werden übersprungen, ein erneuter Import erzeugt also keine
+Dubletten.
 
 ## Umgebungsvariablen
 
@@ -425,6 +464,17 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET /api/characters/export` | Admin | Alle Charakterbögen als JSON-Datei |
 | `POST /api/characters/import/preview` | Admin | `{ characters: [...], fallbackOwnerId? }` → Status je Bogen |
 | `POST /api/characters/import` | Admin | `{ characters: [...], fallbackOwnerId?, duplicates: "skip" \| "create" }` |
+| `GET /api/board/stories?archived=true` | User | Sichtbare Geschichten inkl. Mitspieler, Beitragszahl, ungelesen |
+| `POST /api/board/stories` · `PATCH /api/board/stories/:id` | DM/Admin | `{ name, description?, memberIds?, archived? }` |
+| `DELETE /api/board/stories/:id` | Admin | Geschichte samt Beiträgen löschen |
+| `GET /api/board/stories/:id/posts?q=&category=&page=` | Mitspieler, DM/Admin | Beiträge (angeheftete zuerst) inkl. Kommentare |
+| `POST /api/board/stories/:id/posts` | Mitspieler, DM/Admin | `{ title?, body, category? }` |
+| `PATCH /api/board/posts/:id` · `DELETE /api/board/posts/:id` | Ersteller, DM/Admin | Bearbeiten bzw. in den Papierkorb |
+| `POST /api/board/posts/:id/pin` | DM/Admin | `{ pinned }` |
+| `POST /api/board/posts/:id/comments` · `PATCH`/`DELETE /api/board/comments/:id` | Mitspieler / Ersteller, DM/Admin | Kommentare |
+| `GET /api/board/unread` · `POST /api/board/stories/:id/read` | User | Ungelesen-Zähler bzw. als gelesen markieren |
+| `GET /api/board/deleted` · `POST /api/board/posts/:id/restore` · `DELETE /api/board/posts/:id/permanent` | Admin | Papierkorb |
+| `GET /api/board/export` · `POST /api/board/import` | Admin | Infotafel exportieren/importieren |
 | `GET /api/users` | Admin | Benutzerliste |
 | `POST /api/users` | Admin | `{ username, email?, password, role? }` – Benutzer anlegen |
 | `GET /api/users/export?passwords=true\|false` | Admin | Alle Benutzer als JSON-Datei |

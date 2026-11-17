@@ -17,6 +17,7 @@ import { favoritesRouter } from './routes/favorites';
 import { usersRouter } from './routes/users';
 import { spellbooksRouter } from './routes/spellbooks';
 import { charactersRouter } from './routes/characters';
+import { boardRouter } from './routes/board';
 
 const LARGE_BODY_PATHS = new Set(['/api/characters/import', '/api/characters/import/preview']);
 
@@ -92,6 +93,7 @@ export function createApp(options: { accessLog?: boolean } = {}) {
   api.use('/users', usersRouter);
   api.use('/spellbooks', spellbooksRouter);
   api.use('/characters', charactersRouter);
+  api.use('/board', boardRouter);
 
   api.use((_req, _res, next) => next(new HttpError(404, 'not_found', 'API route not found')));
 

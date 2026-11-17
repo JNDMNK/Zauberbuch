@@ -16,6 +16,8 @@ import { SpellbooksPage, UserSpellbookPage } from './pages/admin/SpellbooksPage'
 import { CharactersAdminPage } from './pages/admin/CharactersAdminPage';
 import { CharactersPage } from './pages/CharactersPage';
 import { CharacterSheetPage } from './pages/CharacterSheetPage';
+import { BoardPage } from './pages/BoardPage';
+import { BoardTrashPage } from './pages/BoardTrashPage';
 import { EDITOR_ROLES, canWriteSpells } from '@zauberbuch/shared';
 
 export default function App() {
@@ -43,6 +45,16 @@ export default function App() {
             <Route path="spells/:slug" element={<SpellPage />} />
             <Route path="characters" element={<CharactersPage />} />
             <Route path="characters/:id" element={<CharacterSheetPage />} />
+            <Route path="board" element={<BoardPage />} />
+            <Route
+              path="board/trash"
+              element={
+                <RequireAuth roles={['admin']}>
+                  <BoardTrashPage />
+                </RequireAuth>
+              }
+            />
+            <Route path="board/:storyId" element={<BoardPage />} />
             <Route path="account" element={<AccountPage />} />
             <Route
               path="admin"

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BookHeart, BookOpen, ChevronDown, LogOut, Menu, Moon, ScrollText, Settings, Shield, Sun, UserRound, X } from 'lucide-react';
+import { BookHeart, BookOpen, ChevronDown, LogOut, Menu, MessagesSquare, Moon, ScrollText, Settings, Shield, Sun, UserRound, X } from 'lucide-react';
 import { LOCALES } from '@zauberbuch/shared';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
+import { useBoardUnread } from '../hooks/useBoardUnread';
 
 function LanguageSwitch() {
   const { t } = useTranslation();
@@ -104,6 +105,7 @@ export function Header() {
   const { user, canWriteSpells } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const unread = useBoardUnread(Boolean(user));
 
   useEffect(() => setMobileOpen(false), [location.pathname]);
 
@@ -128,6 +130,15 @@ export function Header() {
       <NavLink to="/characters" className={navCls}>
         <ScrollText className="h-4 w-4" />
         {t('nav.characters')}
+      </NavLink>
+      <NavLink to="/board" className={navCls}>
+        <MessagesSquare className="h-4 w-4" />
+        {t('nav.board')}
+        {unread > 0 && (
+          <span className="rounded-full bg-red-700 px-1.5 text-xs font-bold leading-5 text-white" aria-label={t('board.unreadCount', { count: unread })}>
+            {unread > 99 ? '99+' : unread}
+          </span>
+        )}
       </NavLink>
       {canWriteSpells && (
         <NavLink to="/admin" className={navCls}>
@@ -154,8 +165,9 @@ export function Header() {
           <ThemeToggle />
           <UserMenu />
           {user && (
-          <button type="button" className="btn-icon md:hidden" onClick={() => setMobileOpen((o) => !o)} aria-expanded={mobileOpen} aria-label={t('nav.menu')}>
+          <button type="button" className="btn-icon relative md:hidden" onClick={() => setMobileOpen((o) => !o)} aria-expanded={mobileOpen} aria-label={t('nav.menu')}>
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {!mobileOpen && unread > 0 && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-red-700" aria-hidden />}
           </button>
           )}
         </div>

@@ -1,5 +1,15 @@
 import type {
   AppConfigDto,
+  BoardCommentDto,
+  BoardImportResult,
+  BoardPostDto,
+  BoardPostsPage,
+  BoardUnreadDto,
+  DeletedBoardPostDto,
+  PostInput,
+  StoryDto,
+  StoryInput,
+  StoryUpdate,
   CharacterDto,
   CharacterImportPreview,
   CharacterImportResult,
@@ -132,4 +142,26 @@ export const api = {
     request<CharacterImportPreview>('POST', '/api/characters/import/preview', { characters, fallbackOwnerId }),
   importCharacters: (characters: unknown[], fallbackOwnerId: string | null, duplicates: 'skip' | 'create') =>
     request<CharacterImportResult>('POST', '/api/characters/import', { characters, fallbackOwnerId, duplicates }),
+
+  // Infotafel
+  stories: (archived = false) => request<{ stories: StoryDto[] }>('GET', `/api/board/stories${archived ? '?archived=true' : ''}`),
+  boardUsers: () => request<{ users: { id: string; username: string; role: Role }[] }>('GET', '/api/board/users'),
+  createStory: (input: StoryInput) => request<{ story: StoryDto }>('POST', '/api/board/stories', input),
+  updateStory: (id: string, input: StoryUpdate) => request<{ story: StoryDto }>('PATCH', `/api/board/stories/${id}`, input),
+  deleteStory: (id: string) => request<void>('DELETE', `/api/board/stories/${id}`),
+  markStoryRead: (id: string) => request<void>('POST', `/api/board/stories/${id}/read`),
+  boardUnread: () => request<BoardUnreadDto>('GET', '/api/board/unread'),
+  boardPosts: (storyId: string, params: URLSearchParams, signal?: AbortSignal) =>
+    request<BoardPostsPage>('GET', `/api/board/stories/${storyId}/posts?${params.toString()}`, undefined, signal),
+  createPost: (storyId: string, input: PostInput) => request<{ post: BoardPostDto }>('POST', `/api/board/stories/${storyId}/posts`, input),
+  updatePost: (id: string, input: PostInput) => request<{ post: BoardPostDto }>('PATCH', `/api/board/posts/${id}`, input),
+  pinPost: (id: string, pinned: boolean) => request<{ post: BoardPostDto }>('POST', `/api/board/posts/${id}/pin`, { pinned }),
+  deletePost: (id: string) => request<void>('DELETE', `/api/board/posts/${id}`),
+  deletedPosts: (storyId?: string) => request<{ posts: DeletedBoardPostDto[] }>('GET', `/api/board/deleted${storyId ? `?storyId=${storyId}` : ''}`),
+  restorePost: (id: string) => request<{ post: BoardPostDto }>('POST', `/api/board/posts/${id}/restore`),
+  purgePost: (id: string) => request<void>('DELETE', `/api/board/posts/${id}/permanent`),
+  createComment: (postId: string, body: string) => request<{ comment: BoardCommentDto }>('POST', `/api/board/posts/${postId}/comments`, { body }),
+  updateComment: (id: string, body: string) => request<{ comment: BoardCommentDto }>('PATCH', `/api/board/comments/${id}`, { body }),
+  deleteComment: (id: string) => request<void>('DELETE', `/api/board/comments/${id}`),
+  importBoard: (file: unknown) => request<BoardImportResult>('POST', '/api/board/import', file),
 };
