@@ -360,7 +360,8 @@
     "character_not_found": "Charakterbogen nicht gefunden.",
     "read_only": "Diesen Charakterbogen kann nur sein Besitzer bearbeiten.",
     "too_many_characters": "Du hast die maximale Anzahl an Charakteren erreicht.",
-    "password_hash_invalid": "Ungültiger Passwort-Hash."
+    "password_hash_invalid": "Ungültiger Passwort-Hash.",
+    "too_many_attacks": "Höchstens 5 Angriffe sind möglich."
   },
   "damageType": {
     "acid": "Säure",
@@ -594,6 +595,8 @@
     "computed": "berechnet",
     "xpMaxLevel": "Höchststufe",
     "levelUpPossible": "Genug Erfahrung für Stufe {{level}}!",
-    "levelUpButton": "Auf Stufe {{level}} erhöhen"
+    "levelUpButton": "Auf Stufe {{level}} erhöhen",
+    "attackCount": "{{count}}/{{max}} Angriffe",
+    "attackLimitExceeded": "Mehr als {{max}} Angriffe eingetragen – neue können erst nach dem Entfernen hinzugefügt werden."
   }
 }

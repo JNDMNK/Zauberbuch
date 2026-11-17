@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { app, CSRF, createUser, loginAs, request, resetDb } from './helpers';
+import { app, CSRF, createUser, loginAs, prisma, request, resetDb } from './helpers';
 
 describe('Charakterbögen', () => {
   beforeEach(async () => {
@@ -73,6 +73,25 @@ describe('Charakterbögen', () => {
     data.identity.level = 20;
     const max = await agent.put(`/api/characters/${id}`).set(CSRF).send({ data });
     expect(max.body.character.data.identity.xpNext).toBe(0); // Höchststufe
+  });
+
+  it('begrenzt Waffen & Angriffszauber auf 5, ohne vorhandene zu löschen', async () => {
+    const { agent } = await createUser('bilbo');
+    const { id, data } = (await agent.post('/api/characters').set(CSRF).send({ name: 'Bilbo' })).body.character;
+    const atk = (n: number) => Array.from({ length: n }, (_, i) => ({ name: `Angriff ${i + 1}` }));
+
+    expect((await agent.put(`/api/characters/${id}`).set(CSRF).send({ data: { ...data, attacks: atk(5) } })).status).toBe(200);
+    const tooMany = await agent.put(`/api/characters/${id}`).set(CSRF).send({ data: { ...data, attacks: atk(6) } });
+    expect(tooMany.status).toBe(400);
+    expect(tooMany.body.error.code).toBe('too_many_attacks');
+
+    // Bestand mit mehr als 5 (z. B. aus einer älteren Version) bleibt erhalten und speicherbar, wächst aber nicht
+    const row = await prisma.character.findUniqueOrThrow({ where: { id } });
+    await prisma.character.update({ where: { id }, data: { data: JSON.stringify({ ...JSON.parse(row.data), attacks: atk(7) }) } });
+    expect((await agent.get(`/api/characters/${id}`)).body.character.data.attacks).toHaveLength(7);
+    expect((await agent.put(`/api/characters/${id}`).set(CSRF).send({ data: { ...data, attacks: atk(7) } })).status).toBe(200);
+    expect((await agent.put(`/api/characters/${id}`).set(CSRF).send({ data: { ...data, attacks: atk(8) } })).status).toBe(400);
+    expect((await agent.put(`/api/characters/${id}`).set(CSRF).send({ data: { ...data, attacks: atk(6) } })).status).toBe(200);
   });
 
   it('lässt Admin und Dungeon Master alle Bögen lesen, aber nicht bearbeiten', async () => {

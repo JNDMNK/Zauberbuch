@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Trash2 } from 'lucide-react';
 import {
   ABILITIES,
+  MAX_ATTACKS,
   SKILLS,
   abilityModifier,
   attackBonus,
@@ -254,12 +255,18 @@ function Attacks() {
           </tbody>
         </table>
       </div>
-      {!readOnly && (
-        <button type="button" className="btn-ghost mt-2 !px-2 !py-1 text-xs" onClick={() => set(['attacks'], [...attacks, emptyAttack()])}>
-          <Plus className="h-4 w-4" />
-          {t('sheet.addAttack')}
-        </button>
-      )}
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        {!readOnly && attacks.length < MAX_ATTACKS && (
+          <button type="button" className="btn-ghost !px-2 !py-1 text-xs" onClick={() => set(['attacks'], [...attacks, emptyAttack()])}>
+            <Plus className="h-4 w-4" />
+            {t('sheet.addAttack')}
+          </button>
+        )}
+        <span className={`text-xs ${attacks.length >= MAX_ATTACKS ? 'text-amber-700 dark:text-amber-400' : 'text-parchment-700 dark:text-parchment-400'}`}>
+          {t('sheet.attackCount', { count: attacks.length, max: MAX_ATTACKS })}
+          {!readOnly && attacks.length > MAX_ATTACKS && <> · {t('sheet.attackLimitExceeded', { max: MAX_ATTACKS })}</>}
+        </span>
+      </div>
     </Box>
   );
 }

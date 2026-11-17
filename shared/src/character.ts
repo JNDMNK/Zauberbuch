@@ -66,6 +66,9 @@ const image = () =>
 /** 0 = keine Übung, 1 = geübt, 2 = Expertise */
 const proficiencyLevel = () => z.union([z.literal(0), z.literal(1), z.literal(2)]).catch(0).default(0);
 
+/** Maximale Anzahl Einträge unter „Waffen & Angriffszauber“ (wie im Papierbogen) */
+export const MAX_ATTACKS = 5;
+
 export const attackSchema = z.object({
   name: text(100),
   ability: z.enum([...ABILITIES, 'none']).catch('none').default('none'),

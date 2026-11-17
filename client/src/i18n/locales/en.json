@@ -360,7 +360,8 @@
     "character_not_found": "Character sheet not found.",
     "read_only": "Only the owner can edit this character sheet.",
     "too_many_characters": "You have reached the maximum number of characters.",
-    "password_hash_invalid": "Invalid password hash."
+    "password_hash_invalid": "Invalid password hash.",
+    "too_many_attacks": "At most 5 attacks are allowed."
   },
   "damageType": {
     "acid": "Acid",
@@ -594,6 +595,8 @@
     "computed": "calculated",
     "xpMaxLevel": "Max level",
     "levelUpPossible": "Enough experience for level {{level}}!",
-    "levelUpButton": "Raise to level {{level}}"
+    "levelUpButton": "Raise to level {{level}}",
+    "attackCount": "{{count}}/{{max}} attacks",
+    "attackLimitExceeded": "More than {{max}} attacks entered – new ones can only be added after removing some."
   }
 }

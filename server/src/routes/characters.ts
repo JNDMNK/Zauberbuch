@@ -2,6 +2,7 @@ import express, { Router } from 'express';
 import type { Character, User } from '@prisma/client';
 import {
   CHARACTER_EXPORT_FORMAT,
+  MAX_ATTACKS,
   characterImportSchema,
   characterSheetSchema,
   createCharacterSchema,
@@ -17,7 +18,7 @@ import {
 } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
-import { forbidden, notFound } from '../lib/errors';
+import { badRequest, forbidden, notFound } from '../lib/errors';
 import { requireAdmin, requireAuth, requireEditor } from '../middleware/auth';
 
 /**
@@ -205,6 +206,13 @@ charactersRouter.put('/:id', async (req, res) => {
   const c = await loadReadable(String(req.params.id), req.user!);
   if (c.userId !== req.user!.id) throw forbidden('read_only', 'Only the owner can edit this character');
   const { data } = validate(updateCharacterSchema, req.body);
+  // Höchstens MAX_ATTACKS Angriffe – Bögen, die schon mehr haben, behalten sie, dürfen aber nicht weiter wachsen
+  if (data.attacks.length > MAX_ATTACKS) {
+    const stored = parseSheet(c.data).attacks.length;
+    if (data.attacks.length > Math.max(MAX_ATTACKS, stored)) {
+      throw badRequest('too_many_attacks', `At most ${MAX_ATTACKS} attacks allowed`);
+    }
+  }
   const updated = await prisma.character.update({
     where: { id: c.id },
     data: { ...summaryFields(data), data: JSON.stringify(data) },
