@@ -94,7 +94,7 @@ function SpellRow({ spell, index, names }: { spell: SheetSpell; index: number; n
       {!readOnly && (
         <button
           type="button"
-          className="btn-icon h-7 w-7 shrink-0 text-red-700 dark:text-red-400"
+          className="btn-icon h-7 w-7 shrink-0 text-red-700 print:hidden dark:text-red-400"
           onClick={() => set(['spellcasting', 'spells'], sheet.spellcasting.spells.filter((_, i) => i !== index))}
           title={t('sheet.remove')}
           aria-label={`${t('sheet.remove')}: ${spell.name}`}
@@ -140,7 +140,7 @@ function LevelBox({ level, names, lang }: { level: number; names: SpellNameDto[]
       {!readOnly && (
         <button
           type="button"
-          className="btn-ghost mt-1 !px-2 !py-1 text-xs"
+          className="btn-ghost mt-1 !px-2 !py-1 text-xs print:hidden"
           onClick={() => set(['spellcasting', 'spells'], [...sheet.spellcasting.spells, { level, name: '', prepared: false, slug: null }])}
         >
           <Plus className="h-4 w-4" />
@@ -222,7 +222,7 @@ export function SpellsTab() {
         </div>
       </div>
       {!readOnly && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 print:hidden">
           <button type="button" className="btn-secondary" onClick={importFavorites} disabled={busy}>
             <BookHeart className="h-4 w-4" />
             {t('sheet.fromSpellbook')}

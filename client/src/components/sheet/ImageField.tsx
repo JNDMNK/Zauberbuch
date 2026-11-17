@@ -53,14 +53,14 @@ export function ImageField({ path, label, maxSize = 700, aspect = 'aspect-[3/4]'
           <img src={value} alt={label} className="h-full w-full object-cover" />
         ) : (
           !readOnly && (
-            <button type="button" className="flex flex-col items-center gap-2 p-4 text-parchment-700 dark:text-parchment-400" onClick={() => input.current?.click()}>
+            <button type="button" className="flex flex-col items-center gap-2 p-4 print:hidden text-parchment-700 dark:text-parchment-400" onClick={() => input.current?.click()}>
               <ImagePlus className="h-10 w-10" />
               <span className="text-sm">{t('sheet.chooseImage')}</span>
             </button>
           )
         )}
         {value && !readOnly && (
-          <div className="absolute right-2 top-2 flex gap-1">
+          <div className="absolute right-2 top-2 flex gap-1 print:hidden">
             <button type="button" className="btn-icon bg-parchment-50/90 shadow dark:bg-night-800/90" onClick={() => input.current?.click()} title={t('sheet.chooseImage')} aria-label={t('sheet.chooseImage')}>
               <ImagePlus className="h-4 w-4" />
             </button>

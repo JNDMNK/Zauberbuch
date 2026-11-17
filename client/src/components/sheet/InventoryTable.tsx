@@ -17,7 +17,7 @@ export function InventoryTable({ listKey }: { listKey: 'inventory' | 'extraEquip
             <th>{t('sheet.item')}</th>
             <th className="w-20">{t('sheet.qty')}</th>
             <th className="w-24">{t('sheet.itemWeight')}</th>
-            {!readOnly && <th className="w-8" />}
+            {!readOnly && <th className="w-8 print:hidden" />}
           </tr>
         </thead>
         <tbody>
@@ -33,7 +33,7 @@ export function InventoryTable({ listKey }: { listKey: 'inventory' | 'extraEquip
                 <NF path={[listKey, i, 'weight']} min={0} step={0.01} />
               </td>
               {!readOnly && (
-                <td>
+                <td className="print:hidden">
                   <button
                     type="button"
                     className="btn-icon h-8 w-8 text-red-700 dark:text-red-400"
@@ -54,12 +54,12 @@ export function InventoryTable({ listKey }: { listKey: 'inventory' | 'extraEquip
               {t('sheet.subtotal')}
             </td>
             <td className="text-center font-semibold tabular-nums">{itemsWeight(items).toLocaleString(i18n.language)}</td>
-            {!readOnly && <td />}
+            {!readOnly && <td className="print:hidden" />}
           </tr>
         </tfoot>
       </table>
       {!readOnly && (
-        <button type="button" className="btn-ghost mt-1 !px-2 !py-1 text-xs" onClick={() => set([listKey], [...items, { name: '', qty: 1, weight: 0 }])}>
+        <button type="button" className="btn-ghost mt-1 !px-2 !py-1 text-xs print:hidden" onClick={() => set([listKey], [...items, { name: '', qty: 1, weight: 0 }])}>
           <Plus className="h-4 w-4" />
           {t('sheet.addItem')}
         </button>

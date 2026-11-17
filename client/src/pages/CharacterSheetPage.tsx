@@ -71,6 +71,26 @@ export function CharacterSheetPage() {
     };
   }, [id]);
 
+  // Gedruckt wird immer im hellen Design (dunkler Modus würde dunkle Kästen aufs Papier bringen)
+  useEffect(() => {
+    const root = document.documentElement;
+    let wasDark = false;
+    const before = () => {
+      wasDark = root.classList.contains('dark');
+      if (wasDark) root.classList.remove('dark');
+    };
+    const after = () => {
+      if (wasDark) root.classList.add('dark');
+      wasDark = false;
+    };
+    window.addEventListener('beforeprint', before);
+    window.addEventListener('afterprint', after);
+    return () => {
+      window.removeEventListener('beforeprint', before);
+      window.removeEventListener('afterprint', after);
+    };
+  }, []);
+
   const canEdit = Boolean(character?.canEdit);
 
   const set = useCallback(
@@ -153,7 +173,18 @@ export function CharacterSheetPage() {
             />
             <span className="sheet-label">{t('sheet.characterName')}</span>
           </div>
-          {tab === 'background' ? <PhysicalHeader /> : <IdentityHeader />}
+          {tab === 'background' ? (
+            <>
+              <div className="print:hidden">
+                <PhysicalHeader />
+              </div>
+              <div className="hidden print:block">
+                <IdentityHeader />
+              </div>
+            </>
+          ) : (
+            <IdentityHeader />
+          )}
         </fieldset>
 
         <nav role="tablist" className="flex gap-1 overflow-x-auto border-b border-parchment-400/60 print:hidden dark:border-night-700">
@@ -174,11 +205,23 @@ export function CharacterSheetPage() {
         </nav>
 
         {/* Reiterleiste liegt außerhalb, damit sie auch im Nur-Lesen-Modus bedienbar bleibt */}
-        <fieldset disabled={!canEdit} className="min-w-0">
-          {tab === 'main' && <MainTab />}
-          {tab === 'features' && <FeaturesTab />}
-          {tab === 'background' && <BackgroundTab />}
-          {tab === 'spells' && <SpellsTab />}
+        {/* Beim Drucken werden alle Seiten des Bogens ausgegeben, jede auf einer neuen Seite */}
+        <fieldset disabled={!canEdit} className="min-w-0 space-y-4">
+          {TABS.map((k, i) => (
+            <div key={k} className={`${tab === k ? '' : 'hidden print:block'} ${i > 0 ? 'print-page' : ''} space-y-4`}>
+              {k === 'main' && <MainTab />}
+              {k === 'features' && <FeaturesTab />}
+              {k === 'background' && (
+                <>
+                  <div className="sheet-box hidden print:block">
+                    <PhysicalHeader />
+                  </div>
+                  <BackgroundTab />
+                </>
+              )}
+              {k === 'spells' && <SpellsTab />}
+            </div>
+          ))}
         </fieldset>
       </div>
     </SheetContext.Provider>

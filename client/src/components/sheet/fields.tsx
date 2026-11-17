@@ -89,12 +89,16 @@ export function TA({ path, label, rows = 5, className = '', placeholder }: Field
       <textarea
         id={id}
         rows={rows}
-        className="sheet-textarea flex-1"
+        className="sheet-textarea flex-1 print:hidden"
         value={String(getIn(sheet, path) ?? '')}
         onChange={(e) => set(path, e.target.value)}
         placeholder={placeholder}
         maxLength={20000}
       />
+      {/* Druck: Textarea würde abschneiden, daher Text vollständig als Block */}
+      <div className="sheet-textarea hidden flex-1 whitespace-pre-wrap break-words print:block" aria-hidden="true" style={{ minHeight: `${rows * 1.5}em` }}>
+        {String(getIn(sheet, path) ?? '')}
+      </div>
       {label && (
         <label htmlFor={id} className="sheet-label mt-1 text-center">
           {label}

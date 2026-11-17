@@ -3,6 +3,15 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   darkMode: 'class',
   theme: {
+    // Beim Drucken gelten alle Breakpoints bis xl, damit z. B. der Charakterbogen im Desktop-Layout
+    // (statt in der schmalen Handy-Anordnung) gedruckt und anschließend auf die Seitenbreite skaliert wird.
+    screens: {
+      sm: { raw: '(min-width: 640px), print' },
+      md: { raw: '(min-width: 768px), print' },
+      lg: { raw: '(min-width: 1024px), print' },
+      xl: { raw: '(min-width: 1280px), print' },
+      '2xl': '1536px',
+    },
     extend: {
       fontFamily: {
         display: ['Cinzel', 'Georgia', 'serif'],

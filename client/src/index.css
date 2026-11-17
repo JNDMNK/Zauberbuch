@@ -177,6 +177,11 @@
   }
 }
 
+@page {
+  size: A4;
+  margin: 10mm;
+}
+
 @media print {
   header,
   footer {
@@ -185,8 +190,33 @@
   body {
     background: white !important;
   }
+  main#main {
+    max-width: none;
+    padding: 0;
+  }
+  /* Charakterbogen: im Desktop-Layout (feste Breite) setzen und auf A4-Breite (190 mm ≈ 718 px) verkleinern */
+  .character-sheet {
+    width: 1100px;
+    zoom: 0.65;
+  }
+  .character-sheet .print-page {
+    break-before: page;
+  }
   .sheet-box {
     break-inside: avoid;
+    box-shadow: none;
+    background: white;
+  }
+  .sheet-input {
+    border-color: #e6cf9c;
+    background: transparent;
+  }
+  .sheet-input::placeholder {
+    color: transparent;
+  }
+  .character-sheet select.sheet-input {
+    appearance: none;
+    -webkit-appearance: none;
   }
 }
 

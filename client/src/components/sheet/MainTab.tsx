@@ -44,7 +44,7 @@ function ExperienceField() {
         </div>
       </div>
       {canLevelUp && (
-        <div className="mt-1 flex flex-wrap items-center gap-2 rounded-md bg-amber-100 px-2 py-1 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200" role="status">
+        <div className="mt-1 flex flex-wrap items-center gap-2 rounded-md bg-amber-100 px-2 py-1 text-sm text-amber-900 print:hidden dark:bg-amber-950 dark:text-amber-200" role="status">
           <span>{t('sheet.levelUpPossible', { level: reachable })}</span>
           {!readOnly && (
             <button type="button" className="font-semibold underline" onClick={() => set(['identity', 'level'], reachable)}>
@@ -246,7 +246,7 @@ function Attacks() {
               <th>{t('sheet.attack.bonus')}</th>
               <th>{t('sheet.attack.damage')}</th>
               <th>{t('sheet.attack.damageType')}</th>
-              {!readOnly && <th className="w-8" />}
+              {!readOnly && <th className="w-8 print:hidden" />}
             </tr>
           </thead>
           <tbody>
@@ -256,7 +256,7 @@ function Attacks() {
           </tbody>
         </table>
       </div>
-      <div className="mt-2 flex flex-wrap items-center gap-3">
+      <div className="mt-2 flex flex-wrap items-center gap-3 print:hidden">
         {!readOnly && attacks.length < MAX_ATTACKS && (
           <button type="button" className="btn-ghost !px-2 !py-1 text-xs" onClick={() => set(['attacks'], [...attacks, emptyAttack()])}>
             <Plus className="h-4 w-4" />
@@ -310,7 +310,7 @@ function AttackRow({ index, attack }: { index: number; attack: SheetAttack }) {
           <TF path={p('damageType')} align="center" maxLength={50} />
         </td>
         {!readOnly && (
-          <td rowSpan={2} className="align-middle">
+          <td rowSpan={2} className="align-middle print:hidden">
             <button
               type="button"
               className="btn-icon h-8 w-8 text-red-700 dark:text-red-400"
