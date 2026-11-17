@@ -101,7 +101,7 @@ function UserMenu() {
 
 export function Header() {
   const { t } = useTranslation();
-  const { user, isEditor } = useAuth();
+  const { user, canWriteSpells } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -129,7 +129,7 @@ export function Header() {
         <ScrollText className="h-4 w-4" />
         {t('nav.characters')}
       </NavLink>
-      {isEditor && (
+      {canWriteSpells && (
         <NavLink to="/admin" className={navCls}>
           <Shield className="h-4 w-4" />
           {t('nav.admin')}

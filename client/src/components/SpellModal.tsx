@@ -35,8 +35,8 @@ export function useSpell(slug: string | undefined) {
 
 export function AdminEditLink({ spell }: { spell: SpellDto }) {
   const { t } = useTranslation();
-  const { isEditor } = useAuth();
-  if (!isEditor) return null;
+  const { canWriteSpells } = useAuth();
+  if (!canWriteSpells) return null;
   return (
     <Link to={`/admin/spells/${spell.slug}/edit`} className="btn-icon" title={t('common.edit')} aria-label={t('common.edit')}>
       <Pencil className="h-5 w-5" />

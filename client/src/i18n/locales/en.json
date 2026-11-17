@@ -267,7 +267,7 @@
     "setPasswordFor": "New password for “{{name}}”",
     "passwordSet": "Password set. The user has been logged out on all devices.",
     "emailOptional": "Email (optional)",
-    "rolesHint": "User: view spells and keep a personal spellbook · Dungeon Master: also manage spells and view all spellbooks · Admin: also manage users, import and export",
+    "rolesHint": "User: view spells and keep a personal spellbook (optionally with the extra permission “edit spells”) · Dungeon Master: also manage and delete spells and view all spellbooks and character sheets · Admin: also manage users, import and export",
     "characters": "Character sheets",
     "charactersTitle": "User character sheets",
     "charactersHint": "All character sheets – read only. Only the owner can edit.",
@@ -316,7 +316,12 @@
     "userDefaultPasswordHint": "Leave empty to skip such users. Users should change it after their first login.",
     "userImportDone": "Import finished: {{created}} created, {{updated}} updated, {{skipped}} skipped, {{invalid}} invalid · {{favoritesLinked}} spellbook entries restored",
     "userFavoritesMissing": "{{count}} spellbook entries refer to spells that do not exist here (yet) – import the spells first if needed.",
-    "favoritesCount": "Spellbook"
+    "favoritesCount": "Spellbook",
+    "canEditSpells": "May edit spells",
+    "canEditSpellsShort": "Edit spells",
+    "canEditSpellsHint": "Create, edit and duplicate spells (not delete), without further rights",
+    "canEditSpellsByRole": "Admins and Dungeon Masters can always edit spells",
+    "rightChanged": "Permission changed"
   },
   "errors": {
     "unknown": "Unknown error.",

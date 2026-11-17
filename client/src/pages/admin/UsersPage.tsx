@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BookHeart, KeyRound, Trash2, UserPlus, X } from 'lucide-react';
-import { ROLES, createUserSchema, passwordSchema, type Role } from '@zauberbuch/shared';
+import { ROLES, createUserSchema, isEditorRole, passwordSchema, type Role } from '@zauberbuch/shared';
 import { api, type AdminUserDto } from '../../lib/api';
 import { errorMessage, fieldMessage } from '../../lib/errors';
 import { useAuth } from '../../context/AuthContext';
@@ -10,7 +10,7 @@ import { useToast } from '../../context/ToastContext';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { Alert, Field, PageSpinner, Spinner, TextInput } from '../../components/ui';
 
-const emptyForm = { username: '', email: '', password: '', role: 'user' as Role };
+const emptyForm = { username: '', email: '', password: '', role: 'user' as Role, canEditSpells: false };
 
 /** Formular „Neuer Benutzer“ – Benutzer werden nur durch den Admin angelegt. */
 function CreateUserForm({ onCreated, onCancel }: { onCreated: (u: AdminUserDto) => void; onCancel: () => void }) {
@@ -21,7 +21,7 @@ function CreateUserForm({ onCreated, onCancel }: { onCreated: (u: AdminUserDto) 
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
 
-  const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+  const set = (key: 'username' | 'email' | 'password' | 'role') => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const onSubmit = async (e: FormEvent) => {
@@ -77,6 +77,18 @@ function CreateUserForm({ onCreated, onCancel }: { onCreated: (u: AdminUserDto) 
           )}
         </Field>
       </div>
+      <label className="flex cursor-pointer items-start gap-2 text-sm">
+        <input
+          type="checkbox"
+          className="mt-1 h-4 w-4 accent-parchment-800 dark:accent-parchment-300"
+          checked={form.canEditSpells || isEditorRole(form.role)}
+          disabled={isEditorRole(form.role)}
+          onChange={(e) => setForm((f) => ({ ...f, canEditSpells: e.target.checked }))}
+        />
+        <span>
+          {t('admin.canEditSpells')} <span className="text-parchment-700 dark:text-parchment-400">– {t('admin.canEditSpellsHint')}</span>
+        </span>
+      </label>
       <p className="text-xs text-parchment-700 dark:text-parchment-400">{t('admin.rolesHint')}</p>
       <button type="submit" className="btn-primary" disabled={busy}>
         {busy ? <Spinner className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
@@ -170,6 +182,20 @@ export function UsersPage() {
     }
   };
 
+  const changeSpellRight = async (u: AdminUserDto, canEditSpells: boolean) => {
+    const apply = (value: boolean) =>
+      setUsers((list) => list?.map((x) => (x.id === u.id ? { ...x, canEditSpells: value } : x)) ?? null);
+    apply(canEditSpells);
+    try {
+      const res = await api.updateUser(u.id, { canEditSpells });
+      apply(res.user.canEditSpells);
+      toast.success(t('admin.rightChanged'));
+    } catch (err) {
+      apply(u.canEditSpells);
+      toast.error(errorMessage(t, err));
+    }
+  };
+
   const doDelete = async () => {
     if (!toDelete) return;
     setBusy(true);
@@ -217,6 +243,7 @@ export function UsersPage() {
               <th>{t('auth.username')}</th>
               <th className="hidden md:table-cell">{t('auth.email')}</th>
               <th>{t('account.role')}</th>
+              <th className="text-center" title={t('admin.canEditSpellsHint')}>{t('admin.canEditSpellsShort')}</th>
               <th className="hidden sm:table-cell">{t('admin.favorites')}</th>
               <th className="hidden lg:table-cell">{t('admin.created')}</th>
               <th className="text-right">{t('common.actions')}</th>
@@ -243,6 +270,17 @@ export function UsersPage() {
                       </option>
                     ))}
                   </select>
+                </td>
+                <td className="text-center">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-parchment-800 disabled:opacity-60 dark:accent-parchment-300"
+                    checked={u.canEditSpells || isEditorRole(u.role)}
+                    disabled={isEditorRole(u.role)}
+                    title={isEditorRole(u.role) ? t('admin.canEditSpellsByRole') : t('admin.canEditSpellsHint')}
+                    onChange={(e) => changeSpellRight(u, e.target.checked)}
+                    aria-label={`${t('admin.canEditSpells')}: ${u.username}`}
+                  />
                 </td>
                 <td className="hidden sm:table-cell">
                   <Link to={`/admin/spellbooks/${u.id}`} className="inline-flex items-center gap-1 hover:underline">

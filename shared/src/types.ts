@@ -45,6 +45,8 @@ export interface UserDto {
   username: string;
   email: string | null;
   role: Role;
+  /** Zusatzrecht: Zauber anlegen/bearbeiten/duplizieren */
+  canEditSpells: boolean;
   language: Locale;
   createdAt: string;
 }
@@ -93,6 +95,7 @@ export interface UserExportEntry {
   username: string;
   email: string | null;
   role: Role;
+  canEditSpells: boolean;
   language: Locale;
   passwordHash?: string;
   favorites: string[];

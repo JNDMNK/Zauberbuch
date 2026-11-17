@@ -53,6 +53,7 @@ usersRouter.get('/export', async (req, res) => {
       username: u.username,
       email: u.email,
       role: u.role as Role,
+      canEditSpells: u.canEditSpells,
       language: u.language as Locale,
       ...(withPasswords ? { passwordHash: u.passwordHash } : {}),
       favorites: u.favorites.map((f) => f.spell.slug).sort(),
@@ -151,6 +152,7 @@ usersRouter.post('/import', async (req, res) => {
               username: e.username,
               email: e.email,
               role: e.role,
+              canEditSpells: e.canEditSpells,
               language: e.language ?? config.defaultLanguage,
               passwordHash: e.passwordHash ?? defaultHash!,
             },
@@ -164,6 +166,7 @@ usersRouter.post('/import', async (req, res) => {
             data: {
               email: e.email,
               role: e.role,
+              canEditSpells: e.canEditSpells,
               ...(e.language ? { language: e.language } : {}),
               // Neues Passwort meldet bestehende Sitzungen ab
               ...(e.passwordHash ? { passwordHash: e.passwordHash, tokenVersion: { increment: 1 } } : {}),
@@ -202,6 +205,7 @@ usersRouter.post('/', async (req, res) => {
       email: input.email ?? null,
       passwordHash: await hashPassword(input.password),
       role: input.role,
+      canEditSpells: input.canEditSpells,
       language: input.language ?? config.defaultLanguage,
     },
   });
@@ -209,7 +213,7 @@ usersRouter.post('/', async (req, res) => {
 });
 
 usersRouter.patch('/:id', async (req, res) => {
-  const { role, password } = validate(updateUserSchema, req.body);
+  const { role, password, canEditSpells } = validate(updateUserSchema, req.body);
   const user = await prisma.user.findUnique({ where: { id: String(req.params.id) } });
   if (!user) throw notFound('user_not_found', 'User not found');
   if (role && user.role === 'admin' && role !== 'admin') {
@@ -220,6 +224,7 @@ usersRouter.patch('/:id', async (req, res) => {
     where: { id: user.id },
     data: {
       ...(role ? { role } : {}),
+      ...(canEditSpells !== undefined ? { canEditSpells } : {}),
       // Neues Passwort meldet alle Sitzungen des Benutzers ab
       ...(password ? { passwordHash: await hashPassword(password), tokenVersion: { increment: 1 } } : {}),
     },

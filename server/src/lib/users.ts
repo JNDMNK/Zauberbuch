@@ -7,6 +7,7 @@ export function toUserDto(user: User): UserDto {
     username: user.username,
     email: user.email,
     role: user.role as Role,
+    canEditSpells: user.canEditSpells,
     language: user.language as Locale,
     createdAt: user.createdAt.toISOString(),
   };

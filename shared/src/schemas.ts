@@ -167,6 +167,7 @@ export const createUserSchema = z.object({
   email: optionalEmail,
   password: passwordSchema,
   role: z.enum(ROLES).default('user'),
+  canEditSpells: z.boolean().optional().default(false),
   language: z.enum(LOCALES).optional(),
 });
 export type CreateUserInput = z.infer<typeof createUserSchema>;
@@ -193,8 +194,9 @@ export const updateUserSchema = z
   .object({
     role: z.enum(ROLES).optional(),
     password: passwordSchema.optional(),
+    canEditSpells: z.boolean().optional(),
   })
-  .refine((v) => v.role !== undefined || v.password !== undefined, { message: 'nothing_to_update' });
+  .refine((v) => v.role !== undefined || v.password !== undefined || v.canEditSpells !== undefined, { message: 'nothing_to_update' });
 
 export const favoriteSchema = z.object({
   spellId: z.string().min(1).max(100),
@@ -219,6 +221,7 @@ export const userImportEntrySchema = z.object({
     .optional()
     .transform((v) => (v ? v : null)),
   role: z.enum(ROLES).optional().default('user'),
+  canEditSpells: z.boolean().optional().default(false),
   language: z.enum(LOCALES).optional(),
   passwordHash: z.string().regex(BCRYPT_HASH_RE, 'password_hash_invalid').nullable().optional().transform((v) => v ?? null),
   /** Zauber in „Mein Zauberbuch“ (slugs) */

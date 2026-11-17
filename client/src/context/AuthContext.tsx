@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import { isEditorRole, type AppConfigDto, type Locale, type UserDto } from '@zauberbuch/shared';
+import { canDeleteSpells, canWriteSpells, isEditorRole, type AppConfigDto, type Locale, type UserDto } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { storedLanguage, storeLanguage } from '../i18n';
 import { asLocale } from '../lib/spellText';
@@ -21,6 +21,10 @@ interface AuthApi {
   isAdmin: boolean;
   /** Admin oder Dungeon Master */
   isEditor: boolean;
+  /** Darf Zauber anlegen/bearbeiten/duplizieren (Editor oder Zusatzrecht) */
+  canWriteSpells: boolean;
+  /** Darf Zauber löschen (Editor) */
+  canDeleteSpells: boolean;
   language: Locale;
   login: (identifier: string, password: string) => Promise<UserDto>;
   logout: () => Promise<void>;
@@ -141,6 +145,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       isAdmin: user?.role === 'admin',
       isEditor: isEditorRole(user?.role),
+      canWriteSpells: canWriteSpells(user),
+      canDeleteSpells: canDeleteSpells(user),
       language: asLocale(i18n.language),
       login,
       logout,

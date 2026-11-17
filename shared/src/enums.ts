@@ -38,6 +38,13 @@ export const EDITOR_ROLES: readonly Role[] = ['admin', 'dungeonmaster'];
 export const isEditorRole = (role: string | undefined | null): boolean =>
   !!role && (EDITOR_ROLES as readonly string[]).includes(role);
 
+/** Darf Zauber anlegen, bearbeiten und duplizieren: Admin, Dungeon Master oder Benutzer mit Zusatzrecht. */
+export const canWriteSpells = (user: { role?: string | null; canEditSpells?: boolean } | null | undefined): boolean =>
+  !!user && (isEditorRole(user.role) || user.canEditSpells === true);
+
+/** Darf Zauber löschen: nur Admin und Dungeon Master. */
+export const canDeleteSpells = (user: { role?: string | null } | null | undefined): boolean => !!user && isEditorRole(user.role);
+
 export const SORT_FIELDS = ['name', 'level', 'school'] as const;
 export type SortField = (typeof SORT_FIELDS)[number];
 

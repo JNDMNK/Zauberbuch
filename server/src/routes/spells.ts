@@ -13,7 +13,7 @@ import {
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { conflict, forbidden, notFound } from '../lib/errors';
-import { requireAdmin, requireAuth, requireEditor } from '../middleware/auth';
+import { requireAdmin, requireAuth, requireEditor, requireSpellWriter } from '../middleware/auth';
 import {
   buildSpellOrderBy,
   buildSpellWhere,
@@ -184,7 +184,7 @@ spellsRouter.get('/:slug', async (req, res) => {
   res.json({ spell: toSpellDto(spell, { full: true, isFavorite: favIds.has(spell.id) }) });
 });
 
-spellsRouter.post('/', requireEditor, async (req, res) => {
+spellsRouter.post('/', requireSpellWriter, async (req, res) => {
   const input = validate(spellInputSchema, req.body);
   if (await prisma.spell.findUnique({ where: { slug: input.slug } })) {
     throw conflict('slug_taken', 'A spell with this slug already exists');
@@ -193,7 +193,7 @@ spellsRouter.post('/', requireEditor, async (req, res) => {
   res.status(201).json({ spell: toSpellDto(spell, { full: true }) });
 });
 
-spellsRouter.put('/:id', requireEditor, async (req, res) => {
+spellsRouter.put('/:id', requireSpellWriter, async (req, res) => {
   const input = validate(spellInputSchema, req.body);
   const existing = await prisma.spell.findUnique({ where: { id: String(req.params.id) } });
   if (!existing) throw notFound('spell_not_found', 'Spell not found');
@@ -204,7 +204,7 @@ spellsRouter.put('/:id', requireEditor, async (req, res) => {
   res.json({ spell: toSpellDto(spell, { full: true }) });
 });
 
-spellsRouter.post('/:id/duplicate', requireEditor, async (req, res) => {
+spellsRouter.post('/:id/duplicate', requireSpellWriter, async (req, res) => {
   const existing = await prisma.spell.findUnique({ where: { id: String(req.params.id) }, include: spellInclude });
   if (!existing) throw notFound('spell_not_found', 'Spell not found');
   const input = toSpellInput(existing);

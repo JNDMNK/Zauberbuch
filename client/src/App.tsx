@@ -16,7 +16,7 @@ import { SpellbooksPage, UserSpellbookPage } from './pages/admin/SpellbooksPage'
 import { CharactersAdminPage } from './pages/admin/CharactersAdminPage';
 import { CharactersPage } from './pages/CharactersPage';
 import { CharacterSheetPage } from './pages/CharacterSheetPage';
-import { EDITOR_ROLES } from '@zauberbuch/shared';
+import { EDITOR_ROLES, canWriteSpells } from '@zauberbuch/shared';
 
 export default function App() {
   const location = useLocation();
@@ -47,7 +47,7 @@ export default function App() {
             <Route
               path="admin"
               element={
-                <RequireAuth roles={EDITOR_ROLES}>
+                <RequireAuth allow={canWriteSpells}>
                   <AdminLayout />
                 </RequireAuth>
               }
@@ -56,9 +56,30 @@ export default function App() {
               <Route path="spells" element={<AdminSpellsPage />} />
               <Route path="spells/new" element={<SpellFormPage key="new" />} />
               <Route path="spells/:slug/edit" element={<SpellFormPage />} />
-              <Route path="spellbooks" element={<SpellbooksPage />} />
-              <Route path="spellbooks/:userId" element={<UserSpellbookPage />} />
-              <Route path="characters" element={<CharactersAdminPage />} />
+              <Route
+                path="spellbooks"
+                element={
+                  <RequireAuth roles={EDITOR_ROLES}>
+                    <SpellbooksPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="spellbooks/:userId"
+                element={
+                  <RequireAuth roles={EDITOR_ROLES}>
+                    <UserSpellbookPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="characters"
+                element={
+                  <RequireAuth roles={EDITOR_ROLES}>
+                    <CharactersAdminPage />
+                  </RequireAuth>
+                }
+              />
               <Route
                 path="import-export"
                 element={

@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { User } from '@prisma/client';
-import { isEditorRole } from '@zauberbuch/shared';
+import { canWriteSpells, isEditorRole } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { AUTH_COOKIE, verifyToken } from '../lib/auth';
 import { forbidden, unauthorized } from '../lib/errors';
@@ -42,6 +42,13 @@ export function requireAdmin(req: Request, _res: Response, next: NextFunction) {
 export function requireEditor(req: Request, _res: Response, next: NextFunction) {
   if (!req.user) return next(unauthorized());
   if (!isEditorRole(req.user.role)) return next(forbidden());
+  next();
+}
+
+/** Zauber anlegen/bearbeiten/duplizieren: Admin, Dungeon Master oder Zusatzrecht „Zauber bearbeiten“. */
+export function requireSpellWriter(req: Request, _res: Response, next: NextFunction) {
+  if (!req.user) return next(unauthorized());
+  if (!canWriteSpells(req.user)) return next(forbidden());
   next();
 }
 

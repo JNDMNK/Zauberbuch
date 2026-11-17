@@ -267,7 +267,7 @@
     "setPasswordFor": "Neues Passwort für „{{name}}“",
     "passwordSet": "Passwort gesetzt. Der Benutzer wurde auf allen Geräten abgemeldet.",
     "emailOptional": "E-Mail (optional)",
-    "rolesHint": "Benutzer: Zauber ansehen und eigenes Zauberbuch führen · Dungeon Master: zusätzlich Zauber pflegen und alle Zauberbücher ansehen · Admin: zusätzlich Benutzer, Import und Export verwalten",
+    "rolesHint": "Benutzer: Zauber ansehen und eigenes Zauberbuch führen (optional mit Zusatzrecht „Zauber bearbeiten“) · Dungeon Master: zusätzlich Zauber pflegen und löschen sowie alle Zauberbücher und Charakterbögen ansehen · Admin: zusätzlich Benutzer, Import und Export verwalten",
     "characters": "Charakterbögen",
     "charactersTitle": "Charakterbögen der Benutzer",
     "charactersHint": "Alle Charakterbögen – nur lesend. Bearbeiten kann nur der Besitzer.",
@@ -316,7 +316,12 @@
     "userDefaultPasswordHint": "Leer lassen, um solche Benutzer zu überspringen. Die Benutzer sollten es nach dem ersten Login ändern.",
     "userImportDone": "Import abgeschlossen: {{created}} angelegt, {{updated}} aktualisiert, {{skipped}} übersprungen, {{invalid}} ungültig · {{favoritesLinked}} Zauberbuch-Einträge wiederhergestellt",
     "userFavoritesMissing": "{{count}} Zauberbuch-Einträge verweisen auf Zauber, die es hier (noch) nicht gibt – importiere ggf. zuerst die Zauber.",
-    "favoritesCount": "Zauberbuch"
+    "favoritesCount": "Zauberbuch",
+    "canEditSpells": "Darf Zauber bearbeiten",
+    "canEditSpellsShort": "Zauber bearbeiten",
+    "canEditSpellsHint": "Zauber anlegen, bearbeiten und duplizieren (nicht löschen), ohne weitere Rechte",
+    "canEditSpellsByRole": "Admins und Dungeon Master dürfen Zauber immer bearbeiten",
+    "rightChanged": "Recht geändert"
   },
   "errors": {
     "unknown": "Unbekannter Fehler.",

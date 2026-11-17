@@ -88,19 +88,26 @@ setzen (mindestens `ZAUBERBUCH_IMAGE` und `ADMIN_PASSWORD`). Dann **Compose Up**
 
 Ohne Anmeldung sind keine Daten sichtbar – weder in der Oberfläche noch über die API. Eine
 Selbstregistrierung gibt es nicht: Benutzer legt der Admin unter **Verwaltung → Benutzer → Neuer Benutzer**
-an (Benutzername, optional E-Mail, Passwort, Rolle). Dort kann er auch Rollen ändern, Passwörter neu
+an (Benutzername, optional E-Mail, Passwort, Rolle). Dort kann er auch Rollen ändern, das Zusatzrecht
+„Zauber bearbeiten“ vergeben, Passwörter neu
 setzen (der Benutzer wird dabei auf allen Geräten abgemeldet) und Benutzer löschen.
 
 | Recht | Benutzer | Dungeon Master | Admin |
 |---|:---:|:---:|:---:|
 | Zauber suchen, filtern, ansehen | ✔ | ✔ | ✔ |
 | Eigenes Zauberbuch („Mein Zauberbuch“) führen | ✔ | ✔ | ✔ |
-| Zauber anlegen, bearbeiten, duplizieren, löschen | – | ✔ | ✔ |
+| Zauber anlegen, bearbeiten, duplizieren | (✔)¹ | ✔ | ✔ |
+| Zauber löschen | – | ✔ | ✔ |
 | Zauberbücher aller Benutzer ansehen | – | ✔ | ✔ |
 | Eigene Charakterbögen anlegen und bearbeiten | ✔ | ✔ | ✔ |
 | Charakterbögen aller Benutzer ansehen (nur lesen) | – | ✔ | ✔ |
 | JSON-Import und -Export (Zauber, Benutzer, Charakterbögen) | – | – | ✔ |
 | Benutzer anlegen, Rollen ändern, Passwörter setzen, löschen | – | – | ✔ |
+
+¹ Nur mit dem Zusatzrecht **„Zauber bearbeiten“**, das der Admin pro Benutzer unter **Verwaltung → Benutzer**
+per Häkchen vergibt (auch direkt beim Anlegen). Der Benutzer behält ansonsten seine Rechte: In der Verwaltung
+sieht er nur den Reiter **Zauber**, kann aber nicht löschen und keine fremden Zauberbücher oder Charakterbögen
+ansehen. Das Recht wird beim Benutzer-Export/-Import mitgenommen.
 
 Der erste Admin wird beim Start aus `ADMIN_USERNAME`/`ADMIN_PASSWORD` angelegt. Der letzte Admin
 kann weder herabgestuft noch gelöscht werden.
@@ -130,12 +137,12 @@ Bögen unter **Verwaltung → Charakterbögen** – nur lesend. Der Bogen lässt
 ### Export & Import der Benutzer (Admin)
 
 Unter **Verwaltung → Import / Export → Benutzer** exportiert der Admin alle Benutzer mit E-Mail, Rolle,
-Sprache und „Mein Zauberbuch“ (als Zauber-Slugs). Optional – und standardmäßig – werden die **verschlüsselten
+Zusatzrecht, Sprache und „Mein Zauberbuch“ (als Zauber-Slugs). Optional – und standardmäßig – werden die **verschlüsselten
 Passwörter** (bcrypt-Hashes) mitexportiert, sodass sich nach einem Import alle mit ihrem bisherigen Passwort
 anmelden können. Die Datei ist daher vertraulich zu behandeln.
 
 Beim Import zeigt eine Vorschau jeden Benutzer mit Status. Vorhandene Benutzer (gleicher Benutzername) werden
-übersprungen oder auf Wunsch aktualisiert (E-Mail, Rolle, Sprache, Passwort; Zauberbuch wird ergänzt). Das
+übersprungen oder auf Wunsch aktualisiert (E-Mail, Rolle, Zusatzrecht, Sprache, Passwort; Zauberbuch wird ergänzt). Das
 eigene Admin-Konto wird nie verändert. Für Einträge ohne Passwort-Hash kann ein Startpasswort vorgegeben
 werden, sonst werden sie übersprungen. Einträge mit einer E-Mail-Adresse, die bereits ein anderer Benutzer hat,
 werden als Konflikt übersprungen.

@@ -24,6 +24,7 @@ import { errorMessage, fieldMessage } from '../../lib/errors';
 import { slugify, toggleInList } from '../../lib/filters';
 import { DamageValue } from '../../components/DamageValue';
 import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { MarkdownEditor } from '../../components/MarkdownEditor';
 import { Alert, Checkbox, Field, PageSpinner, Spinner, TextInput } from '../../components/ui';
@@ -145,6 +146,7 @@ export function SpellFormPage() {
   const { t } = useTranslation();
   const toast = useToast();
   const navigate = useNavigate();
+  const { canDeleteSpells } = useAuth();
   const [form, setForm] = useState<FormState>(emptyForm);
   const [spellId, setSpellId] = useState<string | null>(null);
   const [slugTouched, setSlugTouched] = useState(isEdit);
@@ -294,10 +296,12 @@ export function SpellFormPage() {
               <Copy className="h-4 w-4" />
               {t('common.duplicate')}
             </button>
-            <button type="button" className="btn-secondary !text-red-700 dark:!text-red-400" onClick={() => setConfirmDelete(true)}>
-              <Trash2 className="h-4 w-4" />
-              {t('common.delete')}
-            </button>
+            {canDeleteSpells && (
+              <button type="button" className="btn-secondary !text-red-700 dark:!text-red-400" onClick={() => setConfirmDelete(true)}>
+                <Trash2 className="h-4 w-4" />
+                {t('common.delete')}
+              </button>
+            )}
           </>
         )}
         <button type="submit" className="btn-primary" disabled={saving}>

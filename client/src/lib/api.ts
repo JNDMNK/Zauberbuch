@@ -107,9 +107,9 @@ export const api = {
   removeFavorite: (spellId: string) => request<void>('DELETE', `/api/favorites/${encodeURIComponent(spellId)}`),
 
   users: () => request<{ users: AdminUserDto[] }>('GET', '/api/users'),
-  createUser: (data: { username: string; email: string; password: string; role: Role }) =>
+  createUser: (data: { username: string; email: string; password: string; role: Role; canEditSpells?: boolean }) =>
     request<{ user: AdminUserDto }>('POST', '/api/users', data),
-  updateUser: (id: string, data: { role?: Role; password?: string }) =>
+  updateUser: (id: string, data: { role?: Role; password?: string; canEditSpells?: boolean }) =>
     request<{ user: UserDto }>('PATCH', `/api/users/${id}`, data),
   deleteUser: (id: string) => request<void>('DELETE', `/api/users/${id}`),
   userImportPreview: (users: unknown[], mode: 'skip' | 'update', defaultPassword: string | null) =>

@@ -12,6 +12,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { useSpellSearch } from '../../hooks/useSpellSearch';
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { Alert, PageSpinner, Spinner } from '../../components/ui';
 
@@ -19,6 +20,7 @@ export function AdminSpellsPage() {
   const { t, i18n } = useTranslation();
   const toast = useToast();
   const navigate = useNavigate();
+  const { canDeleteSpells } = useAuth();
   const lang = asLocale(i18n.language);
   const [query, setQuery] = useState('');
   const debounced = useDebounce(query, 300);
@@ -114,9 +116,11 @@ export function AdminSpellsPage() {
                         <button type="button" className="btn-icon" onClick={() => duplicate(spell)} title={t('common.duplicate')} aria-label={t('common.duplicate')}>
                           <Copy className="h-4 w-4" />
                         </button>
-                        <button type="button" className="btn-icon text-red-700 dark:text-red-400" onClick={() => setToDelete(spell)} title={t('common.delete')} aria-label={t('common.delete')}>
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        {canDeleteSpells && (
+                          <button type="button" className="btn-icon text-red-700 dark:text-red-400" onClick={() => setToDelete(spell)} title={t('common.delete')} aria-label={t('common.delete')}>
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
