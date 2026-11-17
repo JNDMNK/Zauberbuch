@@ -199,3 +199,37 @@ export const updateUserSchema = z
 export const favoriteSchema = z.object({
   spellId: z.string().min(1).max(100),
 });
+
+// ---------------------------------------------------------------- Benutzer-Export/-Import (nur Admin)
+
+export const USER_EXPORT_FORMAT = 'zauberbuch-users';
+
+/** bcrypt-Hash ($2a$/$2b$/$2y$) */
+export const BCRYPT_HASH_RE = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
+
+export const userImportEntrySchema = z.object({
+  username: usernameSchema,
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(200)
+    .refine((v) => v === '' || z.string().email().safeParse(v).success, 'email_invalid')
+    .nullable()
+    .optional()
+    .transform((v) => (v ? v : null)),
+  role: z.enum(ROLES).optional().default('user'),
+  language: z.enum(LOCALES).optional(),
+  passwordHash: z.string().regex(BCRYPT_HASH_RE, 'password_hash_invalid').nullable().optional().transform((v) => v ?? null),
+  /** Zauber in „Mein Zauberbuch“ (slugs) */
+  favorites: z.array(z.string().max(120)).max(5000).optional().default([]),
+});
+export type UserImportEntry = z.infer<typeof userImportEntrySchema>;
+
+export const userImportSchema = z.object({
+  users: z.array(z.unknown()).min(1).max(5000),
+  /** vorhandene Benutzer überspringen oder aktualisieren (E-Mail, Rolle, Sprache, Passwort, Zauberbuch) */
+  mode: z.enum(['skip', 'update']).optional().default('skip'),
+  /** Startpasswort für Einträge ohne Passwort-Hash; leer = solche Einträge überspringen */
+  defaultPassword: passwordSchema.nullable().optional().default(null),
+});

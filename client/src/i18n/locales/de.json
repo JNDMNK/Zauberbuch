@@ -293,7 +293,30 @@
     "charDuplicatesCreate": "trotzdem anlegen",
     "charImportDone": "Import abgeschlossen: {{created}} angelegt, {{skipped}} übersprungen, {{invalid}} ungültig.",
     "charFileSize": "{{size}} MB",
-    "charFileSizeKb": "{{size}} KB"
+    "charFileSizeKb": "{{size}} KB",
+    "usersSection": "Benutzer",
+    "userExportText": "Alle Benutzer mit E-Mail, Rolle, Sprache und „Mein Zauberbuch“ als JSON-Datei herunterladen – z. B. als Sicherung oder für einen Umzug auf einen anderen Server.",
+    "userExportPasswords": "Passwörter (verschlüsselt) mitexportieren – dann können sich alle nach dem Import mit ihrem bisherigen Passwort anmelden",
+    "userExportWarning": "Die Datei enthält die verschlüsselten Passwörter. Bewahre sie sicher auf und gib sie nicht weiter.",
+    "userExportButton": "Benutzer exportieren",
+    "userImportText": "Eine Benutzer-Export-Datei auswählen. Dein eigenes Admin-Konto wird beim Import nie verändert. Tipp für einen Umzug: zuerst Zauber, dann Benutzer, dann Charakterbögen importieren.",
+    "userInvalidFile": "Die Datei enthält keine Benutzer.",
+    "userPreviewSummary": "{{total}} Benutzer: {{new}} neu, {{exists}} vorhanden (überspringen), {{update}} werden aktualisiert, {{no_password}} ohne Passwort, {{conflict}} mit Konflikt, {{invalid}} ungültig",
+    "userStatus_new": "Neu",
+    "userStatus_exists": "Vorhanden",
+    "userStatus_update": "Aktualisieren",
+    "userStatus_self": "Eigenes Konto",
+    "userStatus_no_password": "Ohne Passwort",
+    "userStatus_conflict": "Konflikt",
+    "userStatus_invalid": "Ungültig",
+    "userMode": "Vorhandene Benutzer",
+    "userModeSkip": "überspringen",
+    "userModeUpdate": "aktualisieren (E-Mail, Rolle, Sprache, Passwort; Zauberbuch wird ergänzt)",
+    "userDefaultPassword": "Startpasswort für Benutzer ohne Passwort in der Datei",
+    "userDefaultPasswordHint": "Leer lassen, um solche Benutzer zu überspringen. Die Benutzer sollten es nach dem ersten Login ändern.",
+    "userImportDone": "Import abgeschlossen: {{created}} angelegt, {{updated}} aktualisiert, {{skipped}} übersprungen, {{invalid}} ungültig · {{favoritesLinked}} Zauberbuch-Einträge wiederhergestellt",
+    "userFavoritesMissing": "{{count}} Zauberbuch-Einträge verweisen auf Zauber, die es hier (noch) nicht gibt – importiere ggf. zuerst die Zauber.",
+    "favoritesCount": "Zauberbuch"
   },
   "errors": {
     "unknown": "Unbekannter Fehler.",
@@ -336,7 +359,8 @@
     "nothing_to_update": "Es wurde nichts geändert.",
     "character_not_found": "Charakterbogen nicht gefunden.",
     "read_only": "Diesen Charakterbogen kann nur sein Besitzer bearbeiten.",
-    "too_many_characters": "Du hast die maximale Anzahl an Charakteren erreicht."
+    "too_many_characters": "Du hast die maximale Anzahl an Charakteren erreicht.",
+    "password_hash_invalid": "Ungültiger Passwort-Hash."
   },
   "damageType": {
     "acid": "Säure",

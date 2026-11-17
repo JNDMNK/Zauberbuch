@@ -88,3 +88,46 @@ export interface SpellbookOwnerDto {
   role: Role;
   spellCount: number;
 }
+
+export interface UserExportEntry {
+  username: string;
+  email: string | null;
+  role: Role;
+  language: Locale;
+  passwordHash?: string;
+  favorites: string[];
+  createdAt: string;
+}
+
+export interface UserExportFile {
+  format: 'zauberbuch-users';
+  version: 1;
+  exportedAt: string;
+  includesPasswords: boolean;
+  users: UserExportEntry[];
+}
+
+export type UserImportStatus = 'new' | 'exists' | 'update' | 'self' | 'no_password' | 'conflict' | 'invalid';
+
+export interface UserImportPreviewItem {
+  index: number;
+  username: string | null;
+  role: Role | null;
+  favorites: number;
+  status: UserImportStatus;
+  errors?: string[];
+}
+
+export interface UserImportPreview {
+  items: UserImportPreviewItem[];
+  summary: Record<UserImportStatus, number> & { total: number };
+}
+
+export interface UserImportResult {
+  created: number;
+  updated: number;
+  skipped: number;
+  invalid: number;
+  favoritesLinked: number;
+  favoritesMissing: number;
+}

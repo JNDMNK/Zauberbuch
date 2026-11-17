@@ -12,6 +12,8 @@ import type {
   Role,
   SpellDto,
   SpellbookOwnerDto,
+  UserImportPreview,
+  UserImportResult,
   SpellInput,
   UserDto,
 } from '@zauberbuch/shared';
@@ -110,6 +112,10 @@ export const api = {
   updateUser: (id: string, data: { role?: Role; password?: string }) =>
     request<{ user: UserDto }>('PATCH', `/api/users/${id}`, data),
   deleteUser: (id: string) => request<void>('DELETE', `/api/users/${id}`),
+  userImportPreview: (users: unknown[], mode: 'skip' | 'update', defaultPassword: string | null) =>
+    request<UserImportPreview>('POST', '/api/users/import/preview', { users, mode, defaultPassword }),
+  importUsers: (users: unknown[], mode: 'skip' | 'update', defaultPassword: string | null) =>
+    request<UserImportResult>('POST', '/api/users/import', { users, mode, defaultPassword }),
 
   spellbooks: () => request<{ owners: SpellbookOwnerDto[] }>('GET', '/api/spellbooks'),
 

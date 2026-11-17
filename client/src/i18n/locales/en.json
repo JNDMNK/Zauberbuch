@@ -293,7 +293,30 @@
     "charDuplicatesCreate": "create anyway",
     "charImportDone": "Import finished: {{created}} created, {{skipped}} skipped, {{invalid}} invalid.",
     "charFileSize": "{{size}} MB",
-    "charFileSizeKb": "{{size}} KB"
+    "charFileSizeKb": "{{size}} KB",
+    "usersSection": "Users",
+    "userExportText": "Download all users with email, role, language and “My Spellbook” as a JSON file – e.g. as a backup or to move to another server.",
+    "userExportPasswords": "Include passwords (encrypted) – users can then log in with their previous password after the import",
+    "userExportWarning": "The file contains the encrypted passwords. Keep it safe and do not share it.",
+    "userExportButton": "Export users",
+    "userImportText": "Choose a user export file. Your own admin account is never changed by the import. Tip for moving servers: import spells first, then users, then character sheets.",
+    "userInvalidFile": "The file contains no users.",
+    "userPreviewSummary": "{{total}} users: {{new}} new, {{exists}} existing (skip), {{update}} will be updated, {{no_password}} without password, {{conflict}} with conflict, {{invalid}} invalid",
+    "userStatus_new": "New",
+    "userStatus_exists": "Exists",
+    "userStatus_update": "Update",
+    "userStatus_self": "Your account",
+    "userStatus_no_password": "No password",
+    "userStatus_conflict": "Conflict",
+    "userStatus_invalid": "Invalid",
+    "userMode": "Existing users",
+    "userModeSkip": "skip",
+    "userModeUpdate": "update (email, role, language, password; spellbook is merged)",
+    "userDefaultPassword": "Initial password for users without password in the file",
+    "userDefaultPasswordHint": "Leave empty to skip such users. Users should change it after their first login.",
+    "userImportDone": "Import finished: {{created}} created, {{updated}} updated, {{skipped}} skipped, {{invalid}} invalid · {{favoritesLinked}} spellbook entries restored",
+    "userFavoritesMissing": "{{count}} spellbook entries refer to spells that do not exist here (yet) – import the spells first if needed.",
+    "favoritesCount": "Spellbook"
   },
   "errors": {
     "unknown": "Unknown error.",
@@ -336,7 +359,8 @@
     "nothing_to_update": "Nothing was changed.",
     "character_not_found": "Character sheet not found.",
     "read_only": "Only the owner can edit this character sheet.",
-    "too_many_characters": "You have reached the maximum number of characters."
+    "too_many_characters": "You have reached the maximum number of characters.",
+    "password_hash_invalid": "Invalid password hash."
   },
   "damageType": {
     "acid": "Acid",

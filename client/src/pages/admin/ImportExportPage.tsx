@@ -7,6 +7,7 @@ import { errorMessage } from '../../lib/errors';
 import { useToast } from '../../context/ToastContext';
 import { Alert, Spinner, TextArea } from '../../components/ui';
 import { CharacterImportExport } from './CharacterImportExport';
+import { UserImportExport } from './UserImportExport';
 
 /** Akzeptiert ein Array von Zaubern oder ein Export-Objekt { spells: [...] }. */
 function extractSpells(raw: unknown): unknown[] | null {
@@ -208,6 +209,10 @@ export function ImportExportPage() {
         )}
       </section>
     </div>
+    </section>
+    <section>
+      <h2 className="mb-4 text-xl font-bold">{t('admin.usersSection')}</h2>
+      <UserImportExport />
     </section>
     <section>
       <h2 className="mb-4 text-xl font-bold">{t('admin.charactersSection')}</h2>

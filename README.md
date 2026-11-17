@@ -99,7 +99,7 @@ setzen (der Benutzer wird dabei auf allen Geräten abgemeldet) und Benutzer lös
 | Zauberbücher aller Benutzer ansehen | – | ✔ | ✔ |
 | Eigene Charakterbögen anlegen und bearbeiten | ✔ | ✔ | ✔ |
 | Charakterbögen aller Benutzer ansehen (nur lesen) | – | ✔ | ✔ |
-| JSON-Import und -Export (Zauber und Charakterbögen) | – | – | ✔ |
+| JSON-Import und -Export (Zauber, Benutzer, Charakterbögen) | – | – | ✔ |
 | Benutzer anlegen, Rollen ändern, Passwörter setzen, löschen | – | – | ✔ |
 
 Der erste Admin wird beim Start aus `ADMIN_USERNAME`/`ADMIN_PASSWORD` angelegt. Der letzte Admin
@@ -126,6 +126,32 @@ Rettungswürfe, Fertigkeiten, passive Wahrnehmung, Initiative, Angriffsbonus, Za
 Änderungen werden automatisch gespeichert (kurz nach der letzten Eingabe sowie beim Verlassen der Seite).
 Bilder werden im Browser verkleinert und mit dem Bogen gespeichert. Admin und Dungeon Master sehen alle
 Bögen unter **Verwaltung → Charakterbögen** – nur lesend. Der Bogen lässt sich über das Drucker-Symbol drucken.
+
+### Export & Import der Benutzer (Admin)
+
+Unter **Verwaltung → Import / Export → Benutzer** exportiert der Admin alle Benutzer mit E-Mail, Rolle,
+Sprache und „Mein Zauberbuch“ (als Zauber-Slugs). Optional – und standardmäßig – werden die **verschlüsselten
+Passwörter** (bcrypt-Hashes) mitexportiert, sodass sich nach einem Import alle mit ihrem bisherigen Passwort
+anmelden können. Die Datei ist daher vertraulich zu behandeln.
+
+Beim Import zeigt eine Vorschau jeden Benutzer mit Status. Vorhandene Benutzer (gleicher Benutzername) werden
+übersprungen oder auf Wunsch aktualisiert (E-Mail, Rolle, Sprache, Passwort; Zauberbuch wird ergänzt). Das
+eigene Admin-Konto wird nie verändert. Für Einträge ohne Passwort-Hash kann ein Startpasswort vorgegeben
+werden, sonst werden sie übersprungen. Einträge mit einer E-Mail-Adresse, die bereits ein anderer Benutzer hat,
+werden als Konflikt übersprungen.
+
+```json
+{
+  "format": "zauberbuch-users",
+  "version": 1,
+  "exportedAt": "2026-01-01T12:00:00.000Z",
+  "includesPasswords": true,
+  "users": [
+    { "username": "jan", "email": "jan@example.com", "role": "user", "language": "de",
+      "passwordHash": "$2b$12$…", "favorites": ["feuerball", "schild"], "createdAt": "2026-01-01T10:00:00.000Z" }
+  ]
+}
+```
 
 ### Export & Import der Charakterbögen (Admin)
 
@@ -212,7 +238,16 @@ Alternativ den Container stoppen und den kompletten Ordner `/mnt/user/appdata/za
 (z. B. mit dem Unraid-Plugin „Appdata Backup“). Zusätzlich lässt sich unter
 **Verwaltung → Import / Export** jederzeit ein JSON-Export aller Zauber herunterladen.
 
-**Wiederherstellung:**
+**Umzug oder Wiederherstellung per Export:** Unter **Verwaltung → Import / Export** exportiert der Admin
+Zauber, Benutzer und Charakterbögen als JSON-Dateien. Auf dem neuen Server in dieser Reihenfolge importieren:
+**1. Zauber → 2. Benutzer → 3. Charakterbögen** (Benutzer verweisen über „Mein Zauberbuch“ auf Zauber,
+Charakterbögen über den Benutzernamen auf Benutzer).
+
+> Bei einem normalen Container-Update gehen keine Daten verloren – alles liegt in `/data`. Fehlen nach einem
+> Update Benutzer oder Zauber, ist `/data` nicht persistent gemappt (Unraid: Pfad `/data` →
+> `/mnt/user/appdata/zauberbuch` im Container-Template prüfen).
+
+**Wiederherstellung aus einer DB-Sicherung:**
 
 ```bash
 docker stop zauberbuch
@@ -385,6 +420,9 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `POST /api/characters/import` | Admin | `{ characters: [...], fallbackOwnerId?, duplicates: "skip" \| "create" }` |
 | `GET /api/users` | Admin | Benutzerliste |
 | `POST /api/users` | Admin | `{ username, email?, password, role? }` – Benutzer anlegen |
+| `GET /api/users/export?passwords=true\|false` | Admin | Alle Benutzer als JSON-Datei |
+| `POST /api/users/import/preview` | Admin | `{ users: [...], mode?: "skip" \| "update", defaultPassword? }` → Status je Benutzer |
+| `POST /api/users/import` | Admin | wie Vorschau; legt an bzw. aktualisiert |
 | `PATCH /api/users/:id` | Admin | `{ role?: "admin" \| "dungeonmaster" \| "user", password? }` (letzter Admin geschützt) |
 | `DELETE /api/users/:id` | Admin | Benutzer löschen (nicht sich selbst, nicht den letzten Admin) |
 
