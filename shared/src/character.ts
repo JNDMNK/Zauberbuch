@@ -29,6 +29,25 @@ export const SKILLS = [
 export type SkillKey = (typeof SKILLS)[number][0];
 export const SKILL_KEYS = SKILLS.map(([k]) => k) as SkillKey[];
 
+/** Erfahrungspunkte, ab denen eine Stufe erreicht ist (Index = Stufe − 1), laut Spielerhandbuch */
+export const XP_THRESHOLDS = [
+  0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000,
+  305000, 355000,
+] as const;
+
+/** Benötigte EP für die nächste Stufe; null auf Stufe 20 */
+export function xpForNextLevel(level: number): number | null {
+  const l = Math.max(1, Math.min(20, Math.floor(level)));
+  return l >= 20 ? null : XP_THRESHOLDS[l];
+}
+
+/** Stufe, die mit den angegebenen EP erreicht ist */
+export function levelForXp(xp: number): number {
+  let level = 1;
+  for (let i = 0; i < XP_THRESHOLDS.length; i++) if (xp >= XP_THRESHOLDS[i]) level = i + 1;
+  return level;
+}
+
 const text = (max = 200) => z.string().max(max).catch('').default('');
 const longText = () => z.string().max(20000).catch('').default('');
 const int = (min: number, max: number, def: number) => z.coerce.number().int().min(min).max(max).catch(def).default(def);
@@ -172,6 +191,10 @@ export const characterSheetSchema = z.object({
   portrait: image(),
   symbol: image(),
   symbolName: text(100),
+}).transform((sheet) => {
+  // „Nächste Stufe“ wird immer aus der Stufe berechnet (0 = Höchststufe erreicht)
+  sheet.identity.xpNext = xpForNextLevel(sheet.identity.level) ?? 0;
+  return sheet;
 });
 
 export type CharacterSheet = z.infer<typeof characterSheetSchema>;

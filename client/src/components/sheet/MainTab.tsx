@@ -7,6 +7,8 @@ import {
   attackBonus,
   formatModifier,
   initiative,
+  levelForXp,
+  xpForNextLevel,
   passivePerception,
   proficiencyBonus,
   proficiencyBonusForLevel,
@@ -17,6 +19,43 @@ import {
 import { useSheet } from './SheetContext';
 import { Box, CheckField, Computed, NF, ProfToggle, TA, TF } from './fields';
 
+/** Erfahrungspunkte mit automatisch berechneter Schwelle für die nächste Stufe */
+function ExperienceField() {
+  const { t, i18n } = useTranslation();
+  const { sheet, set, readOnly } = useSheet();
+  const { level, xp } = sheet.identity;
+  const next = xpForNextLevel(level);
+  const reachable = Math.min(20, levelForXp(xp));
+  const canLevelUp = reachable > level;
+  return (
+    <div className="col-span-2">
+      <div className="flex items-start gap-1">
+        <NF path={['identity', 'xp']} label={t('sheet.xp')} min={0} className="flex-1" />
+        <span className="pt-2 text-parchment-600">/</span>
+        <div className="flex-1">
+          <output
+            className="sheet-input block !border-dashed text-center tabular-nums text-parchment-800 dark:text-parchment-300"
+            title={t('sheet.computed')}
+          >
+            {next === null ? t('sheet.xpMaxLevel') : next.toLocaleString(i18n.language)}
+          </output>
+          <span className="sheet-label">{t('sheet.xpNext')}</span>
+        </div>
+      </div>
+      {canLevelUp && (
+        <div className="mt-1 flex flex-wrap items-center gap-2 rounded-md bg-amber-100 px-2 py-1 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200" role="status">
+          <span>{t('sheet.levelUpPossible', { level: reachable })}</span>
+          {!readOnly && (
+            <button type="button" className="font-semibold underline" onClick={() => set(['identity', 'level'], reachable)}>
+              {t('sheet.levelUpButton', { level: reachable })}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function IdentityHeader() {
   const { t } = useTranslation();
   return (
@@ -24,11 +63,7 @@ export function IdentityHeader() {
       <TF path={['identity', 'classLevel']} label={t('sheet.classLevel')} className="col-span-2" />
       <NF path={['identity', 'level']} label={t('sheet.level')} min={1} max={20} />
       <TF path={['identity', 'playerName']} label={t('sheet.playerName')} />
-      <div className="col-span-2 flex items-start gap-1">
-        <NF path={['identity', 'xp']} label={t('sheet.xp')} min={0} className="flex-1" />
-        <span className="pt-2 text-parchment-600">/</span>
-        <NF path={['identity', 'xpNext']} label={t('sheet.xpNext')} min={0} className="flex-1" />
-      </div>
+      <ExperienceField />
       <TF path={['identity', 'background']} label={t('sheet.background')} className="col-span-2 sm:col-span-1 lg:col-span-3" />
       <TF path={['identity', 'race']} label={t('sheet.race')} className="col-span-2 lg:col-span-3" />
     </div>

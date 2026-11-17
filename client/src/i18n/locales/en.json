@@ -395,7 +395,7 @@
     "race": "Race",
     "playerName": "Player name",
     "xp": "Experience points",
-    "xpNext": "Next level",
+    "xpNext": "Next level (automatic)",
     "age": "Age",
     "faith": "Faith / deity",
     "size": "Size",
@@ -567,6 +567,9 @@
     "fromSpellbookNone": "All spells from your spellbook are already on the sheet.",
     "resetSlots": "Reset spell slots (long rest)",
     "remove": "Remove",
-    "computed": "calculated"
+    "computed": "calculated",
+    "xpMaxLevel": "Max level",
+    "levelUpPossible": "Enough experience for level {{level}}!",
+    "levelUpButton": "Raise to level {{level}}"
   }
 }

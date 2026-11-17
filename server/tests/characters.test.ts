@@ -60,6 +60,21 @@ describe('Charakterbögen', () => {
     expect(d.unknownField).toBeUndefined();
   });
 
+  it('berechnet die benötigten Erfahrungspunkte für die nächste Stufe automatisch', async () => {
+    const { agent } = await createUser('rosie');
+    const created = (await agent.post('/api/characters').set(CSRF).send({ name: 'Rosie' })).body.character;
+    expect(created.data.identity.xpNext).toBe(300); // Stufe 1 -> 2
+    const { id, data } = created;
+    data.identity.level = 3;
+    data.identity.xp = 1310;
+    data.identity.xpNext = 12345; // falscher Wert wird ignoriert
+    const saved = await agent.put(`/api/characters/${id}`).set(CSRF).send({ data });
+    expect(saved.body.character.data.identity).toMatchObject({ level: 3, xp: 1310, xpNext: 2700 });
+    data.identity.level = 20;
+    const max = await agent.put(`/api/characters/${id}`).set(CSRF).send({ data });
+    expect(max.body.character.data.identity.xpNext).toBe(0); // Höchststufe
+  });
+
   it('lässt Admin und Dungeon Master alle Bögen lesen, aber nicht bearbeiten', async () => {
     const { agent: owner } = await createUser('pippin');
     const { id, data } = (await owner.post('/api/characters').set(CSRF).send({ name: 'Peregrin' })).body.character;

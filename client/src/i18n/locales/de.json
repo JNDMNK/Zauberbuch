@@ -395,7 +395,7 @@
     "race": "Volk",
     "playerName": "Spielername",
     "xp": "Erfahrungspunkte",
-    "xpNext": "Nächste Stufe",
+    "xpNext": "Nächste Stufe (automatisch)",
     "age": "Alter",
     "faith": "Glaube / Gottheit",
     "size": "Größenkategorie",
@@ -567,6 +567,9 @@
     "fromSpellbookNone": "Alle Zauber aus deinem Zauberbuch stehen schon auf dem Bogen.",
     "resetSlots": "Zauberplätze zurücksetzen (lange Rast)",
     "remove": "Entfernen",
-    "computed": "berechnet"
+    "computed": "berechnet",
+    "xpMaxLevel": "Höchststufe",
+    "levelUpPossible": "Genug Erfahrung für Stufe {{level}}!",
+    "levelUpButton": "Auf Stufe {{level}} erhöhen"
   }
 }

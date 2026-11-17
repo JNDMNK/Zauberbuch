@@ -117,7 +117,9 @@ D&D-5e-Charakterbogen in vier Reiter gegliedert:
 | **Hintergrund** | Alter, Glaube, Größe, Gewicht, Gesinnung, Aussehen … · Porträt und Symbol (Bild-Upload) · Verbündete, Aussehen, Hintergrundgeschichte, zusätzliche Ausrüstung, Werdegang |
 | **Zauber** | Zauberwirkende Klasse und Attribut · Zauberplätze je Grad (verbrauchte Plätze anklickbar, „lange Rast“ setzt zurück) · Zauberlisten mit „vorbereitet“, Namensvorschlägen aus der Bibliothek, Link zur Zauberbeschreibung und Übernahme aus „Mein Zauberbuch“ |
 
-**Automatisch berechnet** werden Attributsmodifikatoren, Übungsbonus (aus der Gesamtstufe, überschreibbar),
+**Automatisch berechnet** werden die benötigten Erfahrungspunkte für die nächste Stufe (laut Spielerhandbuch;
+reichen die EP für einen Stufenaufstieg, bietet der Bogen an, die Stufe zu erhöhen), Attributsmodifikatoren,
+Übungsbonus (aus der Gesamtstufe, überschreibbar),
 Rettungswürfe, Fertigkeiten, passive Wahrnehmung, Initiative, Angriffsbonus, Zauber-Rettungswurf-SG und
 -Angriffsbonus, Sprungweiten, Gewichte (50 Münzen = 1 lb) und Traglastgrenzen.
 
