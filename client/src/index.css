@@ -144,6 +144,9 @@
   }
   .sheet-label {
     @apply block font-display text-[10px] font-bold uppercase tracking-wider text-parchment-800 dark:text-parchment-400;
+    /* lange Wörter (z. B. „Rüstungsklasse“) in schmalen Kästen trennen statt überlaufen */
+    hyphens: auto;
+    overflow-wrap: break-word;
   }
   .sheet-input {
     @apply w-full rounded-md border border-parchment-300 bg-white/60 px-2 py-1 font-serif text-base text-ink focus:border-parchment-700 focus:outline-none focus:ring-2 focus:ring-parchment-500/30 disabled:cursor-default disabled:border-transparent disabled:bg-transparent dark:border-night-700 dark:bg-night-950/50 dark:text-parchment-100 dark:disabled:bg-transparent;

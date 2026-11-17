@@ -153,9 +153,8 @@ function CombatBlock() {
   const { t } = useTranslation();
   const { sheet, set, readOnly } = useSheet();
   const pips = (key: 'deathSuccesses' | 'deathFailures', label: string) => (
-    <div className="flex items-center justify-between gap-2 text-xs">
-      <span className="sheet-label !mb-0">{label}</span>
-      <div className="flex gap-1">
+    <div className="flex flex-col items-start gap-1">
+      <div className="flex gap-1.5">
         {[1, 2, 3].map((n) => {
           const on = sheet.combat[key] >= n;
           return (
@@ -171,6 +170,7 @@ function CombatBlock() {
           );
         })}
       </div>
+      <span className="sheet-label">{label}</span>
     </div>
   );
   return (
@@ -202,7 +202,8 @@ function CombatBlock() {
           <TF path={['combat', 'hitDiceCurrent']} label={t('sheet.hitDiceCurrent')} align="center" inputClassName="mt-1 font-display !text-xl font-bold" maxLength={30} />
         </Box>
         <Box label={t('sheet.deathSaves')}>
-          <div className="flex h-full flex-col justify-center gap-2">
+          {/* füllt den Platz über der Beschriftung, Zeilen mittig – Beschriftung bleibt im Kasten */}
+          <div className="flex flex-1 flex-col justify-center gap-3 py-1">
             {pips('deathSuccesses', t('sheet.successes'))}
             {pips('deathFailures', t('sheet.failures'))}
           </div>

@@ -84,15 +84,16 @@ export function SpellModal() {
         aria-modal="true"
         aria-labelledby={headingId}
         tabIndex={-1}
-        className="relative my-4 w-full max-w-3xl outline-none sm:my-10"
+        className="relative mb-4 mt-1 w-full max-w-3xl outline-none sm:mb-10 sm:mt-4"
       >
-        <div className="absolute -top-2 right-0 z-20 flex -translate-y-full gap-1 sm:-right-2">
+        {/* Mitlaufende Leiste: auf kleinen Bildschirmen immer vollständig sichtbar, auch beim Scrollen */}
+        <div className="sticky top-0 z-20 -mb-1 flex justify-end gap-2 pb-2 pt-1">
           {spell && (
             <Link
               to={`/spells/${spell.slug}`}
               replace
               state={null}
-              className="btn-icon bg-parchment-50/90 text-ink shadow dark:bg-night-800/90 dark:text-parchment-100"
+              className="btn-icon h-10 w-10 bg-parchment-50 text-ink shadow-md ring-1 ring-parchment-400/60 dark:bg-night-800 dark:text-parchment-100 dark:ring-night-700"
               title={t('spell.openFull')}
               aria-label={t('spell.openFull')}
             >
@@ -102,7 +103,7 @@ export function SpellModal() {
           <button
             type="button"
             onClick={close}
-            className="btn-icon bg-parchment-50/90 text-ink shadow dark:bg-night-800/90 dark:text-parchment-100"
+            className="btn-icon h-10 w-10 bg-parchment-50 text-ink shadow-md ring-1 ring-parchment-400/60 dark:bg-night-800 dark:text-parchment-100 dark:ring-night-700"
             aria-label={t('common.close')}
             title={t('common.close')}
           >

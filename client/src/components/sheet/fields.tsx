@@ -6,10 +6,10 @@ import { getIn, useSheet, type Path } from './SheetContext';
 /** Kasten im Stil des Papierbogens: Inhalt oben, Beschriftung klein unten */
 export function Box({ label, children, className = '', labelTop = false }: { label?: ReactNode; children: ReactNode; className?: string; labelTop?: boolean }) {
   return (
-    <section className={`sheet-box ${className}`}>
+    <section className={`sheet-box flex flex-col ${className}`}>
       {label && labelTop && <h3 className="sheet-label mb-1">{label}</h3>}
       {children}
-      {label && !labelTop && <h3 className="sheet-label mt-1 text-center">{label}</h3>}
+      {label && !labelTop && <h3 className="sheet-label mt-auto pt-1 text-center">{label}</h3>}
     </section>
   );
 }
