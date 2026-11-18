@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Handshake, Heart, Minus, Pencil, Plus, ScrollText, Shield, Skull, Swords, Tags, Trash2, UserRound, X } from 'lucide-react';
+import { DamageInput, checkDamage, type DamageState } from '../DamageInput';
+import { DamageValue } from '../DamageValue';
 import { CONDITIONS, type CombatantDto, type CombatantUpdate, type Condition, type HealthStatus } from '@zauberbuch/shared';
 
 const BAR_CLS: Record<HealthStatus, string> = {
@@ -107,7 +109,7 @@ export function CombatantCard({ c, active, manage, onUpdate, onHp, onRemove }: P
       )}
 
       {manage && isMonster && !editing && <HpControls onHp={onHp} />}
-      {manage && isMonster && !editing && (c.attack || c.description) && <DmNotes attack={c.attack} description={c.description} />}
+      {manage && isMonster && !editing && (c.attack || c.description || c.damage) && <DmNotes attack={c.attack} description={c.description} damage={c.damage} />}
       {manage && isMonster && editing && <MonsterEdit c={c} onCancel={() => setEditing(false)} onSave={async (d) => (await onUpdate(d), setEditing(false))} />}
 
       {/* Zustände */}
@@ -272,9 +274,14 @@ function MonsterEdit({ c, onSave, onCancel }: { c: CombatantDto; onSave: (d: Com
   const [hpCurrent, setHpCurrent] = useState(String(c.hpCurrent ?? 0));
   const [attack, setAttack] = useState(c.attack ?? '');
   const [description, setDescription] = useState(c.description ?? '');
+  const [damage, setDamage] = useState<DamageState>({ dice: c.damage?.dice ?? '', type: c.damage?.type ?? '' });
+  const dmg = checkDamage(damage);
   const submit = (e: FormEvent) => {
     e.preventDefault();
+    if (dmg.error) return;
     void onSave({
+      damageDice: dmg.value?.dice ?? null,
+      damageType: dmg.value?.type ?? null,
       name: name.trim() || c.name,
       ac: ac === '' ? null : Math.min(50, Number(ac)),
       hpMax: Math.min(9999, Number(hpMax) || 0),
@@ -303,11 +310,12 @@ function MonsterEdit({ c, onSave, onCancel }: { c: CombatantDto; onSave: (d: Com
       </div>
       <textarea className="input min-h-[2.5rem] !py-1 text-sm" rows={2} value={attack} maxLength={1000} onChange={(e) => setAttack(e.target.value)} placeholder={t('bestiary.attack')} aria-label={t('bestiary.attack')} />
       <textarea className="input min-h-[3rem] !py-1 text-sm" rows={3} value={description} maxLength={5000} onChange={(e) => setDescription(e.target.value)} placeholder={t('bestiary.description')} aria-label={t('bestiary.description')} />
+      <DamageInput value={damage} onChange={setDamage} compact />
       <div className="flex justify-end gap-2">
         <button type="button" className="btn-secondary !py-1 text-sm" onClick={onCancel}>
           {t('common.cancel')}
         </button>
-        <button type="submit" className="btn-primary !py-1 text-sm">
+        <button type="submit" className="btn-primary !py-1 text-sm" disabled={dmg.error !== null}>
           {t('common.save')}
         </button>
       </div>
@@ -358,15 +366,20 @@ function ConditionPicker({ selected, onChange, onClose }: { selected: Condition[
 }
 
 /** Angriff und Beschreibung (nur für den DM sichtbar) */
-function DmNotes({ attack, description }: { attack: string | null; description: string | null }) {
+function DmNotes({ attack, description, damage }: { attack: string | null; description: string | null; damage: CombatantDto['damage'] }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
     <div className="rounded-lg bg-parchment-100/70 px-3 py-2 text-sm dark:bg-night-900/60">
       {attack && (
         <p className="flex items-start gap-1.5">
-          <Swords className="mt-0.5 h-4 w-4 shrink-0 text-red-800 dark:text-red-400" aria-label={t('bestiary.attack')} />
+          <Swords className="mt-0.5 h-4 w-4 shrink-0 text-parchment-700 dark:text-parchment-400" aria-label={t('bestiary.attack')} />
           <span className="whitespace-pre-wrap break-words">{attack}</span>
+        </p>
+      )}
+      {damage && (
+        <p className={attack ? 'mt-1' : ''}>
+          <DamageValue damage={damage} />
         </p>
       )}
       {description && (

@@ -18,6 +18,7 @@ import {
   type CharacterSheet,
   type CombatantDto,
   type Condition,
+  type DamageType,
   type EncounterDto,
   type EncounterSummaryDto,
 } from '@zauberbuch/shared';
@@ -90,6 +91,7 @@ function toCombatantDto(req: Request, c: CombatantWithCharacter): CombatantDto {
       characterId: own || isEditor(req) ? c.character.id : null,
       attack: null,
       description: null,
+      damage: null,
     };
   }
   const hidden = c.hideStats && !isEditor(req);
@@ -110,6 +112,7 @@ function toCombatantDto(req: Request, c: CombatantWithCharacter): CombatantDto {
     // DM-Notizen: Spieler erhalten sie nie
     attack: isEditor(req) ? c.attack : null,
     description: isEditor(req) ? c.description : null,
+    damage: isEditor(req) && c.damageDice && c.damageType ? { dice: c.damageDice, type: c.damageType as DamageType } : null,
   };
 }
 
@@ -272,11 +275,13 @@ combatRouter.post('/encounters/:id/monsters', requireEditor, async (req, res) =>
       hideStats: input.hideStats,
       attack: input.attack,
       description: input.description,
+      damageDice: input.damageDice,
+      damageType: input.damageType,
     })),
   });
   if (input.saveAsTemplate) {
     await prisma.monsterTemplate.create({
-      data: { name: input.name, ac: input.ac, hp: input.hpMax, attack: input.attack, description: input.description, createdById: req.user!.id, updatedById: req.user!.id },
+      data: { name: input.name, ac: input.ac, hp: input.hpMax, attack: input.attack, description: input.description, damageDice: input.damageDice, damageType: input.damageType, createdById: req.user!.id, updatedById: req.user!.id },
     });
   }
   await touch(e.id);
@@ -289,7 +294,7 @@ combatRouter.patch('/combatants/:id', requireEditor, async (req, res) => {
   const data: Prisma.CombatantUpdateInput = {};
   if (input.initiative !== undefined) data.initiative = input.initiative;
   if (input.conditions !== undefined) data.conditions = JSON.stringify([...new Set(input.conditions)]);
-  const monsterFields = ['name', 'ac', 'hpMax', 'hpCurrent', 'hideStats', 'attack', 'description'] as const;
+  const monsterFields = ['name', 'ac', 'hpMax', 'hpCurrent', 'hideStats', 'attack', 'description', 'damageDice', 'damageType'] as const;
   if (c.kind === 'character') {
     // Werte aus dem Charakterbogen sind hier nur lesbar
     if (monsterFields.some((k) => input[k] !== undefined)) throw badRequest('character_read_only', 'Character values come from the character sheet');
@@ -299,6 +304,13 @@ combatRouter.patch('/combatants/:id', requireEditor, async (req, res) => {
     if (input.hideStats !== undefined) data.hideStats = input.hideStats;
     if (input.attack !== undefined) data.attack = input.attack;
     if (input.description !== undefined) data.description = input.description;
+    if (input.damageDice !== undefined || input.damageType !== undefined) {
+      const dice = input.damageDice !== undefined ? input.damageDice : c.damageDice;
+      const type = input.damageType !== undefined ? input.damageType : c.damageType;
+      // nur vollständig (Würfel + Art) speichern, sonst beides leeren
+      data.damageDice = dice && type ? dice : null;
+      data.damageType = dice && type ? type : null;
+    }
     const hpMax = input.hpMax ?? c.hpMax;
     if (input.hpMax !== undefined) data.hpMax = hpMax;
     if (input.hpCurrent !== undefined || input.hpMax !== undefined) data.hpCurrent = Math.min(input.hpCurrent ?? c.hpCurrent, hpMax);

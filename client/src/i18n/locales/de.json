@@ -381,7 +381,8 @@
     "story_archived": "Diese Geschichte ist archiviert.",
     "character_read_only": "Werte von Spielercharakteren kommen aus dem Charakterbogen.",
     "too_many_combatants": "Zu viele Teilnehmer (höchstens 60).",
-    "no_combatants": "Keine aktiven Teilnehmer."
+    "no_combatants": "Keine aktiven Teilnehmer.",
+    "hp_range_invalid": "LP als Zahl oder Bereich angeben, z. B. 58 oder 10-15."
   },
   "damageType": {
     "acid": "Säure",
@@ -854,7 +855,7 @@
     "noMatch": "Keine passenden Einträge.",
     "hpShort": "LP",
     "attack": "Angriff",
-    "attackPlaceholder": "z. B. Krummsäbel +4, 1W6+2 Hieb",
+    "attackPlaceholder": "z. B. Krummsäbel +4 zum Treffen, Nahkampf 1,5 m",
     "description": "Beschreibung",
     "unknownHint": "RK und LP leer lassen, wenn ihr sie (noch) nicht kennt.",
     "createdBy": "angelegt von {{name}}",
@@ -872,6 +873,10 @@
     "dmOnlyHint": "Angriff und Beschreibung sieht nur der DM.",
     "dmOnly": "nur für DM sichtbar",
     "showDescription": "Beschreibung anzeigen",
-    "hideDescription": "Beschreibung ausblenden"
+    "hideDescription": "Beschreibung ausblenden",
+    "damageDice": "Schaden (Würfel)",
+    "damageHint": "Wie bei den Zaubern, z. B. 1d6+2 oder 2W8+4. Leer lassen, wenn kein Schaden.",
+    "hpRangePlaceholder": "z. B. 58 oder 10-15",
+    "hpRangeHint": "LP als Zahl oder Bereich (z. B. 10-15) – leer lassen, wenn unbekannt."
   }
 }

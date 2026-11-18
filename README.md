@@ -262,15 +262,18 @@ Infotafel; deren Mitspieler sehen ihn – nur lesend – in derselben Ansicht.
 ### Monster-Datenbanken
 
 Im Bereich **Kampf → Monster-Datenbank** gibt es zwei getrennte Datenbanken mit Name, RK, LP, Angriff
-(z. B. „Krummsäbel +4, 1W6+2 Hieb“) und Beschreibung:
+(z. B. „Krummsäbel +4 zum Treffen“), **Schaden** und Beschreibung. Der Schaden wird genau wie bei den Zaubern
+hinterlegt – Würfelausdruck (z. B. `1d6+2` oder `2W8+4`) plus Schadensart aus derselben Liste – und erscheint im
+gleichen Design (Symbol, Farbe der Schadensart, z. B. „1W6 + 2 Hieb“):
 
 - **DM-Datenbank:** Vorlagen des Dungeon Master – gemeinsam für alle DMs und Admins, für Spieler unsichtbar.
   Beim Hinzufügen von Monstern oder Verbündeten im Kampf wählt der DM oben eine Vorlage; Name, RK, LP, Angriff und
-  Beschreibung werden übernommen (Anzahl und Initiative kommen dazu). Neue Monster lassen sich dort mit
-  „Zusätzlich als Vorlage speichern“ direkt in die Datenbank übernehmen. Angriff und Beschreibung stehen auf der
+  Beschreibung und Schaden werden übernommen (Anzahl und Initiative kommen dazu). Neue Monster lassen sich dort mit
+  „Zusätzlich als Vorlage speichern“ direkt in die Datenbank übernehmen. Angriff, Schaden und Beschreibung stehen auf der
   Kampfkarte und sind **nur für den DM** sichtbar.
 - **Spieler-Datenbank je Geschichte:** gemeinsames Monster-Notizbuch der Mitspieler – ohne die Daten des DM. Alle
-  Mitspieler dürfen Einträge anlegen, ergänzen und löschen (RK/LP dürfen leer bleiben); angezeigt wird, wer einen
+  Mitspieler dürfen Einträge anlegen, ergänzen und löschen (RK/LP dürfen leer bleiben, LP auch als Bereich wie
+  „10-15“, wenn die Gruppe nur schätzen kann); angezeigt wird, wer einen
   Eintrag angelegt und zuletzt geändert hat. DM und Admin können die Spieler-Datenbanken **nur lesen**
   (ein Admin im Spielermodus, der Mitspieler ist, gilt als Spieler).
 

@@ -19,6 +19,7 @@ import { Alert, PageSpinner, Spinner } from '../components/ui';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Modal } from '../components/Modal';
 import { CombatantCard } from '../components/combat/CombatantCard';
+import { DamageInput, checkDamage, type DamageState } from '../components/DamageInput';
 import { PlayerModeToggle } from '../components/combat/PlayerModeToggle';
 import { useCombatPlayerMode } from '../hooks/useCombatPlayerMode';
 import { ApiError } from '../lib/api';
@@ -423,6 +424,7 @@ function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { op
   const [ini, setIni] = useState('');
   const [attack, setAttack] = useState('');
   const [description, setDescription] = useState('');
+  const [damage, setDamage] = useState<DamageState>({ dice: '', type: '' });
   const [hide, setHide] = useState(true);
   const [save, setSave] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -437,6 +439,7 @@ function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { op
     setIni('');
     setAttack('');
     setDescription('');
+    setDamage({ dice: '', type: '' });
     setSave(false);
     // Verbündete sind standardmäßig offen sichtbar, Monster verdeckt
     setHide(!allied);
@@ -454,12 +457,14 @@ function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { op
     setHp(String(tpl.hp));
     setAttack(tpl.attack);
     setDescription(tpl.description);
+    setDamage({ dice: tpl.damageDice ?? '', type: tpl.damageType ?? '' });
     setSave(false);
   };
+  const dmg = checkDamage(damage);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || hp === '') return;
+    if (!name.trim() || hp === '' || dmg.error) return;
     setBusy(true);
     try {
       const r = await api.addMonster(encId, {
@@ -472,6 +477,8 @@ function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { op
         allied,
         attack: attack.trim(),
         description: description.trim(),
+        damageDice: dmg.value?.dice ?? null,
+        damageType: dmg.value?.type ?? null,
         saveAsTemplate: save && !templateId,
       });
       if (save && !templateId) toast.success(t('bestiary.savedAsTemplate'));
@@ -525,7 +532,7 @@ function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { op
                   >
                     {tpl.name}
                     <span className="ml-1.5 text-xs opacity-75">
-                      {t('combat.acShort')} {tpl.ac ?? '–'} · {tpl.hp} LP
+                      {t('combat.acShort')} {tpl.ac ?? '–'} · {tpl.hp} {t('bestiary.hpShort')}
                     </span>
                   </button>
                 </li>
@@ -574,6 +581,7 @@ function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { op
           </label>
           <textarea id="m-attack" className="input min-h-[2.5rem]" rows={2} value={attack} maxLength={1000} onChange={(e) => setAttack(e.target.value)} placeholder={t('bestiary.attackPlaceholder')} />
         </div>
+        <DamageInput value={damage} onChange={setDamage} />
         <div>
           <label htmlFor="m-desc" className="label">
             {t('bestiary.description')} <span className="font-normal text-parchment-700 dark:text-parchment-400">({t('board.optional')})</span>
@@ -598,7 +606,7 @@ function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { op
           <button type="button" className="btn-secondary" onClick={onClose}>
             {t('common.cancel')}
           </button>
-          <button type="submit" className="btn-primary" disabled={busy || !name.trim() || hp === ''}>
+          <button type="submit" className="btn-primary" disabled={busy || !name.trim() || hp === '' || dmg.error !== null}>
             {busy ? <Spinner className="h-4 w-4" /> : allied ? <Handshake className="h-4 w-4" /> : <Skull className="h-4 w-4" />}
             {t('combat.addMonsterButton')}
           </button>

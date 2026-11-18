@@ -381,7 +381,8 @@
     "story_archived": "This story is archived.",
     "character_read_only": "Player character values come from the character sheet.",
     "too_many_combatants": "Too many combatants (max. 60).",
-    "no_combatants": "No active combatants."
+    "no_combatants": "No active combatants.",
+    "hp_range_invalid": "Enter HP as a number or range, e.g. 58 or 10-15."
   },
   "damageType": {
     "acid": "Acid",
@@ -854,7 +855,7 @@
     "noMatch": "No matching entries.",
     "hpShort": "HP",
     "attack": "Attack",
-    "attackPlaceholder": "e.g. Scimitar +4, 1d6+2 slashing",
+    "attackPlaceholder": "e.g. Scimitar +4 to hit, melee 5 ft",
     "description": "Description",
     "unknownHint": "Leave AC and HP empty if you don't know them (yet).",
     "createdBy": "created by {{name}}",
@@ -872,6 +873,10 @@
     "dmOnlyHint": "Only the DM sees attack and description.",
     "dmOnly": "visible to DM only",
     "showDescription": "Show description",
-    "hideDescription": "Hide description"
+    "hideDescription": "Hide description",
+    "damageDice": "Damage (dice)",
+    "damageHint": "Same as for spells, e.g. 1d6+2 or 2d8+4. Leave empty if no damage.",
+    "hpRangePlaceholder": "e.g. 58 or 10-15",
+    "hpRangeHint": "HP as a number or range (e.g. 10-15) – leave empty if unknown."
   }
 }

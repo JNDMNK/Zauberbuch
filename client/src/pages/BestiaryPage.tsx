@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookMarked, Eye, Pencil, Plus, Search, Shield, Swords, Trash2 } from 'lucide-react';
-import type { BestiaryUserRef, StoryDto } from '@zauberbuch/shared';
+import { hpRangeSchema, type BestiaryUserRef, type DamageType, type StoryDto } from '@zauberbuch/shared';
+import { DamageInput, checkDamage, type DamageState } from '../components/DamageInput';
+import { DamageValue } from '../components/DamageValue';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
 import { useAuth } from '../context/AuthContext';
@@ -18,9 +20,12 @@ interface Entry {
   id: string;
   name: string;
   ac: number | null;
-  hp: number | null;
+  /** DM: Zahl; Spieler: Zahl oder Bereich als Text („10-15“) */
+  hp: number | string | null;
   attack: string;
   description: string;
+  damageDice: string | null;
+  damageType: DamageType | null;
   createdBy: BestiaryUserRef | null;
   updatedBy: BestiaryUserRef | null;
   createdAt: string;
@@ -29,9 +34,12 @@ interface Entry {
 interface EntryInput {
   name: string;
   ac: number | null;
-  hp: number | null;
+  /** Rohtext aus dem Formular (DM: Zahl, Spieler: Zahl oder Bereich) */
+  hp: string;
   attack: string;
   description: string;
+  damageDice: string | null;
+  damageType: DamageType | null;
 }
 
 /** 'dm' = DM-Datenbank, sonst Geschichte (Spieler-Datenbank) */
@@ -149,11 +157,12 @@ function EntryList({ source, storyName }: { source: Source; storyName: string })
   const save = async (input: EntryInput) => {
     const id = editing && editing !== 'new' ? editing.id : null;
     if (source.kind === 'dm') {
-      const data = { ...input, hp: input.hp ?? 0 };
+      const data = { ...input, hp: Math.min(9999, Number(input.hp) || 0) };
       const r = id ? await api.updateMonsterTemplate(id, data) : await api.createMonsterTemplate(data);
       setEntries((list) => upsert(list, r.template));
     } else {
-      const r = id ? await api.updateBestiaryEntry(id, input) : await api.createBestiaryEntry(source.storyId, input);
+      const data = { ...input, hp: input.hp.trim() || null };
+      const r = id ? await api.updateBestiaryEntry(id, data) : await api.createBestiaryEntry(source.storyId, data);
       setEntries((list) => upsert(list, r.entry));
     }
     setEditing(null);
@@ -231,11 +240,16 @@ function EntryList({ source, storyName }: { source: Source; storyName: string })
                   <span className="sheet-label !inline">{t('bestiary.hpShort')}</span> <strong>{e.hp ?? '?'}</strong>
                 </span>
               </div>
-              {e.attack && (
-                <p className="flex items-start gap-1.5 text-sm">
-                  <Swords className="mt-0.5 h-4 w-4 shrink-0 text-red-800 dark:text-red-400" aria-label={t('bestiary.attack')} />
-                  <span className="whitespace-pre-wrap break-words">{e.attack}</span>
-                </p>
+              {(e.attack || (e.damageDice && e.damageType)) && (
+                <div className="space-y-1 text-sm">
+                  {e.attack && (
+                    <p className="flex items-start gap-1.5">
+                      <Swords className="mt-0.5 h-4 w-4 shrink-0 text-parchment-700 dark:text-parchment-400" aria-label={t('bestiary.attack')} />
+                      <span className="whitespace-pre-wrap break-words">{e.attack}</span>
+                    </p>
+                  )}
+                  {e.damageDice && e.damageType && <DamageValue damage={{ dice: e.damageDice, type: e.damageType }} />}
+                </div>
               )}
               {e.description && <Description text={e.description} />}
               <p className="mt-auto pt-1 text-xs text-parchment-700 dark:text-parchment-400">
@@ -282,9 +296,11 @@ function EntryDialog({ open, entry, hpRequired, onClose, onSave }: { open: boole
   const [hp, setHp] = useState('');
   const [attack, setAttack] = useState('');
   const [description, setDescription] = useState('');
+  const [damage, setDamage] = useState<DamageState>({ dice: '', type: '' });
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (!open) return;
+    setDamage({ dice: entry?.damageDice ?? '', type: entry?.damageType ?? '' });
     setName(entry?.name ?? '');
     setAc(entry?.ac === null || entry?.ac === undefined ? '' : String(entry.ac));
     setHp(entry?.hp === null || entry?.hp === undefined ? '' : String(entry.hp));
@@ -293,12 +309,25 @@ function EntryDialog({ open, entry, hpRequired, onClose, onSave }: { open: boole
   }, [open, entry]);
   const num = (v: string, len: number) => v.replace(/\D/g, '').slice(0, len);
 
+  const dmg = checkDamage(damage);
+  const hpCheck = hpRequired ? null : hpRangeSchema.safeParse(hp);
+  const hpInvalid = hpCheck !== null && !hpCheck.success;
+  const invalid = !name.trim() || (hpRequired && hp === '') || hpInvalid || dmg.error !== null;
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || (hpRequired && hp === '')) return;
+    if (invalid) return;
     setBusy(true);
     try {
-      await onSave({ name: name.trim(), ac: ac === '' ? null : Math.min(50, Number(ac)), hp: hp === '' ? null : Math.min(9999, Number(hp)), attack: attack.trim(), description: description.trim() });
+      await onSave({
+        name: name.trim(),
+        ac: ac === '' ? null : Math.min(50, Number(ac)),
+        hp,
+        attack: attack.trim(),
+        description: description.trim(),
+        damageDice: dmg.value?.dice ?? null,
+        damageType: dmg.value?.type ?? null,
+      });
     } catch (err) {
       toast.error(errorMessage(t, err));
     } finally {
@@ -326,16 +355,30 @@ function EntryDialog({ open, entry, hpRequired, onClose, onSave }: { open: boole
             <label htmlFor="b-hp" className="label">
               {t('combat.hp')}
             </label>
-            <input id="b-hp" className="input text-center" inputMode="numeric" required={hpRequired} value={hp} onChange={(e) => setHp(num(e.target.value, 4))} placeholder={hpRequired ? '' : '?'} />
+            {hpRequired ? (
+              <input id="b-hp" className="input text-center" inputMode="numeric" required value={hp} onChange={(e) => setHp(num(e.target.value, 4))} />
+            ) : (
+              <input
+                id="b-hp"
+                className={`input text-center ${hpInvalid ? 'input-error' : ''}`}
+                value={hp}
+                maxLength={20}
+                onChange={(e) => setHp(e.target.value.replace(/[^\d\s\-–]/g, ''))}
+                placeholder={t('bestiary.hpRangePlaceholder')}
+              />
+            )}
           </div>
         </div>
-        {!hpRequired && <p className="-mt-2 text-xs text-parchment-700 dark:text-parchment-400">{t('bestiary.unknownHint')}</p>}
+        {!hpRequired && (
+          <p className={`-mt-2 text-xs ${hpInvalid ? 'text-red-700 dark:text-red-400' : 'text-parchment-700 dark:text-parchment-400'}`}>{hpInvalid ? t('errors.hp_range_invalid') : t('bestiary.hpRangeHint')}</p>
+        )}
         <div>
           <label htmlFor="b-attack" className="label">
             {t('bestiary.attack')}
           </label>
           <textarea id="b-attack" className="input min-h-[2.5rem]" rows={2} value={attack} maxLength={1000} onChange={(e) => setAttack(e.target.value)} placeholder={t('bestiary.attackPlaceholder')} />
         </div>
+        <DamageInput value={damage} onChange={setDamage} />
         <div>
           <label htmlFor="b-desc" className="label">
             {t('bestiary.description')}
@@ -346,7 +389,7 @@ function EntryDialog({ open, entry, hpRequired, onClose, onSave }: { open: boole
           <button type="button" className="btn-secondary" onClick={onClose}>
             {t('common.cancel')}
           </button>
-          <button type="submit" className="btn-primary" disabled={busy || !name.trim() || (hpRequired && hp === '')}>
+          <button type="submit" className="btn-primary" disabled={busy || invalid}>
             {busy ? <Spinner className="h-4 w-4" /> : <BookMarked className="h-4 w-4" />}
             {t('common.save')}
           </button>

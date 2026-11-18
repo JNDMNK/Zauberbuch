@@ -44,8 +44,8 @@ describe('Monster-Datenbanken', () => {
     expect(e.status).toBe(201);
     expect(e.body.entry).toMatchObject({ name: 'Werwolf', ac: null, hp: null, createdBy: { username: 'frodo' } });
     // Sam korrigiert Frodos Eintrag
-    const upd = await sam.agent.put(`/api/bestiary/entries/${e.body.entry.id}`).set(CSRF).send({ name: 'Werwolf', ac: 12, hp: 58, attack: 'Biss 2W4+2', description: 'Silber oder Magie!' });
-    expect(upd.body.entry).toMatchObject({ ac: 12, hp: 58, createdBy: { username: 'frodo' }, updatedBy: { username: 'sam' } });
+    const upd = await sam.agent.put(`/api/bestiary/entries/${e.body.entry.id}`).set(CSRF).send({ name: 'Werwolf', ac: 12, hp: '50-60', attack: 'Biss 2W4+2', description: 'Silber oder Magie!' });
+    expect(upd.body.entry).toMatchObject({ ac: 12, hp: '50-60', createdBy: { username: 'frodo' }, updatedBy: { username: 'sam' } });
 
     const fl = await frodo.agent.get(`/api/bestiary/stories/${storyId}`);
     expect(fl.body).toMatchObject({ canWrite: true });
@@ -92,5 +92,53 @@ describe('Monster-Datenbanken', () => {
 
     const upd = await dm.agent.patch(`/api/combat/combatants/${c.id}`).set(CSRF).send({ attack: 'Wurfspeer +6, 2W6+4 Stich' });
     expect(upd.body.encounter.combatants[0].attack).toBe('Wurfspeer +6, 2W6+4 Stich');
+  });
+});
+
+describe('Monster-Datenbanken – Schaden und LP-Bereiche', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('Schaden wie bei Zaubern (Würfel + Art), Würfel normalisiert, nur gemeinsam', async () => {
+    const dm = await createUser('meister', 'dungeonmaster');
+    const ok = await dm.agent.post('/api/bestiary/dm').set(CSRF).send({ name: 'Goblin', ac: 15, hp: 7, attack: 'Krummsäbel +4', damageDice: '1W6 + 2', damageType: 'slashing' });
+    expect(ok.status).toBe(201);
+    expect(ok.body.template).toMatchObject({ damageDice: '1d6+2', damageType: 'slashing' });
+    expect((await dm.agent.post('/api/bestiary/dm').set(CSRF).send({ name: 'X', hp: 1, damageDice: '1d6' })).status).toBe(400);
+    expect((await dm.agent.post('/api/bestiary/dm').set(CSRF).send({ name: 'X', hp: 1, damageType: 'fire' })).status).toBe(400);
+    expect((await dm.agent.post('/api/bestiary/dm').set(CSRF).send({ name: 'X', hp: 1, damageDice: 'viel', damageType: 'fire' })).status).toBe(400);
+    expect((await dm.agent.post('/api/bestiary/dm').set(CSRF).send({ name: 'X', hp: 1, damageDice: '2d6', damageType: 'banana' })).status).toBe(400);
+  });
+
+  it('Spieler-LP als Zahl oder Bereich', async () => {
+    const dm = await createUser('meister', 'dungeonmaster');
+    const frodo = await createUser('frodo');
+    const story = (await dm.agent.post('/api/board/stories').set(CSRF).send({ name: 'S', memberIds: [frodo.user.id] })).body.story;
+    const post = (hp: unknown) => frodo.agent.post(`/api/bestiary/stories/${story.id}`).set(CSRF).send({ name: 'Oger', hp, damageDice: '2w8+4', damageType: 'bludgeoning' });
+    expect((await post('10 - 15')).body.entry).toMatchObject({ hp: '10-15', damageDice: '2d8+4', damageType: 'bludgeoning' });
+    expect((await post('10–15')).body.entry.hp).toBe('10-15');
+    expect((await post('58')).body.entry.hp).toBe('58');
+    expect((await post('')).body.entry.hp).toBeNull();
+    expect((await post('15-10')).status).toBe(400);
+    expect((await post('viele')).status).toBe(400);
+    expect((await post(58)).status).toBe(400); // Text erwartet
+  });
+
+  it('Schaden im Kampf: aus Vorlage übernehmen, nur für den DM, änderbar', async () => {
+    const dm = await createUser('meister', 'dungeonmaster');
+    const frodo = await createUser('frodo');
+    const story = (await dm.agent.post('/api/board/stories').set(CSRF).send({ name: 'S', memberIds: [frodo.user.id] })).body.story;
+    const enc = (await dm.agent.post('/api/combat/encounters').set(CSRF).send({ storyId: story.id, name: 'K' })).body.encounter;
+    const r = await dm.agent.post(`/api/combat/encounters/${enc.id}/monsters`).set(CSRF).send({ name: 'Oger', hpMax: 59, hideStats: false, damageDice: '2d8+4', damageType: 'bludgeoning', saveAsTemplate: true });
+    const c = r.body.encounter.combatants[0];
+    expect(c.damage).toEqual({ dice: '2d8+4', type: 'bludgeoning' });
+    expect((await dm.agent.get('/api/bestiary/dm')).body.templates[0]).toMatchObject({ damageDice: '2d8+4', damageType: 'bludgeoning' });
+    expect((await frodo.agent.get(`/api/combat/encounters/${enc.id}`)).body.encounter.combatants[0].damage).toBeNull();
+    const upd = await dm.agent.patch(`/api/combat/combatants/${c.id}`).set(CSRF).send({ damageDice: '1d12', damageType: 'piercing' });
+    expect(upd.body.encounter.combatants[0].damage).toEqual({ dice: '1d12', type: 'piercing' });
+    const cleared = await dm.agent.patch(`/api/combat/combatants/${c.id}`).set(CSRF).send({ damageDice: null, damageType: null });
+    expect(cleared.body.encounter.combatants[0].damage).toBeNull();
+    expect((await dm.agent.post(`/api/combat/encounters/${enc.id}/monsters`).set(CSRF).send({ name: 'X', hpMax: 1, damageDice: '1d4' })).status).toBe(400);
   });
 });

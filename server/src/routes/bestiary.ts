@@ -5,6 +5,7 @@ import {
   isEditorRole,
   monsterTemplateSchema,
   type BestiaryEntryDto,
+  type DamageType,
   type BestiaryUserRef,
   type MonsterTemplateDto,
 } from '@zauberbuch/shared';
@@ -34,6 +35,8 @@ function common(e: WithRefs<MonsterTemplate | BestiaryEntry>) {
     ac: e.ac,
     attack: e.attack,
     description: e.description,
+    damageDice: e.damageDice,
+    damageType: (e.damageType as DamageType | null) ?? null,
     createdBy: ref(e.createdBy),
     updatedBy: ref(e.updatedBy),
     createdAt: e.createdAt.toISOString(),

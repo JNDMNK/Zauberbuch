@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { DAMAGE_TYPES, type DamageType } from './enums';
+import { damageDiceSchema } from './schemas';
 
 /**
  * Kampfhilfe: Der Dungeon Master führt pro Geschichte Kämpfe mit Spielercharakteren (Werte live und nur lesend
@@ -69,8 +71,14 @@ export const addMonsterSchema = z.object({
   /** Nur für DM/Admin sichtbar (z. B. aus der Monster-Datenbank) */
   attack: z.string().trim().max(1000).optional().default(''),
   description: z.string().trim().max(5000).optional().default(''),
+  damageDice: damageDiceSchema.optional().nullable().default(null),
+  damageType: z.enum(DAMAGE_TYPES).optional().nullable().default(null),
   /** Zusätzlich als Vorlage in der DM-Datenbank speichern */
   saveAsTemplate: z.boolean().optional().default(false),
+}).superRefine((v, ctx) => {
+  // Würfel und Schadensart nur gemeinsam (wie bei Zaubern)
+  if (v.damageDice && !v.damageType) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['damageType'], message: 'damage_type_required' });
+  if (v.damageType && !v.damageDice) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['damageDice'], message: 'damage_dice_required' });
 });
 export type AddMonsterInput = z.input<typeof addMonsterSchema>;
 
@@ -86,6 +94,8 @@ export const combatantUpdateSchema = z
     hideStats: z.boolean().optional(),
     attack: z.string().trim().max(1000).optional(),
     description: z.string().trim().max(5000).optional(),
+    damageDice: damageDiceSchema.optional().nullable(),
+    damageType: z.enum(DAMAGE_TYPES).optional().nullable(),
   })
   .refine((v) => Object.values(v).some((x) => x !== undefined), { message: 'Nothing to update' });
 export type CombatantUpdate = z.input<typeof combatantUpdateSchema>;
@@ -119,6 +129,8 @@ export interface CombatantDto {
   /** Monster/NSC: Angriff und Beschreibung – nur für DM/Admin, für Spieler immer null */
   attack: string | null;
   description: string | null;
+  /** Monster/NSC: Schaden wie bei Zaubern – nur für DM/Admin */
+  damage: { dice: string; type: DamageType } | null;
 }
 
 export interface EncounterSummaryDto {

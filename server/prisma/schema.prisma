@@ -271,6 +271,11 @@ model Combatant {
    * Nur für DM/Admin sichtbar (aus der Monster-Datenbank übernommen)
    */
   attack      String     @default("")
+  /**
+   * Schaden wie bei Zaubern: Würfelausdruck (z. B. "1d6+2") und Schadensart
+   */
+  damageDice  String?
+  damageType  String?
   description String     @default("")
   createdAt   DateTime   @default(now())
 
@@ -307,6 +312,11 @@ model MonsterTemplate {
   ac          Int?
   hp          Int      @default(0)
   attack      String   @default("")
+  /**
+   * Schaden wie bei Zaubern: Würfelausdruck (z. B. "1d6+2") und Schadensart
+   */
+  damageDice  String?
+  damageType  String?
   description String   @default("")
   createdById String?
   createdBy   User?    @relation("MonsterTemplateCreator", fields: [createdById], references: [id], onDelete: SetNull)
@@ -327,8 +337,16 @@ model BestiaryEntry {
   story       Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
   name        String
   ac          Int?
-  hp          Int?
+  /**
+   * LP als Text: Zahl oder Bereich, z. B. "58" oder "10-15" (Spieler kennen oft nur eine Schätzung)
+   */
+  hp          String?
   attack      String   @default("")
+  /**
+   * Schaden wie bei Zaubern: Würfelausdruck (z. B. "1d6+2") und Schadensart
+   */
+  damageDice  String?
+  damageType  String?
   description String   @default("")
   createdById String?
   createdBy   User?    @relation("BestiaryCreator", fields: [createdById], references: [id], onDelete: SetNull)
