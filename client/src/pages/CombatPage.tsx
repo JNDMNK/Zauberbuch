@@ -9,20 +9,25 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { refreshCombatActive } from '../hooks/useCombatActive';
 import { Alert, PageSpinner, Spinner } from '../components/ui';
+import { PlayerModeToggle } from '../components/combat/PlayerModeToggle';
+import { useCombatPlayerMode } from '../hooks/useCombatPlayerMode';
 
 /** Übersicht der Kämpfe aus den eigenen Geschichten; DM/Admin legen neue an */
 export function CombatPage() {
   const { t, i18n } = useTranslation();
-  const { isEditor } = useAuth();
+  const { isEditor: editorRole } = useAuth();
+  const [asPlayer] = useCombatPlayerMode();
+  const isEditor = editorRole && !asPlayer;
   const [encounters, setEncounters] = useState<EncounterSummaryDto[] | null>(null);
   const [error, setError] = useState<unknown>(null);
 
   useEffect(() => {
+    setEncounters(null);
     api
-      .encounters()
+      .encounters(asPlayer)
       .then((r) => setEncounters(r.encounters))
       .catch(setError);
-  }, []);
+  }, [asPlayer]);
 
   if (error) return <Alert>{errorMessage(t, error)}</Alert>;
   if (!encounters) return <PageSpinner />;
@@ -52,7 +57,11 @@ export function CombatPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">{t('combat.heading')}</h1>
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="flex-1 text-3xl font-bold">{t('combat.heading')}</h1>
+        <PlayerModeToggle />
+      </div>
+      {asPlayer && <Alert kind="info">{t('combat.playerModeActive')}</Alert>}
       {isEditor && <NewEncounterForm />}
       <section>
         <h2 className="mb-3 text-xl font-bold">{t('combat.running', { count: running.length })}</h2>

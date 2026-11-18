@@ -247,6 +247,10 @@ Infotafel; deren Mitspieler sehen ihn – nur lesend – in derselben Ansicht.
 - **Sortierung** der Karten wählt jeder für sich: nach Initiative oder alphabetisch.
 - Die Ansicht aktualisiert sich alle 3 Sekunden; ein roter Punkt am Reiter zeigt laufende Kämpfe.
 - Beendete Kämpfe bleiben in der Liste und lassen sich fortsetzen oder löschen.
+- **Spielermodus für Admins:** Mit dem Schalter **„Als Spieler“** (oben im Reiter Kampf) sieht und spielt der Admin
+  die Kampfhilfe wie ein Benutzer – nur Kämpfe aus Geschichten, in denen er als Mitspieler eingetragen ist,
+  verdeckte Monsterwerte ausgeblendet, keine Verwaltung. Praktisch, wenn der Admin in einer Gruppe mitspielt, die ein
+  Dungeon Master leitet. Der Schalter wird pro Browser gemerkt.
 
 ### Export & Import der Infotafel (Admin)
 

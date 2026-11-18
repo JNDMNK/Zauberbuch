@@ -35,7 +35,12 @@ import { requireAuth, requireEditor } from '../middleware/auth';
 export const combatRouter = Router();
 combatRouter.use(requireAuth);
 
-const isEditor = (req: Request) => isEditorRole(req.user!.role);
+/**
+ * Spielermodus für Admins (?asPlayer=true bei lesenden Anfragen): Der Admin sieht die Kampfhilfe wie ein Benutzer –
+ * nur Kämpfe aus Geschichten, in denen er Mitspieler ist, verdeckte Monsterwerte entfernt, keine Verwaltung.
+ */
+const asPlayer = (req: Request) => req.user!.role === 'admin' && req.query.asPlayer === 'true';
+const isEditor = (req: Request) => isEditorRole(req.user!.role) && !asPlayer(req);
 
 type CombatantWithCharacter = Combatant & { character: (Character & { user: Pick<User, 'id' | 'username'> }) | null };
 type EncounterFull = Encounter & { story: Pick<Story, 'name'>; combatants: CombatantWithCharacter[] };

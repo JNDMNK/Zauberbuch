@@ -119,3 +119,36 @@ describe('Kampfhilfe', () => {
     expect((await dm.agent.get('/api/combat/encounters')).body.encounters).toEqual([]);
   });
 });
+
+describe('Kampfhilfe – Spielermodus für Admins', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('Admin sieht mit asPlayer=true die Spieleransicht und nur Kämpfe als Mitspieler', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    const adminId = (await admin.get('/api/auth/me')).body.user.id;
+    const mit = (await admin.post('/api/board/stories').set(CSRF).send({ name: 'Mit Admin', memberIds: [adminId] })).body.story;
+    const ohne = (await admin.post('/api/board/stories').set(CSRF).send({ name: 'Ohne Admin' })).body.story;
+    const e1 = (await admin.post('/api/combat/encounters').set(CSRF).send({ storyId: mit.id, name: 'Kampf A' })).body.encounter;
+    await admin.post('/api/combat/encounters').set(CSRF).send({ storyId: ohne.id, name: 'Kampf B' });
+    await admin.post(`/api/combat/encounters/${e1.id}/monsters`).set(CSRF).send({ name: 'Oger', ac: 11, hpMax: 59 });
+
+    expect((await admin.get('/api/combat/encounters')).body.encounters).toHaveLength(2);
+    expect((await admin.get('/api/combat/active')).body.count).toBe(2);
+    const dmView = (await admin.get(`/api/combat/encounters/${e1.id}`)).body.encounter;
+    expect(dmView.canManage).toBe(true);
+    expect(dmView.combatants[0]).toMatchObject({ ac: '11', hpMax: 59 });
+
+    const list = (await admin.get('/api/combat/encounters?asPlayer=true')).body.encounters;
+    expect(list.map((e: { name: string }) => e.name)).toEqual(['Kampf A']);
+    expect((await admin.get('/api/combat/active?asPlayer=true')).body.count).toBe(1);
+    const pv = (await admin.get(`/api/combat/encounters/${e1.id}?asPlayer=true`)).body.encounter;
+    expect(pv.canManage).toBe(false);
+    expect(pv.combatants[0]).toMatchObject({ ac: null, hpCurrent: null, hpMax: null, status: 'unharmed' });
+
+    // Für Dungeon Master hat der Parameter keine Wirkung
+    const dm = await createUser('meister', 'dungeonmaster');
+    expect((await dm.agent.get('/api/combat/encounters?asPlayer=true')).body.encounters).toHaveLength(2);
+  });
+});

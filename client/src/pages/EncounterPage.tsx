@@ -18,6 +18,9 @@ import { Alert, PageSpinner, Spinner } from '../components/ui';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Modal } from '../components/Modal';
 import { CombatantCard } from '../components/combat/CombatantCard';
+import { PlayerModeToggle } from '../components/combat/PlayerModeToggle';
+import { useCombatPlayerMode } from '../hooks/useCombatPlayerMode';
+import { ApiError } from '../lib/api';
 
 const POLL_MS = 3_000;
 const SORT_KEY = 'zauberbuch.combat.sort';
@@ -42,14 +45,15 @@ export function EncounterPage() {
   const [dialog, setDialog] = useState<'players' | 'monster' | 'rename' | null>(null);
   const [confirm, setConfirm] = useState<{ kind: 'encounter' } | { kind: 'combatant'; c: CombatantDto } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [asPlayer] = useCombatPlayerMode();
 
   const load = useCallback(
     (signal?: AbortSignal) =>
       api
-        .encounter(id, signal)
-        .then((r) => setEnc(r.encounter))
+        .encounter(id, signal, asPlayer)
+        .then((r) => (setEnc(r.encounter), setError(null)))
         .catch((err) => (err as Error).name !== 'AbortError' && setError(err)),
-    [id],
+    [id, asPlayer],
   );
 
   useEffect(() => {
@@ -90,7 +94,22 @@ export function EncounterPage() {
     }
   };
 
-  if (error) return <Alert>{errorMessage(t, error)}</Alert>;
+  if (error) {
+    // Spielermodus: Kampf einer Geschichte, in der der Admin kein Mitspieler ist
+    if (asPlayer && error instanceof ApiError && error.status === 404) {
+      return (
+        <div className="space-y-4">
+          <Link to="/combat" className="btn-ghost !px-2">
+            <ArrowLeft className="h-4 w-4" />
+            {t('combat.backToList')}
+          </Link>
+          <Alert kind="info">{t('combat.playerModeNotMember')}</Alert>
+          <PlayerModeToggle />
+        </div>
+      );
+    }
+    return <Alert>{errorMessage(t, error)}</Alert>;
+  }
   if (!enc) return <PageSpinner />;
 
   const manage = enc.canManage;
@@ -118,10 +137,13 @@ export function EncounterPage() {
 
   return (
     <div className="space-y-5">
-      <Link to="/combat" className="btn-ghost !px-2">
-        <ArrowLeft className="h-4 w-4" />
-        {t('combat.backToList')}
-      </Link>
+      <div className="flex flex-wrap items-center gap-3">
+        <Link to="/combat" className="btn-ghost mr-auto !px-2">
+          <ArrowLeft className="h-4 w-4" />
+          {t('combat.backToList')}
+        </Link>
+        <PlayerModeToggle />
+      </div>
 
       <div className="flex flex-wrap items-start gap-3">
         <div className="min-w-0 flex-1 basis-72">

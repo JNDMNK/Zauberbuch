@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { useBoardUnread } from '../hooks/useBoardUnread';
 import { useCombatActive } from '../hooks/useCombatActive';
+import { useCombatPlayerMode } from '../hooks/useCombatPlayerMode';
 
 function LanguageSwitch() {
   const { t } = useTranslation();
@@ -160,7 +161,8 @@ export function Header() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const unread = useBoardUnread(Boolean(user));
-  const combats = useCombatActive(Boolean(user));
+  const [combatAsPlayer] = useCombatPlayerMode();
+  const combats = useCombatActive(Boolean(user), combatAsPlayer);
 
   useEffect(() => setMobileOpen(false), [location.pathname]);
 

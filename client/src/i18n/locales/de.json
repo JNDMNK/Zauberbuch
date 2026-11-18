@@ -812,6 +812,10 @@
     "countHint": "Mehrere werden durchnummeriert: „{{name}} 1“, „{{name}} 2“ …",
     "hideStatsLabel": "RK und LP für Spieler verbergen",
     "hideStatsHint": "Spieler sehen dann nur „unverletzt / angeschlagen / schwer verletzt / besiegt“. Lässt sich auf der Karte jederzeit umschalten.",
-    "addMonsterButton": "Hinzufügen"
+    "addMonsterButton": "Hinzufügen",
+    "playerMode": "Als Spieler",
+    "playerModeHint": "Spielermodus: Kampf wie ein Benutzer sehen und spielen (nur Kämpfe deiner Geschichten, verdeckte Monsterwerte ausgeblendet, keine Verwaltung)",
+    "playerModeActive": "Spielermodus ist an: Du siehst die Kampfhilfe wie ein Benutzer – nur Kämpfe aus Geschichten, in denen du als Mitspieler eingetragen bist, ohne verdeckte Monsterwerte und ohne Verwaltung.",
+    "playerModeNotMember": "Im Spielermodus siehst du nur Kämpfe aus Geschichten, in denen du als Mitspieler eingetragen bist. Trag dich unter Infotafel → Geschichten verwalten als Mitspieler ein oder schalte den Spielermodus aus."
   }
 }

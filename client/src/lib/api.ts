@@ -170,9 +170,11 @@ export const api = {
   importBoard: (file: unknown) => request<BoardImportResult>('POST', '/api/board/import', file),
 
   // Kampfhilfe
-  encounters: () => request<{ encounters: EncounterSummaryDto[] }>('GET', '/api/combat/encounters'),
-  combatActive: () => request<{ count: number }>('GET', '/api/combat/active'),
-  encounter: (id: string, signal?: AbortSignal) => request<{ encounter: EncounterDto }>('GET', `/api/combat/encounters/${id}`, undefined, signal),
+  // asPlayer: Spielermodus für Admins (Ansicht wie ein Benutzer)
+  encounters: (asPlayer = false) => request<{ encounters: EncounterSummaryDto[] }>('GET', `/api/combat/encounters${asPlayer ? '?asPlayer=true' : ''}`),
+  combatActive: (asPlayer = false) => request<{ count: number }>('GET', `/api/combat/active${asPlayer ? '?asPlayer=true' : ''}`),
+  encounter: (id: string, signal?: AbortSignal, asPlayer = false) =>
+    request<{ encounter: EncounterDto }>('GET', `/api/combat/encounters/${id}${asPlayer ? '?asPlayer=true' : ''}`, undefined, signal),
   createEncounter: (storyId: string, name: string) => request<{ encounter: EncounterDto }>('POST', '/api/combat/encounters', { storyId, name }),
   updateEncounter: (id: string, data: { name?: string; round?: number; turnCombatantId?: string | null; ended?: boolean }) =>
     request<{ encounter: EncounterDto }>('PATCH', `/api/combat/encounters/${id}`, data),
