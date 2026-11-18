@@ -432,14 +432,18 @@
     "othersHint": "Read-only – only the respective player can edit.",
     "othersSearch": "Name, class, race or player",
     "othersEmpty": "Other players have not created any character sheets yet.",
-    "titleAll": "Character sheets"
+    "titleAll": "Character sheets",
+    "shared": "Shared with me",
+    "sharedHint": "Other players' sheets you can co-edit.",
+    "coEditing": "Sheet of {{owner}} · you are a co-editor"
   },
   "sheet": {
     "tabs": {
       "main": "Character",
       "features": "Features & Inventory",
       "background": "Background",
-      "spells": "Spells"
+      "spells": "Spells",
+      "settings": "Settings"
     },
     "characterName": "Character name",
     "classLevel": "Class & level",
@@ -625,7 +629,19 @@
     "levelUpPossible": "Enough experience for level {{level}}!",
     "levelUpButton": "Raise to level {{level}}",
     "attackCount": "{{count}}/{{max}} attacks",
-    "attackLimitExceeded": "More than {{max}} attacks entered – new ones can only be added after removing some."
+    "attackLimitExceeded": "More than {{max}} attacks entered – new ones can only be added after removing some.",
+    "settings": {
+      "story": "Story",
+      "storyHint": "Assigns the sheet to a story of the info board. {{owner}} automatically becomes a player of that story, and in combat the DM is offered only the sheets of the matching story.",
+      "noStory": "– no story –",
+      "archivedStory": "(archived story)",
+      "noStories": "There are no stories yet – the DM creates them on the info board.",
+      "editors": "Co-editors",
+      "editorsHint": "These users may change all values on the sheet. Deleting, duplicating and these settings remain with {{owner}} (and DM/admin).",
+      "noUsers": "There are no other users.",
+      "save": "Save settings",
+      "saved": "Settings saved"
+    }
   },
   "board": {
     "heading": "Info board",
@@ -833,7 +849,14 @@
     "time": "Time",
     "timeHint": "1 round = 6 seconds · 10 rounds = 1 minute · 100 rounds = 10 minutes · 600 rounds = 1 hour",
     "timeScale": "After round {{round}}, {{time}} have passed (min:sec) · 1 round = 6 s · 10 rounds = 1 min · 100 rounds = 10 min",
-    "encountersTab": "Encounters"
+    "encountersTab": "Encounters",
+    "assigned": "Story",
+    "showingStory_one": "{{count}} sheet from “{{story}}”",
+    "showingStory_other": "{{count}} sheets from “{{story}}”",
+    "showingAll": "All {{count}} sheets",
+    "showAllCharacters": "Show all sheets",
+    "onlyStory": "Only this story's sheets",
+    "noneAssigned": "No sheets assigned to “{{story}}” yet (character sheet → Settings) – showing all."
   },
   "notifications": {
     "title": "Notifications",

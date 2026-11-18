@@ -24,6 +24,11 @@ export function CharacterCard({ c, to, actions }: { c: CharacterSummaryDto; to: 
         <p className="truncate text-sm">
           {[c.classLevel, c.race].filter(Boolean).join(' · ') || t('characters.level', { level: c.level })}
         </p>
+        {c.story && (
+          <p className="mt-1">
+            <span className="badge bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200">{c.story.name}</span>
+          </p>
+        )}
         <p className="mt-1 text-xs text-parchment-700 dark:text-parchment-400">
           {c.owner && <span className="font-semibold">{c.owner.username} · </span>}
           {t('characters.updated', { date: new Date(c.updatedAt).toLocaleDateString(i18n.language) })}
@@ -43,11 +48,15 @@ export function CharactersPage() {
   const [busy, setBusy] = useState(false);
   const [toDelete, setToDelete] = useState<CharacterSummaryDto | null>(null);
   const { isEditor } = useAuth();
+  const [shared, setShared] = useState<CharacterSummaryDto[]>([]);
 
   useEffect(() => {
     api
       .characters()
-      .then((r) => setList(r.characters))
+      .then((r) => {
+        setList(r.characters);
+        setShared(r.shared);
+      })
       .catch(setError);
   }, []);
 
@@ -134,6 +143,19 @@ export function CharactersPage() {
             />
           ))}
         </div>
+      )}
+      {shared.length > 0 && (
+        <section className="mt-10" aria-labelledby="shared-characters">
+          <h2 id="shared-characters" className="text-xl font-bold">
+            {t('characters.shared')}
+          </h2>
+          <p className="mb-3 text-sm text-parchment-700 dark:text-parchment-400">{t('characters.sharedHint')}</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {shared.map((c) => (
+              <CharacterCard key={c.id} c={c} to={`/characters/${c.id}`} />
+            ))}
+          </div>
+        </section>
       )}
       {isEditor && <OtherCharacters />}
       <ConfirmDialog

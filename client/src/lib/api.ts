@@ -1,5 +1,7 @@
 import type {
   AddMonsterInput,
+  CharacterSettingsDto,
+  CharacterSettingsInput,
   BestiaryEntryDto,
   BestiaryEntryInput,
   MonsterTemplateDto,
@@ -140,7 +142,9 @@ export const api = {
 
   spellNames: () => request<{ spells: SpellNameDto[] }>('GET', '/api/spells/names'),
 
-  characters: () => request<{ characters: CharacterSummaryDto[] }>('GET', '/api/characters'),
+  characters: () => request<{ characters: CharacterSummaryDto[]; shared: CharacterSummaryDto[] }>('GET', '/api/characters'),
+  characterSettings: (id: string) => request<{ settings: CharacterSettingsDto }>('GET', `/api/characters/${id}/settings`),
+  saveCharacterSettings: (id: string, input: CharacterSettingsInput) => request<{ settings: CharacterSettingsDto }>('PUT', `/api/characters/${id}/settings`, input),
   allCharacters: () => request<{ characters: CharacterSummaryDto[] }>('GET', '/api/characters/all'),
   character: (id: string) => request<{ character: CharacterDto }>('GET', `/api/characters/${id}`),
   createCharacter: (name?: string) => request<{ character: CharacterDto }>('POST', '/api/characters', { name }),

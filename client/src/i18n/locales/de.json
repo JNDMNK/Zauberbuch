@@ -432,14 +432,18 @@
     "othersHint": "Nur lesend – bearbeiten kann nur der jeweilige Spieler.",
     "othersSearch": "Name, Klasse, Volk oder Spieler",
     "othersEmpty": "Andere Spieler haben noch keine Charakterbögen angelegt.",
-    "titleAll": "Charakterbögen"
+    "titleAll": "Charakterbögen",
+    "shared": "Mit mir geteilt",
+    "sharedHint": "Bögen anderer Spieler, bei denen du Mitbearbeiter bist.",
+    "coEditing": "Bogen von {{owner}} · du bist Mitbearbeiter"
   },
   "sheet": {
     "tabs": {
       "main": "Charakter",
       "features": "Merkmale & Inventar",
       "background": "Hintergrund",
-      "spells": "Zauber"
+      "spells": "Zauber",
+      "settings": "Einstellungen"
     },
     "characterName": "Charaktername",
     "classLevel": "Klassen & Stufen",
@@ -625,7 +629,19 @@
     "levelUpPossible": "Genug Erfahrung für Stufe {{level}}!",
     "levelUpButton": "Auf Stufe {{level}} erhöhen",
     "attackCount": "{{count}}/{{max}} Angriffe",
-    "attackLimitExceeded": "Mehr als {{max}} Angriffe eingetragen – neue können erst nach dem Entfernen hinzugefügt werden."
+    "attackLimitExceeded": "Mehr als {{max}} Angriffe eingetragen – neue können erst nach dem Entfernen hinzugefügt werden.",
+    "settings": {
+      "story": "Geschichte",
+      "storyHint": "Ordnet den Bogen einer Geschichte der Infotafel zu. {{owner}} wird dadurch automatisch Mitspieler dieser Geschichte, und im Kampf schlägt der DM nur die Bögen der passenden Geschichte vor.",
+      "noStory": "– keine Geschichte –",
+      "archivedStory": "(archivierte Geschichte)",
+      "noStories": "Es gibt noch keine Geschichten – der DM legt sie auf der Infotafel an.",
+      "editors": "Mitbearbeiter",
+      "editorsHint": "Diese Benutzer dürfen alle Werte im Bogen ändern. Löschen, Duplizieren und diese Einstellungen bleiben bei {{owner}} (sowie DM und Admin).",
+      "noUsers": "Es gibt keine weiteren Benutzer.",
+      "save": "Einstellungen speichern",
+      "saved": "Einstellungen gespeichert"
+    }
   },
   "board": {
     "heading": "Infotafel",
@@ -833,7 +849,14 @@
     "time": "Zeit",
     "timeHint": "1 Runde = 6 Sekunden · 10 Runden = 1 Minute · 100 Runden = 10 Minuten · 600 Runden = 1 Stunde",
     "timeScale": "Nach Runde {{round}} sind {{time}} vergangen (Min:Sek) · 1 Runde = 6 s · 10 Runden = 1 min · 100 Runden = 10 min",
-    "encountersTab": "Kämpfe"
+    "encountersTab": "Kämpfe",
+    "assigned": "Geschichte",
+    "showingStory_one": "{{count}} Bogen aus „{{story}}“",
+    "showingStory_other": "{{count}} Bögen aus „{{story}}“",
+    "showingAll": "Alle {{count}} Bögen",
+    "showAllCharacters": "Alle Bögen anzeigen",
+    "onlyStory": "Nur Bögen dieser Geschichte",
+    "noneAssigned": "Noch keine Bögen „{{story}}“ zugeordnet (Charakterbogen → Einstellungen) – es werden alle angezeigt."
   },
   "notifications": {
     "title": "Benachrichtigungen",

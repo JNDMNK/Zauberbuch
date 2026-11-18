@@ -224,11 +224,32 @@ export interface CharacterSummaryDto {
   updatedAt: string;
   createdAt: string;
   owner?: { id: string; username: string };
+  /** Zugeordnete Geschichte */
+  story?: { id: string; name: string } | null;
 }
 
 export interface CharacterDto extends CharacterSummaryDto {
   data: CharacterSheet;
+  /** Besitzer oder Mitbearbeiter */
   canEdit: boolean;
+  /** Besitzer, Dungeon Master oder Admin: Mitbearbeiter und Geschichte ändern */
+  canManageSettings: boolean;
+  /** Betrachter ist Besitzer (löschen/duplizieren) */
+  isOwner: boolean;
+}
+
+/** Einstellungen eines Bogens: Mitbearbeiter und Geschichte */
+export const characterSettingsSchema = z.object({
+  storyId: z.string().min(1).max(64).nullable(),
+  editorIds: z.array(z.string().min(1).max(64)).max(50),
+});
+export type CharacterSettingsInput = z.infer<typeof characterSettingsSchema>;
+
+export interface CharacterSettingsDto {
+  storyId: string | null;
+  editors: { id: string; username: string }[];
+  /** Auswahlmöglichkeiten: Geschichten (nicht archiviert) und Benutzer (ohne Besitzer) */
+  options: { stories: { id: string; name: string }[]; users: { id: string; username: string }[] };
 }
 
 // ---------------------------------------------------------------- Berechnungen
@@ -317,6 +338,10 @@ export interface CharacterExportEntry {
   name: string;
   createdAt?: string;
   data: CharacterSheet;
+  /** Name der zugeordneten Geschichte (Zuordnung beim Import über den Namen) */
+  story?: string | null;
+  /** Benutzernamen der Mitbearbeiter */
+  editors?: string[];
 }
 
 export interface CharacterExportFile {

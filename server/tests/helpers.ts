@@ -20,6 +20,7 @@ export async function resetDb({ seed = false } = {}) {
   await prisma.boardPost.deleteMany();
   await prisma.storyMember.deleteMany();
   await prisma.story.deleteMany();
+  await prisma.characterEditor.deleteMany();
   await prisma.character.deleteMany();
   await prisma.favorite.deleteMany();
   await prisma.spellClassLink.deleteMany();

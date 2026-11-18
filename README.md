@@ -110,7 +110,9 @@ setzen (der Benutzer wird dabei auf allen Geräten abgemeldet) und Benutzer lös
 | Zauber anlegen, bearbeiten, duplizieren | (✔)¹ | ✔ | ✔ |
 | Zauber löschen | – | ✔ | ✔ |
 | Zauberbücher aller Benutzer ansehen | – | ✔ | ✔ |
-| Eigene Charakterbögen anlegen und bearbeiten | ✔ | ✔ | ✔ |
+| Eigene Charakterbögen anlegen und bearbeiten (inkl. Einstellungen: Geschichte, Mitbearbeiter) | ✔ | ✔ | ✔ |
+| Geteilte Charakterbögen bearbeiten (als Mitbearbeiter) | ✔ | ✔ | ✔ |
+| Einstellungen fremder Bögen ändern (Geschichte, Mitbearbeiter) | – | ✔ | ✔ |
 | Charakterbögen aller Benutzer ansehen (nur lesen) | – | ✔ | ✔ |
 | Infotafel: Geschichten lesen und Beiträge/Kommentare schreiben | (✔)² | ✔ | ✔ |
 | Infotafel: fremde Beiträge/Kommentare bearbeiten und löschen, anheften | – | ✔ | ✔ |
@@ -153,6 +155,21 @@ Rettungswürfe, Fertigkeiten, passive Wahrnehmung, Initiative, Angriffsbonus, Za
 Änderungen werden automatisch gespeichert (kurz nach der letzten Eingabe sowie beim Verlassen der Seite).
 Bilder werden im Browser verkleinert und mit dem Bogen gespeichert. Admin und Dungeon Master sehen alle
 Bögen auf der Seite **Charakterbogen** unter „Charakterbögen weiterer Spieler“ – nur lesend. Der Bogen lässt sich über das Drucker-Symbol drucken.
+
+### Einstellungen eines Bogens
+
+Die letzte Seite des Bogens, **Einstellungen**, sehen Besitzer, Dungeon Master und Admin:
+
+- **Geschichte:** ordnet den Bogen einer Geschichte der Infotafel zu. Der Besitzer wird dadurch automatisch
+  **Mitspieler** dieser Geschichte (Infotafel, Kämpfe, Spieler-Monster-Datenbank). Im Kampf zeigt
+  „Spieler hinzufügen“ dann zunächst nur die Bögen dieser Geschichte („Alle Bögen anzeigen“ blendet den Rest ein).
+  Wird die Zuordnung entfernt, bleibt die Mitgliedschaft bestehen – die verwaltet der DM auf der Infotafel.
+- **Mitbearbeiter:** ausgewählte Benutzer dürfen alle Werte des Bogens ändern; sie finden ihn auf ihrer Seite
+  Charakterbogen unter **„Mit mir geteilt“**. Löschen, Duplizieren und die Einstellungen bleiben beim Besitzer
+  (sowie DM und Admin).
+
+Beim Export/Import der Charakterbögen werden Geschichte (über den Namen) und Mitbearbeiter (über die
+Benutzernamen) mitgenommen.
 
 ### Export & Import der Benutzer (Admin)
 

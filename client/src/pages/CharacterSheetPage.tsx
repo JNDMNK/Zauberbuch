@@ -11,16 +11,18 @@ import { IdentityHeader, MainTab } from '../components/sheet/MainTab';
 import { FeaturesTab } from '../components/sheet/FeaturesTab';
 import { BackgroundTab, PhysicalHeader } from '../components/sheet/BackgroundTab';
 import { SpellsTab } from '../components/sheet/SpellsTab';
+import { SettingsTab } from '../components/sheet/SettingsTab';
 
 const TABS = ['main', 'features', 'background', 'spells'] as const;
-type Tab = (typeof TABS)[number];
+/** „Einstellungen“ nur für Besitzer, DM und Admin; nicht im Druck */
+type Tab = (typeof TABS)[number] | 'settings';
 type SaveState = 'saved' | 'dirty' | 'saving' | 'error';
 
 export function CharacterSheetPage() {
   const { id } = useParams();
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const tab: Tab = (TABS as readonly string[]).includes(searchParams.get('tab') ?? '') ? (searchParams.get('tab') as Tab) : 'main';
+  const requestedTab = searchParams.get('tab') ?? '';
   const [character, setCharacter] = useState<CharacterDto | null>(null);
   const [sheet, setSheet] = useState<CharacterSheet | null>(null);
   const [error, setError] = useState<unknown>(null);
@@ -90,6 +92,8 @@ export function CharacterSheetPage() {
   }, []);
 
   const canEdit = Boolean(character?.canEdit);
+  const navTabs: readonly Tab[] = character?.canManageSettings ? [...TABS, 'settings'] : TABS;
+  const tab: Tab = (navTabs as readonly string[]).includes(requestedTab) ? (requestedTab as Tab) : 'main';
 
   const set = useCallback(
     (path: Path, value: unknown) => {
@@ -136,6 +140,11 @@ export function CharacterSheetPage() {
           {canEdit ? t('characters.back') : t('characters.backAdmin')}
         </Link>
         <div className="ml-auto flex items-center gap-3">
+          {canEdit && !character.isOwner && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-sm text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
+              {t('characters.coEditing', { owner: character.owner?.username ?? '' })}
+            </span>
+          )}
           {canEdit ? (
             <span className={`inline-flex items-center gap-1.5 text-sm ${status.cls}`} role="status" aria-live="polite">
               {status.icon}
@@ -186,7 +195,7 @@ export function CharacterSheetPage() {
         </fieldset>
 
         <nav role="tablist" className="flex gap-1 overflow-x-auto border-b border-parchment-400/60 print:hidden dark:border-night-700">
-          {TABS.map((k) => (
+          {navTabs.map((k) => (
             <button
               key={k}
               type="button"
@@ -221,6 +230,10 @@ export function CharacterSheetPage() {
             </div>
           ))}
         </fieldset>
+        {/* Einstellungen außerhalb des Bogens: auch DM/Admin (nur lesend im Bogen) dürfen sie ändern */}
+        {tab === 'settings' && character.canManageSettings && (
+          <SettingsTab characterId={character.id} ownerName={character.owner?.username ?? ''} onStoryChange={(story) => setCharacter((c) => (c ? { ...c, story } : c))} />
+        )}
       </div>
     </SheetContext.Provider>
   );

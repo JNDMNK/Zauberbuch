@@ -321,10 +321,12 @@ function AddPlayersDialog({ open, enc, onClose, onDone }: { open: boolean; enc: 
   const [members, setMembers] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     setSelected(new Set());
+    setShowAll(false);
     Promise.all([api.allCharacters(), api.stories(true)])
       .then(([c, s]) => {
         setChars(c.characters);
@@ -335,8 +337,11 @@ function AddPlayersDialog({ open, enc, onClose, onDone }: { open: boolean; enc: 
   }, [open]);
 
   const present = new Set(enc.combatants.map((c) => c.characterId).filter(Boolean));
+  // Standard: nur Bögen, die dieser Geschichte zugeordnet sind (Einstellungen im Bogen); umschaltbar auf alle
+  const inStory = (chars ?? []).filter((c) => c.story?.id === enc.storyId);
+  const pool = showAll || inStory.length === 0 ? chars ?? [] : inStory;
   // Charaktere der Mitspieler dieser Geschichte zuerst
-  const sorted = [...(chars ?? [])].sort(
+  const sorted = [...pool].sort(
     (a, b) => Number(members.has(b.owner?.id ?? '')) - Number(members.has(a.owner?.id ?? '')) || (a.owner?.username ?? '').localeCompare(b.owner?.username ?? '') || a.name.localeCompare(b.name),
   );
 
@@ -363,6 +368,18 @@ function AddPlayersDialog({ open, enc, onClose, onDone }: { open: boolean; enc: 
       ) : (
         <div className="space-y-4">
           <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('combat.addPlayersHint')}</p>
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            {inStory.length > 0 ? (
+              <>
+                <span>{showAll ? t('combat.showingAll', { count: chars.length }) : t('combat.showingStory', { count: inStory.length, story: enc.storyName })}</span>
+                <button type="button" className="underline" onClick={() => setShowAll((v) => !v)}>
+                  {showAll ? t('combat.onlyStory') : t('combat.showAllCharacters')}
+                </button>
+              </>
+            ) : (
+              <span className="text-parchment-700 dark:text-parchment-400">{t('combat.noneAssigned', { story: enc.storyName })}</span>
+            )}
+          </div>
           <ul className="max-h-[50vh] divide-y divide-parchment-300/70 overflow-y-auto dark:divide-night-700">
             {sorted.map((c) => {
               const already = present.has(c.id);
@@ -389,7 +406,11 @@ function AddPlayersDialog({ open, enc, onClose, onDone }: { open: boolean; enc: 
                         {[c.classLevel, c.race].filter(Boolean).join(' · ')} {c.owner && `· ${c.owner.username}`}
                       </span>
                     </span>
-                    {members.has(c.owner?.id ?? '') && <span className="badge bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">{t('combat.member')}</span>}
+                    {c.story?.id === enc.storyId ? (
+                      <span className="badge bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">{t('combat.assigned')}</span>
+                    ) : (
+                      members.has(c.owner?.id ?? '') && <span className="badge bg-parchment-200 text-parchment-900 dark:bg-night-700 dark:text-parchment-200">{t('combat.member')}</span>
+                    )}
                     {already && <span className="text-xs">{t('combat.alreadyAdded')}</span>}
                   </label>
                 </li>
