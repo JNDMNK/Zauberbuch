@@ -123,14 +123,15 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
 
         <section className="min-w-0 flex-1" aria-label={t('common.search')}>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative flex-1">
+            <div className="flex-1">
+            <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-parchment-600" aria-hidden />
               <input
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder={t('search.placeholder')}
-                aria-label={t('search.placeholder')}
+                placeholder={filters.nameOnly ? t('search.placeholderName') : t('search.placeholder')}
+                aria-label={filters.nameOnly ? t('search.placeholderName') : t('search.placeholder')}
                 className="input !pl-10 !pr-10 text-lg"
               />
               {query && (
@@ -143,6 +144,16 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
                   <X className="h-4 w-4" />
                 </button>
               )}
+            </div>
+            <label className="mt-1.5 inline-flex cursor-pointer items-center gap-2 text-sm text-parchment-800 dark:text-parchment-300">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300"
+                checked={filters.nameOnly}
+                onChange={(e) => update({ ...filters, q: query, nameOnly: e.target.checked }, true)}
+              />
+              {t('search.nameOnly')}
+            </label>
             </div>
             <div className="flex items-center gap-2">
               <button type="button" className="btn-secondary lg:hidden" onClick={() => setMobileFilters(true)}>

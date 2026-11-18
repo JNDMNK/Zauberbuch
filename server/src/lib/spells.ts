@@ -197,7 +197,10 @@ export function toSpellInput(spell: SpellWithRelations): SpellInput {
 export function buildSpellWhere(q: SpellQuery, userId?: string): Prisma.SpellWhereInput {
   const and: Prisma.SpellWhereInput[] = [];
   const terms = normalize(q.query).split(/\s+/).filter(Boolean).slice(0, 10);
-  for (const term of terms) and.push({ searchText: { contains: term } });
+  for (const term of terms) {
+    // Nur im Namen: beide Sprachen (sortName* ist der klein geschriebene Name), sonst Name + Beschreibung
+    and.push(q.nameOnly ? { OR: [{ sortNameDe: { contains: term } }, { sortNameEn: { contains: term } }] } : { searchText: { contains: term } });
+  }
   if (q.level.length) and.push({ level: { in: q.level } });
   if (q.school.length) and.push({ school: { in: q.school } });
   if (q.class.length) and.push({ classes: { some: { className: { in: q.class } } } });

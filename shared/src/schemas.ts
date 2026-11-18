@@ -110,6 +110,8 @@ const boolParam = z
 
 export const spellQuerySchema = z.object({
   query: z.string().trim().max(200).optional().default(''),
+  /** true: Suchbegriff nur im Zaubernamen (DE und EN) suchen, nicht in der Beschreibung */
+  nameOnly: boolParam,
   level: z
     .union([z.string(), z.array(z.string())])
     .optional()

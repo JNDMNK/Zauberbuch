@@ -4,7 +4,8 @@ Eine selbst gehostete Bibliothek für D&D-5e-Zauber: durchsuchen, filtern, als F
 und im eigenen **Zauberbuch** sammeln. Zauber (inkl. Homebrew) werden zweisprachig (DE/EN) über eine
 Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutzer legt der Admin an. Läuft als einzelner Docker-Container – optimiert für **Unraid**.
 
-- 🔎 Live-Suche über Name und Beschreibung, **sprachübergreifend** („Feuerball“ findet auch „Fireball“)
+- 🔎 Live-Suche über Name und Beschreibung, **sprachübergreifend** („Feuerball“ findet auch „Fireball“) – per Häkchen
+  „Nur im Namen suchen“ auch ausschließlich in den Zaubernamen (DE und EN)
 - 🎚️ Filter: Grad (Mehrfachauswahl), Schule, Klasse, Schadensart, Konzentration, Ritual, Komponenten, Zauberzeit,
   Quelle/Homebrew, nur Mein Zauberbuch – Sortierung nach Name, Grad, Schule; Filter stehen in der URL
 - 🃏 Responsives Karten-Grid im Pergament-Stil, Akzentfarbe je Schule, Schaden/Heilung direkt auf der Karte
@@ -579,7 +580,8 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `DELETE /api/users/:id` | Admin | Benutzer löschen (nicht sich selbst, nicht den letzten Admin) |
 
 Parameter für `GET /api/spells` (Listen als Komma-Liste, z. B. `level=0,3`):
-`query`, `level`, `school`, `class`, `castingTime`, `damageType`, `concentration`, `ritual`, `verbal`, `somatic`,
+`query`, `nameOnly=true` (Suchbegriff nur in den Zaubernamen), `level`, `school`, `class`, `castingTime`, `damageType`,
+`concentration`, `ritual`, `verbal`, `somatic`,
 `material`, `homebrew` (je `true`/`false`), `source`, `favorites=true` (eigenes Zauberbuch),
 `owner=<userId>` (Zauberbuch eines Benutzers, nur DM/Admin),
 `sort=name|level|school`, `order=asc|desc`, `lang=de|en` (Sortiersprache), `page`, `pageSize` (max. 100).

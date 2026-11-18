@@ -129,7 +129,9 @@
     "noFavoritesHint": "Tippe auf das Herz einer Zauberkarte, um den Zauber in dein Zauberbuch aufzunehmen.",
     "loadMore": "Mehr laden",
     "end": "Das Ende des Zauberbuchs ist erreicht.",
-    "emptySpellbook": "Dieses Zauberbuch ist leer."
+    "emptySpellbook": "Dieses Zauberbuch ist leer.",
+    "nameOnly": "Nur im Namen suchen",
+    "placeholderName": "Zaubername suchen …"
   },
   "filter": {
     "title": "Filter",

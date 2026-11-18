@@ -16,6 +16,8 @@ export type Tri = boolean | undefined;
 
 export interface SpellFilters {
   q: string;
+  /** Suchbegriff nur im Zaubernamen suchen */
+  nameOnly: boolean;
   level: number[];
   school: School[];
   class: SpellClass[];
@@ -45,6 +47,7 @@ export function parseFilters(sp: URLSearchParams): SpellFilters {
   const sort = sp.get('sort');
   return {
     q: sp.get('q') ?? '',
+    nameOnly: sp.get('nameOnly') === 'true',
     level: (sp.get('level') ?? '')
       .split(',')
       .map((s) => Number.parseInt(s, 10))
@@ -70,6 +73,7 @@ export function parseFilters(sp: URLSearchParams): SpellFilters {
 export function filtersToParams(f: SpellFilters): URLSearchParams {
   const sp = new URLSearchParams();
   if (f.q.trim()) sp.set('q', f.q.trim());
+  if (f.nameOnly) sp.set('nameOnly', 'true');
   if (f.level.length) sp.set('level', [...f.level].sort((a, b) => a - b).join(','));
   if (f.school.length) sp.set('school', f.school.join(','));
   if (f.class.length) sp.set('class', f.class.join(','));
@@ -92,6 +96,7 @@ export function filtersToApiParams(
 ) {
   const sp = new URLSearchParams();
   if (f.q.trim()) sp.set('query', f.q.trim());
+  if (f.q.trim() && f.nameOnly) sp.set('nameOnly', 'true');
   if (f.level.length) sp.set('level', f.level.join(','));
   if (f.school.length) sp.set('school', f.school.join(','));
   if (f.class.length) sp.set('class', f.class.join(','));

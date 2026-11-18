@@ -129,7 +129,9 @@
     "noFavoritesHint": "Tap the heart on a spell card to add the spell to your spellbook.",
     "loadMore": "Load more",
     "end": "You have reached the end of the spellbook.",
-    "emptySpellbook": "This spellbook is empty."
+    "emptySpellbook": "This spellbook is empty.",
+    "nameOnly": "Search names only",
+    "placeholderName": "Search spell names …"
   },
   "filter": {
     "title": "Filters",

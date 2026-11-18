@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Agent } from 'supertest';
 import { app, CSRF, createUser, loginAs, makeSpell, request, resetDb } from './helpers';
 
@@ -195,5 +195,29 @@ describe('Zauber – Verwaltung', () => {
     expect(fbExport).toMatchObject({ damageDice: null, damageType: null }); // durch Import überschrieben
     const mm = exp.body.spells.find((sp: { slug: string }) => sp.slug === 'magic-missile');
     expect(mm).toMatchObject({ damageDice: '1d4+1', damageType: 'force' });
+  });
+});
+
+describe('Zaubersuche nur im Namen', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('nameOnly sucht nur in den Namen (DE und EN), nicht in der Beschreibung', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    await admin
+      .post('/api/spells')
+      .set(CSRF)
+      .send(makeSpell({ slug: 'flammenhand', translations: { de: { name: 'Flammenhand', description: 'Ruft einen kleinen Drachen herbei.' }, en: { name: 'Flame Hand', description: 'Summons a tiny dragon.' } } }));
+    await admin
+      .post('/api/spells')
+      .set(CSRF)
+      .send(makeSpell({ slug: 'drachenodem', translations: { de: { name: 'Drachenodem', description: 'Feuer aus dem Mund.' }, en: { name: 'Dragon Breath', description: 'Fire.' } } }));
+    const names = async (qs: string) => ((await admin.get(`/api/spells?${qs}&lang=de`)).body.items as { translations: { de?: { name: string } } }[]).map((s) => s.translations.de?.name).sort();
+    expect(await names('query=drache')).toEqual(['Drachenodem', 'Flammenhand']);
+    expect(await names('query=drache&nameOnly=true')).toEqual(['Drachenodem']);
+    expect(await names('query=dragon&nameOnly=true')).toEqual(['Drachenodem']); // englischer Name
+    expect(await names('query=feuer&nameOnly=true')).toEqual([]);
+    expect(await names('query=FLAMMEN&nameOnly=true')).toEqual(['Flammenhand']);
   });
 });
