@@ -108,16 +108,17 @@ model Favorite {
 
 /// Charakterbogen – der eigentliche Bogen steht als validiertes JSON in `data`
 model Character {
-  id         String   @id @default(cuid())
+  id         String      @id @default(cuid())
   userId     String
-  name       String   @default("")
-  classLevel String   @default("")
-  race       String   @default("")
-  level      Int      @default(1)
+  name       String      @default("")
+  classLevel String      @default("")
+  race       String      @default("")
+  level      Int         @default(1)
   data       String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  combatants Combatant[]
 
   @@index([userId])
 }
@@ -137,6 +138,7 @@ model Story {
   members     StoryMember[]
   posts       BoardPost[]
   reads       BoardRead[]
+  encounters  Encounter[]
 }
 
 /**
@@ -210,4 +212,56 @@ model BoardRead {
 
   @@id([userId, storyId])
   @@index([storyId])
+}
+
+// ---- Kampfhilfe ----
+
+/**
+ * Kampf innerhalb einer Geschichte; verwaltet von Admin/Dungeon Master, Mitspieler sehen ihn nur lesend
+ */
+model Encounter {
+  id              String      @id @default(cuid())
+  storyId         String
+  story           Story       @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  name            String
+  round           Int         @default(1)
+  /**
+   * Teilnehmer, der gerade am Zug ist
+   */
+  turnCombatantId String?
+  ended           Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  combatants      Combatant[]
+
+  @@index([storyId])
+}
+
+/**
+ * Teilnehmer: Spielercharakter (Werte live aus dem Charakterbogen, nur lesend) oder Monster (vom DM gepflegt)
+ */
+model Combatant {
+  id          String     @id @default(cuid())
+  encounterId String
+  encounter   Encounter  @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  kind        String // character | monster
+  characterId String?
+  character   Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  name        String     @default("")
+  initiative  Int?
+  ac          Int?
+  hpCurrent   Int        @default(0)
+  hpMax       Int        @default(0)
+  /**
+   * Monster: RK und LP für Spieler verbergen (Spieler sehen nur einen groben Zustand)
+   */
+  hideStats   Boolean    @default(true)
+  /**
+   * JSON-Array der Zustände
+   */
+  conditions  String     @default("[]")
+  createdAt   DateTime   @default(now())
+
+  @@index([encounterId])
+  @@index([characterId])
 }

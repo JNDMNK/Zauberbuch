@@ -1,4 +1,8 @@
 import type {
+  AddMonsterInput,
+  CombatantUpdate,
+  EncounterDto,
+  EncounterSummaryDto,
   AppConfigDto,
   BoardCommentDto,
   BoardImportResult,
@@ -164,4 +168,20 @@ export const api = {
   updateComment: (id: string, body: string) => request<{ comment: BoardCommentDto }>('PATCH', `/api/board/comments/${id}`, { body }),
   deleteComment: (id: string) => request<void>('DELETE', `/api/board/comments/${id}`),
   importBoard: (file: unknown) => request<BoardImportResult>('POST', '/api/board/import', file),
+
+  // Kampfhilfe
+  encounters: () => request<{ encounters: EncounterSummaryDto[] }>('GET', '/api/combat/encounters'),
+  combatActive: () => request<{ count: number }>('GET', '/api/combat/active'),
+  encounter: (id: string, signal?: AbortSignal) => request<{ encounter: EncounterDto }>('GET', `/api/combat/encounters/${id}`, undefined, signal),
+  createEncounter: (storyId: string, name: string) => request<{ encounter: EncounterDto }>('POST', '/api/combat/encounters', { storyId, name }),
+  updateEncounter: (id: string, data: { name?: string; round?: number; turnCombatantId?: string | null; ended?: boolean }) =>
+    request<{ encounter: EncounterDto }>('PATCH', `/api/combat/encounters/${id}`, data),
+  deleteEncounter: (id: string) => request<void>('DELETE', `/api/combat/encounters/${id}`),
+  encounterTurn: (id: string, direction: 1 | -1) => request<{ encounter: EncounterDto }>('POST', `/api/combat/encounters/${id}/turn`, { direction }),
+  addCombatCharacters: (id: string, characterIds: string[]) =>
+    request<{ encounter: EncounterDto }>('POST', `/api/combat/encounters/${id}/characters`, { characterIds }),
+  addMonster: (id: string, input: AddMonsterInput) => request<{ encounter: EncounterDto }>('POST', `/api/combat/encounters/${id}/monsters`, input),
+  updateCombatant: (id: string, data: CombatantUpdate) => request<{ encounter: EncounterDto }>('PATCH', `/api/combat/combatants/${id}`, data),
+  combatantHp: (id: string, delta: number) => request<{ encounter: EncounterDto }>('POST', `/api/combat/combatants/${id}/hp`, { delta }),
+  removeCombatant: (id: string) => request<{ encounter: EncounterDto }>('DELETE', `/api/combat/combatants/${id}`),
 };

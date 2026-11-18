@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BookHeart, BookOpen, ChevronDown, LogOut, Menu, MessagesSquare, Moon, ScrollText, Settings, Shield, Sun, UserRound, X } from 'lucide-react';
+import { BookHeart, BookOpen, ChevronDown, LogOut, Menu, MessagesSquare, Moon, ScrollText, Settings, Shield, Sun, Swords, UserRound, X } from 'lucide-react';
 import { LOCALES } from '@zauberbuch/shared';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { useBoardUnread } from '../hooks/useBoardUnread';
+import { useCombatActive } from '../hooks/useCombatActive';
 
 function LanguageSwitch() {
   const { t } = useTranslation();
@@ -46,7 +47,7 @@ function ThemeToggle() {
 
 function UserMenu() {
   const { t } = useTranslation();
-  const { user, logout } = useAuth();
+  const { user, logout, canWriteSpells } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -80,6 +81,12 @@ function UserMenu() {
             <Settings className="h-4 w-4" />
             {t('nav.account')}
           </Link>
+          {canWriteSpells && (
+            <Link role="menuitem" to="/admin" onClick={() => setOpen(false)} className="flex items-center gap-2 px-4 py-2 hover:bg-parchment-200/70 dark:hover:bg-night-700">
+              <Shield className="h-4 w-4" />
+              {t('nav.admin')}
+            </Link>
+          )}
           <button
             role="menuitem"
             type="button"
@@ -100,12 +107,60 @@ function UserMenu() {
   );
 }
 
+/** Aufklappmenü „Zauber“ mit „Alle Zauber“ und „Mein Zauberbuch“ */
+function SpellsMenu({ navCls }: { navCls: (s: { isActive: boolean }) => string }) {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const active = location.pathname === '/' || location.pathname.startsWith('/spellbook') || location.pathname.startsWith('/spells/');
+
+  useEffect(() => setOpen(false), [location.pathname]);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const item = 'flex items-center gap-2 px-4 py-2 hover:bg-parchment-200/70 dark:hover:bg-night-700';
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" className={navCls({ isActive: active })} onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="menu">
+        <BookOpen className="h-4 w-4" />
+        {t('nav.spells')}
+        <ChevronDown className={`h-4 w-4 transition ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div role="menu" className="parchment absolute left-0 z-50 mt-2 w-56 overflow-hidden py-1">
+          <NavLink role="menuitem" to="/" end className={({ isActive }) => `${item} ${isActive ? 'font-semibold' : ''}`}>
+            <BookOpen className="h-4 w-4" />
+            {t('nav.allSpells')}
+          </NavLink>
+          <NavLink role="menuitem" to="/spellbook" className={({ isActive }) => `${item} ${isActive ? 'font-semibold' : ''}`}>
+            <BookHeart className="h-4 w-4" />
+            {t('nav.favorites')}
+          </NavLink>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Header() {
   const { t } = useTranslation();
   const { user, canWriteSpells } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const unread = useBoardUnread(Boolean(user));
+  const combats = useCombatActive(Boolean(user));
 
   useEffect(() => setMobileOpen(false), [location.pathname]);
 
@@ -116,17 +171,16 @@ export function Header() {
         : 'text-ink hover:bg-parchment-200/80 dark:text-parchment-100 dark:hover:bg-night-700'
     }`;
 
+  const unreadBadge = unread > 0 && (
+    <span className="rounded-full bg-red-700 px-1.5 text-xs font-bold leading-5 text-white" aria-label={t('board.unreadCount', { count: unread })}>
+      {unread > 99 ? '99+' : unread}
+    </span>
+  );
+  const combatDot = combats > 0 && <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-600" aria-label={t('combat.running', { count: combats })} title={t('combat.running', { count: combats })} />;
+
   // Ohne Anmeldung gibt es keine Navigation – die Startseite ist der Login
-  const links = !user ? null : (
+  const sharedLinks = (
     <>
-      <NavLink to="/" end className={navCls}>
-        <BookOpen className="h-4 w-4" />
-        {t('nav.spells')}
-      </NavLink>
-      <NavLink to="/spellbook" className={navCls}>
-        <BookHeart className="h-4 w-4" />
-        {t('nav.favorites')}
-      </NavLink>
       <NavLink to="/characters" className={navCls}>
         <ScrollText className="h-4 w-4" />
         {t('nav.characters')}
@@ -134,12 +188,34 @@ export function Header() {
       <NavLink to="/board" className={navCls}>
         <MessagesSquare className="h-4 w-4" />
         {t('nav.board')}
-        {unread > 0 && (
-          <span className="rounded-full bg-red-700 px-1.5 text-xs font-bold leading-5 text-white" aria-label={t('board.unreadCount', { count: unread })}>
-            {unread > 99 ? '99+' : unread}
-          </span>
-        )}
+        {unreadBadge}
       </NavLink>
+      <NavLink to="/combat" className={navCls}>
+        <Swords className="h-4 w-4" />
+        {t('nav.combat')}
+        {combatDot}
+      </NavLink>
+    </>
+  );
+  // Desktop: „Zauber“ als Aufklappmenü, Verwaltung im Benutzermenü
+  const desktopLinks = !user ? null : (
+    <>
+      <SpellsMenu navCls={navCls} />
+      {sharedLinks}
+    </>
+  );
+  // Handy: alles als flache Liste
+  const mobileLinks = !user ? null : (
+    <>
+      <NavLink to="/" end className={navCls}>
+        <BookOpen className="h-4 w-4" />
+        {t('nav.allSpells')}
+      </NavLink>
+      <NavLink to="/spellbook" className={navCls}>
+        <BookHeart className="h-4 w-4" />
+        {t('nav.favorites')}
+      </NavLink>
+      {sharedLinks}
       {canWriteSpells && (
         <NavLink to="/admin" className={navCls}>
           <Shield className="h-4 w-4" />
@@ -154,27 +230,27 @@ export function Header() {
       <div className="mx-auto flex max-w-[1600px] items-center gap-3 px-4 py-2.5">
         <Link to="/" className="flex items-center gap-2" aria-label={t('app.title')}>
           <img src="/favicon.svg" alt="" className="h-8 w-8" />
-          <span className="hidden flex-col leading-none sm:flex">
+          <span className="hidden flex-col leading-none sm:flex lg:hidden xl:flex">
             <span className="font-display text-xl font-bold tracking-wider">{t('app.title')}</span>
             <span className="text-xs italic text-parchment-700 dark:text-parchment-400">{t('app.subtitle')}</span>
           </span>
         </Link>
-        <nav className="ml-4 hidden items-center gap-1 md:flex">{links}</nav>
+        <nav className="ml-4 hidden items-center gap-1 lg:flex">{desktopLinks}</nav>
         <div className="ml-auto flex items-center gap-1.5">
           <LanguageSwitch />
           <ThemeToggle />
           <UserMenu />
           {user && (
-          <button type="button" className="btn-icon relative md:hidden" onClick={() => setMobileOpen((o) => !o)} aria-expanded={mobileOpen} aria-label={t('nav.menu')}>
+          <button type="button" className="btn-icon relative lg:hidden" onClick={() => setMobileOpen((o) => !o)} aria-expanded={mobileOpen} aria-label={t('nav.menu')}>
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            {!mobileOpen && unread > 0 && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-red-700" aria-hidden />}
+            {!mobileOpen && (unread > 0 || combats > 0) && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-red-700" aria-hidden />}
           </button>
           )}
         </div>
       </div>
       {mobileOpen && user && (
-        <nav className="flex flex-col gap-1 border-t border-parchment-400/60 px-4 py-3 md:hidden dark:border-night-700">
-          {links}
+        <nav className="flex flex-col gap-1 border-t border-parchment-400/60 px-4 py-3 lg:hidden dark:border-night-700">
+          {mobileLinks}
         </nav>
       )}
     </header>

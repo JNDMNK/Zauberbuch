@@ -16,6 +16,8 @@ Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutze
   und Verknüpfung der Zauber mit der Bibliothek
 - 🗒️ **Infotafel** pro Geschichte: Mitspieler halten wichtige Infos fest – mit Kategorien, Suche, Kommentaren,
   angehefteten Beiträgen, Ungelesen-Zähler und Papierkorb (siehe [Infotafel](#infotafel))
+- ⚔️ **Kampfhilfe**: Initiative-Reihenfolge mit Runden und aktivem Zug, Spielercharaktere live aus den
+  Charakterbögen (RK, LP mit Lebensbalken), Monster mit verdeckbaren Werten, Zustände (siehe [Kampfhilfe](#kampfhilfe))
 - 👥 Rollen **Benutzer**, **Dungeon Master** und **Admin** (siehe [Rollen & Benutzer](#rollen--benutzer))
 - 🔒 Ohne Anmeldung keine Daten – die Startseite ist der Login, es gibt keine Selbstregistrierung
 - 🌍 DE/EN-Umschalter für Oberfläche **und** Zaubertexte (pro Benutzer gespeichert, Gäste im localStorage);
@@ -34,6 +36,7 @@ Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutze
 2. [Installation auf Unraid](#installation-auf-unraid)
 3. [Rollen & Benutzer](#rollen--benutzer)
    - [Infotafel](#infotafel)
+   - [Kampfhilfe](#kampfhilfe)
 4. [Umgebungsvariablen](#umgebungsvariablen)
 5. [Daten, Backup & Wiederherstellung](#daten-backup--wiederherstellung)
 6. [Reverse Proxy](#reverse-proxy-nginx-proxy-manager--swag)
@@ -89,6 +92,9 @@ setzen (mindestens `ZAUBERBUCH_IMAGE` und `ADMIN_PASSWORD`). Dann **Compose Up**
 
 ## Rollen & Benutzer
 
+Die **Verwaltung** erreichst du über das Benutzermenü oben rechts (auf dem Handy über das ☰-Menü). „Alle Zauber“
+und „Mein Zauberbuch“ liegen im Aufklappmenü **Zauber**.
+
 Ohne Anmeldung sind keine Daten sichtbar – weder in der Oberfläche noch über die API. Eine
 Selbstregistrierung gibt es nicht: Benutzer legt der Admin unter **Verwaltung → Benutzer → Neuer Benutzer**
 an (Benutzername, optional E-Mail, Passwort, Rolle). Dort kann er auch Rollen ändern, das Zusatzrecht
@@ -108,6 +114,8 @@ setzen (der Benutzer wird dabei auf allen Geräten abgemeldet) und Benutzer lös
 | Infotafel: fremde Beiträge/Kommentare bearbeiten und löschen, anheften | – | ✔ | ✔ |
 | Infotafel: Geschichten anlegen, Mitspieler zuordnen, archivieren | – | ✔ | ✔ |
 | Infotafel: Geschichten löschen, Papierkorb (wiederherstellen) | – | – | ✔ |
+| Kampfhilfe ansehen (Kämpfe der eigenen Geschichten, nur lesen) | (✔)² | ✔ | ✔ |
+| Kampfhilfe führen (Kämpfe anlegen, Teilnehmer, Initiative, Monster, Zustände) | – | ✔ | ✔ |
 | JSON-Import und -Export (Zauber, Benutzer, Charakterbögen, Infotafel) | – | – | ✔ |
 | Benutzer anlegen, Rollen ändern, Passwörter setzen, löschen | – | – | ✔ |
 
@@ -217,6 +225,28 @@ Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Grupp
 - **Papierkorb:** Gelöschte Beiträge kann der Admin unter **Infotafel → Papierkorb** **90 Tage** lang
   wiederherstellen; danach werden sie automatisch endgültig entfernt. Gelöschte Kommentare sind sofort weg.
 - Wird ein Benutzer gelöscht, bleiben seine Beiträge erhalten („gelöschter Benutzer“).
+
+## Kampfhilfe
+
+Unter **Kampf** führt der Dungeon Master (oder Admin) Kämpfe. Jeder Kampf gehört zu einer **Geschichte** der
+Infotafel; deren Mitspieler sehen ihn – nur lesend – in derselben Ansicht.
+
+- **Spieler hinzufügen:** Auswahl aus allen Charakterbögen (Charaktere der Mitspieler stehen oben). Name,
+  Rüstungsklasse und LP (aktuell/maximal, temporäre LP, Lebensbalken) kommen **live aus dem Bogen** und werden
+  in der Kampfhilfe nie verändert. Ändert ein Spieler seine LP im Bogen, sieht man das nach wenigen Sekunden.
+- **Initiative** trägt der DM direkt im Kreis auf der Karte ein.
+- **Monster** legt der DM selbst an (Name, Anzahl, RK, LP, Initiative). Mehrere gleiche Monster werden
+  durchnummeriert. Schaden und Heilung per Zahl + „Schaden“/„Heilung“; LP bleiben zwischen 0 und Maximum.
+- **Werte verbergen:** Pro Monster kann der DM RK und LP für Spieler ausblenden (Auge auf der Karte, beim Anlegen
+  standardmäßig an). Spieler sehen dann nur „unverletzt / angeschlagen / schwer verletzt / besiegt“ – die Zahlen
+  werden gar nicht erst an ihren Browser geschickt.
+- **Runde & Zug:** „Kampf starten“ / „Nächster Zug“ / „Zurück“ springen in Initiative-Reihenfolge weiter (höchste
+  zuerst, bei Gleichstand alphabetisch), besiegte Monster werden übersprungen, nach dem Letzten beginnt die
+  nächste Runde. Wer am Zug ist, ist rot markiert.
+- **Zustände** (vergiftet, liegend, bewusstlos, Konzentration …) setzt der DM pro Karte.
+- **Sortierung** der Karten wählt jeder für sich: nach Initiative oder alphabetisch.
+- Die Ansicht aktualisiert sich alle 3 Sekunden; ein roter Punkt am Reiter zeigt laufende Kämpfe.
+- Beendete Kämpfe bleiben in der Liste und lassen sich fortsetzen oder löschen.
 
 ### Export & Import der Infotafel (Admin)
 
@@ -475,6 +505,11 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET /api/board/unread` · `POST /api/board/stories/:id/read` | User | Ungelesen-Zähler bzw. als gelesen markieren |
 | `GET /api/board/deleted` · `POST /api/board/posts/:id/restore` · `DELETE /api/board/posts/:id/permanent` | Admin | Papierkorb |
 | `GET /api/board/export` · `POST /api/board/import` | Admin | Infotafel exportieren/importieren |
+| `GET /api/combat/encounters` · `GET /api/combat/encounters/:id` | Mitspieler, DM/Admin | Kämpfe bzw. ein Kampf (verdeckte Monsterwerte nur für DM/Admin) |
+| `POST /api/combat/encounters` · `PATCH`/`DELETE /api/combat/encounters/:id` | DM/Admin | `{ storyId, name }` bzw. `{ name?, round?, turnCombatantId?, ended? }` |
+| `POST /api/combat/encounters/:id/turn` | DM/Admin | `{ direction: 1 \| -1 }` – nächster/vorheriger Zug |
+| `POST /api/combat/encounters/:id/characters` · `/monsters` | DM/Admin | Spielercharaktere bzw. Monster hinzufügen |
+| `PATCH /api/combat/combatants/:id` · `POST …/hp` · `DELETE …` | DM/Admin | Initiative, Zustände, Monsterwerte; `{ delta }` Schaden/Heilung |
 | `GET /api/users` | Admin | Benutzerliste |
 | `POST /api/users` | Admin | `{ username, email?, password, role? }` – Benutzer anlegen |
 | `GET /api/users/export?passwords=true\|false` | Admin | Alle Benutzer als JSON-Datei |
