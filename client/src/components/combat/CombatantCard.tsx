@@ -39,7 +39,7 @@ export function CombatantCard({ c, active, manage, onUpdate, onHp, onRemove }: P
 
   return (
     <article
-      className={`parchment relative flex flex-col gap-3 p-4 transition ${isAlly ? 'border-l-4 !border-l-sky-600 dark:!border-l-sky-400' : ''} ${active ? 'ring-4 ring-red-700/70 dark:ring-red-500/70' : ''} ${down ? 'opacity-70' : ''}`}
+      className={`parchment relative flex flex-col gap-3 p-4 transition ${isAlly ? 'border-l-4 !border-l-sky-600 dark:!border-l-sky-400' : !isMonster ? 'border-l-4 !border-l-emerald-600 dark:!border-l-emerald-400' : ''} ${active ? 'ring-4 ring-red-700/70 dark:ring-red-500/70' : ''} ${down ? 'opacity-70' : ''}`}
       aria-current={active ? 'step' : undefined}
       aria-label={c.name}
     >

@@ -821,7 +821,10 @@
     "allyBadge": "Ally",
     "addAlly": "Add ally",
     "allyPlaceholder": "e.g. Town guard",
-    "allyPlaceholderShort": "Town guard"
+    "allyPlaceholderShort": "Town guard",
+    "time": "Time",
+    "timeHint": "1 round = 6 seconds · 10 rounds = 1 minute · 100 rounds = 10 minutes · 600 rounds = 1 hour",
+    "timeScale": "After round {{round}}, {{time}} have passed (min:sec) · 1 round = 6 s · 10 rounds = 1 min · 100 rounds = 10 min"
   },
   "notifications": {
     "title": "Notifications",

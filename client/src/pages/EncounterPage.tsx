@@ -23,6 +23,16 @@ import { useCombatPlayerMode } from '../hooks/useCombatPlayerMode';
 import { ApiError } from '../lib/api';
 
 const POLL_MS = 3_000;
+/** D&D 5e: 1 Runde = 6 Sekunden (10 Runden = 1 Minute) */
+const SECONDS_PER_ROUND = 6;
+
+/** Kampfzeit als „m:ss“, ab einer Stunde „h:mm:ss“ */
+function formatCombatTime(totalSeconds: number) {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const sec = String(totalSeconds % 60).padStart(2, '0');
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
+}
 const SORT_KEY = 'zauberbuch.combat.sort';
 type SortMode = 'initiative' | 'alpha';
 
@@ -165,12 +175,18 @@ export function EncounterPage() {
             <p className="sheet-label">{t('combat.round')}</p>
             <p className="font-display text-2xl font-bold tabular-nums">{enc.round}</p>
           </div>
+          <div className="border-l border-parchment-300 pl-3 text-center dark:border-night-700" title={t('combat.timeHint')}>
+            <p className="sheet-label">{t('combat.time')}</p>
+            <p className="font-display text-2xl font-bold tabular-nums">{formatCombatTime(enc.round * SECONDS_PER_ROUND)}</p>
+          </div>
           <div className="min-w-[8rem] border-l border-parchment-300 pl-3 dark:border-night-700">
             <p className="sheet-label">{t('combat.currentTurn')}</p>
             <p className="font-display font-bold">{current?.name ?? '—'}</p>
           </div>
         </div>
       </div>
+
+      <p className="-mt-2 text-right text-xs text-parchment-700 dark:text-parchment-400">{t('combat.timeScale', { time: formatCombatTime(enc.round * SECONDS_PER_ROUND), round: enc.round })}</p>
 
       {manage && (
         <div className="flex flex-wrap items-center gap-2">

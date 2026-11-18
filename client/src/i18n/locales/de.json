@@ -821,7 +821,10 @@
     "allyBadge": "Verbündet",
     "addAlly": "Verbündeten hinzufügen",
     "allyPlaceholder": "z. B. Stadtwache",
-    "allyPlaceholderShort": "Stadtwache"
+    "allyPlaceholderShort": "Stadtwache",
+    "time": "Zeit",
+    "timeHint": "1 Runde = 6 Sekunden · 10 Runden = 1 Minute · 100 Runden = 10 Minuten · 600 Runden = 1 Stunde",
+    "timeScale": "Nach Runde {{round}} sind {{time}} vergangen (Min:Sek) · 1 Runde = 6 s · 10 Runden = 1 min · 100 Runden = 10 min"
   },
   "notifications": {
     "title": "Benachrichtigungen",

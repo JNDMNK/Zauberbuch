@@ -246,6 +246,9 @@ Infotafel; deren Mitspieler sehen ihn – nur lesend – in derselben Ansicht.
 - **Runde & Zug:** „Kampf starten“ / „Nächster Zug“ / „Zurück“ springen in Initiative-Reihenfolge weiter (höchste
   zuerst, bei Gleichstand alphabetisch), besiegte Monster werden übersprungen, nach dem Letzten beginnt die
   nächste Runde. Wer am Zug ist, ist rot markiert.
+- **Kampfzeit:** Neben der Runde steht die verstrichene Zeit (1 Runde = 6 Sekunden, 10 Runden = 1 Minute) – praktisch,
+  um nachzusehen, wie lange ein Zauber noch wirkt.
+- **Farbmarkierung** am linken Kartenrand: grün = Spielercharakter, blau = Verbündeter.
 - **Zustände** (vergiftet, liegend, bewusstlos, Konzentration …) setzt der DM pro Karte.
 - **Sortierung** der Karten wählt jeder für sich: nach Initiative oder alphabetisch.
 - Die Ansicht aktualisiert sich alle 3 Sekunden; ein roter Punkt am Reiter zeigt laufende Kämpfe.
