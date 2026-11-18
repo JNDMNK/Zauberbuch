@@ -816,6 +816,21 @@
     "playerMode": "As player",
     "playerModeHint": "Player mode: see and play encounters like a user (only your stories' encounters, hidden monster stats, no management)",
     "playerModeActive": "Player mode is on: you see the combat tracker like a user – only encounters from stories where you are a player, without hidden monster stats and without management.",
-    "playerModeNotMember": "In player mode you only see encounters from stories where you are listed as a player. Add yourself under Info board → Manage stories or turn player mode off."
+    "playerModeNotMember": "In player mode you only see encounters from stories where you are listed as a player. Add yourself under Info board → Manage stories or turn player mode off.",
+    "ally": "Ally",
+    "allyBadge": "Ally",
+    "addAlly": "Add ally",
+    "allyPlaceholder": "e.g. Town guard",
+    "allyPlaceholderShort": "Town guard"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unread_one": "{{count}} new notification",
+    "unread_other": "{{count}} new notifications",
+    "empty": "No notifications",
+    "clear": "Clear all",
+    "types": {
+      "admin_player_mode_off": "Admin “{{admin}}” turned off combat player mode and can see all values again (including hidden monsters)."
+    }
   }
 }

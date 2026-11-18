@@ -24,7 +24,7 @@ export function CombatPage() {
   useEffect(() => {
     setEncounters(null);
     api
-      .encounters(asPlayer)
+      .encounters()
       .then((r) => setEncounters(r.encounters))
       .catch(setError);
   }, [asPlayer]);

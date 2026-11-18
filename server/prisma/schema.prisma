@@ -22,6 +22,7 @@ model User {
   language          String         @default("de") // "de" | "en"
   tokenVersion      Int            @default(0) // erhöht sich bei Passwortänderung -> alte JWTs ungültig
   canEditSpells     Boolean        @default(false) // Zusatzrecht: Zauber anlegen/bearbeiten/duplizieren (ohne Löschen)
+  combatAsPlayer    Boolean        @default(false) // Admin: Kampfhilfe im Spielermodus (serverseitig, damit DMs beim Ausschalten benachrichtigt werden)
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   favorites         Favorite[]
@@ -32,6 +33,7 @@ model User {
   boardPostsDeleted BoardPost[]    @relation("BoardPostDeleter")
   boardComments     BoardComment[]
   boardReads        BoardRead[]
+  notifications     Notification[]
 }
 
 model Spell {
@@ -244,7 +246,7 @@ model Combatant {
   id          String     @id @default(cuid())
   encounterId String
   encounter   Encounter  @relation(fields: [encounterId], references: [id], onDelete: Cascade)
-  kind        String // character | monster
+  kind        String // character | monster | ally (verbündeter NSC)
   characterId String?
   character   Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
   name        String     @default("")
@@ -264,4 +266,22 @@ model Combatant {
 
   @@index([encounterId])
   @@index([characterId])
+}
+
+/**
+ * Benachrichtigungen in der App (Glocke in der Kopfzeile)
+ */
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // z. B. admin_player_mode_off
+  /**
+   * JSON mit Platzhaltern für den Text (z. B. { "admin": "jan" })
+   */
+  data      String    @default("{}")
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@index([userId, createdAt])
 }

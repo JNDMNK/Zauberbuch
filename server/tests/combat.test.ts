@@ -125,7 +125,7 @@ describe('Kampfhilfe – Spielermodus für Admins', () => {
     await resetDb();
   });
 
-  it('Admin sieht mit asPlayer=true die Spieleransicht und nur Kämpfe als Mitspieler', async () => {
+  it('Admin sieht im Spielermodus die Spieleransicht und nur Kämpfe als Mitspieler', async () => {
     const admin = await loginAs('admin', 'admin-password');
     const adminId = (await admin.get('/api/auth/me')).body.user.id;
     const mit = (await admin.post('/api/board/stories').set(CSRF).send({ name: 'Mit Admin', memberIds: [adminId] })).body.story;
@@ -135,20 +135,84 @@ describe('Kampfhilfe – Spielermodus für Admins', () => {
     await admin.post(`/api/combat/encounters/${e1.id}/monsters`).set(CSRF).send({ name: 'Oger', ac: 11, hpMax: 59 });
 
     expect((await admin.get('/api/combat/encounters')).body.encounters).toHaveLength(2);
-    expect((await admin.get('/api/combat/active')).body.count).toBe(2);
-    const dmView = (await admin.get(`/api/combat/encounters/${e1.id}`)).body.encounter;
-    expect(dmView.canManage).toBe(true);
-    expect(dmView.combatants[0]).toMatchObject({ ac: '11', hpMax: 59 });
+    expect((await admin.get(`/api/combat/encounters/${e1.id}`)).body.encounter.combatants[0]).toMatchObject({ ac: '11', hpMax: 59 });
+    // Alter Query-Parameter hat keine Wirkung mehr – maßgeblich ist die Einstellung im Konto
+    expect((await admin.get('/api/combat/encounters?asPlayer=true')).body.encounters).toHaveLength(2);
 
-    const list = (await admin.get('/api/combat/encounters?asPlayer=true')).body.encounters;
+    expect((await admin.put('/api/combat/player-mode').set(CSRF).send({ asPlayer: true })).body.asPlayer).toBe(true);
+    expect((await admin.get('/api/auth/me')).body.user.combatAsPlayer).toBe(true);
+    const list = (await admin.get('/api/combat/encounters')).body.encounters;
     expect(list.map((e: { name: string }) => e.name)).toEqual(['Kampf A']);
-    expect((await admin.get('/api/combat/active?asPlayer=true')).body.count).toBe(1);
-    const pv = (await admin.get(`/api/combat/encounters/${e1.id}?asPlayer=true`)).body.encounter;
+    expect((await admin.get('/api/combat/active')).body.count).toBe(1);
+    const pv = (await admin.get(`/api/combat/encounters/${e1.id}`)).body.encounter;
     expect(pv.canManage).toBe(false);
     expect(pv.combatants[0]).toMatchObject({ ac: null, hpCurrent: null, hpMax: null, status: 'unharmed' });
 
-    // Für Dungeon Master hat der Parameter keine Wirkung
+    // Nur Admins dürfen den Modus setzen
     const dm = await createUser('meister', 'dungeonmaster');
-    expect((await dm.agent.get('/api/combat/encounters?asPlayer=true')).body.encounters).toHaveLength(2);
+    expect((await dm.agent.put('/api/combat/player-mode').set(CSRF).send({ asPlayer: true })).status).toBe(403);
+    expect((await dm.agent.get('/api/combat/encounters')).body.encounters).toHaveLength(2);
+  });
+
+  it('DMs werden benachrichtigt, wenn der Admin den Spielermodus ausschaltet', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    const dm1 = await createUser('meister', 'dungeonmaster');
+    const dm2 = await createUser('meisterin', 'dungeonmaster');
+    const player = await createUser('frodo');
+
+    await admin.put('/api/combat/player-mode').set(CSRF).send({ asPlayer: true });
+    expect((await dm1.agent.get('/api/notifications')).body.unread).toBe(0); // Einschalten: keine Nachricht
+    await admin.put('/api/combat/player-mode').set(CSRF).send({ asPlayer: false });
+    await admin.put('/api/combat/player-mode').set(CSRF).send({ asPlayer: false }); // bereits aus: keine weitere
+
+    for (const dm of [dm1, dm2]) {
+      const n = (await dm.agent.get('/api/notifications')).body;
+      expect(n.unread).toBe(1);
+      expect(n.notifications[0]).toMatchObject({ type: 'admin_player_mode_off', data: { admin: 'admin' }, readAt: null });
+    }
+    expect((await player.agent.get('/api/notifications')).body.unread).toBe(0);
+    expect((await admin.get('/api/notifications')).body.unread).toBe(0);
+
+    await dm1.agent.post('/api/notifications/read').set(CSRF).send({});
+    const after = (await dm1.agent.get('/api/notifications')).body;
+    expect(after.unread).toBe(0);
+    expect(after.notifications[0].readAt).not.toBeNull();
+    expect((await dm2.agent.get('/api/notifications')).body.unread).toBe(1);
+    await dm2.agent.delete('/api/notifications').set(CSRF);
+    expect((await dm2.agent.get('/api/notifications')).body.notifications).toEqual([]);
+  });
+});
+
+describe('Kampfhilfe – verbündete NSCs', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('werden wie Monster gepflegt, aber als Verbündete gekennzeichnet', async () => {
+    const dm = await createUser('meister', 'dungeonmaster');
+    const frodo = await createUser('frodo');
+    const story = (await dm.agent.post('/api/board/stories').set(CSRF).send({ name: 'S', memberIds: [frodo.user.id] })).body.story;
+    const enc = (await dm.agent.post('/api/combat/encounters').set(CSRF).send({ storyId: story.id, name: 'K' })).body.encounter;
+    const r = await dm.agent.post(`/api/combat/encounters/${enc.id}/monsters`).set(CSRF).send({ name: 'Stadtwache', count: 2, ac: 16, hpMax: 11, initiative: 10, hideStats: false, allied: true });
+    const [w1, w2] = r.body.encounter.combatants;
+    expect(w1).toMatchObject({ kind: 'ally', name: 'Stadtwache 1', ac: '16', hpMax: 11 });
+    expect(w2.kind).toBe('ally');
+    await dm.agent.post(`/api/combat/encounters/${enc.id}/monsters`).set(CSRF).send({ name: 'Ork', hpMax: 15, initiative: 12 });
+
+    // Schaden, Bearbeiten, Verbergen wie bei Monstern
+    expect((await dm.agent.post(`/api/combat/combatants/${w1.id}/hp`).set(CSRF).send({ delta: -4 })).body.encounter.combatants[0].hpCurrent).toBe(7);
+    await dm.agent.patch(`/api/combat/combatants/${w2.id}`).set(CSRF).send({ hideStats: true, conditions: ['prone'] });
+    const pv = (await frodo.agent.get(`/api/combat/encounters/${enc.id}`)).body.encounter.combatants;
+    expect(pv[0]).toMatchObject({ kind: 'ally', hpCurrent: 7 });
+    expect(pv[1]).toMatchObject({ kind: 'ally', hpCurrent: null, conditions: ['prone'] });
+    expect(pv[2].kind).toBe('monster');
+
+    // Besiegte Verbündete werden im Zugwechsel übersprungen
+    await dm.agent.post(`/api/combat/combatants/${w2.id}/hp`).set(CSRF).send({ delta: -99 });
+    const t1 = (await dm.agent.post(`/api/combat/encounters/${enc.id}/turn`).set(CSRF).send({ direction: 1 })).body.encounter;
+    const t2 = (await dm.agent.post(`/api/combat/encounters/${enc.id}/turn`).set(CSRF).send({ direction: 1 })).body.encounter;
+    const t3 = (await dm.agent.post(`/api/combat/encounters/${enc.id}/turn`).set(CSRF).send({ direction: 1 })).body.encounter;
+    const nm = (e: { turnCombatantId: string; combatants: { id: string; name: string }[] }) => e.combatants.find((c) => c.id === e.turnCombatantId)!.name;
+    expect([nm(t1), nm(t2), nm(t3), t3.round]).toEqual(['Ork', 'Stadtwache 1', 'Ork', 2]);
   });
 });

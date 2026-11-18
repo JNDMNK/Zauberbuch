@@ -47,6 +47,8 @@ export interface UserDto {
   role: Role;
   /** Zusatzrecht: Zauber anlegen/bearbeiten/duplizieren */
   canEditSpells: boolean;
+  /** Admin: Kampfhilfe im Spielermodus */
+  combatAsPlayer: boolean;
   language: Locale;
   createdAt: string;
 }
@@ -133,4 +135,13 @@ export interface UserImportResult {
   invalid: number;
   favoritesLinked: number;
   favoritesMissing: number;
+}
+
+/** Benachrichtigung in der App; Text wird im Client aus type + data gebildet */
+export interface NotificationDto {
+  id: string;
+  type: string;
+  data: Record<string, string>;
+  createdAt: string;
+  readAt: string | null;
 }

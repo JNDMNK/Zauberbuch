@@ -237,6 +237,9 @@ Infotafel; deren Mitspieler sehen ihn – nur lesend – in derselben Ansicht.
 - **Initiative** trägt der DM direkt im Kreis auf der Karte ein.
 - **Monster** legt der DM selbst an (Name, Anzahl, RK, LP, Initiative). Mehrere gleiche Monster werden
   durchnummeriert. Schaden und Heilung per Zahl + „Schaden“/„Heilung“; LP bleiben zwischen 0 und Maximum.
+- **Verbündete NSCs** („Verbündeten hinzufügen“) funktionieren genau wie Monster – Anzahl, RK, LP, Initiative,
+  Schaden/Heilung, Zustände, verbergbare Werte –, sind aber blau als **„Verbündet“** gekennzeichnet. Ihre Werte
+  sind standardmäßig für Spieler sichtbar; bei 0 LP gelten sie (wie Spieler) als bewusstlos.
 - **Werte verbergen:** Pro Monster kann der DM RK und LP für Spieler ausblenden (Auge auf der Karte, beim Anlegen
   standardmäßig an). Spieler sehen dann nur „unverletzt / angeschlagen / schwer verletzt / besiegt“ – die Zahlen
   werden gar nicht erst an ihren Browser geschickt.
@@ -250,7 +253,14 @@ Infotafel; deren Mitspieler sehen ihn – nur lesend – in derselben Ansicht.
 - **Spielermodus für Admins:** Mit dem Schalter **„Als Spieler“** (oben im Reiter Kampf) sieht und spielt der Admin
   die Kampfhilfe wie ein Benutzer – nur Kämpfe aus Geschichten, in denen er als Mitspieler eingetragen ist,
   verdeckte Monsterwerte ausgeblendet, keine Verwaltung. Praktisch, wenn der Admin in einer Gruppe mitspielt, die ein
-  Dungeon Master leitet. Der Schalter wird pro Browser gemerkt.
+  Dungeon Master leitet. Die Einstellung wird im Konto gespeichert (gilt auf allen Geräten). **Schaltet der Admin
+  den Spielermodus aus, erhalten alle Dungeon Master eine Benachrichtigung** (Glocke oben rechts).
+
+### Benachrichtigungen
+
+Die **Glocke** in der Kopfzeile zeigt ungelesene Benachrichtigungen; neue werden zusätzlich kurz eingeblendet.
+Beim Öffnen gelten sie als gelesen, „Alle löschen“ leert die Liste. Gelesene Benachrichtigungen werden nach
+30 Tagen automatisch entfernt, ungelesene nach 180 Tagen.
 
 ### Export & Import der Infotafel (Admin)
 
@@ -512,8 +522,10 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET /api/combat/encounters` · `GET /api/combat/encounters/:id` | Mitspieler, DM/Admin | Kämpfe bzw. ein Kampf (verdeckte Monsterwerte nur für DM/Admin) |
 | `POST /api/combat/encounters` · `PATCH`/`DELETE /api/combat/encounters/:id` | DM/Admin | `{ storyId, name }` bzw. `{ name?, round?, turnCombatantId?, ended? }` |
 | `POST /api/combat/encounters/:id/turn` | DM/Admin | `{ direction: 1 \| -1 }` – nächster/vorheriger Zug |
-| `POST /api/combat/encounters/:id/characters` · `/monsters` | DM/Admin | Spielercharaktere bzw. Monster hinzufügen |
-| `PATCH /api/combat/combatants/:id` · `POST …/hp` · `DELETE …` | DM/Admin | Initiative, Zustände, Monsterwerte; `{ delta }` Schaden/Heilung |
+| `POST /api/combat/encounters/:id/characters` · `/monsters` | DM/Admin | Spielercharaktere bzw. Monster/verbündete NSCs (`allied: true`) hinzufügen |
+| `PATCH /api/combat/combatants/:id` · `POST …/hp` · `DELETE …` | DM/Admin | Initiative, Zustände, Monster-/NSC-Werte; `{ delta }` Schaden/Heilung |
+| `PUT /api/combat/player-mode` | Admin | `{ asPlayer }` – Spielermodus; beim Ausschalten werden alle DMs benachrichtigt |
+| `GET /api/notifications` · `POST /api/notifications/read` · `DELETE /api/notifications` | User | Eigene Benachrichtigungen |
 | `GET /api/users` | Admin | Benutzerliste |
 | `POST /api/users` | Admin | `{ username, email?, password, role? }` – Benutzer anlegen |
 | `GET /api/users/export?passwords=true\|false` | Admin | Alle Benutzer als JSON-Datei |

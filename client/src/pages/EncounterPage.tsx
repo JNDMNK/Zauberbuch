@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowDownAZ, ArrowDownWideNarrow, ArrowLeft, ChevronLeft, ChevronRight, Flag, Pencil, Play, RotateCcw, Skull, Trash2, UserPlus } from 'lucide-react';
+import { ArrowDownAZ, ArrowDownWideNarrow, ArrowLeft, ChevronLeft, ChevronRight, Flag, Handshake, Pencil, Play, RotateCcw, Skull, Trash2, UserPlus } from 'lucide-react';
 import {
   compareByInitiative,
   compareByName,
@@ -42,7 +42,7 @@ export function EncounterPage() {
   const [enc, setEnc] = useState<EncounterDto | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [sort, setSort] = useState<SortMode>(storedSort);
-  const [dialog, setDialog] = useState<'players' | 'monster' | 'rename' | null>(null);
+  const [dialog, setDialog] = useState<'players' | 'monster' | 'ally' | 'rename' | null>(null);
   const [confirm, setConfirm] = useState<{ kind: 'encounter' } | { kind: 'combatant'; c: CombatantDto } | null>(null);
   const [busy, setBusy] = useState(false);
   const [asPlayer] = useCombatPlayerMode();
@@ -50,7 +50,7 @@ export function EncounterPage() {
   const load = useCallback(
     (signal?: AbortSignal) =>
       api
-        .encounter(id, signal, asPlayer)
+        .encounter(id, signal)
         .then((r) => (setEnc(r.encounter), setError(null)))
         .catch((err) => (err as Error).name !== 'AbortError' && setError(err)),
     [id, asPlayer],
@@ -209,6 +209,10 @@ export function EncounterPage() {
             <Skull className="h-4 w-4" />
             {t('combat.addMonster')}
           </button>
+          <button type="button" className="btn-secondary" onClick={() => setDialog('ally')}>
+            <Handshake className="h-4 w-4" />
+            {t('combat.addAlly')}
+          </button>
           <div className="ml-auto flex gap-2">
             <button
               type="button"
@@ -276,6 +280,7 @@ export function EncounterPage() {
         <>
           <AddPlayersDialog open={dialog === 'players'} enc={enc} onClose={() => setDialog(null)} onDone={(e) => (setEnc(e), setDialog(null))} />
           <AddMonsterDialog open={dialog === 'monster'} encId={enc.id} onClose={() => setDialog(null)} onDone={(e) => (setEnc(e), setDialog(null))} />
+          <AddMonsterDialog allied open={dialog === 'ally'} encId={enc.id} onClose={() => setDialog(null)} onDone={(e) => (setEnc(e), setDialog(null))} />
           <RenameDialog open={dialog === 'rename'} enc={enc} onClose={() => setDialog(null)} onDone={(e) => (setEnc(e), setDialog(null))} />
         </>
       )}
@@ -388,7 +393,7 @@ function AddPlayersDialog({ open, enc, onClose, onDone }: { open: boolean; enc: 
   );
 }
 
-function AddMonsterDialog({ open, encId, onClose, onDone }: { open: boolean; encId: string; onClose: () => void; onDone: (e: EncounterDto) => void }) {
+function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { open: boolean; encId: string; allied?: boolean; onClose: () => void; onDone: (e: EncounterDto) => void }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [name, setName] = useState('');
@@ -405,9 +410,10 @@ function AddMonsterDialog({ open, encId, onClose, onDone }: { open: boolean; enc
       setAc('');
       setHp('');
       setIni('');
-      setHide(true);
+      // Verbündete sind standardmäßig offen sichtbar, Monster verdeckt
+      setHide(!allied);
     }
-  }, [open]);
+  }, [open, allied]);
   const num = (v: string, allowMinus = false) => v.replace(allowMinus ? /[^\d-]/g : /\D/g, '').slice(0, 4);
 
   const submit = async (e: FormEvent) => {
@@ -422,6 +428,7 @@ function AddMonsterDialog({ open, encId, onClose, onDone }: { open: boolean; enc
         hpMax: Math.min(9999, Number(hp)),
         initiative: ini === '' || ini === '-' ? null : Math.max(-20, Math.min(99, Number(ini))),
         hideStats: hide,
+        allied,
       });
       onDone(r.encounter);
     } catch (err) {
@@ -432,13 +439,13 @@ function AddMonsterDialog({ open, encId, onClose, onDone }: { open: boolean; enc
   };
 
   return (
-    <Modal open={open} title={t('combat.addMonster')} onClose={onClose} size="max-w-lg">
+    <Modal open={open} title={allied ? t('combat.addAlly') : t('combat.addMonster')} onClose={onClose} size="max-w-lg">
       <form onSubmit={submit} className="space-y-4">
         <div>
           <label htmlFor="m-name" className="label">
             {t('combat.monsterName')}
           </label>
-          <input id="m-name" className="input" value={name} maxLength={80} required autoFocus onChange={(e) => setName(e.target.value)} placeholder={t('combat.monsterPlaceholder')} />
+          <input id="m-name" className="input" value={name} maxLength={80} required autoFocus onChange={(e) => setName(e.target.value)} placeholder={allied ? t('combat.allyPlaceholder') : t('combat.monsterPlaceholder')} />
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div>
@@ -466,7 +473,7 @@ function AddMonsterDialog({ open, encId, onClose, onDone }: { open: boolean; enc
             <input id="m-ini" className="input text-center" inputMode="numeric" value={ini} onChange={(e) => setIni(num(e.target.value, true).slice(0, 3))} />
           </div>
         </div>
-        {Number(count) > 1 && <p className="text-xs text-parchment-700 dark:text-parchment-400">{t('combat.countHint', { name: name || 'Goblin' })}</p>}
+        {Number(count) > 1 && <p className="text-xs text-parchment-700 dark:text-parchment-400">{t('combat.countHint', { name: name || (allied ? t('combat.allyPlaceholderShort') : 'Goblin') })}</p>}
         <label className="flex cursor-pointer items-start gap-2 text-sm">
           <input type="checkbox" className="mt-1 h-4 w-4 accent-parchment-800 dark:accent-parchment-300" checked={hide} onChange={(e) => setHide(e.target.checked)} />
           <span>
@@ -479,7 +486,7 @@ function AddMonsterDialog({ open, encId, onClose, onDone }: { open: boolean; enc
             {t('common.cancel')}
           </button>
           <button type="submit" className="btn-primary" disabled={busy || !name.trim() || hp === ''}>
-            {busy ? <Spinner className="h-4 w-4" /> : <Skull className="h-4 w-4" />}
+            {busy ? <Spinner className="h-4 w-4" /> : allied ? <Handshake className="h-4 w-4" /> : <Skull className="h-4 w-4" />}
             {t('combat.addMonsterButton')}
           </button>
         </div>

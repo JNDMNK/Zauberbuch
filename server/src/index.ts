@@ -4,6 +4,7 @@ import { ensureAdmin, seedExamples } from './bootstrap';
 import { initFileLogging, logger } from './lib/logger';
 import { configureSqlite, prisma } from './lib/prisma';
 import { purgeDeletedBoardPosts } from './routes/board';
+import { purgeNotifications } from './lib/notifications';
 
 async function main() {
   ensureDataDirs();
@@ -13,8 +14,9 @@ async function main() {
   await ensureAdmin();
   await seedExamples();
 
-  // Papierkorb der Infotafel: nach 90 Tagen endgültig löschen (beim Start und danach alle 12 Stunden)
-  const purge = () => purgeDeletedBoardPosts().catch((err) => logger.error('Infotafel-Bereinigung fehlgeschlagen', err));
+  // Papierkorb der Infotafel (90 Tage) und alte Benachrichtigungen bereinigen – beim Start und danach alle 12 Stunden
+  const purge = () =>
+    Promise.all([purgeDeletedBoardPosts(), purgeNotifications()]).catch((err) => logger.error('Bereinigung fehlgeschlagen', err));
   await purge();
   setInterval(purge, 12 * 60 * 60 * 1000).unref();
 

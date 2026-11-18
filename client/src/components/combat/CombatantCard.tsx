@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Eye, EyeOff, Heart, Minus, Pencil, Plus, ScrollText, Shield, Skull, Tags, Trash2, UserRound, X } from 'lucide-react';
+import { Eye, EyeOff, Handshake, Heart, Minus, Pencil, Plus, ScrollText, Shield, Skull, Tags, Trash2, UserRound, X } from 'lucide-react';
 import { CONDITIONS, type CombatantDto, type CombatantUpdate, type Condition, type HealthStatus } from '@zauberbuch/shared';
 
 const BAR_CLS: Record<HealthStatus, string> = {
@@ -30,13 +30,16 @@ export function CombatantCard({ c, active, manage, onUpdate, onHp, onRemove }: P
   const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [condOpen, setCondOpen] = useState(false);
-  const isMonster = c.kind === 'monster';
+  // Monster und verbündete NSCs pflegt der DM selbst; Spielercharaktere kommen aus dem Bogen
+  const isMonster = c.kind !== 'character';
+  const isAlly = c.kind === 'ally';
   const down = c.status === 'down';
-  const statusLabel = isMonster ? t(`combat.status.${c.status}`) : down ? t('combat.status.unconscious') : t(`combat.status.${c.status}`);
+  // Gegner gelten bei 0 LP als besiegt, Spieler und Verbündete als bewusstlos
+  const statusLabel = down && !(isMonster && !isAlly) ? t('combat.status.unconscious') : t(`combat.status.${c.status}`);
 
   return (
     <article
-      className={`parchment relative flex flex-col gap-3 p-4 transition ${active ? 'ring-4 ring-red-700/70 dark:ring-red-500/70' : ''} ${down ? 'opacity-70' : ''}`}
+      className={`parchment relative flex flex-col gap-3 p-4 transition ${isAlly ? 'border-l-4 !border-l-sky-600 dark:!border-l-sky-400' : ''} ${active ? 'ring-4 ring-red-700/70 dark:ring-red-500/70' : ''} ${down ? 'opacity-70' : ''}`}
       aria-current={active ? 'step' : undefined}
       aria-label={c.name}
     >
@@ -47,9 +50,16 @@ export function CombatantCard({ c, active, manage, onUpdate, onHp, onRemove }: P
         <InitiativeBadge value={c.initiative} manage={manage} onChange={(initiative) => onUpdate({ initiative })} />
         <div className="min-w-0 flex-1">
           <h3 className="flex items-center gap-1.5 break-words font-display text-lg font-bold leading-tight">
-            {isMonster ? <Skull className="h-4 w-4 shrink-0 text-red-800 dark:text-red-400" aria-label={t('combat.monster')} /> : <UserRound className="h-4 w-4 shrink-0 text-emerald-800 dark:text-emerald-400" aria-label={t('combat.player')} />}
+            {isAlly ? (
+              <Handshake className="h-4 w-4 shrink-0 text-sky-800 dark:text-sky-300" aria-label={t('combat.ally')} />
+            ) : isMonster ? (
+              <Skull className="h-4 w-4 shrink-0 text-red-800 dark:text-red-400" aria-label={t('combat.monster')} />
+            ) : (
+              <UserRound className="h-4 w-4 shrink-0 text-emerald-800 dark:text-emerald-400" aria-label={t('combat.player')} />
+            )}
             {c.name}
           </h3>
+          {isAlly && <span className="badge mt-0.5 bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200">{t('combat.allyBadge')}</span>}
           {c.owner && <p className="text-xs text-parchment-700 dark:text-parchment-400">{t('combat.playedBy', { name: c.owner })}</p>}
           {manage && isMonster && c.hideStats && (
             <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-parchment-700 dark:text-parchment-400">

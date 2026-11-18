@@ -13,6 +13,7 @@ import {
   healthStatus,
   hpDeltaSchema,
   isEditorRole,
+  playerModeSchema,
   turnSchema,
   type CharacterSheet,
   type CombatantDto,
@@ -23,7 +24,8 @@ import {
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { badRequest, notFound } from '../lib/errors';
-import { requireAuth, requireEditor } from '../middleware/auth';
+import { requireAdmin, requireAuth, requireEditor } from '../middleware/auth';
+import { notifyRole } from '../lib/notifications';
 
 /**
  * Kampfhilfe je Geschichte.
@@ -36,10 +38,10 @@ export const combatRouter = Router();
 combatRouter.use(requireAuth);
 
 /**
- * Spielermodus für Admins (?asPlayer=true bei lesenden Anfragen): Der Admin sieht die Kampfhilfe wie ein Benutzer –
+ * Spielermodus für Admins (im Konto gespeichert, siehe PUT /player-mode): Der Admin sieht die Kampfhilfe wie ein Benutzer –
  * nur Kämpfe aus Geschichten, in denen er Mitspieler ist, verdeckte Monsterwerte entfernt, keine Verwaltung.
  */
-const asPlayer = (req: Request) => req.user!.role === 'admin' && req.query.asPlayer === 'true';
+const asPlayer = (req: Request) => req.user!.role === 'admin' && req.user!.combatAsPlayer;
 const isEditor = (req: Request) => isEditorRole(req.user!.role) && !asPlayer(req);
 
 type CombatantWithCharacter = Combatant & { character: (Character & { user: Pick<User, 'id' | 'username'> }) | null };
@@ -91,7 +93,7 @@ function toCombatantDto(req: Request, c: CombatantWithCharacter): CombatantDto {
   const hidden = c.hideStats && !isEditor(req);
   return {
     id: c.id,
-    kind: 'monster',
+    kind: c.kind === 'ally' ? 'ally' : 'monster',
     name: c.name,
     initiative: c.initiative,
     ac: hidden || c.ac === null ? null : String(c.ac),
@@ -204,7 +206,7 @@ combatRouter.post('/encounters/:id/turn', requireEditor, async (req, res) => {
   const order = e.combatants
     .map((c) => ({ c, dto: toCombatantDto(req, c) }))
     .sort((a, b) => compareByInitiative(a.dto, b.dto));
-  const eligible = order.filter(({ c, dto }) => !(c.kind === 'monster' && dto.status === 'down'));
+  const eligible = order.filter(({ c, dto }) => !(c.kind !== 'character' && dto.status === 'down'));
   if (eligible.length === 0) throw badRequest('no_combatants', 'No active combatants');
 
   let round = e.round;
@@ -256,7 +258,7 @@ combatRouter.post('/encounters/:id/monsters', requireEditor, async (req, res) =>
   await prisma.combatant.createMany({
     data: Array.from({ length: input.count }, (_, i) => ({
       encounterId: e.id,
-      kind: 'monster',
+      kind: input.allied ? 'ally' : 'monster',
       name: input.count > 1 ? `${input.name} ${i + 1}` : input.name,
       ac: input.ac,
       hpMax: input.hpMax,
@@ -295,7 +297,7 @@ combatRouter.patch('/combatants/:id', requireEditor, async (req, res) => {
 /** Schaden/Heilung für Monster, begrenzt auf 0 … LP-Maximum */
 combatRouter.post('/combatants/:id/hp', requireEditor, async (req, res) => {
   const c = await loadCombatant(req, String(req.params.id));
-  if (c.kind !== 'monster') throw badRequest('character_read_only', 'Character values come from the character sheet');
+  if (c.kind === 'character') throw badRequest('character_read_only', 'Character values come from the character sheet');
   const { delta } = validate(hpDeltaSchema, req.body);
   await prisma.combatant.update({ where: { id: c.id }, data: { hpCurrent: Math.max(0, Math.min(c.hpMax, c.hpCurrent + delta)) } });
   await touch(c.encounterId);
@@ -308,4 +310,18 @@ combatRouter.delete('/combatants/:id', requireEditor, async (req, res) => {
   await prisma.encounter.updateMany({ where: { id: c.encounterId, turnCombatantId: c.id }, data: { turnCombatantId: null } });
   await touch(c.encounterId);
   await sendEncounter(req, res, c.encounterId);
+});
+
+// ---------------------------------------------------------------- Spielermodus (Admin)
+
+/**
+ * Spielermodus des Admins umschalten. Wird er ausgeschaltet (Admin sieht wieder alle Werte),
+ * erhalten alle Dungeon Master eine Benachrichtigung.
+ */
+combatRouter.put('/player-mode', requireAdmin, async (req, res) => {
+  const { asPlayer: on } = validate(playerModeSchema, req.body);
+  const was = req.user!.combatAsPlayer;
+  const user = await prisma.user.update({ where: { id: req.user!.id }, data: { combatAsPlayer: on } });
+  if (was && !on) await notifyRole('dungeonmaster', 'admin_player_mode_off', { admin: user.username });
+  res.json({ asPlayer: user.combatAsPlayer });
 });

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Gamepad2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -8,15 +9,21 @@ export function PlayerModeToggle() {
   const { t } = useTranslation();
   const { isAdmin } = useAuth();
   const [asPlayer, setAsPlayer] = useCombatPlayerMode();
+  const [busy, setBusy] = useState(false);
   if (!isAdmin) return null;
   return (
     <button
       type="button"
       role="switch"
       aria-checked={asPlayer}
-      onClick={() => setAsPlayer(!asPlayer)}
+      disabled={busy}
+      onClick={async () => {
+        setBusy(true);
+        await setAsPlayer(!asPlayer);
+        setBusy(false);
+      }}
       title={t('combat.playerModeHint')}
-      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold transition ${
+      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold transition disabled:opacity-60 ${
         asPlayer
           ? 'border-emerald-700 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-600'
           : 'border-parchment-500/70 hover:bg-parchment-200/80 dark:border-night-700 dark:hover:bg-night-700'

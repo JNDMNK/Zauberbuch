@@ -10,6 +10,7 @@ export const app = createApp({ accessLog: false });
 export const CSRF = { 'X-Requested-With': 'zauberbuch' };
 
 export async function resetDb({ seed = false } = {}) {
+  await prisma.notification.deleteMany();
   await prisma.combatant.deleteMany();
   await prisma.encounter.deleteMany();
   await prisma.boardRead.deleteMany();

@@ -1,5 +1,6 @@
 import type {
   AddMonsterInput,
+  NotificationDto,
   CombatantUpdate,
   EncounterDto,
   EncounterSummaryDto,
@@ -170,11 +171,11 @@ export const api = {
   importBoard: (file: unknown) => request<BoardImportResult>('POST', '/api/board/import', file),
 
   // Kampfhilfe
-  // asPlayer: Spielermodus für Admins (Ansicht wie ein Benutzer)
-  encounters: (asPlayer = false) => request<{ encounters: EncounterSummaryDto[] }>('GET', `/api/combat/encounters${asPlayer ? '?asPlayer=true' : ''}`),
-  combatActive: (asPlayer = false) => request<{ count: number }>('GET', `/api/combat/active${asPlayer ? '?asPlayer=true' : ''}`),
-  encounter: (id: string, signal?: AbortSignal, asPlayer = false) =>
-    request<{ encounter: EncounterDto }>('GET', `/api/combat/encounters/${id}${asPlayer ? '?asPlayer=true' : ''}`, undefined, signal),
+  encounters: () => request<{ encounters: EncounterSummaryDto[] }>('GET', '/api/combat/encounters'),
+  combatActive: () => request<{ count: number }>('GET', '/api/combat/active'),
+  encounter: (id: string, signal?: AbortSignal) => request<{ encounter: EncounterDto }>('GET', `/api/combat/encounters/${id}`, undefined, signal),
+  /** Spielermodus des Admins (im Konto gespeichert) */
+  setCombatPlayerMode: (asPlayer: boolean) => request<{ asPlayer: boolean }>('PUT', '/api/combat/player-mode', { asPlayer }),
   createEncounter: (storyId: string, name: string) => request<{ encounter: EncounterDto }>('POST', '/api/combat/encounters', { storyId, name }),
   updateEncounter: (id: string, data: { name?: string; round?: number; turnCombatantId?: string | null; ended?: boolean }) =>
     request<{ encounter: EncounterDto }>('PATCH', `/api/combat/encounters/${id}`, data),
@@ -186,4 +187,9 @@ export const api = {
   updateCombatant: (id: string, data: CombatantUpdate) => request<{ encounter: EncounterDto }>('PATCH', `/api/combat/combatants/${id}`, data),
   combatantHp: (id: string, delta: number) => request<{ encounter: EncounterDto }>('POST', `/api/combat/combatants/${id}/hp`, { delta }),
   removeCombatant: (id: string) => request<{ encounter: EncounterDto }>('DELETE', `/api/combat/combatants/${id}`),
+
+  // Benachrichtigungen
+  notifications: () => request<{ notifications: NotificationDto[]; unread: number }>('GET', '/api/notifications'),
+  markNotificationsRead: () => request<void>('POST', '/api/notifications/read', {}),
+  clearNotifications: () => request<void>('DELETE', '/api/notifications'),
 };

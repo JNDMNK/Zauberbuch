@@ -64,6 +64,8 @@ export const addMonsterSchema = z.object({
   hpMax: z.number().int().min(0).max(9999),
   initiative: initiative.optional().default(null),
   hideStats: z.boolean().optional().default(true),
+  /** Verbündeter NSC statt Monster */
+  allied: z.boolean().optional().default(false),
 });
 export type AddMonsterInput = z.input<typeof addMonsterSchema>;
 
@@ -84,11 +86,15 @@ export type CombatantUpdate = z.input<typeof combatantUpdateSchema>;
 /** Schaden (negativ) oder Heilung (positiv) für Monster */
 export const hpDeltaSchema = z.object({ delta: z.number().int().min(-9999).max(9999) });
 
+/** Spielermodus der Kampfhilfe für Admins (wird im Konto gespeichert) */
+export const playerModeSchema = z.object({ asPlayer: z.boolean() });
+
 export const turnSchema = z.object({ direction: z.union([z.literal(1), z.literal(-1)]) });
 
 export interface CombatantDto {
   id: string;
-  kind: 'character' | 'monster';
+  /** ally = verbündeter NSC (wird wie ein Monster vom DM gepflegt) */
+  kind: 'character' | 'monster' | 'ally';
   name: string;
   initiative: number | null;
   /** RK als Text (Charakterbogen erlaubt z. B. „16+1“); null = verborgen oder unbekannt */

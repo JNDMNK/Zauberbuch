@@ -18,7 +18,7 @@ export function useCombatActive(enabled: boolean, asPlayer = false): number {
     const load = () => {
       if (document.visibilityState !== 'visible') return;
       api
-        .combatActive(asPlayer)
+        .combatActive()
         .then((r) => !cancelled && setCount(r.count))
         .catch(() => undefined);
     };

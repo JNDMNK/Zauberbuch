@@ -9,6 +9,7 @@ import { useToast } from '../context/ToastContext';
 import { useBoardUnread } from '../hooks/useBoardUnread';
 import { useCombatActive } from '../hooks/useCombatActive';
 import { useCombatPlayerMode } from '../hooks/useCombatPlayerMode';
+import { NotificationBell } from './NotificationBell';
 
 function LanguageSwitch() {
   const { t } = useTranslation();
@@ -241,6 +242,7 @@ export function Header() {
         <div className="ml-auto flex items-center gap-1.5">
           <LanguageSwitch />
           <ThemeToggle />
+          {user && <NotificationBell />}
           <UserMenu />
           {user && (
           <button type="button" className="btn-icon relative lg:hidden" onClick={() => setMobileOpen((o) => !o)} aria-expanded={mobileOpen} aria-label={t('nav.menu')}>
