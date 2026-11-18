@@ -259,6 +259,21 @@ Infotafel; deren Mitspieler sehen ihn – nur lesend – in derselben Ansicht.
   Dungeon Master leitet. Die Einstellung wird im Konto gespeichert (gilt auf allen Geräten). **Schaltet der Admin
   den Spielermodus aus, erhalten alle Dungeon Master eine Benachrichtigung** (Glocke oben rechts).
 
+### Monster-Datenbanken
+
+Im Bereich **Kampf → Monster-Datenbank** gibt es zwei getrennte Datenbanken mit Name, RK, LP, Angriff
+(z. B. „Krummsäbel +4, 1W6+2 Hieb“) und Beschreibung:
+
+- **DM-Datenbank:** Vorlagen des Dungeon Master – gemeinsam für alle DMs und Admins, für Spieler unsichtbar.
+  Beim Hinzufügen von Monstern oder Verbündeten im Kampf wählt der DM oben eine Vorlage; Name, RK, LP, Angriff und
+  Beschreibung werden übernommen (Anzahl und Initiative kommen dazu). Neue Monster lassen sich dort mit
+  „Zusätzlich als Vorlage speichern“ direkt in die Datenbank übernehmen. Angriff und Beschreibung stehen auf der
+  Kampfkarte und sind **nur für den DM** sichtbar.
+- **Spieler-Datenbank je Geschichte:** gemeinsames Monster-Notizbuch der Mitspieler – ohne die Daten des DM. Alle
+  Mitspieler dürfen Einträge anlegen, ergänzen und löschen (RK/LP dürfen leer bleiben); angezeigt wird, wer einen
+  Eintrag angelegt und zuletzt geändert hat. DM und Admin können die Spieler-Datenbanken **nur lesen**
+  (ein Admin im Spielermodus, der Mitspieler ist, gilt als Spieler).
+
 ### Benachrichtigungen
 
 Die **Glocke** in der Kopfzeile zeigt ungelesene Benachrichtigungen; neue werden zusätzlich kurz eingeblendet.
@@ -527,6 +542,8 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `POST /api/combat/encounters/:id/turn` | DM/Admin | `{ direction: 1 \| -1 }` – nächster/vorheriger Zug |
 | `POST /api/combat/encounters/:id/characters` · `/monsters` | DM/Admin | Spielercharaktere bzw. Monster/verbündete NSCs (`allied: true`) hinzufügen |
 | `PATCH /api/combat/combatants/:id` · `POST …/hp` · `DELETE …` | DM/Admin | Initiative, Zustände, Monster-/NSC-Werte; `{ delta }` Schaden/Heilung |
+| `GET`/`POST /api/bestiary/dm` · `PUT`/`DELETE /api/bestiary/dm/:id` | DM/Admin | DM-Datenbank (Vorlagen) |
+| `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `PUT /api/combat/player-mode` | Admin | `{ asPlayer }` – Spielermodus; beim Ausschalten werden alle DMs benachrichtigt |
 | `GET /api/notifications` · `POST /api/notifications/read` · `DELETE /api/notifications` | User | Eigene Benachrichtigungen |
 | `GET /api/users` | Admin | Benutzerliste |

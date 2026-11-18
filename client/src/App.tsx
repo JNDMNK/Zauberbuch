@@ -20,6 +20,7 @@ import { BoardPage } from './pages/BoardPage';
 import { BoardTrashPage } from './pages/BoardTrashPage';
 import { CombatPage } from './pages/CombatPage';
 import { EncounterPage } from './pages/EncounterPage';
+import { BestiaryPage } from './pages/BestiaryPage';
 import { EDITOR_ROLES, canWriteSpells } from '@zauberbuch/shared';
 
 export default function App() {
@@ -58,6 +59,7 @@ export default function App() {
             />
             <Route path="board/:storyId" element={<BoardPage />} />
             <Route path="combat" element={<CombatPage />} />
+            <Route path="combat/bestiary" element={<BestiaryPage />} />
             <Route path="combat/:id" element={<EncounterPage />} />
             <Route path="account" element={<AccountPage />} />
             <Route

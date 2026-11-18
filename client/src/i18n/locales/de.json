@@ -824,7 +824,8 @@
     "allyPlaceholderShort": "Stadtwache",
     "time": "Zeit",
     "timeHint": "1 Runde = 6 Sekunden · 10 Runden = 1 Minute · 100 Runden = 10 Minuten · 600 Runden = 1 Stunde",
-    "timeScale": "Nach Runde {{round}} sind {{time}} vergangen (Min:Sek) · 1 Runde = 6 s · 10 Runden = 1 min · 100 Runden = 10 min"
+    "timeScale": "Nach Runde {{round}} sind {{time}} vergangen (Min:Sek) · 1 Runde = 6 s · 10 Runden = 1 min · 100 Runden = 10 min",
+    "encountersTab": "Kämpfe"
   },
   "notifications": {
     "title": "Benachrichtigungen",
@@ -835,5 +836,42 @@
     "types": {
       "admin_player_mode_off": "Admin „{{admin}}“ hat den Spielermodus der Kampfhilfe ausgeschaltet und sieht wieder alle Werte (auch verdeckte Monster)."
     }
+  },
+  "bestiary": {
+    "tab": "Monster-Datenbank",
+    "database": "Datenbank:",
+    "dmDatabase": "DM-Datenbank (Vorlagen)",
+    "playerDatabaseOf": "Spieler-Datenbank: {{name}} (nur lesen)",
+    "noStory": "Die Monster-Datenbank der Spieler gehört zu einer Geschichte. Du bist noch keiner Geschichte als Mitspieler zugeordnet.",
+    "dmIntro": "Deine Monster-Vorlagen – gemeinsam für alle Dungeon Master und Admins, für Spieler unsichtbar. Im Kampf übernimmst du sie über „Monster hinzufügen“ oder „Verbündeten hinzufügen“.",
+    "playerIntro": "Gemeinsames Monster-Notizbuch eurer Gruppe „{{name}}“: Alle Mitspieler können Einträge anlegen und ergänzen. Die Daten des DM sind hier nicht enthalten.",
+    "readOnlyIntro": "Monster-Datenbank der Spieler aus „{{name}}“ – das, was die Gruppe über Monster herausgefunden hat. Du kannst sie nur lesen.",
+    "readOnly": "Nur lesen",
+    "searchPlaceholder": "Name, Angriff oder Beschreibung durchsuchen …",
+    "newEntry": "Neues Monster",
+    "editEntry": "Monster bearbeiten",
+    "empty": "Noch keine Einträge.",
+    "noMatch": "Keine passenden Einträge.",
+    "hpShort": "LP",
+    "attack": "Angriff",
+    "attackPlaceholder": "z. B. Krummsäbel +4, 1W6+2 Hieb",
+    "description": "Beschreibung",
+    "unknownHint": "RK und LP leer lassen, wenn ihr sie (noch) nicht kennt.",
+    "createdBy": "angelegt von {{name}}",
+    "updatedBy": "zuletzt geändert von {{name}} am {{date}}",
+    "saved": "Eintrag gespeichert",
+    "deleted": "Eintrag gelöscht",
+    "deleteTitle": "Eintrag löschen?",
+    "deleteText": "„{{name}}“ wird aus der Datenbank gelöscht.",
+    "fromDatabase": "Vorlage aus der DM-Datenbank",
+    "searchTemplates": "Vorlagen durchsuchen",
+    "noTemplatesYet": "Noch keine Vorlagen.",
+    "toDatabase": "Zur Monster-Datenbank",
+    "saveAsTemplate": "Zusätzlich als Vorlage in der DM-Datenbank speichern",
+    "savedAsTemplate": "Als Vorlage gespeichert",
+    "dmOnlyHint": "Angriff und Beschreibung sieht nur der DM.",
+    "dmOnly": "nur für DM sichtbar",
+    "showDescription": "Beschreibung anzeigen",
+    "hideDescription": "Beschreibung ausblenden"
   }
 }

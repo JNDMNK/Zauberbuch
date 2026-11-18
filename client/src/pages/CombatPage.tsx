@@ -10,6 +10,7 @@ import { useToast } from '../context/ToastContext';
 import { refreshCombatActive } from '../hooks/useCombatActive';
 import { Alert, PageSpinner, Spinner } from '../components/ui';
 import { PlayerModeToggle } from '../components/combat/PlayerModeToggle';
+import { CombatTabs } from '../components/combat/CombatTabs';
 import { useCombatPlayerMode } from '../hooks/useCombatPlayerMode';
 
 /** Übersicht der Kämpfe aus den eigenen Geschichten; DM/Admin legen neue an */
@@ -61,6 +62,7 @@ export function CombatPage() {
         <h1 className="flex-1 text-3xl font-bold">{t('combat.heading')}</h1>
         <PlayerModeToggle />
       </div>
+      <CombatTabs />
       {asPlayer && <Alert kind="info">{t('combat.playerModeActive')}</Alert>}
       {isEditor && <NewEncounterForm />}
       <section>

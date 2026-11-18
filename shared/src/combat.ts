@@ -66,6 +66,11 @@ export const addMonsterSchema = z.object({
   hideStats: z.boolean().optional().default(true),
   /** Verbündeter NSC statt Monster */
   allied: z.boolean().optional().default(false),
+  /** Nur für DM/Admin sichtbar (z. B. aus der Monster-Datenbank) */
+  attack: z.string().trim().max(1000).optional().default(''),
+  description: z.string().trim().max(5000).optional().default(''),
+  /** Zusätzlich als Vorlage in der DM-Datenbank speichern */
+  saveAsTemplate: z.boolean().optional().default(false),
 });
 export type AddMonsterInput = z.input<typeof addMonsterSchema>;
 
@@ -79,6 +84,8 @@ export const combatantUpdateSchema = z
     hpMax: z.number().int().min(0).max(9999).optional(),
     hpCurrent: z.number().int().min(0).max(9999).optional(),
     hideStats: z.boolean().optional(),
+    attack: z.string().trim().max(1000).optional(),
+    description: z.string().trim().max(5000).optional(),
   })
   .refine((v) => Object.values(v).some((x) => x !== undefined), { message: 'Nothing to update' });
 export type CombatantUpdate = z.input<typeof combatantUpdateSchema>;
@@ -109,6 +116,9 @@ export interface CombatantDto {
   /** Spielercharakter: Besitzer und Link zum Bogen (wenn der Betrachter ihn öffnen darf) */
   owner: string | null;
   characterId: string | null;
+  /** Monster/NSC: Angriff und Beschreibung – nur für DM/Admin, für Spieler immer null */
+  attack: string | null;
+  description: string | null;
 }
 
 export interface EncounterSummaryDto {

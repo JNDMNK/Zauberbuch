@@ -14,26 +14,30 @@ datasource db {
 }
 
 model User {
-  id                String         @id @default(cuid())
-  username          String         @unique
-  email             String?        @unique
-  passwordHash      String
-  role              String         @default("user") // "admin" | "user"
-  language          String         @default("de") // "de" | "en"
-  tokenVersion      Int            @default(0) // erhöht sich bei Passwortänderung -> alte JWTs ungültig
-  canEditSpells     Boolean        @default(false) // Zusatzrecht: Zauber anlegen/bearbeiten/duplizieren (ohne Löschen)
-  combatAsPlayer    Boolean        @default(false) // Admin: Kampfhilfe im Spielermodus (serverseitig, damit DMs beim Ausschalten benachrichtigt werden)
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  favorites         Favorite[]
-  characters        Character[]
-  storyMemberships  StoryMember[]
-  boardPosts        BoardPost[]    @relation("BoardPostAuthor")
-  boardPostsEdited  BoardPost[]    @relation("BoardPostEditor")
-  boardPostsDeleted BoardPost[]    @relation("BoardPostDeleter")
-  boardComments     BoardComment[]
-  boardReads        BoardRead[]
-  notifications     Notification[]
+  id                      String            @id @default(cuid())
+  username                String            @unique
+  email                   String?           @unique
+  passwordHash            String
+  role                    String            @default("user") // "admin" | "user"
+  language                String            @default("de") // "de" | "en"
+  tokenVersion            Int               @default(0) // erhöht sich bei Passwortänderung -> alte JWTs ungültig
+  canEditSpells           Boolean           @default(false) // Zusatzrecht: Zauber anlegen/bearbeiten/duplizieren (ohne Löschen)
+  combatAsPlayer          Boolean           @default(false) // Admin: Kampfhilfe im Spielermodus (serverseitig, damit DMs beim Ausschalten benachrichtigt werden)
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+  favorites               Favorite[]
+  characters              Character[]
+  storyMemberships        StoryMember[]
+  boardPosts              BoardPost[]       @relation("BoardPostAuthor")
+  boardPostsEdited        BoardPost[]       @relation("BoardPostEditor")
+  boardPostsDeleted       BoardPost[]       @relation("BoardPostDeleter")
+  boardComments           BoardComment[]
+  boardReads              BoardRead[]
+  notifications           Notification[]
+  monsterTemplatesCreated MonsterTemplate[] @relation("MonsterTemplateCreator")
+  monsterTemplatesUpdated MonsterTemplate[] @relation("MonsterTemplateUpdater")
+  bestiaryCreated         BestiaryEntry[]   @relation("BestiaryCreator")
+  bestiaryUpdated         BestiaryEntry[]   @relation("BestiaryUpdater")
 }
 
 model Spell {
@@ -131,16 +135,17 @@ model Character {
  * Geschichte (Story/Kampagne) mit eigener Infotafel; Admin und Dungeon Master verwalten sie.
  */
 model Story {
-  id          String        @id @default(cuid())
+  id          String          @id @default(cuid())
   name        String
-  description String        @default("")
-  archived    Boolean       @default(false)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  description String          @default("")
+  archived    Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   members     StoryMember[]
   posts       BoardPost[]
   reads       BoardRead[]
   encounters  Encounter[]
+  bestiary    BestiaryEntry[]
 }
 
 /**
@@ -262,6 +267,11 @@ model Combatant {
    * JSON-Array der Zustände
    */
   conditions  String     @default("[]")
+  /**
+   * Nur für DM/Admin sichtbar (aus der Monster-Datenbank übernommen)
+   */
+  attack      String     @default("")
+  description String     @default("")
   createdAt   DateTime   @default(now())
 
   @@index([encounterId])
@@ -284,4 +294,48 @@ model Notification {
   readAt    DateTime?
 
   @@index([userId, createdAt])
+}
+
+// ---- Monster-Datenbanken ----
+
+/**
+ * Monster-Datenbank des DM (gemeinsam für alle Dungeon Master und Admins); Vorlagen für Kämpfe
+ */
+model MonsterTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  ac          Int?
+  hp          Int      @default(0)
+  attack      String   @default("")
+  description String   @default("")
+  createdById String?
+  createdBy   User?    @relation("MonsterTemplateCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById String?
+  updatedBy   User?    @relation("MonsterTemplateUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+}
+
+/**
+ * Monster-Datenbank der Spieler je Geschichte (gemeinsames Notizbuch der Mitspieler; DM/Admin nur lesend)
+ */
+model BestiaryEntry {
+  id          String   @id @default(cuid())
+  storyId     String
+  story       Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  name        String
+  ac          Int?
+  hp          Int?
+  attack      String   @default("")
+  description String   @default("")
+  createdById String?
+  createdBy   User?    @relation("BestiaryCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById String?
+  updatedBy   User?    @relation("BestiaryUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([storyId, name])
 }

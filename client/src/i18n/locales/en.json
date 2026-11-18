@@ -824,7 +824,8 @@
     "allyPlaceholderShort": "Town guard",
     "time": "Time",
     "timeHint": "1 round = 6 seconds · 10 rounds = 1 minute · 100 rounds = 10 minutes · 600 rounds = 1 hour",
-    "timeScale": "After round {{round}}, {{time}} have passed (min:sec) · 1 round = 6 s · 10 rounds = 1 min · 100 rounds = 10 min"
+    "timeScale": "After round {{round}}, {{time}} have passed (min:sec) · 1 round = 6 s · 10 rounds = 1 min · 100 rounds = 10 min",
+    "encountersTab": "Encounters"
   },
   "notifications": {
     "title": "Notifications",
@@ -835,5 +836,42 @@
     "types": {
       "admin_player_mode_off": "Admin “{{admin}}” turned off combat player mode and can see all values again (including hidden monsters)."
     }
+  },
+  "bestiary": {
+    "tab": "Monster database",
+    "database": "Database:",
+    "dmDatabase": "DM database (templates)",
+    "playerDatabaseOf": "Player database: {{name}} (read-only)",
+    "noStory": "The players' monster database belongs to a story. You have not been added to a story as a player yet.",
+    "dmIntro": "Your monster templates – shared by all Dungeon Masters and admins, invisible to players. Use them in combat via “Add monster” or “Add ally”.",
+    "playerIntro": "Shared monster notebook of your group “{{name}}”: all players can add and extend entries. The DM's data is not included here.",
+    "readOnlyIntro": "Players' monster database of “{{name}}” – what the group has found out about monsters. Read-only for you.",
+    "readOnly": "Read-only",
+    "searchPlaceholder": "Search name, attack or description …",
+    "newEntry": "New monster",
+    "editEntry": "Edit monster",
+    "empty": "No entries yet.",
+    "noMatch": "No matching entries.",
+    "hpShort": "HP",
+    "attack": "Attack",
+    "attackPlaceholder": "e.g. Scimitar +4, 1d6+2 slashing",
+    "description": "Description",
+    "unknownHint": "Leave AC and HP empty if you don't know them (yet).",
+    "createdBy": "created by {{name}}",
+    "updatedBy": "last changed by {{name}} on {{date}}",
+    "saved": "Entry saved",
+    "deleted": "Entry deleted",
+    "deleteTitle": "Delete entry?",
+    "deleteText": "“{{name}}” will be deleted from the database.",
+    "fromDatabase": "Template from the DM database",
+    "searchTemplates": "Search templates",
+    "noTemplatesYet": "No templates yet.",
+    "toDatabase": "Go to monster database",
+    "saveAsTemplate": "Also save as a template in the DM database",
+    "savedAsTemplate": "Saved as template",
+    "dmOnlyHint": "Only the DM sees attack and description.",
+    "dmOnly": "visible to DM only",
+    "showDescription": "Show description",
+    "hideDescription": "Hide description"
   }
 }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowDownAZ, ArrowDownWideNarrow, ArrowLeft, ChevronLeft, ChevronRight, Flag, Handshake, Pencil, Play, RotateCcw, Skull, Trash2, UserPlus } from 'lucide-react';
+import { ArrowDownAZ, ArrowDownWideNarrow, ArrowLeft, BookMarked, ChevronLeft, ChevronRight, Flag, Handshake, Pencil, Play, RotateCcw, Skull, Trash2, UserPlus } from 'lucide-react';
 import {
   compareByInitiative,
   compareByName,
@@ -9,6 +9,7 @@ import {
   type CombatantDto,
   type CombatantUpdate,
   type EncounterDto,
+  type MonsterTemplateDto,
 } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
@@ -412,25 +413,49 @@ function AddPlayersDialog({ open, enc, onClose, onDone }: { open: boolean; enc: 
 function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { open: boolean; encId: string; allied?: boolean; onClose: () => void; onDone: (e: EncounterDto) => void }) {
   const { t } = useTranslation();
   const toast = useToast();
+  const [templates, setTemplates] = useState<MonsterTemplateDto[] | null>(null);
+  const [filter, setFilter] = useState('');
+  const [templateId, setTemplateId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [count, setCount] = useState('1');
   const [ac, setAc] = useState('');
   const [hp, setHp] = useState('');
   const [ini, setIni] = useState('');
+  const [attack, setAttack] = useState('');
+  const [description, setDescription] = useState('');
   const [hide, setHide] = useState(true);
+  const [save, setSave] = useState(false);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
-    if (open) {
-      setName('');
-      setCount('1');
-      setAc('');
-      setHp('');
-      setIni('');
-      // Verbündete sind standardmäßig offen sichtbar, Monster verdeckt
-      setHide(!allied);
-    }
+    if (!open) return;
+    setFilter('');
+    setTemplateId(null);
+    setName('');
+    setCount('1');
+    setAc('');
+    setHp('');
+    setIni('');
+    setAttack('');
+    setDescription('');
+    setSave(false);
+    // Verbündete sind standardmäßig offen sichtbar, Monster verdeckt
+    setHide(!allied);
+    api
+      .monsterTemplates()
+      .then((r) => setTemplates(r.templates))
+      .catch(() => setTemplates([]));
   }, [open, allied]);
   const num = (v: string, allowMinus = false) => v.replace(allowMinus ? /[^\d-]/g : /\D/g, '').slice(0, 4);
+
+  const applyTemplate = (tpl: MonsterTemplateDto) => {
+    setTemplateId(tpl.id);
+    setName(tpl.name);
+    setAc(tpl.ac === null ? '' : String(tpl.ac));
+    setHp(String(tpl.hp));
+    setAttack(tpl.attack);
+    setDescription(tpl.description);
+    setSave(false);
+  };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -445,7 +470,11 @@ function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { op
         initiative: ini === '' || ini === '-' ? null : Math.max(-20, Math.min(99, Number(ini))),
         hideStats: hide,
         allied,
+        attack: attack.trim(),
+        description: description.trim(),
+        saveAsTemplate: save && !templateId,
       });
+      if (save && !templateId) toast.success(t('bestiary.savedAsTemplate'));
       onDone(r.encounter);
     } catch (err) {
       toast.error(errorMessage(t, err));
@@ -454,9 +483,58 @@ function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { op
     }
   };
 
+  const needle = filter.trim().toLocaleLowerCase('de');
+  const shown = (templates ?? []).filter((tpl) => !needle || tpl.name.toLocaleLowerCase('de').includes(needle));
+
   return (
-    <Modal open={open} title={allied ? t('combat.addAlly') : t('combat.addMonster')} onClose={onClose} size="max-w-lg">
+    <Modal open={open} title={allied ? t('combat.addAlly') : t('combat.addMonster')} onClose={onClose} size="max-w-2xl">
       <form onSubmit={submit} className="space-y-4">
+        {/* Vorlage aus der DM-Datenbank */}
+        <section className="rounded-lg border border-parchment-400/60 p-3 dark:border-night-700">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="flex flex-1 items-center gap-1.5 font-display text-sm font-bold">
+              <BookMarked className="h-4 w-4" />
+              {t('bestiary.fromDatabase')}
+            </h3>
+            {templates && templates.length > 0 && (
+              <input className="input !w-48 !py-1 text-sm" type="search" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={t('common.search')} aria-label={t('bestiary.searchTemplates')} />
+            )}
+          </div>
+          {!templates ? (
+            <div className="flex justify-center py-3">
+              <Spinner className="h-4 w-4" />
+            </div>
+          ) : templates.length === 0 ? (
+            <p className="mt-2 text-xs text-parchment-700 dark:text-parchment-400">
+              {t('bestiary.noTemplatesYet')}{' '}
+              <Link to="/combat/bestiary" className="underline">
+                {t('bestiary.toDatabase')}
+              </Link>
+            </p>
+          ) : (
+            <ul className="mt-2 flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
+              {shown.map((tpl) => (
+                <li key={tpl.id}>
+                  <button
+                    type="button"
+                    onClick={() => applyTemplate(tpl)}
+                    aria-pressed={templateId === tpl.id}
+                    className={`rounded-full border px-3 py-1 text-sm transition ${
+                      templateId === tpl.id ? 'border-parchment-800 bg-parchment-800 text-parchment-50 dark:border-parchment-300 dark:bg-parchment-300 dark:text-ink' : 'border-parchment-400/70 hover:bg-parchment-200/80 dark:border-night-700 dark:hover:bg-night-700'
+                    }`}
+                  >
+                    {tpl.name}
+                    <span className="ml-1.5 text-xs opacity-75">
+                      {t('combat.acShort')} {tpl.ac ?? '–'} · {tpl.hp} LP
+                    </span>
+                  </button>
+                </li>
+              ))}
+              {shown.length === 0 && <li className="text-xs text-parchment-700 dark:text-parchment-400">{t('bestiary.noMatch')}</li>}
+            </ul>
+          )}
+        </section>
+
         <div>
           <label htmlFor="m-name" className="label">
             {t('combat.monsterName')}
@@ -490,6 +568,19 @@ function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { op
           </div>
         </div>
         {Number(count) > 1 && <p className="text-xs text-parchment-700 dark:text-parchment-400">{t('combat.countHint', { name: name || (allied ? t('combat.allyPlaceholderShort') : 'Goblin') })}</p>}
+        <div>
+          <label htmlFor="m-attack" className="label">
+            {t('bestiary.attack')} <span className="font-normal text-parchment-700 dark:text-parchment-400">({t('board.optional')})</span>
+          </label>
+          <textarea id="m-attack" className="input min-h-[2.5rem]" rows={2} value={attack} maxLength={1000} onChange={(e) => setAttack(e.target.value)} placeholder={t('bestiary.attackPlaceholder')} />
+        </div>
+        <div>
+          <label htmlFor="m-desc" className="label">
+            {t('bestiary.description')} <span className="font-normal text-parchment-700 dark:text-parchment-400">({t('board.optional')})</span>
+          </label>
+          <textarea id="m-desc" className="input min-h-[3rem]" rows={3} value={description} maxLength={5000} onChange={(e) => setDescription(e.target.value)} />
+          <p className="mt-1 text-xs text-parchment-700 dark:text-parchment-400">{t('bestiary.dmOnlyHint')}</p>
+        </div>
         <label className="flex cursor-pointer items-start gap-2 text-sm">
           <input type="checkbox" className="mt-1 h-4 w-4 accent-parchment-800 dark:accent-parchment-300" checked={hide} onChange={(e) => setHide(e.target.checked)} />
           <span>
@@ -497,6 +588,12 @@ function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { op
             <span className="block text-xs text-parchment-700 dark:text-parchment-400">{t('combat.hideStatsHint')}</span>
           </span>
         </label>
+        {!templateId && (
+          <label className="flex cursor-pointer items-start gap-2 text-sm">
+            <input type="checkbox" className="mt-1 h-4 w-4 accent-parchment-800 dark:accent-parchment-300" checked={save} onChange={(e) => setSave(e.target.checked)} />
+            <span>{t('bestiary.saveAsTemplate')}</span>
+          </label>
+        )}
         <div className="flex justify-end gap-2">
           <button type="button" className="btn-secondary" onClick={onClose}>
             {t('common.cancel')}

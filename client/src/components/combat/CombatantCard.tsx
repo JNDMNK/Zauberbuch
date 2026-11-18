@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Eye, EyeOff, Handshake, Heart, Minus, Pencil, Plus, ScrollText, Shield, Skull, Tags, Trash2, UserRound, X } from 'lucide-react';
+import { Eye, EyeOff, Handshake, Heart, Minus, Pencil, Plus, ScrollText, Shield, Skull, Swords, Tags, Trash2, UserRound, X } from 'lucide-react';
 import { CONDITIONS, type CombatantDto, type CombatantUpdate, type Condition, type HealthStatus } from '@zauberbuch/shared';
 
 const BAR_CLS: Record<HealthStatus, string> = {
@@ -107,6 +107,7 @@ export function CombatantCard({ c, active, manage, onUpdate, onHp, onRemove }: P
       )}
 
       {manage && isMonster && !editing && <HpControls onHp={onHp} />}
+      {manage && isMonster && !editing && (c.attack || c.description) && <DmNotes attack={c.attack} description={c.description} />}
       {manage && isMonster && editing && <MonsterEdit c={c} onCancel={() => setEditing(false)} onSave={async (d) => (await onUpdate(d), setEditing(false))} />}
 
       {/* Zustände */}
@@ -269,9 +270,18 @@ function MonsterEdit({ c, onSave, onCancel }: { c: CombatantDto; onSave: (d: Com
   const [ac, setAc] = useState(c.ac ?? '');
   const [hpMax, setHpMax] = useState(String(c.hpMax ?? 0));
   const [hpCurrent, setHpCurrent] = useState(String(c.hpCurrent ?? 0));
+  const [attack, setAttack] = useState(c.attack ?? '');
+  const [description, setDescription] = useState(c.description ?? '');
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    void onSave({ name: name.trim() || c.name, ac: ac === '' ? null : Math.min(50, Number(ac)), hpMax: Math.min(9999, Number(hpMax) || 0), hpCurrent: Math.min(9999, Number(hpCurrent) || 0) });
+    void onSave({
+      name: name.trim() || c.name,
+      ac: ac === '' ? null : Math.min(50, Number(ac)),
+      hpMax: Math.min(9999, Number(hpMax) || 0),
+      hpCurrent: Math.min(9999, Number(hpCurrent) || 0),
+      attack: attack.trim(),
+      description: description.trim(),
+    });
   };
   const num = (v: string) => v.replace(/\D/g, '').slice(0, 4);
   return (
@@ -291,6 +301,8 @@ function MonsterEdit({ c, onSave, onCancel }: { c: CombatantDto; onSave: (d: Com
           <input className="input !py-1 text-center" inputMode="numeric" value={hpMax} onChange={(e) => setHpMax(num(e.target.value))} />
         </label>
       </div>
+      <textarea className="input min-h-[2.5rem] !py-1 text-sm" rows={2} value={attack} maxLength={1000} onChange={(e) => setAttack(e.target.value)} placeholder={t('bestiary.attack')} aria-label={t('bestiary.attack')} />
+      <textarea className="input min-h-[3rem] !py-1 text-sm" rows={3} value={description} maxLength={5000} onChange={(e) => setDescription(e.target.value)} placeholder={t('bestiary.description')} aria-label={t('bestiary.description')} />
       <div className="flex justify-end gap-2">
         <button type="button" className="btn-secondary !py-1 text-sm" onClick={onCancel}>
           {t('common.cancel')}
@@ -341,6 +353,34 @@ function ConditionPicker({ selected, onChange, onClose }: { selected: Condition[
         <Plus className="h-3.5 w-3.5 rotate-45" />
         {t('common.close')}
       </button>
+    </div>
+  );
+}
+
+/** Angriff und Beschreibung (nur für den DM sichtbar) */
+function DmNotes({ attack, description }: { attack: string | null; description: string | null }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-lg bg-parchment-100/70 px-3 py-2 text-sm dark:bg-night-900/60">
+      {attack && (
+        <p className="flex items-start gap-1.5">
+          <Swords className="mt-0.5 h-4 w-4 shrink-0 text-red-800 dark:text-red-400" aria-label={t('bestiary.attack')} />
+          <span className="whitespace-pre-wrap break-words">{attack}</span>
+        </p>
+      )}
+      {description && (
+        <>
+          <button type="button" className="mt-1 text-xs font-semibold underline" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+            {open ? t('bestiary.hideDescription') : t('bestiary.showDescription')}
+          </button>
+          {open && <p className="mt-1 whitespace-pre-wrap break-words text-parchment-900 dark:text-parchment-200">{description}</p>}
+        </>
+      )}
+      <p className="mt-1 inline-flex items-center gap-1 text-[0.7rem] text-parchment-700 dark:text-parchment-400">
+        <EyeOff className="h-3 w-3" />
+        {t('bestiary.dmOnly')}
+      </p>
     </div>
   );
 }

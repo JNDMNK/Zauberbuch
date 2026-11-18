@@ -1,5 +1,9 @@
 import type {
   AddMonsterInput,
+  BestiaryEntryDto,
+  BestiaryEntryInput,
+  MonsterTemplateDto,
+  MonsterTemplateInput,
   NotificationDto,
   CombatantUpdate,
   EncounterDto,
@@ -187,6 +191,16 @@ export const api = {
   updateCombatant: (id: string, data: CombatantUpdate) => request<{ encounter: EncounterDto }>('PATCH', `/api/combat/combatants/${id}`, data),
   combatantHp: (id: string, delta: number) => request<{ encounter: EncounterDto }>('POST', `/api/combat/combatants/${id}/hp`, { delta }),
   removeCombatant: (id: string) => request<{ encounter: EncounterDto }>('DELETE', `/api/combat/combatants/${id}`),
+
+  // Monster-Datenbanken
+  monsterTemplates: () => request<{ templates: MonsterTemplateDto[] }>('GET', '/api/bestiary/dm'),
+  createMonsterTemplate: (input: MonsterTemplateInput) => request<{ template: MonsterTemplateDto }>('POST', '/api/bestiary/dm', input),
+  updateMonsterTemplate: (id: string, input: MonsterTemplateInput) => request<{ template: MonsterTemplateDto }>('PUT', `/api/bestiary/dm/${id}`, input),
+  deleteMonsterTemplate: (id: string) => request<void>('DELETE', `/api/bestiary/dm/${id}`),
+  bestiary: (storyId: string) => request<{ entries: BestiaryEntryDto[]; canWrite: boolean }>('GET', `/api/bestiary/stories/${storyId}`),
+  createBestiaryEntry: (storyId: string, input: BestiaryEntryInput) => request<{ entry: BestiaryEntryDto }>('POST', `/api/bestiary/stories/${storyId}`, input),
+  updateBestiaryEntry: (id: string, input: BestiaryEntryInput) => request<{ entry: BestiaryEntryDto }>('PUT', `/api/bestiary/entries/${id}`, input),
+  deleteBestiaryEntry: (id: string) => request<void>('DELETE', `/api/bestiary/entries/${id}`),
 
   // Benachrichtigungen
   notifications: () => request<{ notifications: NotificationDto[]; unread: number }>('GET', '/api/notifications'),
