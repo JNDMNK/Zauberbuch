@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Bell, Trash2 } from 'lucide-react';
 import type { NotificationDto } from '@zauberbuch/shared';
@@ -28,7 +29,7 @@ export function NotificationBell() {
         setUnread(r.unread);
         // Beim ersten Laden nur merken; danach neue ungelesene als Hinweis einblenden
         const fresh = r.notifications.filter((n) => !n.readAt && seen.current && !seen.current.has(n.id));
-        fresh.slice(0, 3).forEach((n) => toast.show(text(n)));
+        fresh.slice(0, 3).forEach((n) => toast.show(text(n), 'info', n.data.link?.startsWith('/') ? { label: t('notifications.open'), to: n.data.link } : undefined));
         seen.current = new Set(r.notifications.map((n) => n.id));
       })
       .catch(() => undefined);
@@ -98,9 +99,23 @@ export function NotificationBell() {
           ) : (
             <ul className="max-h-96 divide-y divide-parchment-300/70 overflow-y-auto dark:divide-night-700">
               {items.map((n) => (
-                <li key={n.id} className={`px-4 py-3 text-sm ${n.readAt ? '' : 'bg-amber-50 dark:bg-amber-950/40'}`}>
-                  <p>{text(n)}</p>
-                  <p className="mt-0.5 text-xs text-parchment-700 dark:text-parchment-400">{new Date(n.createdAt).toLocaleString(i18n.language, { dateStyle: 'short', timeStyle: 'short' })}</p>
+                <li key={n.id} className={n.readAt ? '' : 'bg-amber-50 dark:bg-amber-950/40'}>
+                  {(() => {
+                    const body = (
+                      <>
+                        <p>{text(n)}</p>
+                        <p className="mt-0.5 text-xs text-parchment-700 dark:text-parchment-400">{new Date(n.createdAt).toLocaleString(i18n.language, { dateStyle: 'short', timeStyle: 'short' })}</p>
+                      </>
+                    );
+                    // Mit Link (z. B. Infotafel): Klick öffnet die Seite
+                    return n.data.link?.startsWith('/') ? (
+                      <Link to={n.data.link} onClick={() => setOpen(false)} className="block px-4 py-3 text-sm hover:bg-parchment-200/70 dark:hover:bg-night-700">
+                        {body}
+                      </Link>
+                    ) : (
+                      <div className="px-4 py-3 text-sm">{body}</div>
+                    );
+                  })()}
                 </li>
               ))}
             </ul>

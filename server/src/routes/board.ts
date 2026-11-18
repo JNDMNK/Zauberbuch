@@ -29,6 +29,7 @@ import { validate } from '../lib/validate';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { logger } from '../lib/logger';
 import { requireAdmin, requireAuth, requireEditor } from '../middleware/auth';
+import { notifyUsers } from '../lib/notifications';
 
 /**
  * Infotafel pro Geschichte.
@@ -86,6 +87,15 @@ function toPostDto(req: Request, p: PostWithRelations): BoardPostDto {
     comments: p.comments.map((c) => toCommentDto(req, c)),
     canEdit: canModify(req, p.authorId),
   };
+}
+
+/** Kurzer Textauszug für Benachrichtigungen (Markdown grob entfernt) */
+function postSnippet(body: string, max = 80) {
+  const plain = body
+    .replace(/[#>*_`~\[\]()|-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return plain.length > max ? `${plain.slice(0, max - 1)}…` : plain;
 }
 
 /** Lädt eine Geschichte und prüft den Zugriff. Ohne Zugriff 404, damit fremde Geschichten verborgen bleiben. */
@@ -290,6 +300,14 @@ boardRouter.post('/stories/:id/posts', async (req, res) => {
   const post = await prisma.boardPost.create({
     data: { storyId: story.id, authorId: req.user!.id, title: input.title, body: input.body, category: input.category, searchText: boardSearchText(input.title, input.body) },
     include: postInclude,
+  });
+  // Alle anderen Mitspieler der Geschichte informieren (Glocke)
+  const others = story.members.map((m) => m.userId).filter((id) => id !== req.user!.id);
+  await notifyUsers(others, 'board_post', {
+    author: req.user!.username,
+    story: story.name,
+    title: input.title || postSnippet(input.body),
+    link: `/board/${story.id}`,
   });
   res.status(201).json({ post: toPostDto(req, post) });
 });

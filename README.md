@@ -219,6 +219,8 @@ Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Grupp
   Ändern und löschen dürfen der Ersteller, Dungeon Master und Admin. Lange Beiträge werden eingeklappt.
 - **Anheften** (📌, Dungeon Master und Admin) hält wichtige Beiträge oben.
 - **Kommentare** unter jedem Beitrag; dieselben Rechte wie bei Beiträgen.
+- **Benachrichtigung:** Ein neuer Beitrag löst bei allen anderen Mitspielern der Geschichte die Glocke aus
+  („frodo hat auf der Infotafel „…“ geschrieben: …“); ein Klick darauf öffnet die Infotafel der Geschichte.
 - **Suche** über Beiträge und Kommentare, **Filter** nach Kategorie.
 - **Ungelesen-Zähler** am Reiter und an jeder Geschichte (neue Beiträge und Kommentare anderer seit dem letzten
   Öffnen). Die Tafel aktualisiert sich automatisch alle 30 Sekunden.

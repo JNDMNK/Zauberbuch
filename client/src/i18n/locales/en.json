@@ -835,8 +835,10 @@
     "empty": "No notifications",
     "clear": "Clear all",
     "types": {
-      "admin_player_mode_off": "Admin “{{admin}}” turned off combat player mode and can see all values again (including hidden monsters)."
-    }
+      "admin_player_mode_off": "Admin “{{admin}}” turned off combat player mode and can see all values again (including hidden monsters).",
+      "board_post": "{{author}} posted on the info board “{{story}}”: {{title}}"
+    },
+    "open": "Open"
   },
   "bestiary": {
     "tab": "Monster database",

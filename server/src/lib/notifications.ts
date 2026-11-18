@@ -10,6 +10,14 @@ export async function notifyRole(role: Role, type: string, data: Record<string, 
   return users.length;
 }
 
+/** Benachrichtigung an bestimmte Benutzer */
+export async function notifyUsers(userIds: string[], type: string, data: Record<string, string>) {
+  const unique = [...new Set(userIds)];
+  if (unique.length === 0) return 0;
+  await prisma.notification.createMany({ data: unique.map((userId) => ({ userId, type, data: JSON.stringify(data) })) });
+  return unique.length;
+}
+
 /** Gelesene Benachrichtigungen nach 30 Tagen, ungelesene nach 180 Tagen entfernen */
 export async function purgeNotifications(now = new Date()) {
   const day = 24 * 60 * 60 * 1000;

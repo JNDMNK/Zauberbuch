@@ -835,8 +835,10 @@
     "empty": "Keine Benachrichtigungen",
     "clear": "Alle löschen",
     "types": {
-      "admin_player_mode_off": "Admin „{{admin}}“ hat den Spielermodus der Kampfhilfe ausgeschaltet und sieht wieder alle Werte (auch verdeckte Monster)."
-    }
+      "admin_player_mode_off": "Admin „{{admin}}“ hat den Spielermodus der Kampfhilfe ausgeschaltet und sieht wieder alle Werte (auch verdeckte Monster).",
+      "board_post": "{{author}} hat auf der Infotafel „{{story}}“ geschrieben: {{title}}"
+    },
+    "open": "Öffnen"
   },
   "bestiary": {
     "tab": "Monster-Datenbank",

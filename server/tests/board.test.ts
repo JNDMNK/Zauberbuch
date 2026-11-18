@@ -173,3 +173,33 @@ describe('Infotafel', () => {
     expect(s.postCount).toBe(1);
   });
 });
+
+describe('Infotafel – Benachrichtigungen', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('neuer Beitrag benachrichtigt die anderen Mitspieler der Geschichte', async () => {
+    const dm = await createUser('meister', 'dungeonmaster');
+    const frodo = await createUser('frodo');
+    const sam = await createUser('sam');
+    const pippin = await createUser('pippin');
+    const story = (await dm.agent.post('/api/board/stories').set(CSRF).send({ name: 'Der Ring', memberIds: [frodo.user.id, sam.user.id] })).body.story;
+
+    await frodo.agent.post(`/api/board/stories/${story.id}/posts`).set(CSRF).send({ title: 'Treffen', body: 'Samstag 18 Uhr' });
+    const n = (await sam.agent.get('/api/notifications')).body;
+    expect(n.unread).toBe(1);
+    expect(n.notifications[0]).toMatchObject({ type: 'board_post', data: { author: 'frodo', story: 'Der Ring', title: 'Treffen', link: `/board/${story.id}` } });
+    expect((await frodo.agent.get('/api/notifications')).body.unread).toBe(0); // nicht an sich selbst
+    expect((await pippin.agent.get('/api/notifications')).body.unread).toBe(0); // kein Mitspieler
+
+    // ohne Titel: Textauszug ohne Markdown
+    await sam.agent.post(`/api/board/stories/${story.id}/posts`).set(CSRF).send({ body: '**Wichtig:** Der Händler heißt _Borin_ und wohnt am Markt.' });
+    const f = (await frodo.agent.get('/api/notifications')).body.notifications[0];
+    expect(f.data).toMatchObject({ author: 'sam', title: 'Wichtig: Der Händler heißt Borin und wohnt am Markt.' });
+    // Kommentare lösen keine Benachrichtigung aus
+    const post = (await frodo.agent.get(`/api/board/stories/${story.id}/posts`)).body.posts[0];
+    await frodo.agent.post(`/api/board/posts/${post.id}/comments`).set(CSRF).send({ body: 'Danke!' });
+    expect((await sam.agent.get('/api/notifications')).body.unread).toBe(1);
+  });
+});
