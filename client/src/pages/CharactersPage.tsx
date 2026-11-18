@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Copy, Plus, ScrollText, Trash2 } from 'lucide-react';
+import { Copy, Plus, ScrollText, Search, Trash2, Users } from 'lucide-react';
 import type { CharacterSummaryDto } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Alert, PageSpinner, Spinner } from '../components/ui';
 
@@ -41,6 +42,7 @@ export function CharactersPage() {
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
   const [toDelete, setToDelete] = useState<CharacterSummaryDto | null>(null);
+  const { isEditor } = useAuth();
 
   useEffect(() => {
     api
@@ -91,13 +93,16 @@ export function CharactersPage() {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <h1 className="flex items-center gap-2 text-2xl font-bold sm:text-3xl">
           <ScrollText className="h-7 w-7 text-parchment-600" />
-          {t('characters.title')}
+          {isEditor ? t('characters.titleAll') : t('characters.title')}
         </h1>
         <button type="button" className="btn-primary" onClick={create} disabled={busy}>
           {busy ? <Spinner className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
           {t('characters.new')}
         </button>
       </div>
+      {isEditor && (
+        <h2 className="mb-3 text-xl font-bold">{t('characters.mine')}</h2>
+      )}
       {list.length === 0 ? (
         <div className="parchment px-6 py-16 text-center">
           <p className="font-display text-xl font-bold">{t('characters.empty')}</p>
@@ -130,6 +135,7 @@ export function CharactersPage() {
           ))}
         </div>
       )}
+      {isEditor && <OtherCharacters />}
       <ConfirmDialog
         open={!!toDelete}
         title={t('characters.delete')}
@@ -139,5 +145,61 @@ export function CharactersPage() {
         onCancel={() => setToDelete(null)}
       />
     </div>
+  );
+}
+
+/** Charakterbögen der anderen Benutzer (nur lesen) – nur für Dungeon Master und Admin */
+function OtherCharacters() {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const [list, setList] = useState<CharacterSummaryDto[] | null>(null);
+  const [error, setError] = useState<unknown>(null);
+  const [query, setQuery] = useState('');
+
+  useEffect(() => {
+    api
+      .allCharacters()
+      .then((r) => setList(r.characters.filter((c) => c.owner?.id !== user?.id)))
+      .catch(setError);
+  }, [user?.id]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLocaleLowerCase('de');
+    return (list ?? [])
+      .filter((c) => !q || [c.name, c.classLevel, c.race, c.owner?.username].some((v) => v?.toLocaleLowerCase('de').includes(q)))
+      .sort((a, b) => (a.owner?.username ?? '').localeCompare(b.owner?.username ?? '', 'de') || a.name.localeCompare(b.name, 'de'));
+  }, [list, query]);
+
+  return (
+    <section className="mt-10" aria-labelledby="other-characters">
+      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 id="other-characters" className="flex items-center gap-2 text-xl font-bold">
+            <Users className="h-5 w-5 text-parchment-600" />
+            {t('characters.others')}
+          </h2>
+          <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('characters.othersHint')}</p>
+        </div>
+        {list && list.length > 0 && (
+          <div className="relative sm:w-72">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-600" />
+            <input type="search" className="input !pl-9" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('characters.othersSearch')} aria-label={t('characters.othersSearch')} />
+          </div>
+        )}
+      </div>
+      {error ? (
+        <Alert>{errorMessage(t, error)}</Alert>
+      ) : !list ? (
+        <PageSpinner />
+      ) : filtered.length === 0 ? (
+        <div className="parchment px-6 py-8 text-center italic">{list.length === 0 ? t('characters.othersEmpty') : t('search.noResults')}</div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {filtered.map((c) => (
+            <CharacterCard key={c.id} c={c} to={`/characters/${c.id}`} />
+          ))}
+        </div>
+      )}
+    </section>
   );
 }

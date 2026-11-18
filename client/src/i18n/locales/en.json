@@ -18,7 +18,8 @@
     "characters": "Character Sheet",
     "board": "Info board",
     "combat": "Combat",
-    "allSpells": "All spells"
+    "allSpells": "All spells",
+    "spellbooks": "Players' spellbooks"
   },
   "common": {
     "save": "Save",
@@ -424,8 +425,14 @@
     "saveError": "Saving failed",
     "readOnly": "Read only – character sheet of {{owner}}",
     "back": "All characters",
-    "backAdmin": "All character sheets",
-    "print": "Print"
+    "backAdmin": "Back to characters",
+    "print": "Print",
+    "mine": "My characters",
+    "others": "Other players' character sheets",
+    "othersHint": "Read-only – only the respective player can edit.",
+    "othersSearch": "Name, class, race or player",
+    "othersEmpty": "Other players have not created any character sheets yet.",
+    "titleAll": "Character sheets"
   },
   "sheet": {
     "tabs": {

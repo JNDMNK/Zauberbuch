@@ -18,7 +18,8 @@
     "characters": "Charakterbogen",
     "board": "Infotafel",
     "combat": "Kampf",
-    "allSpells": "Alle Zauber"
+    "allSpells": "Alle Zauber",
+    "spellbooks": "Zauberbücher der Spieler"
   },
   "common": {
     "save": "Speichern",
@@ -424,8 +425,14 @@
     "saveError": "Speichern fehlgeschlagen",
     "readOnly": "Nur lesen – Charakterbogen von {{owner}}",
     "back": "Alle Charaktere",
-    "backAdmin": "Alle Charakterbögen",
-    "print": "Drucken"
+    "backAdmin": "Zur Charakterübersicht",
+    "print": "Drucken",
+    "mine": "Meine Charaktere",
+    "others": "Charakterbögen weiterer Spieler",
+    "othersHint": "Nur lesend – bearbeiten kann nur der jeweilige Spieler.",
+    "othersSearch": "Name, Klasse, Volk oder Spieler",
+    "othersEmpty": "Andere Spieler haben noch keine Charakterbögen angelegt.",
+    "titleAll": "Charakterbögen"
   },
   "sheet": {
     "tabs": {

@@ -37,7 +37,10 @@ export function SpellbooksPage() {
     <div>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-xl font-bold">{t('admin.spellbooksTitle')}</h2>
+          <h1 className="flex items-center gap-2 text-2xl font-bold sm:text-3xl">
+            <BookHeart className="h-7 w-7 text-red-700 dark:text-red-400" />
+            {t('admin.spellbooksTitle')}
+          </h1>
           <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('admin.spellbooksHint')}</p>
         </div>
         <div className="relative sm:w-72">
@@ -56,7 +59,7 @@ export function SpellbooksPage() {
         {filtered.map((o) => (
           <li key={o.id}>
             <Link
-              to={`/admin/spellbooks/${o.id}`}
+              to={`/spellbooks/${o.id}`}
               state={{ username: o.username }}
               className="parchment flex items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-cardhover"
             >
@@ -92,7 +95,7 @@ export function UserSpellbookPage() {
       key={owner.id}
       owner={{ id: owner.id, username: owner.username }}
       header={
-        <Link to="/admin/spellbooks" className="btn-ghost mb-1 self-start !px-2">
+        <Link to="/spellbooks" className="btn-ghost mb-1 self-start !px-2">
           <ArrowLeft className="h-4 w-4" />
           {t('admin.backToSpellbooks')}
         </Link>

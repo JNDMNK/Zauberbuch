@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BookHeart, BookOpen, ChevronDown, LogOut, Menu, MessagesSquare, Moon, ScrollText, Settings, Shield, Sun, Swords, UserRound, X } from 'lucide-react';
+import { BookHeart, BookOpen, ChevronDown, Library, LogOut, Menu, MessagesSquare, Moon, ScrollText, Settings, Shield, Sun, Swords, UserRound, X } from 'lucide-react';
 import { LOCALES } from '@zauberbuch/shared';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -115,6 +115,8 @@ function SpellsMenu({ navCls }: { navCls: (s: { isActive: boolean }) => string }
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { isEditor } = useAuth();
+  // „/spellbook“ = Mein Zauberbuch, „/spellbooks“ = Zauberbücher aller Benutzer (DM/Admin)
   const active = location.pathname === '/' || location.pathname.startsWith('/spellbook') || location.pathname.startsWith('/spells/');
 
   useEffect(() => setOpen(false), [location.pathname]);
@@ -146,10 +148,16 @@ function SpellsMenu({ navCls }: { navCls: (s: { isActive: boolean }) => string }
             <BookOpen className="h-4 w-4" />
             {t('nav.allSpells')}
           </NavLink>
-          <NavLink role="menuitem" to="/spellbook" className={({ isActive }) => `${item} ${isActive ? 'font-semibold' : ''}`}>
+          <NavLink role="menuitem" to="/spellbook" end className={({ isActive }) => `${item} ${isActive ? 'font-semibold' : ''}`}>
             <BookHeart className="h-4 w-4" />
             {t('nav.favorites')}
           </NavLink>
+          {isEditor && (
+            <NavLink role="menuitem" to="/spellbooks" className={({ isActive }) => `${item} border-t border-parchment-300/70 dark:border-night-700 ${isActive ? 'font-semibold' : ''}`}>
+              <Library className="h-4 w-4" />
+              {t('nav.spellbooks')}
+            </NavLink>
+          )}
         </div>
       )}
     </div>
@@ -158,7 +166,7 @@ function SpellsMenu({ navCls }: { navCls: (s: { isActive: boolean }) => string }
 
 export function Header() {
   const { t } = useTranslation();
-  const { user, canWriteSpells } = useAuth();
+  const { user, canWriteSpells, isEditor } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const unread = useBoardUnread(Boolean(user));
@@ -214,10 +222,16 @@ export function Header() {
         <BookOpen className="h-4 w-4" />
         {t('nav.allSpells')}
       </NavLink>
-      <NavLink to="/spellbook" className={navCls}>
+      <NavLink to="/spellbook" end className={navCls}>
         <BookHeart className="h-4 w-4" />
         {t('nav.favorites')}
       </NavLink>
+      {isEditor && (
+        <NavLink to="/spellbooks" className={navCls}>
+          <Library className="h-4 w-4" />
+          {t('nav.spellbooks')}
+        </NavLink>
+      )}
       {sharedLinks}
       {canWriteSpells && (
         <NavLink to="/admin" className={navCls}>

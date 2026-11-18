@@ -93,7 +93,9 @@ setzen (mindestens `ZAUBERBUCH_IMAGE` und `ADMIN_PASSWORD`). Dann **Compose Up**
 ## Rollen & Benutzer
 
 Die **Verwaltung** erreichst du über das Benutzermenü oben rechts (auf dem Handy über das ☰-Menü). „Alle Zauber“
-und „Mein Zauberbuch“ liegen im Aufklappmenü **Zauber**.
+und „Mein Zauberbuch“ liegen im Aufklappmenü **Zauber** – für Dungeon Master und Admin dort zusätzlich
+**„Zauberbücher der Spieler“**. Die Charakterbögen der anderen Spieler sehen DM und Admin auf der Seite
+**Charakterbogen** unter „Charakterbögen weiterer Spieler“ (nur lesend).
 
 Ohne Anmeldung sind keine Daten sichtbar – weder in der Oberfläche noch über die API. Eine
 Selbstregistrierung gibt es nicht: Benutzer legt der Admin unter **Verwaltung → Benutzer → Neuer Benutzer**
@@ -150,7 +152,7 @@ Rettungswürfe, Fertigkeiten, passive Wahrnehmung, Initiative, Angriffsbonus, Za
 
 Änderungen werden automatisch gespeichert (kurz nach der letzten Eingabe sowie beim Verlassen der Seite).
 Bilder werden im Browser verkleinert und mit dem Bogen gespeichert. Admin und Dungeon Master sehen alle
-Bögen unter **Verwaltung → Charakterbögen** – nur lesend. Der Bogen lässt sich über das Drucker-Symbol drucken.
+Bögen auf der Seite **Charakterbogen** unter „Charakterbögen weiterer Spieler“ – nur lesend. Der Bogen lässt sich über das Drucker-Symbol drucken.
 
 ### Export & Import der Benutzer (Admin)
 

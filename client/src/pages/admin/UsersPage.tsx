@@ -283,7 +283,7 @@ export function UsersPage() {
                   />
                 </td>
                 <td className="hidden sm:table-cell">
-                  <Link to={`/admin/spellbooks/${u.id}`} className="inline-flex items-center gap-1 hover:underline">
+                  <Link to={`/spellbooks/${u.id}`} className="inline-flex items-center gap-1 hover:underline">
                     <BookHeart className="h-4 w-4 text-red-700 dark:text-red-400" aria-hidden />
                     {u.favoriteCount}
                   </Link>

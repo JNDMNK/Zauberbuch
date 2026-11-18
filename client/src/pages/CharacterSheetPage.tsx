@@ -5,7 +5,6 @@ import { AlertTriangle, ArrowLeft, Check, Eye, Printer } from 'lucide-react';
 import { characterSheetSchema, type CharacterDto, type CharacterSheet } from '@zauberbuch/shared';
 import { api, saveCharacterKeepalive } from '../lib/api';
 import { errorMessage } from '../lib/errors';
-import { useAuth } from '../context/AuthContext';
 import { Alert, PageSpinner, Spinner } from '../components/ui';
 import { SheetContext, setIn, type Path, type SheetCtx } from '../components/sheet/SheetContext';
 import { IdentityHeader, MainTab } from '../components/sheet/MainTab';
@@ -20,7 +19,6 @@ type SaveState = 'saved' | 'dirty' | 'saving' | 'error';
 export function CharacterSheetPage() {
   const { id } = useParams();
   const { t } = useTranslation();
-  const { isEditor } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab: Tab = (TABS as readonly string[]).includes(searchParams.get('tab') ?? '') ? (searchParams.get('tab') as Tab) : 'main';
   const [character, setCharacter] = useState<CharacterDto | null>(null);
@@ -122,7 +120,7 @@ export function CharacterSheetPage() {
   if (error) return <Alert>{errorMessage(t, error)}</Alert>;
   if (!character || !sheet || !ctx) return <PageSpinner />;
 
-  const backTo = canEdit ? '/characters' : isEditor ? '/admin/characters' : '/characters';
+  const backTo = '/characters';
   const status = {
     saved: { icon: <Check className="h-4 w-4" />, text: t('characters.saved'), cls: 'text-emerald-700 dark:text-emerald-400' },
     dirty: { icon: <span className="h-2 w-2 rounded-full bg-amber-500" />, text: t('characters.unsaved'), cls: 'text-amber-700 dark:text-amber-400' },

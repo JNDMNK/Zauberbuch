@@ -1,4 +1,4 @@
-import { Navigate, Outlet, Route, Routes, useLocation, type Location } from 'react-router-dom';
+import { Navigate, Outlet, Route, Routes, useLocation, useParams, type Location } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { RequireAuth } from './components/RequireAuth';
 import { SpellModal } from './components/SpellModal';
@@ -13,7 +13,6 @@ import { SpellFormPage } from './pages/admin/SpellFormPage';
 import { ImportExportPage } from './pages/admin/ImportExportPage';
 import { UsersPage } from './pages/admin/UsersPage';
 import { SpellbooksPage, UserSpellbookPage } from './pages/admin/SpellbooksPage';
-import { CharactersAdminPage } from './pages/admin/CharactersAdminPage';
 import { CharactersPage } from './pages/CharactersPage';
 import { CharacterSheetPage } from './pages/CharacterSheetPage';
 import { BoardPage } from './pages/BoardPage';
@@ -61,6 +60,22 @@ export default function App() {
             <Route path="combat" element={<CombatPage />} />
             <Route path="combat/bestiary" element={<BestiaryPage />} />
             <Route path="combat/:id" element={<EncounterPage />} />
+            <Route
+              path="spellbooks"
+              element={
+                <RequireAuth roles={EDITOR_ROLES}>
+                  <SpellbooksPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="spellbooks/:userId"
+              element={
+                <RequireAuth roles={EDITOR_ROLES}>
+                  <UserSpellbookPage />
+                </RequireAuth>
+              }
+            />
             <Route path="account" element={<AccountPage />} />
             <Route
               path="admin"
@@ -74,30 +89,9 @@ export default function App() {
               <Route path="spells" element={<AdminSpellsPage />} />
               <Route path="spells/new" element={<SpellFormPage key="new" />} />
               <Route path="spells/:slug/edit" element={<SpellFormPage />} />
-              <Route
-                path="spellbooks"
-                element={
-                  <RequireAuth roles={EDITOR_ROLES}>
-                    <SpellbooksPage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="spellbooks/:userId"
-                element={
-                  <RequireAuth roles={EDITOR_ROLES}>
-                    <UserSpellbookPage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="characters"
-                element={
-                  <RequireAuth roles={EDITOR_ROLES}>
-                    <CharactersAdminPage />
-                  </RequireAuth>
-                }
-              />
+              <Route path="spellbooks" element={<Navigate to="/spellbooks" replace />} />
+              <Route path="spellbooks/:userId" element={<LegacySpellbookRedirect />} />
+              <Route path="characters" element={<Navigate to="/characters" replace />} />
               <Route
                 path="import-export"
                 element={
@@ -126,4 +120,10 @@ export default function App() {
       )}
     </>
   );
+}
+
+/** Alte Adresse /admin/spellbooks/:userId -> /spellbooks/:userId */
+function LegacySpellbookRedirect() {
+  const { userId } = useParams();
+  return <Navigate to={`/spellbooks/${userId ?? ''}`} replace />;
 }
