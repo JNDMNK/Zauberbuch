@@ -192,6 +192,19 @@ kommen automatisch aus einer Tabelle:
 - Ein früher frei eingetragener Lebensstil, den es in der Tabelle nicht gibt, bleibt erhalten und behält seine
   Kosten.
 
+### Sprachen und Werkzeuge & andere
+
+Im Kasten **„Übung und Sprachen“** auf Seite 1 werden **Sprachen** und **Werkzeuge & andere** je Eintrag aus einer
+Liste gewählt; **„+ Weitere hinzufügen“** ergänzt eine Zeile, **×** entfernt sie. Bereits gewählte Einträge sind in den
+anderen Zeilen gesperrt.
+
+- Standardwerte wie im Charakterbogen-PDF: 15 Sprachen (Gemeinsprache bis Gemeinsprache der Unterreiche) und
+  36 Werkzeuge, Instrumente und Spielsätze (Fälscherausrüstung bis Verkleidungsausrüstung).
+- Jede neue Geschichte startet mit diesen Listen; unter **Verwaltung → Geschichten → Geschichte bearbeiten**
+  lassen sich Einträge ergänzen oder entfernen („Standardwerte“ setzt zurück). Für Bögen der Geschichte gelten
+  deren Listen.
+- Gespeichert wird weiterhin ein Eintrag je Zeile; früher frei eingetragene Werte bleiben erhalten und wählbar.
+
 ### Einstellungen eines Bogens
 
 Die letzte Seite des Bogens, **Einstellungen**, sehen Besitzer, Moderator, Admin und der Dungeon Master der

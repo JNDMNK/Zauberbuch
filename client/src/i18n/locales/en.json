@@ -387,7 +387,8 @@
     "too_many_combatants": "Too many combatants (max. 60).",
     "no_combatants": "No active combatants.",
     "hp_range_invalid": "Enter HP as a number or range, e.g. 58 or 10-15.",
-    "lifestyle_duplicate": "Each lifestyle may only appear once."
+    "lifestyle_duplicate": "Each lifestyle may only appear once.",
+    "option_duplicate": "This entry already exists."
   },
   "damageType": {
     "acid": "Acid",
@@ -646,7 +647,8 @@
       "save": "Save settings",
       "saved": "Settings saved"
     },
-    "dailyCostHint": "From the story's lifestyle table (or the defaults)"
+    "dailyCostHint": "From the story's lifestyle table (or the defaults)",
+    "addEntry": "Add another"
   },
   "board": {
     "heading": "Info board",
@@ -951,6 +953,15 @@
     "lifestyleError": {
       "name": "Every lifestyle needs a name.",
       "duplicate": "Each lifestyle may only appear once."
-    }
+    },
+    "languages": "Languages",
+    "tools": "Tools & other",
+    "languagesHint": "Choices for “Languages” on the character sheet (proficiencies & languages) for sheets of this story.",
+    "toolsHint": "Choices for “Tools & other” on the character sheet for sheets of this story.",
+    "languagePlaceholder": "New language, e.g. Thorass",
+    "toolPlaceholder": "New entry, e.g. airship",
+    "addOption": "Add",
+    "optionExists": "This entry already exists.",
+    "expand": "Show"
   }
 }

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type { Prisma } from '@prisma/client';
-import { DEFAULT_LIFESTYLES, activeStorySchema, storyInputSchema, storyUpdateSchema, type StoryInput, type StoryRole, type StoryUpdate } from '@zauberbuch/shared';
+import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, activeStorySchema, storyInputSchema, storyUpdateSchema, type StoryInput, type StoryRole, type StoryUpdate } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { badRequest, notFound } from '../lib/errors';
@@ -62,7 +62,7 @@ storiesRouter.post('/', requireEditor, async (req, res) => {
   if (req.user!.role !== 'admin' && !members.has(req.user!.id)) members.set(req.user!.id, 'dm');
   const story = await prisma.$transaction(async (tx) => {
     // Neue Geschichten erhalten die Standard-Lebensstile (anpassbar unter Verwaltung → Geschichten)
-    const s = await tx.story.create({ data: { name: input.name, description: input.description, lifestyles: JSON.stringify(input.lifestyles ?? DEFAULT_LIFESTYLES) } });
+    const s = await tx.story.create({ data: { name: input.name, description: input.description, lifestyles: JSON.stringify(input.lifestyles ?? DEFAULT_LIFESTYLES), languages: JSON.stringify(input.languages ?? DEFAULT_LANGUAGES), tools: JSON.stringify(input.tools ?? DEFAULT_TOOLS) } });
     await setMembers(tx, s.id, members);
     return s;
   });
@@ -85,6 +85,8 @@ storiesRouter.patch('/:id', requireEditor, async (req, res) => {
         ...(input.description !== undefined ? { description: input.description } : {}),
         ...(input.archived !== undefined ? { archived: input.archived } : {}),
         ...(input.lifestyles !== undefined ? { lifestyles: JSON.stringify(input.lifestyles) } : {}),
+        ...(input.languages !== undefined ? { languages: JSON.stringify(input.languages) } : {}),
+        ...(input.tools !== undefined ? { tools: JSON.stringify(input.tools) } : {}),
       },
     });
     if (members) await setMembers(tx, id, members);

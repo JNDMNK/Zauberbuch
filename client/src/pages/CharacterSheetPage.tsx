@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, ArrowLeft, Check, Eye, Printer } from 'lucide-react';
-import { DEFAULT_LIFESTYLES, characterSheetSchema, type CharacterDto, type CharacterSheet } from '@zauberbuch/shared';
+import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, characterSheetSchema, type CharacterDto, type CharacterSheet } from '@zauberbuch/shared';
 import { api, saveCharacterKeepalive } from '../lib/api';
 import { errorMessage } from '../lib/errors';
 import { Alert, PageSpinner, Spinner } from '../components/ui';
@@ -112,7 +112,15 @@ export function CharacterSheetPage() {
   );
 
   const lifestyles = character?.lifestyles;
-  const ctx = useMemo<SheetCtx | null>(() => (sheet ? { sheet, set, readOnly: !canEdit, lifestyles: lifestyles ?? DEFAULT_LIFESTYLES } : null), [sheet, set, canEdit, lifestyles]);
+  const languages = character?.languages;
+  const tools = character?.tools;
+  const ctx = useMemo<SheetCtx | null>(
+    () =>
+      sheet
+        ? { sheet, set, readOnly: !canEdit, lifestyles: lifestyles ?? DEFAULT_LIFESTYLES, languages: languages ?? DEFAULT_LANGUAGES, tools: tools ?? DEFAULT_TOOLS }
+        : null,
+    [sheet, set, canEdit, lifestyles, languages, tools],
+  );
 
   useEffect(() => {
     const name = sheet?.identity.name;
@@ -238,7 +246,7 @@ export function CharacterSheetPage() {
               // Lebensstil-Tabelle der (neuen) Geschichte übernehmen
               api
                 .character(character.id)
-                .then((r) => setCharacter((c) => (c ? { ...c, lifestyles: r.character.lifestyles } : c)))
+                .then((r) => setCharacter((c) => (c ? { ...c, lifestyles: r.character.lifestyles, languages: r.character.languages, tools: r.character.tools } : c)))
                 .catch(() => undefined);
             }}
           />

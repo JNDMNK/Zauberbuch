@@ -17,8 +17,8 @@ import {
   type CharacterSummaryDto,
   type CharacterSettingsDto,
   characterSettingsSchema,
-  DEFAULT_LIFESTYLES,
   parseLifestyles,
+  storyOptionLists,
   lifestyleCost,
 } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
@@ -218,14 +218,14 @@ charactersRouter.post('/', async (req, res) => {
   const c = await prisma.character.create({
     data: { userId: req.user!.id, ...summaryFields(sheet), data: JSON.stringify(sheet) },
   });
-  const body: CharacterDto = { ...toSummary(c), data: sheet, canEdit: true, canManageSettings: true, isOwner: true, lifestyles: DEFAULT_LIFESTYLES };
+  const body: CharacterDto = { ...toSummary(c), data: sheet, canEdit: true, canManageSettings: true, isOwner: true, ...storyOptionLists(null) };
   res.status(201).json({ character: body });
 });
 
 async function loadReadable(id: string, user: User) {
   const c = await prisma.character.findUnique({
     where: { id },
-    include: { user: { select: { id: true, username: true } }, story: { select: { id: true, name: true, lifestyles: true } }, editors: { select: { userId: true } } },
+    include: { user: { select: { id: true, username: true } }, story: { select: { id: true, name: true, lifestyles: true, languages: true, tools: true } }, editors: { select: { userId: true } } },
   });
   const isOwner = !!c && c.userId === user.id;
   const isCoEditor = !!c && c.editors.some((e) => e.userId === user.id);
@@ -244,7 +244,7 @@ function toDto(c: Awaited<ReturnType<typeof loadReadable>>, data: CharacterSheet
     canEdit: c.canEdit,
     canManageSettings: c.canManageSettings,
     isOwner: c.isOwner,
-    lifestyles: parseLifestyles(c.story?.lifestyles),
+    ...storyOptionLists(c.story),
   };
 }
 
@@ -283,7 +283,7 @@ charactersRouter.post('/:id/duplicate', async (req, res) => {
   sheet.identity.name = sheet.identity.name ? `${sheet.identity.name} (Kopie)` : '';
   const copy = await prisma.character.create({
     data: { userId: req.user!.id, ...summaryFields(sheet), data: JSON.stringify(sheet), storyId: c.storyId },
-    include: { story: { select: { id: true, name: true, lifestyles: true } } },
+    include: { story: { select: { id: true, name: true, lifestyles: true, languages: true, tools: true } } },
   });
   res.status(201).json({
     character: {
@@ -292,7 +292,7 @@ charactersRouter.post('/:id/duplicate', async (req, res) => {
       canEdit: true,
       canManageSettings: true,
       isOwner: true,
-      lifestyles: parseLifestyles(copy.story?.lifestyles),
+      ...storyOptionLists(copy.story),
     } satisfies CharacterDto,
   });
 });

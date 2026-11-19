@@ -158,3 +158,34 @@ describe('Lebensstil und tägliche Kosten', () => {
     expect(saved.body.character.data.lifestyle).toEqual({ name: 'Hausboot', dailyCost: '5 SM' });
   });
 });
+
+describe('Sprachen und Werkzeuge – Auswahllisten', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('Standardwerte, Anpassung je Geschichte und Übernahme in den Bogen', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    const frodo = await createUser('frodo');
+    const ch = (await frodo.agent.post('/api/characters').set(CSRF).send({ name: 'Vaelor' })).body.character;
+    expect(ch.languages).toHaveLength(15);
+    expect(ch.languages[0]).toBe('Gemeinsprache');
+    expect(ch.tools).toContain('Diebeswerkzeug');
+    expect(ch.tools).toHaveLength(36);
+
+    const story = (await admin.post('/api/stories').set(CSRF).send({ name: 'Faerûn' })).body.story;
+    expect(story.languages).toHaveLength(15);
+    const upd = await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ languages: ['Gemeinsprache', 'Elfisch', 'Thorass'], tools: ['Diebeswerkzeug', 'Luftschiff'] });
+    expect(upd.body.story).toMatchObject({ languages: ['Gemeinsprache', 'Elfisch', 'Thorass'], tools: ['Diebeswerkzeug', 'Luftschiff'] });
+    expect((await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ languages: ['Elfisch', 'elfisch'] })).status).toBe(400);
+    expect((await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ tools: [] })).status).toBe(400);
+
+    await frodo.agent.put(`/api/characters/${ch.id}/settings`).set(CSRF).send({ storyId: story.id, editorIds: [] });
+    const view = (await frodo.agent.get(`/api/characters/${ch.id}`)).body.character;
+    expect(view).toMatchObject({ languages: ['Gemeinsprache', 'Elfisch', 'Thorass'], tools: ['Diebeswerkzeug', 'Luftschiff'] });
+    // Bogen speichert weiterhin eine Zeile je Eintrag
+    const saved = await frodo.agent.put(`/api/characters/${ch.id}`).set(CSRF).send({ data: { ...view.data, proficiencies: { ...view.data.proficiencies, languages: 'Gemeinsprache\nThorass', tools: 'Luftschiff' } } });
+    expect(saved.body.character.data.proficiencies).toMatchObject({ languages: 'Gemeinsprache\nThorass', tools: 'Luftschiff' });
+    expect((await admin.get('/api/board/export')).body.stories[0]).toMatchObject({ languages: ['Gemeinsprache', 'Elfisch', 'Thorass'] });
+  });
+});

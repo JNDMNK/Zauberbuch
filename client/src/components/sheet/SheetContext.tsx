@@ -9,6 +9,9 @@ export interface SheetCtx {
   readOnly: boolean;
   /** Lebensstile mit täglichen Kosten (Geschichte des Bogens bzw. Standardwerte) */
   lifestyles: Lifestyle[];
+  /** Auswahllisten für Sprachen und Werkzeuge & andere */
+  languages: string[];
+  tools: string[];
 }
 
 export const SheetContext = createContext<SheetCtx | null>(null);

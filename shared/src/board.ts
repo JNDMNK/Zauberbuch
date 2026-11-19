@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { lifestylesSchema, type Lifestyle } from './lifestyle';
+import { lifestylesSchema, optionListSchema, type Lifestyle } from './lifestyle';
 
 /**
  * Infotafel: Pro Geschichte (Story) eine gemeinsame Tafel, auf der Mitspieler wichtige Infos
@@ -34,6 +34,9 @@ export const storyInputSchema = z.object({
   dmIds: memberIds.optional(),
   /** Lebensstile mit täglichen Kosten; ohne Angabe = Standardwerte */
   lifestyles: lifestylesSchema.optional(),
+  /** Auswahllisten für Sprachen bzw. Werkzeuge & andere; ohne Angabe = Standardwerte */
+  languages: optionListSchema.optional(),
+  tools: optionListSchema.optional(),
 });
 export type StoryInput = z.input<typeof storyInputSchema>;
 
@@ -46,6 +49,8 @@ export const storyUpdateSchema = z
     memberIds: memberIds.optional(),
     dmIds: memberIds.optional(),
     lifestyles: lifestylesSchema.optional(),
+    languages: optionListSchema.optional(),
+    tools: optionListSchema.optional(),
   })
   .refine((v) => Object.values(v).some((x) => x !== undefined), { message: 'Nothing to update' });
 export type StoryUpdate = z.input<typeof storyUpdateSchema>;
@@ -93,6 +98,9 @@ export interface StoryDto {
   myRole: StoryRole | null;
   /** Lebensstile mit täglichen Kosten für die Charakterbögen dieser Geschichte */
   lifestyles: Lifestyle[];
+  /** Auswahllisten für Sprachen und Werkzeuge & andere */
+  languages: string[];
+  tools: string[];
   postCount: number;
   unread: number;
 }
@@ -174,6 +182,8 @@ export interface BoardExportStory {
   dms?: string[];
   /** Lebensstile mit täglichen Kosten */
   lifestyles?: Lifestyle[];
+  languages?: string[];
+  tools?: string[];
   posts: BoardExportPost[];
 }
 
@@ -221,6 +231,8 @@ export const boardImportSchema = z.object({
         members: z.array(z.string().max(100)).max(1000).optional().default([]),
         dms: z.array(z.string().max(100)).max(1000).optional().default([]),
         lifestyles: lifestylesSchema.optional(),
+        languages: optionListSchema.optional(),
+        tools: optionListSchema.optional(),
         posts: z.array(importPost).max(20_000).optional().default([]),
       }),
     )

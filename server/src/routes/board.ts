@@ -21,8 +21,10 @@ import {
   type DeletedBoardPostDto,
   type StoryDto,
   type StoryRole,
-  parseLifestyles,
   DEFAULT_LIFESTYLES,
+  DEFAULT_LANGUAGES,
+  DEFAULT_TOOLS,
+  storyOptionLists,
 } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
@@ -175,7 +177,7 @@ export async function buildStoryDtos(user: Pick<User, 'id' | 'role'>, stories: S
     updatedAt: s.updatedAt.toISOString(),
     members: s.members.map((m) => ({ ...ref(m.user)!, role: (m.role === 'dm' ? 'dm' : 'player') as StoryRole })),
     myRole: roleFromMembership(user, s.members.find((m) => m.userId === user.id)?.role),
-    lifestyles: parseLifestyles(s.lifestyles),
+    ...storyOptionLists(s),
     postCount: s._count.posts,
     unread: unread[s.id] ?? 0,
   }));
@@ -388,7 +390,7 @@ boardRouter.get('/export', requireAdmin, async (_req, res) => {
       archived: s.archived,
       members: s.members.filter((m) => m.role !== 'dm').map((m) => m.user.username),
       dms: s.members.filter((m) => m.role === 'dm').map((m) => m.user.username),
-      lifestyles: parseLifestyles(s.lifestyles),
+      ...storyOptionLists(s),
       posts: s.posts.map((p) => ({
         title: p.title,
         body: p.body,
@@ -429,7 +431,7 @@ boardRouter.post('/import', requireAdmin, async (req, res) => {
         let story = await tx.story.findFirst({ where: { name: s.name } });
         if (story) result.storiesMerged++;
         else {
-          story = await tx.story.create({ data: { name: s.name, description: s.description, archived: s.archived, lifestyles: JSON.stringify(s.lifestyles ?? DEFAULT_LIFESTYLES) } });
+          story = await tx.story.create({ data: { name: s.name, description: s.description, archived: s.archived, lifestyles: JSON.stringify(s.lifestyles ?? DEFAULT_LIFESTYLES), languages: JSON.stringify(s.languages ?? DEFAULT_LANGUAGES), tools: JSON.stringify(s.tools ?? DEFAULT_TOOLS) } });
           result.storiesCreated++;
         }
         for (const [names, role] of [[s.members, 'player'], [s.dms, 'dm']] as const) {

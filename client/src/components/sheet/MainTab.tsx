@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Plus, Trash2 } from 'lucide-react';
+import { OptionListField } from './OptionListField';
 import {
   ABILITIES,
   MAX_ATTACKS,
@@ -333,6 +334,7 @@ function AttackRow({ index, attack }: { index: number; attack: SheetAttack }) {
 }
 
 function Proficiencies() {
+  const { languages, tools } = useSheet();
   const { t } = useTranslation();
   return (
     <Box label={t('sheet.proficienciesLanguages')}>
@@ -356,8 +358,8 @@ function Proficiencies() {
           <TF path={['proficiencies', 'otherWeapons']} label={t('sheet.otherWeapons')} className="mt-1" maxLength={500} />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <TA path={['proficiencies', 'languages']} label={`${t('sheet.languages')} (${t('sheet.onePerLine')})`} rows={5} />
-          <TA path={['proficiencies', 'tools']} label={`${t('sheet.tools')} (${t('sheet.onePerLine')})`} rows={5} />
+          <OptionListField path={['proficiencies', 'languages']} label={t('sheet.languages')} options={languages} />
+          <OptionListField path={['proficiencies', 'tools']} label={t('sheet.tools')} options={tools} />
         </div>
       </div>
     </Box>

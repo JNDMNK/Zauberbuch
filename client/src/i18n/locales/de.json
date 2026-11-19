@@ -387,7 +387,8 @@
     "too_many_combatants": "Zu viele Teilnehmer (höchstens 60).",
     "no_combatants": "Keine aktiven Teilnehmer.",
     "hp_range_invalid": "LP als Zahl oder Bereich angeben, z. B. 58 oder 10-15.",
-    "lifestyle_duplicate": "Jeder Lebensstil darf nur einmal vorkommen."
+    "lifestyle_duplicate": "Jeder Lebensstil darf nur einmal vorkommen.",
+    "option_duplicate": "Dieser Eintrag ist schon vorhanden."
   },
   "damageType": {
     "acid": "Säure",
@@ -646,7 +647,8 @@
       "save": "Einstellungen speichern",
       "saved": "Einstellungen gespeichert"
     },
-    "dailyCostHint": "Aus der Lebensstil-Tabelle der Geschichte (bzw. den Standardwerten)"
+    "dailyCostHint": "Aus der Lebensstil-Tabelle der Geschichte (bzw. den Standardwerten)",
+    "addEntry": "Weitere hinzufügen"
   },
   "board": {
     "heading": "Infotafel",
@@ -951,6 +953,15 @@
     "lifestyleError": {
       "name": "Jeder Lebensstil braucht einen Namen.",
       "duplicate": "Jeder Lebensstil darf nur einmal vorkommen."
-    }
+    },
+    "languages": "Sprachen",
+    "tools": "Werkzeuge & andere",
+    "languagesHint": "Auswahl für „Sprachen“ im Charakterbogen (Übung und Sprachen) bei Bögen dieser Geschichte.",
+    "toolsHint": "Auswahl für „Werkzeuge & andere“ im Charakterbogen bei Bögen dieser Geschichte.",
+    "languagePlaceholder": "Neue Sprache, z. B. Thorass",
+    "toolPlaceholder": "Neuer Eintrag, z. B. Luftschiff",
+    "addOption": "Hinzufügen",
+    "optionExists": "Dieser Eintrag ist schon vorhanden.",
+    "expand": "Anzeigen"
   }
 }

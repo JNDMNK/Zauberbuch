@@ -239,6 +239,9 @@ export interface CharacterDto extends CharacterSummaryDto {
   isOwner: boolean;
   /** Lebensstile mit täglichen Kosten (aus der zugeordneten Geschichte, sonst Standardwerte) */
   lifestyles: Lifestyle[];
+  /** Auswahllisten für Sprachen und Werkzeuge & andere (Geschichte bzw. Standardwerte) */
+  languages: string[];
+  tools: string[];
 }
 
 /** Einstellungen eines Bogens: Mitbearbeiter und Geschichte */

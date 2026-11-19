@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Archive, ArchiveRestore, BookOpen, Coins, MessagesSquare, Pencil, Plus, RotateCcw, Save, Search, Swords, Trash2, X } from 'lucide-react';
-import { DEFAULT_LIFESTYLES, type Lifestyle, type Role, type StoryDto, type StoryRole } from '@zauberbuch/shared';
+import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, type Lifestyle, type Role, type StoryDto, type StoryRole } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
 import { useAuth } from '../../context/AuthContext';
@@ -168,6 +168,8 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
   const [filter, setFilter] = useState('');
   const [busy, setBusy] = useState(false);
   const [lifestyles, setLifestyles] = useState<Lifestyle[]>(story?.lifestyles ?? DEFAULT_LIFESTYLES);
+  const [languages, setLanguages] = useState<string[]>(story?.languages ?? DEFAULT_LANGUAGES);
+  const [tools, setTools] = useState<string[]>(story?.tools ?? DEFAULT_TOOLS);
   const [initial] = useState(() => new Set(story?.members.map((m) => m.id) ?? []));
 
   const setRole = (uid: string, role: StoryRole | '') =>
@@ -198,6 +200,8 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
         description: description.trim(),
         members: [...members.entries()].map(([userId, role]) => ({ userId, role })),
         lifestyles: lifestyles.map((l) => ({ name: l.name.trim(), cost: l.cost.trim() })),
+        languages,
+        tools,
       };
       if (story) await api.updateStory(story.id, input);
       else await api.createStory(input);
@@ -286,6 +290,8 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
       </section>
 
       <LifestyleEditor value={lifestyles} onChange={setLifestyles} />
+      <OptionListEditor title={t('stories.languages')} hint={t('stories.languagesHint')} value={languages} defaults={DEFAULT_LANGUAGES} onChange={setLanguages} placeholder={t('stories.languagePlaceholder')} />
+      <OptionListEditor title={t('stories.tools')} hint={t('stories.toolsHint')} value={tools} defaults={DEFAULT_TOOLS} onChange={setTools} placeholder={t('stories.toolPlaceholder')} />
 
       <div className="flex flex-wrap justify-end gap-2">
         <button type="button" className="btn-secondary" onClick={onCancel} disabled={busy}>
@@ -350,5 +356,75 @@ function LifestyleEditor({ value, onChange }: { value: Lifestyle[]; onChange: (v
         </button>
       )}
     </section>
+  );
+}
+
+/** Einklappbarer Editor für eine Auswahlliste (Sprachen, Werkzeuge & andere) */
+function OptionListEditor({ title, hint, value, defaults, onChange, placeholder }: { title: string; hint: string; value: string[]; defaults: string[]; onChange: (v: string[]) => void; placeholder: string }) {
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState('');
+  const exists = (name: string) => value.some((v) => v.toLocaleLowerCase('de') === name.trim().toLocaleLowerCase('de'));
+  const add = () => {
+    const name = draft.trim();
+    if (!name || exists(name) || value.length >= 150) return;
+    onChange([...value, name]);
+    setDraft('');
+  };
+  return (
+    <details className="parchment group p-5">
+      <summary className="flex cursor-pointer list-none items-center gap-2">
+        <h3 className="flex-1 font-display text-lg font-bold">
+          {title} <span className="text-sm font-normal text-parchment-700 dark:text-parchment-400">({value.length})</span>
+        </h3>
+        <span className="text-sm text-parchment-700 group-open:hidden dark:text-parchment-400">{t('stories.expand')}</span>
+      </summary>
+      <div className="mt-3 space-y-3">
+        <div className="flex flex-wrap items-start gap-2">
+          <p className="flex-1 text-sm text-parchment-700 dark:text-parchment-400">{hint}</p>
+          <button type="button" className="btn-ghost !py-1 text-sm" onClick={() => onChange(defaults)}>
+            <RotateCcw className="h-4 w-4" />
+            {t('stories.lifestylesReset')}
+          </button>
+        </div>
+        <ul className="flex flex-wrap gap-1.5">
+          {value.map((v) => (
+            <li key={v} className="inline-flex items-center gap-1 rounded-full border border-parchment-400/70 bg-white/50 py-0.5 pl-3 pr-1 text-sm dark:border-night-700 dark:bg-night-950/40">
+              {v}
+              <button
+                type="button"
+                className="rounded-full p-0.5 text-red-700 hover:bg-red-100 disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-950"
+                onClick={() => onChange(value.filter((x) => x !== v))}
+                disabled={value.length <= 1}
+                aria-label={`${t('common.delete')}: ${v}`}
+                title={t('common.delete')}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="flex max-w-md gap-2">
+          <input
+            className="input !py-1"
+            value={draft}
+            maxLength={60}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                add();
+              }
+            }}
+            placeholder={placeholder}
+            aria-label={placeholder}
+          />
+          <button type="button" className="btn-secondary !py-1" onClick={add} disabled={!draft.trim() || exists(draft)}>
+            <Plus className="h-4 w-4" />
+            {t('stories.addOption')}
+          </button>
+        </div>
+        {draft.trim() && exists(draft) && <p className="text-xs text-red-700 dark:text-red-400">{t('stories.optionExists')}</p>}
+      </div>
+    </details>
   );
 }
