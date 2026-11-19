@@ -39,6 +39,7 @@ function toDto(i: ItemWithHolders): MagicItemDto {
     name: i.name,
     description: i.description,
     weight: i.weight,
+    value: i.value,
     holders: i.holders.map((h) => toRef(h.character)),
     createdAt: i.createdAt.toISOString(),
     updatedAt: i.updatedAt.toISOString(),
@@ -100,7 +101,7 @@ itemsRouter.post('/stories/:storyId', async (req, res) => {
   const input = validate(magicItemSchema, req.body);
   const holders = await validHolders(story.id, input.holderIds);
   const item = await prisma.magicItem.create({
-    data: { storyId: story.id, name: input.name, description: input.description, weight: input.weight, holders: { create: holders.map((characterId) => ({ characterId })) } },
+    data: { storyId: story.id, name: input.name, description: input.description, weight: input.weight, value: input.value, holders: { create: holders.map((characterId) => ({ characterId })) } },
     include: itemInclude,
   });
   await notifyReceived(item.id, holders, req.user!.username, req.user!.id);
@@ -117,7 +118,7 @@ itemsRouter.put('/:id', async (req, res) => {
   const item = await prisma.$transaction(async (tx) => {
     await tx.magicItemHolder.deleteMany({ where: { itemId: existing.id, characterId: { notIn: holders } } });
     for (const characterId of holders.filter((id) => !before.has(id))) await tx.magicItemHolder.create({ data: { itemId: existing.id, characterId } });
-    return tx.magicItem.update({ where: { id: existing.id }, data: { name: input.name, description: input.description, weight: input.weight }, include: itemInclude });
+    return tx.magicItem.update({ where: { id: existing.id }, data: { name: input.name, description: input.description, weight: input.weight, value: input.value }, include: itemInclude });
   });
   await notifyReceived(item.id, holders.filter((id) => !before.has(id)), req.user!.username, req.user!.id);
   res.json({ item: toDto(item) });

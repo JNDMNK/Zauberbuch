@@ -11,6 +11,8 @@ export const magicItemSchema = z.object({
   description: z.string().trim().max(MAX_ITEM_DESCRIPTION).optional().default(''),
   /** Gewicht in lb (zählt zur Last der Besitzer) */
   weight: z.number().min(0).max(9999).optional().default(0),
+  /** Wert als Freitext, z. B. „200 GM“ */
+  value: z.string().trim().max(40).optional().default(''),
   holderIds: z.array(z.string().min(1).max(64)).max(50).optional().default([]),
 });
 export type MagicItemInput = z.input<typeof magicItemSchema>;
@@ -34,6 +36,8 @@ export interface MagicItemDto {
   description: string;
   /** Gewicht in lb */
   weight: number;
+  /** Wert, z. B. „200 GM“ (leer = unbekannt) */
+  value: string;
   holders: ItemCharacterRef[];
   createdAt: string;
   updatedAt: string;

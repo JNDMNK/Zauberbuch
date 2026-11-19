@@ -1005,7 +1005,9 @@
     "attuned": "attuned",
     "attuneHint": "You can attune to magic items your character owns (tab “Magic items”).",
     "weight": "Weight",
-    "weightShare": "incl. magic items: {{weight}} lb"
+    "weightShare": "incl. magic items: {{weight}} lb",
+    "value": "Value",
+    "valuePlaceholder": "e.g. 200 gp"
   },
   "catalog": {
     "title": "Items",

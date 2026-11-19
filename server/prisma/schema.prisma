@@ -420,6 +420,10 @@ model MagicItem {
    * Gewicht in lb – zählt zur Last der Charaktere, die den Gegenstand besitzen
    */
   weight      Float             @default(0)
+  /**
+   * Wert als Freitext, z. B. „200 GM“
+   */
+  value       String            @default("")
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   holders     MagicItemHolder[]

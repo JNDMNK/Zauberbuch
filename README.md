@@ -225,7 +225,7 @@ anderen Zeilen gesperrt.
 
 - **Verwaltung → Magische Gegenstände** (Admin, Moderator und die Dungeon Master der jeweiligen Geschichte – DMs
   erreichen die Verwaltung dafür über das Benutzermenü): Geschichte wählen, Gegenstände mit **Name**,
-  **Beschreibung** und **Gewicht** (lb) als Karten anlegen, durchsuchen und den **Charakterbögen** der Geschichte zuweisen – auch
+  **Beschreibung**, **Gewicht** (lb) und **Wert** (Freitext, z. B. „200 GM“) als Karten anlegen, durchsuchen und den **Charakterbögen** der Geschichte zuweisen – auch
   mehreren gleichzeitig. Gegenstände ohne Besitzer liegen „beim DM“.
 - Wer einen Gegenstand erhält, bekommt eine **Benachrichtigung** (Glocke); ein Klick öffnet den Bogen.
 - Im Charakterbogen zeigt der Reiter **„Magische Gegenstände“** (vor „Einstellungen“) die Gegenstände des
@@ -670,7 +670,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET /api/catalog?storyId=` | angemeldet | Wirksame Gegenstands-Datenbank (Standard bzw. Geschichte) |
 | `POST /api/catalog/standard` · `PUT`/`DELETE /api/catalog/:id` | Moderator/Admin | Standard-Datenbank bzw. eigene Einträge bearbeiten (`{ category, name, description?, weight?, ac?, damageDice?, damageType? }`) |
 | `GET`/`POST /api/catalog/stories/:storyId` · `PUT`/`DELETE …/override/:baseId` · `POST …/hide/:baseId` | Moderator/Admin | Liste einer Geschichte: anpassen, zurücksetzen, ausblenden, eigene Einträge |
-| `GET /api/items/stories` · `GET`/`POST /api/items/stories/:storyId` · `PUT`/`DELETE /api/items/:id` | Moderator/Admin, DM der Geschichte | Magische Gegenstände verwalten (`{ name, description?, weight?, holderIds? }`) |
+| `GET /api/items/stories` · `GET`/`POST /api/items/stories/:storyId` · `PUT`/`DELETE /api/items/:id` | Moderator/Admin, DM der Geschichte | Magische Gegenstände verwalten (`{ name, description?, weight?, value?, holderIds? }`) |
 | `GET /api/items/character/:characterId` · `POST /api/items/:id/transfer` | Besitzer/Mitbearbeiter (lesen auch DM) | Gegenstände eines Bogens; `{ fromCharacterId, toCharacterId \| null }` |
 | `GET /api/notifications` · `POST /api/notifications/read` · `DELETE /api/notifications` | User | Eigene Benachrichtigungen |
 | `GET /api/users` | Admin | Benutzerliste |

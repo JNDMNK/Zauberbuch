@@ -48,8 +48,9 @@ describe('Magische Gegenstände', () => {
 
   it('Benachrichtigung beim Erhalten, Anzeige im Bogen, Weitergeben und Zurückgeben', async () => {
     const { dm, frodo, sam, pippin, storyId, vaelor, bruni, fremd } = await setup();
-    const item = (await dm.agent.post(`/api/items/stories/${storyId}`).set(CSRF).send({ name: 'Flammenzunge', description: 'Langschwert +2', weight: 3.5, holderIds: [vaelor] })).body.item;
+    const item = (await dm.agent.post(`/api/items/stories/${storyId}`).set(CSRF).send({ name: 'Flammenzunge', description: 'Langschwert +2', weight: 3.5, value: ' 200 GM ', holderIds: [vaelor] })).body.item;
     expect(item.weight).toBe(3.5);
+    expect(item.value).toBe('200 GM');
     expect((await dm.agent.put(`/api/items/${item.id}`).set(CSRF).send({ name: 'Flammenzunge', weight: -1, holderIds: [vaelor] })).status).toBe(400);
 
     const n = (await frodo.agent.get('/api/notifications')).body;
@@ -59,7 +60,7 @@ describe('Magische Gegenstände', () => {
     const mine = (await frodo.agent.get(`/api/items/character/${vaelor}`)).body;
     expect(mine.canTransfer).toBe(true);
     expect(mine.items.map((i: { name: string }) => i.name)).toEqual(['Flammenzunge']);
-    expect(mine.items[0].weight).toBe(3.5);
+    expect(mine.items[0]).toMatchObject({ weight: 3.5, value: '200 GM' });
     expect(mine.targets.map((t: { name: string }) => t.name)).toEqual(['Bruni']); // nur Bögen der Geschichte
     // DM darf den Bogen sehen, aber nicht weitergeben
     expect((await dm.agent.get(`/api/items/character/${vaelor}`)).body.canTransfer).toBe(false);

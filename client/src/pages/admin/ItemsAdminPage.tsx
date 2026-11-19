@@ -55,7 +55,7 @@ export function ItemsAdminPage() {
 
   const needle = q.trim().toLocaleLowerCase('de');
   const shown = useMemo(
-    () => (items ?? []).filter((i) => !needle || `${i.name}\n${i.description}\n${i.holders.map((h) => `${h.name} ${h.owner}`).join(' ')}`.toLocaleLowerCase('de').includes(needle)),
+    () => (items ?? []).filter((i) => !needle || `${i.name}\n${i.description}\n${i.value}\n${i.holders.map((h) => `${h.name} ${h.owner}`).join(' ')}`.toLocaleLowerCase('de').includes(needle)),
     [items, needle],
   );
 
@@ -141,7 +141,14 @@ export function ItemsAdminPage() {
           toast.success(t('items.saved'));
         }}
       />
-      <ConfirmDialog open={!!toDelete} title={t('items.deleteTitle')} message={t('items.deleteText', { name: toDelete?.name ?? '' })} busy={busy} onConfirm={remove} onCancel={() => setToDelete(null)} />
+      <ConfirmDialog
+        open={!!toDelete}
+        title={t('items.deleteTitle')}
+        message={t('items.deleteText', { name: toDelete?.name ?? '' })}
+        busy={busy}
+        onConfirm={remove}
+        onCancel={() => setToDelete(null)}
+      />
     </div>
   );
 }
@@ -157,13 +164,14 @@ function ItemDialog({
   item: MagicItemDto | null;
   characters: ItemCharacterRef[];
   onClose: () => void;
-  onSave: (input: { name: string; description: string; weight: number; holderIds: string[] }) => Promise<void>;
+  onSave: (input: { name: string; description: string; weight: number; value: string; holderIds: string[] }) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [weight, setWeight] = useState('');
+  const [value, setValue] = useState('');
   const [holders, setHolders] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -171,6 +179,7 @@ function ItemDialog({
     setName(item?.name ?? '');
     setDescription(item?.description ?? '');
     setWeight(item?.weight ? String(item.weight).replace('.', ',') : '');
+    setValue(item?.value ?? '');
     setHolders(new Set(item?.holders.map((h) => h.id) ?? []));
   }, [open, item]);
 
@@ -183,7 +192,7 @@ function ItemDialog({
     if (!name.trim() || weightInvalid) return;
     setBusy(true);
     try {
-      await onSave({ name: name.trim(), description: description.trim(), weight: parsedWeight ?? 0, holderIds: [...holders] });
+      await onSave({ name: name.trim(), description: description.trim(), weight: parsedWeight ?? 0, value: value.trim(), holderIds: [...holders] });
     } catch (err) {
       toast.error(errorMessage(t, err));
     } finally {
@@ -200,13 +209,29 @@ function ItemDialog({
           </label>
           <input id="item-name" className="input" value={name} maxLength={100} required autoFocus onChange={(e) => setName(e.target.value)} placeholder={t('items.namePlaceholder')} />
         </div>
-        <div className="max-w-[12rem]">
-          <label htmlFor="item-weight" className="label">
-            {t('items.weight')}
-          </label>
-          <div className="relative">
-            <input id="item-weight" className={`input !pr-10 text-right ${weightInvalid ? 'input-error' : ''}`} inputMode="decimal" value={weight} maxLength={8} onChange={(e) => setWeight(e.target.value.replace(/[^\d.,]/g, ''))} placeholder="0" />
-            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-parchment-700 dark:text-parchment-400">lb</span>
+        <div className="flex flex-wrap gap-4">
+          <div className="max-w-[12rem]">
+            <label htmlFor="item-weight" className="label">
+              {t('items.weight')}
+            </label>
+            <div className="relative">
+              <input
+                id="item-weight"
+                className={`input !pr-10 text-right ${weightInvalid ? 'input-error' : ''}`}
+                inputMode="decimal"
+                value={weight}
+                maxLength={8}
+                onChange={(e) => setWeight(e.target.value.replace(/[^\d.,]/g, ''))}
+                placeholder="0"
+              />
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-parchment-700 dark:text-parchment-400">lb</span>
+            </div>
+          </div>
+          <div className="max-w-[14rem]">
+            <label htmlFor="item-value" className="label">
+              {t('items.value')}
+            </label>
+            <input id="item-value" className="input" value={value} maxLength={40} onChange={(e) => setValue(e.target.value)} placeholder={t('items.valuePlaceholder')} />
           </div>
         </div>
         <div>
