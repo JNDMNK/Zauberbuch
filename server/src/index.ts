@@ -4,6 +4,7 @@ import { ensureAdmin, seedExamples } from './bootstrap';
 import { initFileLogging, logger } from './lib/logger';
 import { configureSqlite, prisma } from './lib/prisma';
 import { purgeDeletedBoardPosts } from './routes/board';
+import { seedCatalog } from './routes/catalog';
 import { purgeNotifications } from './lib/notifications';
 
 async function main() {
@@ -13,6 +14,7 @@ async function main() {
   await configureSqlite();
   await ensureAdmin();
   await seedExamples();
+  await seedCatalog();
 
   // Papierkorb der Infotafel (90 Tage) und alte Benachrichtigungen bereinigen – beim Start und danach alle 12 Stunden
   const purge = () =>

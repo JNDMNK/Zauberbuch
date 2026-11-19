@@ -337,7 +337,8 @@
     "boardImportDone": "Import abgeschlossen: {{storiesCreated}} Geschichten neu, {{storiesMerged}} zusammengeführt, {{postsCreated}} Beiträge importiert, {{postsSkipped}} übersprungen.",
     "boardUnknownUsers": "Unbekannte Benutzer (als „gelöschter Benutzer“ übernommen): {{names}}",
     "stories": "Geschichten",
-    "items": "Magische Gegenstände"
+    "items": "Magische Gegenstände",
+    "catalog": "Gegenstände"
   },
   "errors": {
     "unknown": "Unbekannter Fehler.",
@@ -1005,5 +1006,55 @@
     "attuneHint": "Einstimmen kannst du dich auf magische Gegenstände, die dein Charakter besitzt (Reiter „Magische Gegenstände“).",
     "weight": "Gewicht",
     "weightShare": "davon magische Gegenstände: {{weight}} lb"
+  },
+  "catalog": {
+    "title": "Gegenstände",
+    "standardTitle": "Gegenstände – Standard-Datenbank",
+    "standardHint": "Rüstung, Waffen und Gegenstände für alle Charakterbögen ohne Geschichte. Geschichten erben diese Datenbank und können sie unter Verwaltung → Geschichten → Geschichte bearbeiten anpassen. Vorbefüllt mit der 5e-Grundausstattung (SRD).",
+    "storyTitle": "Gegenstände (Rüstung, Waffen, Gegenstände)",
+    "storyHint": "Diese Geschichte nutzt die Standard-Datenbank. Einträge lassen sich hier für diese Geschichte anpassen (✎), ausblenden (Auge) oder zurücksetzen, eigene kommen dazu. Änderungen werden sofort gespeichert; spätere Änderungen am Standard kommen automatisch an, außer ein Eintrag wurde angepasst.",
+    "storyAfterCreate": "Nach dem Anlegen der Geschichte können hier die Gegenstände angepasst werden.",
+    "categories": {
+      "armor": "Rüstung",
+      "weapon": "Waffen",
+      "gear": "Gegenstände"
+    },
+    "categoriesOne": {
+      "armor": "Rüstung",
+      "weapon": "Waffe",
+      "gear": "Gegenstand"
+    },
+    "new": {
+      "armor": "Neue Rüstung",
+      "weapon": "Neue Waffe",
+      "gear": "Neuer Gegenstand"
+    },
+    "add": "hinzufügen",
+    "search": "Name oder Beschreibung durchsuchen …",
+    "empty": "Keine Einträge.",
+    "damage": "Schaden",
+    "damageOrHealing": "Schaden oder Heilung (z. B. Heiltrank)",
+    "saved": "Eintrag gespeichert",
+    "deleted": "Eintrag gelöscht",
+    "reverted": "Standard wiederhergestellt",
+    "origin": {
+      "standard": "Standard",
+      "override": "Angepasst",
+      "story": "Nur diese Geschichte",
+      "hidden": "Ausgeblendet"
+    },
+    "hide": "In dieser Geschichte ausblenden",
+    "hiddenDone": "Ausgeblendet",
+    "show": "Wieder einblenden",
+    "shown": "Wieder eingeblendet",
+    "revert": "Auf Standard zurücksetzen",
+    "deleteTitle": "Eintrag löschen?",
+    "deleteText": "„{{name}}“ wird aus der Standard-Datenbank gelöscht – auch alle Anpassungen in Geschichten.",
+    "deleteStoryText": "„{{name}}“ wird aus dieser Geschichte gelöscht.",
+    "revertTitle": "Auf Standard zurücksetzen?",
+    "revertText": "Die Anpassung von „{{name}}“ in dieser Geschichte wird verworfen; es gilt wieder der Standard-Eintrag.",
+    "take": "Übernehmen",
+    "openCard": "Karte öffnen",
+    "suggestions": "Vorschläge aus der Gegenstands-Datenbank"
   }
 }

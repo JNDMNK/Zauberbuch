@@ -151,29 +151,30 @@ model Character {
  * Geschichte (Story/Kampagne) mit eigener Infotafel; Admin und Dungeon Master verwalten sie.
  */
 model Story {
-  id          String          @id @default(cuid())
-  name        String
-  description String          @default("")
-  archived    Boolean         @default(false)
+  id           String          @id @default(cuid())
+  name         String
+  description  String          @default("")
+  archived     Boolean         @default(false)
   /**
    * Lebensstile mit täglichen Kosten (JSON [{ name, cost }]); leer = Standardwerte
    */
-  lifestyles  String          @default("")
+  lifestyles   String          @default("")
   /**
    * Auswahllisten für „Übung und Sprachen“ (JSON string[]); leer = Standardwerte
    */
-  languages   String          @default("")
-  tools       String          @default("")
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  members     StoryMember[]
-  posts       BoardPost[]
-  reads       BoardRead[]
-  encounters  Encounter[]
-  bestiary    BestiaryEntry[]
-  characters  Character[]
-  activeFor   User[]          @relation("ActiveStory")
-  magicItems  MagicItem[]
+  languages    String          @default("")
+  tools        String          @default("")
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  members      StoryMember[]
+  posts        BoardPost[]
+  reads        BoardRead[]
+  encounters   Encounter[]
+  bestiary     BestiaryEntry[]
+  characters   Character[]
+  activeFor    User[]          @relation("ActiveStory")
+  magicItems   MagicItem[]
+  catalogItems CatalogItem[]
 }
 
 /**
@@ -438,4 +439,39 @@ model MagicItemHolder {
 
   @@id([itemId, characterId])
   @@index([characterId])
+}
+
+// ---- Gegenstände (Rüstung, Waffen, Ausrüstung) ----
+
+/**
+ * Gegenstands-Katalog. storyId = null: Standard-Datenbank (Admin/Moderator).
+ * Einträge einer Geschichte: eigene (baseId = null) oder Anpassung/Ausblendung eines Standard-Eintrags (baseId gesetzt).
+ * Geschichten erben die Standard-Datenbank live; Anpassungen überdecken den Standard-Eintrag.
+ */
+model CatalogItem {
+  id          String        @id @default(cuid())
+  storyId     String?
+  story       Story?        @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  baseId      String?
+  base        CatalogItem?  @relation("CatalogOverride", fields: [baseId], references: [id], onDelete: Cascade)
+  overrides   CatalogItem[] @relation("CatalogOverride")
+  /**
+   * Standard-Eintrag in dieser Geschichte ausgeblendet
+   */
+  hidden      Boolean       @default(false)
+  category    String // armor | weapon | gear
+  name        String
+  description String        @default("")
+  weight      Float         @default(0)
+  /**
+   * Rüstungsklasse als Text, z. B. "11 + GES" oder "+2"
+   */
+  ac          String        @default("")
+  damageDice  String?
+  damageType  String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([storyId, baseId])
+  @@index([storyId, category])
 }

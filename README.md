@@ -205,6 +205,22 @@ anderen Zeilen gesperrt.
   deren Listen.
 - Gespeichert wird weiterhin ein Eintrag je Zeile; früher frei eingetragene Werte bleiben erhalten und wählbar.
 
+### Gegenstände (Rüstung, Waffen, Ausrüstung)
+
+- **Verwaltung → Gegenstände** (Admin und Moderator) ist die **Standard-Datenbank**, aufgeteilt in die Unterreiter
+  **Rüstung**, **Waffen** und **Gegenstände** in Kartenansicht mit Suche. Sie ist mit einer SRD-Grundausstattung
+  vorbefüllt (Waffen, Rüstungen, Abenteurerausrüstung, Heiltränke).
+  - Gegenstände: Name, Beschreibung, Gewicht, optional Heilung oder Schaden (z. B. Heiltrank 2W4+2 Heilung).
+  - Waffen: Name, Schadenswürfel + Schadensart (wie bei den Zauberkarten), Gewicht, Beschreibung.
+  - Rüstung: Name, Rüstungsklasse (Text, z. B. „13 + GES (max. 2)“), Gewicht, Beschreibung.
+- **Verwaltung → Geschichten → Geschichte bearbeiten → Gegenstände**: Jede Geschichte **erbt** die Standard-Datenbank
+  live. Einträge lassen sich für die Geschichte anpassen, ausblenden, wieder auf den Standard zurücksetzen, und eigene
+  Einträge kommen hinzu. Spätere Änderungen am Standard kommen automatisch an, außer ein Eintrag wurde angepasst.
+- Im **Inventar des Charakterbogens** schlägt das Namensfeld (wie bei den Zaubern) Einträge aus der Datenbank der
+  Geschichte des Bogens vor – ohne zugeordnete Geschichte aus der Standard-Datenbank. Beim Übernehmen wird der Text als
+  „Name · Schaden · Beschreibung“ eingetragen, das Gewicht ins Gewichtsfeld übernommen und die Zeile mit der Karte
+  verknüpft (Knopf neben dem Namen öffnet sie).
+
 ### Magische Gegenstände
 
 - **Verwaltung → Magische Gegenstände** (Admin, Moderator und die Dungeon Master der jeweiligen Geschichte – DMs
@@ -651,6 +667,9 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET`/`POST /api/bestiary/dm` · `PUT`/`DELETE /api/bestiary/dm/:id` | DM/Admin | DM-Datenbank (Vorlagen) |
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
+| `GET /api/catalog?storyId=` | angemeldet | Wirksame Gegenstands-Datenbank (Standard bzw. Geschichte) |
+| `POST /api/catalog/standard` · `PUT`/`DELETE /api/catalog/:id` | Moderator/Admin | Standard-Datenbank bzw. eigene Einträge bearbeiten (`{ category, name, description?, weight?, ac?, damageDice?, damageType? }`) |
+| `GET`/`POST /api/catalog/stories/:storyId` · `PUT`/`DELETE …/override/:baseId` · `POST …/hide/:baseId` | Moderator/Admin | Liste einer Geschichte: anpassen, zurücksetzen, ausblenden, eigene Einträge |
 | `GET /api/items/stories` · `GET`/`POST /api/items/stories/:storyId` · `PUT`/`DELETE /api/items/:id` | Moderator/Admin, DM der Geschichte | Magische Gegenstände verwalten (`{ name, description?, weight?, holderIds? }`) |
 | `GET /api/items/character/:characterId` · `POST /api/items/:id/transfer` | Besitzer/Mitbearbeiter (lesen auch DM) | Gegenstände eines Bogens; `{ fromCharacterId, toCharacterId \| null }` |
 | `GET /api/notifications` · `POST /api/notifications/read` · `DELETE /api/notifications` | User | Eigene Benachrichtigungen |

@@ -8,6 +8,7 @@ import { errorMessage } from '../../lib/errors';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { CatalogManager } from '../../components/catalog/CatalogManager';
 import { Alert, PageSpinner, Spinner } from '../../components/ui';
 
 type StoryUser = { id: string; username: string; role: Role };
@@ -116,11 +117,23 @@ export function StoriesAdminPage() {
                     <button type="button" className="btn-icon" onClick={() => setEditing(s)} title={t('stories.edit')} aria-label={`${t('stories.edit')}: ${s.name}`}>
                       <Pencil className="h-4 w-4" />
                     </button>
-                    <button type="button" className="btn-icon" onClick={() => toggleArchive(s)} title={s.archived ? t('board.unarchive') : t('board.archive')} aria-label={`${s.archived ? t('board.unarchive') : t('board.archive')}: ${s.name}`}>
+                    <button
+                      type="button"
+                      className="btn-icon"
+                      onClick={() => toggleArchive(s)}
+                      title={s.archived ? t('board.unarchive') : t('board.archive')}
+                      aria-label={`${s.archived ? t('board.unarchive') : t('board.archive')}: ${s.name}`}
+                    >
                       {s.archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
                     </button>
                     {isAdmin && (
-                      <button type="button" className="btn-icon text-red-700 dark:text-red-400" onClick={() => setToDelete(s)} title={t('common.delete')} aria-label={`${t('common.delete')}: ${s.name}`}>
+                      <button
+                        type="button"
+                        className="btn-icon text-red-700 dark:text-red-400"
+                        onClick={() => setToDelete(s)}
+                        title={t('common.delete')}
+                        aria-label={`${t('common.delete')}: ${s.name}`}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     )}
@@ -154,7 +167,10 @@ export function StoriesAdminPage() {
       <ConfirmDialog
         open={!!toDelete}
         title={t('board.deleteStoryTitle')}
-        message={t('stories.deleteText', { name: toDelete?.name ?? '', count: toDelete?.postCount ?? 0 })}
+        message={t('stories.deleteText', {
+          name: toDelete?.name ?? '',
+          count: toDelete?.postCount ?? 0,
+        })}
         busy={busy}
         onConfirm={doDelete}
         onCancel={() => setToDelete(null)}
@@ -202,8 +218,14 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
       const input = {
         name: name.trim(),
         description: description.trim(),
-        members: [...members.entries()].map(([userId, role]) => ({ userId, role })),
-        lifestyles: lifestyles.map((l) => ({ name: l.name.trim(), cost: l.cost.trim() })),
+        members: [...members.entries()].map(([userId, role]) => ({
+          userId,
+          role,
+        })),
+        lifestyles: lifestyles.map((l) => ({
+          name: l.name.trim(),
+          cost: l.cost.trim(),
+        })),
         languages,
         tools,
       };
@@ -221,92 +243,115 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
   const count = (role: StoryRole) => [...members.values()].filter((r) => r === role).length;
 
   return (
-    <form onSubmit={submit} className="space-y-5">
-      <div className="flex items-center gap-2">
-        <h2 className="flex-1 text-xl font-bold">{story ? t('stories.edit') : t('board.newStory')}</h2>
-        <button type="button" className="btn-icon" onClick={onCancel} aria-label={t('common.close')} title={t('common.close')}>
-          <X className="h-5 w-5" />
-        </button>
-      </div>
-      <section className="parchment space-y-4 p-5">
-        <div>
-          <label htmlFor="story-name" className="label">
-            {t('board.storyName')}
-          </label>
-          <input id="story-name" className="input" value={name} maxLength={100} required autoFocus onChange={(e) => setName(e.target.value)} />
+    <>
+      <form onSubmit={submit} className="space-y-5">
+        <div className="flex items-center gap-2">
+          <h2 className="flex-1 text-xl font-bold">{story ? t('stories.edit') : t('board.newStory')}</h2>
+          <button type="button" className="btn-icon" onClick={onCancel} aria-label={t('common.close')} title={t('common.close')}>
+            <X className="h-5 w-5" />
+          </button>
         </div>
-        <div>
-          <label htmlFor="story-desc" className="label">
-            {t('board.storyDescription')}
-          </label>
-          <textarea id="story-desc" className="input min-h-[4rem]" value={description} maxLength={1000} onChange={(e) => setDescription(e.target.value)} />
-        </div>
-      </section>
-
-      <section className="parchment space-y-3 p-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="flex-1 font-display text-lg font-bold">{t('stories.members')}</h3>
-          <span className="text-sm text-parchment-700 dark:text-parchment-400">
-            {t('storyRole.dmPlural')}: {count('dm')} · {t('storyRole.playerPlural')}: {count('player')}
-          </span>
-        </div>
-        <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('stories.membersHint')}</p>
-        {users.length > 8 && (
-          <div className="relative sm:w-72">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-600" />
-            <input type="search" className="input !py-1.5 !pl-9" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={t('auth.username')} aria-label={t('auth.username')} />
+        <section className="parchment space-y-4 p-5">
+          <div>
+            <label htmlFor="story-name" className="label">
+              {t('board.storyName')}
+            </label>
+            <input id="story-name" className="input" value={name} maxLength={100} required autoFocus onChange={(e) => setName(e.target.value)} />
           </div>
-        )}
-        <ul className="divide-y divide-parchment-300/70 dark:divide-night-700">
-          {shown.map((u) => {
-            const role = members.get(u.id) ?? '';
-            return (
-              <li key={u.id} className="flex flex-wrap items-center gap-3 py-2">
-                <span className="min-w-0 flex-1">
-                  <span className="font-semibold">{u.username}</span> <span className="text-xs text-parchment-700 dark:text-parchment-400">({t(`role.${u.role}`)})</span>
-                </span>
-                <div role="radiogroup" aria-label={`${t('stories.roleFor')} ${u.username}`} className="flex overflow-hidden rounded-full border border-parchment-500/60 text-sm dark:border-night-700">
-                  {(['', 'player', 'dm'] as const).map((r) => (
-                    <button
-                      key={r || 'none'}
-                      type="button"
-                      role="radio"
-                      aria-checked={role === r}
-                      onClick={() => setRole(u.id, r)}
-                      className={`px-3 py-1 transition ${
-                        role === r
-                          ? r === 'dm'
-                            ? 'bg-red-800 text-white dark:bg-red-700'
-                            : r === 'player'
-                              ? 'bg-emerald-700 text-white dark:bg-emerald-600'
-                              : 'bg-parchment-300 text-ink dark:bg-night-700 dark:text-parchment-100'
-                          : 'hover:bg-parchment-200 dark:hover:bg-night-700'
-                      }`}
-                    >
-                      {r ? t(`storyRole.${r}`) : t('stories.notMember')}
-                    </button>
-                  ))}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+          <div>
+            <label htmlFor="story-desc" className="label">
+              {t('board.storyDescription')}
+            </label>
+            <textarea id="story-desc" className="input min-h-[4rem]" value={description} maxLength={1000} onChange={(e) => setDescription(e.target.value)} />
+          </div>
+        </section>
 
-      <LifestyleEditor value={lifestyles} onChange={setLifestyles} />
-      <OptionListEditor title={t('stories.languages')} hint={t('stories.languagesHint')} value={languages} defaults={DEFAULT_LANGUAGES} onChange={setLanguages} placeholder={t('stories.languagePlaceholder')} />
-      <OptionListEditor title={t('stories.tools')} hint={t('stories.toolsHint')} value={tools} defaults={DEFAULT_TOOLS} onChange={setTools} placeholder={t('stories.toolPlaceholder')} />
+        <section className="parchment space-y-3 p-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="flex-1 font-display text-lg font-bold">{t('stories.members')}</h3>
+            <span className="text-sm text-parchment-700 dark:text-parchment-400">
+              {t('storyRole.dmPlural')}: {count('dm')} · {t('storyRole.playerPlural')}: {count('player')}
+            </span>
+          </div>
+          <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('stories.membersHint')}</p>
+          {users.length > 8 && (
+            <div className="relative sm:w-72">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-600" />
+              <input type="search" className="input !py-1.5 !pl-9" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={t('auth.username')} aria-label={t('auth.username')} />
+            </div>
+          )}
+          <ul className="divide-y divide-parchment-300/70 dark:divide-night-700">
+            {shown.map((u) => {
+              const role = members.get(u.id) ?? '';
+              return (
+                <li key={u.id} className="flex flex-wrap items-center gap-3 py-2">
+                  <span className="min-w-0 flex-1">
+                    <span className="font-semibold">{u.username}</span> <span className="text-xs text-parchment-700 dark:text-parchment-400">({t(`role.${u.role}`)})</span>
+                  </span>
+                  <div
+                    role="radiogroup"
+                    aria-label={`${t('stories.roleFor')} ${u.username}`}
+                    className="flex overflow-hidden rounded-full border border-parchment-500/60 text-sm dark:border-night-700"
+                  >
+                    {(['', 'player', 'dm'] as const).map((r) => (
+                      <button
+                        key={r || 'none'}
+                        type="button"
+                        role="radio"
+                        aria-checked={role === r}
+                        onClick={() => setRole(u.id, r)}
+                        className={`px-3 py-1 transition ${
+                          role === r
+                            ? r === 'dm'
+                              ? 'bg-red-800 text-white dark:bg-red-700'
+                              : r === 'player'
+                                ? 'bg-emerald-700 text-white dark:bg-emerald-600'
+                                : 'bg-parchment-300 text-ink dark:bg-night-700 dark:text-parchment-100'
+                            : 'hover:bg-parchment-200 dark:hover:bg-night-700'
+                        }`}
+                      >
+                        {r ? t(`storyRole.${r}`) : t('stories.notMember')}
+                      </button>
+                    ))}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
 
-      <div className="flex flex-wrap justify-end gap-2">
-        <button type="button" className="btn-secondary" onClick={onCancel} disabled={busy}>
-          {t('common.cancel')}
-        </button>
-        <button type="submit" className="btn-primary" disabled={busy || !name.trim() || lifestyleError(lifestyles) !== null}>
-          {busy ? <Spinner className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-          {story ? t('common.save') : t('board.createStory')}
-        </button>
-      </div>
-    </form>
+        <LifestyleEditor value={lifestyles} onChange={setLifestyles} />
+        <OptionListEditor
+          title={t('stories.languages')}
+          hint={t('stories.languagesHint')}
+          value={languages}
+          defaults={DEFAULT_LANGUAGES}
+          onChange={setLanguages}
+          placeholder={t('stories.languagePlaceholder')}
+        />
+        <OptionListEditor title={t('stories.tools')} hint={t('stories.toolsHint')} value={tools} defaults={DEFAULT_TOOLS} onChange={setTools} placeholder={t('stories.toolPlaceholder')} />
+
+        <div className="flex flex-wrap justify-end gap-2">
+          <button type="button" className="btn-secondary" onClick={onCancel} disabled={busy}>
+            {t('common.cancel')}
+          </button>
+          <button type="submit" className="btn-primary" disabled={busy || !name.trim() || lifestyleError(lifestyles) !== null}>
+            {busy ? <Spinner className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+            {story ? t('common.save') : t('board.createStory')}
+          </button>
+        </div>
+      </form>
+      <details className="parchment group mt-5 p-5">
+        <summary className="flex cursor-pointer list-none items-center gap-2">
+          <h3 className="flex-1 font-display text-lg font-bold">{t('catalog.storyTitle')}</h3>
+          <span className="text-sm text-parchment-700 group-open:hidden dark:text-parchment-400">{t('stories.expand')}</span>
+        </summary>
+        <div className="mt-3 space-y-3">
+          <p className="text-sm text-parchment-700 dark:text-parchment-400">{story ? t('catalog.storyHint') : t('catalog.storyAfterCreate')}</p>
+          {story && <CatalogManager storyId={story.id} />}
+        </div>
+      </details>
+    </>
   );
 }
 
@@ -346,7 +391,14 @@ function LifestyleEditor({ value, onChange }: { value: Lifestyle[]; onChange: (v
           <div key={i} className="grid grid-cols-[minmax(0,1fr)_9rem_2.5rem] items-center gap-2">
             <input className="input !py-1" value={l.name} maxLength={50} onChange={(e) => update(i, { name: e.target.value })} aria-label={`${t('sheet.lifestyleName')} ${i + 1}`} />
             <input className="input !py-1" value={l.cost} maxLength={30} onChange={(e) => update(i, { cost: e.target.value })} placeholder="1 GM" aria-label={`${t('sheet.dailyCost')} ${i + 1}`} />
-            <button type="button" className="btn-icon text-red-700 dark:text-red-400" onClick={() => onChange(value.filter((_, j) => j !== i))} disabled={value.length <= 1} title={t('common.delete')} aria-label={`${t('common.delete')}: ${l.name}`}>
+            <button
+              type="button"
+              className="btn-icon text-red-700 dark:text-red-400"
+              onClick={() => onChange(value.filter((_, j) => j !== i))}
+              disabled={value.length <= 1}
+              title={t('common.delete')}
+              aria-label={`${t('common.delete')}: ${l.name}`}
+            >
               <Trash2 className="h-4 w-4" />
             </button>
           </div>
@@ -364,7 +416,21 @@ function LifestyleEditor({ value, onChange }: { value: Lifestyle[]; onChange: (v
 }
 
 /** Einklappbarer Editor für eine Auswahlliste (Sprachen, Werkzeuge & andere) */
-function OptionListEditor({ title, hint, value, defaults, onChange, placeholder }: { title: string; hint: string; value: string[]; defaults: string[]; onChange: (v: string[]) => void; placeholder: string }) {
+function OptionListEditor({
+  title,
+  hint,
+  value,
+  defaults,
+  onChange,
+  placeholder,
+}: {
+  title: string;
+  hint: string;
+  value: string[];
+  defaults: string[];
+  onChange: (v: string[]) => void;
+  placeholder: string;
+}) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState('');
   const exists = (name: string) => value.some((v) => v.toLocaleLowerCase('de') === name.trim().toLocaleLowerCase('de'));

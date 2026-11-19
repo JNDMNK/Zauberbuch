@@ -337,7 +337,8 @@
     "boardImportDone": "Import finished: {{storiesCreated}} stories created, {{storiesMerged}} merged, {{postsCreated}} posts imported, {{postsSkipped}} skipped.",
     "boardUnknownUsers": "Unknown users (imported as “deleted user”): {{names}}",
     "stories": "Stories",
-    "items": "Magic items"
+    "items": "Magic items",
+    "catalog": "Items"
   },
   "errors": {
     "unknown": "Unknown error.",
@@ -1005,5 +1006,55 @@
     "attuneHint": "You can attune to magic items your character owns (tab “Magic items”).",
     "weight": "Weight",
     "weightShare": "incl. magic items: {{weight}} lb"
+  },
+  "catalog": {
+    "title": "Items",
+    "standardTitle": "Items – standard database",
+    "standardHint": "Armor, weapons and gear for all character sheets without a story. Stories inherit this database and can adjust it under Admin → Stories → Edit story. Prefilled with the 5e basics (SRD).",
+    "storyTitle": "Items (armor, weapons, gear)",
+    "storyHint": "This story uses the standard database. Entries can be adjusted (✎), hidden (eye) or reset for this story, and own entries added. Changes are saved immediately; later changes to the standard arrive automatically unless an entry was adjusted.",
+    "storyAfterCreate": "Items can be adjusted here once the story has been created.",
+    "categories": {
+      "armor": "Armor",
+      "weapon": "Weapons",
+      "gear": "Gear"
+    },
+    "categoriesOne": {
+      "armor": "Armor",
+      "weapon": "Weapon",
+      "gear": "Item"
+    },
+    "new": {
+      "armor": "New armor",
+      "weapon": "New weapon",
+      "gear": "New item"
+    },
+    "add": "add",
+    "search": "Search name or description …",
+    "empty": "No entries.",
+    "damage": "Damage",
+    "damageOrHealing": "Damage or healing (e.g. healing potion)",
+    "saved": "Entry saved",
+    "deleted": "Entry deleted",
+    "reverted": "Standard restored",
+    "origin": {
+      "standard": "Standard",
+      "override": "Adjusted",
+      "story": "This story only",
+      "hidden": "Hidden"
+    },
+    "hide": "Hide in this story",
+    "hiddenDone": "Hidden",
+    "show": "Show again",
+    "shown": "Shown again",
+    "revert": "Reset to standard",
+    "deleteTitle": "Delete entry?",
+    "deleteText": "“{{name}}” will be deleted from the standard database – including all adjustments in stories.",
+    "deleteStoryText": "“{{name}}” will be deleted from this story.",
+    "revertTitle": "Reset to standard?",
+    "revertText": "The adjustment of “{{name}}” in this story is discarded; the standard entry applies again.",
+    "take": "Take over",
+    "openCard": "Open card",
+    "suggestions": "Suggestions from the item database"
   }
 }

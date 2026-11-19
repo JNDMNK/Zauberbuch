@@ -2,15 +2,35 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Trash2 } from 'lucide-react';
 import { itemsWeight, type SheetItem } from '@zauberbuch/shared';
 import { useSheet } from './SheetContext';
-import { NF, TF } from './fields';
+import { NF } from './fields';
+import { useState } from 'react';
+import { ExternalLink } from 'lucide-react';
+import { catalogInventoryText, type CatalogItemDto, type DamageType } from '@zauberbuch/shared';
+import { Modal } from '../Modal';
+import { CatalogCard } from '../catalog/CatalogCard';
+import { formatDice } from '../../lib/damage';
+import { asLocale } from '../../lib/spellText';
 
 /** Gegenstandsliste (Name, Anzahl, Gewicht) mit Teilgewicht */
 export function InventoryTable({ listKey }: { listKey: 'inventory' | 'extraEquipment' }) {
   const { t, i18n } = useTranslation();
-  const { sheet, set, readOnly } = useSheet();
+  const { sheet, set, readOnly, catalog } = useSheet();
+  const formatDamage = useFormatDamage();
   const items: SheetItem[] = sheet[listKey];
+  const listId = `catalog-${listKey}`;
+  const [openRef, setOpenRef] = useState<string | null>(null);
+  const openItem = catalog.find((c) => c.id === openRef) ?? null;
   return (
     <div>
+      {/* Vorschläge aus der Gegenstands-Datenbank (Name wie bei den Zaubern) */}
+      <datalist id={listId}>
+        {catalog.map((c) => (
+          <option key={c.id} value={c.name} label={`${t(`catalog.categoriesOne.${c.category}`)}${c.damage ? ` · ${formatDamage(c.damage)}` : ''}${c.ac ? ` · RK ${c.ac}` : ''} · ${c.weight} lb`} />
+        ))}
+      </datalist>
+      <Modal open={!!openItem} title={openItem ? t(`catalog.categoriesOne.${openItem.category}`) : ''} onClose={() => setOpenRef(null)} size="max-w-md">
+        {openItem && <CatalogCard item={openItem} />}
+      </Modal>
       <table className="sheet-table">
         <thead>
           <tr>
@@ -24,7 +44,7 @@ export function InventoryTable({ listKey }: { listKey: 'inventory' | 'extraEquip
           {items.map((it, i) => (
             <tr key={i}>
               <td>
-                <TF path={[listKey, i, 'name']} maxLength={150} />
+                <ItemNameField listKey={listKey} index={i} item={it} listId={listId} onOpen={setOpenRef} />
               </td>
               <td>
                 <NF path={[listKey, i, 'qty']} min={0} step={1} />
@@ -59,9 +79,62 @@ export function InventoryTable({ listKey }: { listKey: 'inventory' | 'extraEquip
         </tfoot>
       </table>
       {!readOnly && (
-        <button type="button" className="btn-ghost mt-1 !px-2 !py-1 text-xs print:hidden" onClick={() => set([listKey], [...items, { name: '', qty: 1, weight: 0 }])}>
+        <button type="button" className="btn-ghost mt-1 !px-2 !py-1 text-xs print:hidden" onClick={() => set([listKey], [...items, { name: '', qty: 1, weight: 0, ref: null }])}>
           <Plus className="h-4 w-4" />
           {t('sheet.addItem')}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** Schaden/Heilung als Text, z. B. „1W8 Hieb“ bzw. „2W4 + 2 Heilung“ */
+function useFormatDamage() {
+  const { t, i18n } = useTranslation();
+  return (d: { dice: string; type: DamageType }) => `${formatDice(d.dice, asLocale(i18n.language), t)} ${t(`damageType.${d.type}`)}`;
+}
+
+/**
+ * Name im Inventar mit Vorschlägen aus der Gegenstands-Datenbank. Wird ein Eintrag gewählt, werden Name, Schaden/RK
+ * und Beschreibung als Text übernommen, das Gewicht ins Gewichtsfeld geschrieben und die Karte verknüpft.
+ */
+function ItemNameField({ listKey, index, item, listId, onOpen }: { listKey: 'inventory' | 'extraEquipment'; index: number; item: SheetItem; listId: string; onOpen: (id: string) => void }) {
+  const { t } = useTranslation();
+  const { sheet, set, readOnly, catalog } = useSheet();
+  const formatDamage = useFormatDamage();
+  const linked = item.ref ? catalog.find((c) => c.id === item.ref) : null;
+  // Name entspricht genau einem Eintrag, ist aber noch nicht verknüpft -> „Übernehmen“ anbieten
+  const exact = !linked && item.name.trim() ? catalog.find((c) => c.name.toLocaleLowerCase('de') === item.name.trim().toLocaleLowerCase('de')) : undefined;
+
+  const update = (patch: Partial<SheetItem>) => set([listKey], sheet[listKey].map((x, i) => (i === index ? { ...x, ...patch } : x)));
+  const apply = (c: CatalogItemDto) => update({ name: catalogInventoryText(c, formatDamage), weight: c.weight, ref: c.id });
+
+  return (
+    <div className="flex items-center gap-1">
+      <input
+        className="sheet-input"
+        value={item.name}
+        list={readOnly ? undefined : listId}
+        maxLength={150}
+        disabled={readOnly}
+        aria-label={t('sheet.item')}
+        title={readOnly ? undefined : t('catalog.suggestions')}
+        onChange={(e) => {
+          const value = e.target.value;
+          // Exakter Treffer aus der Vorschlagsliste -> übernehmen
+          const match = catalog.find((c) => c.name.toLocaleLowerCase('de') === value.trim().toLocaleLowerCase('de'));
+          if (match && value.length > item.name.length + 1) apply(match);
+          else update({ name: value, ref: value.trim() ? item.ref : null });
+        }}
+      />
+      {exact && !readOnly && (
+        <button type="button" className="btn-secondary shrink-0 !px-2 !py-0.5 text-xs print:hidden" onClick={() => apply(exact)} title={t('catalog.suggestions')}>
+          {t('catalog.take')}
+        </button>
+      )}
+      {linked && (
+        <button type="button" className="btn-icon h-7 w-7 shrink-0 print:hidden" onClick={() => onOpen(linked.id)} title={t('catalog.openCard')} aria-label={`${t('catalog.openCard')}: ${linked.name}`}>
+          <ExternalLink className="h-3.5 w-3.5" />
         </button>
       )}
     </div>

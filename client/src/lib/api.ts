@@ -1,5 +1,7 @@
 import type {
   AddMonsterInput,
+  CatalogItemDto,
+  CatalogItemInput,
   CharacterItemsDto,
   ItemCharacterRef,
   ItemStoryDto,
@@ -223,6 +225,17 @@ export const api = {
   deleteItem: (id: string) => request<void>('DELETE', `/api/items/${id}`),
   characterItems: (characterId: string) => request<CharacterItemsDto>('GET', `/api/items/character/${characterId}`),
   transferItem: (id: string, fromCharacterId: string, toCharacterId: string | null) => request<void>('POST', `/api/items/${id}/transfer`, { fromCharacterId, toCharacterId }),
+
+  // Gegenstands-Datenbank
+  catalog: (storyId?: string | null) => request<{ items: CatalogItemDto[] }>('GET', `/api/catalog${storyId ? `?storyId=${storyId}` : ''}`),
+  storyCatalog: (storyId: string) => request<{ items: CatalogItemDto[] }>('GET', `/api/catalog/stories/${storyId}`),
+  createStandardItem: (input: CatalogItemInput) => request<{ item: CatalogItemDto }>('POST', '/api/catalog/standard', input),
+  updateCatalogItem: (id: string, input: CatalogItemInput) => request<{ item: CatalogItemDto }>('PUT', `/api/catalog/${id}`, input),
+  deleteCatalogItem: (id: string) => request<void>('DELETE', `/api/catalog/${id}`),
+  createStoryCatalogItem: (storyId: string, input: CatalogItemInput) => request<{ item: CatalogItemDto }>('POST', `/api/catalog/stories/${storyId}`, input),
+  overrideCatalogItem: (storyId: string, baseId: string, input: CatalogItemInput) => request<{ item: CatalogItemDto }>('PUT', `/api/catalog/stories/${storyId}/override/${baseId}`, input),
+  hideCatalogItem: (storyId: string, baseId: string) => request<void>('POST', `/api/catalog/stories/${storyId}/hide/${baseId}`),
+  revertCatalogItem: (storyId: string, baseId: string) => request<void>('DELETE', `/api/catalog/stories/${storyId}/override/${baseId}`),
 
   // Benachrichtigungen
   notifications: () => request<{ notifications: NotificationDto[]; unread: number }>('GET', '/api/notifications'),

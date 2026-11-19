@@ -85,6 +85,8 @@ export const itemSchema = z.object({
   name: text(150),
   qty: num(0, 100000, 1),
   weight: num(0, 100000, 0),
+  /** Verknüpfung mit einem Eintrag der Gegenstands-Datenbank (Karte öffnen) */
+  ref: z.string().max(64).nullable().catch(null).default(null),
 });
 
 export const sheetSpellSchema = z.object({

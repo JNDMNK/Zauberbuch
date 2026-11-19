@@ -23,6 +23,7 @@ import { notificationsRouter } from './routes/notifications';
 import { bestiaryRouter } from './routes/bestiary';
 import { storiesRouter } from './routes/stories';
 import { itemsRouter } from './routes/items';
+import { catalogRouter } from './routes/catalog';
 
 const LARGE_BODY_PATHS = new Set(['/api/characters/import', '/api/characters/import/preview']);
 
@@ -104,6 +105,7 @@ export function createApp(options: { accessLog?: boolean } = {}) {
   api.use('/bestiary', bestiaryRouter);
   api.use('/stories', storiesRouter);
   api.use('/items', itemsRouter);
+  api.use('/catalog', catalogRouter);
 
   api.use((_req, _res, next) => next(new HttpError(404, 'not_found', 'API route not found')));
 

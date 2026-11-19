@@ -7,3 +7,4 @@ export * from './combat';
 export * from './bestiary';
 export * from './lifestyle';
 export * from './items';
+export * from './catalog';
