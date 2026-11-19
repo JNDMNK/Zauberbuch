@@ -76,7 +76,7 @@ export function NotificationBell() {
 
   const label = unread > 0 ? t('notifications.unread', { count: unread }) : t('notifications.title');
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="sm:relative">
       <button type="button" className="btn-icon relative" onClick={toggle} aria-expanded={open} aria-haspopup="dialog" aria-label={label} title={label}>
         <Bell className="h-5 w-5" />
         {unread > 0 && (
@@ -84,7 +84,7 @@ export function NotificationBell() {
         )}
       </button>
       {open && (
-        <div role="dialog" aria-label={t('notifications.title')} className="parchment absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden">
+        <div role="dialog" aria-label={t('notifications.title')} className="parchment absolute inset-x-3 top-full z-50 mt-1 overflow-hidden sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-80">
           <div className="flex items-center justify-between border-b border-parchment-400/60 px-4 py-2 dark:border-night-700">
             <h2 className="font-display text-sm font-bold">{t('notifications.title')}</h2>
             {items.length > 0 && (

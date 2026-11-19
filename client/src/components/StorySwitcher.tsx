@@ -67,7 +67,7 @@ export function StorySwitcher() {
 
   const label = active ? active.name : t('storyView.general');
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="sm:relative">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -83,7 +83,7 @@ export function StorySwitcher() {
         <ChevronDown className="h-3.5 w-3.5" />
       </button>
       {open && (
-        <div role="menu" className="parchment absolute right-0 z-50 mt-2 w-64 overflow-hidden py-1">
+        <div role="menu" className="parchment absolute inset-x-3 top-full z-50 mt-1 overflow-hidden py-1 sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-64">
           <p className="px-4 pb-1 pt-2 font-display text-xs font-bold uppercase tracking-wider text-parchment-700 dark:text-parchment-400">{t('storyView.title')}</p>
           <button role="menuitemradio" aria-checked={!user.activeStoryId} type="button" onClick={() => choose(null)} className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-parchment-200/70 dark:hover:bg-night-700">
             <Globe2 className="h-4 w-4" />

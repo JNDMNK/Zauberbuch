@@ -35,8 +35,8 @@ export function InventoryTable({ listKey }: { listKey: 'inventory' | 'extraEquip
         <thead>
           <tr>
             <th>{t('sheet.item')}</th>
-            <th className="w-20">{t('sheet.qty')}</th>
-            <th className="w-24">{t('sheet.itemWeight')}</th>
+            <th className="w-12 sm:w-20">{t('sheet.qty')}</th>
+            <th className="w-14 sm:w-24">{t('sheet.itemWeight')}</th>
             {!readOnly && <th className="w-8 print:hidden" />}
           </tr>
         </thead>
@@ -118,7 +118,7 @@ function ItemNameField({ listKey, index, item, listId, onOpen }: { listKey: 'inv
         maxLength={150}
         disabled={readOnly}
         aria-label={t('sheet.item')}
-        title={readOnly ? undefined : t('catalog.suggestions')}
+        title={item.name || (readOnly ? undefined : t('catalog.suggestions'))}
         onChange={(e) => {
           const value = e.target.value;
           // Exakter Treffer aus der Vorschlagsliste -> übernehmen
