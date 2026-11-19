@@ -1010,7 +1010,9 @@
     "valuePlaceholder": "z. B. 200 GM",
     "requiresAttunement": "Einstimmung benötigt",
     "attunementHint": "Nur Gegenstände mit „Einstimmung benötigt“ können im Charakterbogen bei „Einstimmung“ gewählt werden.",
-    "noDescription": "Keine Beschreibung."
+    "noDescription": "Keine Beschreibung.",
+    "assign": "Besitzer zuordnen",
+    "holdersSaved": "Besitzer gespeichert"
   },
   "catalog": {
     "title": "Gegenstände",

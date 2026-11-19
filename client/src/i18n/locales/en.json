@@ -1010,7 +1010,9 @@
     "valuePlaceholder": "e.g. 200 gp",
     "requiresAttunement": "Requires attunement",
     "attunementHint": "Only items that require attunement can be chosen as attuned items on the character sheet.",
-    "noDescription": "No description."
+    "noDescription": "No description.",
+    "assign": "Assign holders",
+    "holdersSaved": "Holders saved"
   },
   "catalog": {
     "title": "Items",

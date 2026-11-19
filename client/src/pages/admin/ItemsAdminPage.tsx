@@ -113,6 +113,7 @@ export function ItemsAdminPage() {
             <li key={i.id}>
               <ItemCard
                 item={i}
+                footer={<HolderAssign item={i} characters={characters} onSaved={(item) => setItems((l) => l?.map((x) => (x.id === item.id ? item : x)) ?? null)} />}
                 actions={
                   <>
                     <button type="button" className="btn-icon" onClick={() => setEditing(i)} title={t('common.edit')} aria-label={`${t('common.edit')}: ${i.name}`}>
@@ -150,6 +151,61 @@ export function ItemsAdminPage() {
         onCancel={() => setToDelete(null)}
       />
     </div>
+  );
+}
+
+/** Besitzer direkt in der Detailansicht zuordnen (ohne den Bearbeiten-Dialog); jede Änderung wird sofort gespeichert */
+function HolderAssign({ item, characters, onSaved }: { item: MagicItemDto; characters: ItemCharacterRef[]; onSaved: (item: MagicItemDto) => void }) {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const [busy, setBusy] = useState<string | null>(null);
+  // sofort anzeigen, bis die Antwort des Servers da ist
+  const [pending, setPending] = useState<Set<string> | null>(null);
+  const holders = pending ?? new Set(item.holders.map((h) => h.id));
+
+  const toggle = async (id: string, on: boolean) => {
+    const next = new Set(holders);
+    if (on) next.add(id);
+    else next.delete(id);
+    setBusy(id);
+    setPending(next);
+    try {
+      const r = await api.updateItem(item.id, { name: item.name, description: item.description, weight: item.weight, value: item.value, attunement: item.attunement, holderIds: [...next] });
+      onSaved(r.item);
+      toast.success(t('items.holdersSaved'));
+    } catch (err) {
+      toast.error(errorMessage(t, err));
+    } finally {
+      setBusy(null);
+      setPending(null);
+    }
+  };
+
+  return (
+    <fieldset className="rounded-lg border border-parchment-400/60 p-3 dark:border-night-700">
+      <legend className="label px-1">{t('items.assign')}</legend>
+      {characters.length === 0 ? (
+        <p className="text-sm italic">{t('items.noCharacters')}</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+          {characters.map((c) => (
+            <label key={c.id} className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300"
+                checked={holders.has(c.id)}
+                disabled={busy !== null}
+                onChange={(e) => toggle(c.id, e.target.checked)}
+              />
+              <span>
+                <span className="font-semibold">{c.name}</span> <span className="text-xs text-parchment-700 dark:text-parchment-400">({c.owner})</span>
+              </span>
+              {busy === c.id && <Spinner className="h-3.5 w-3.5" />}
+            </label>
+          ))}
+        </div>
+      )}
+    </fieldset>
   );
 }
 
