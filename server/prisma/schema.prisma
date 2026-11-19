@@ -23,6 +23,11 @@ model User {
   tokenVersion            Int               @default(0) // erhöht sich bei Passwortänderung -> alte JWTs ungültig
   canEditSpells           Boolean           @default(false) // Zusatzrecht: Zauber anlegen/bearbeiten/duplizieren (ohne Löschen)
   combatAsPlayer          Boolean           @default(false) // Admin: Kampfhilfe im Spielermodus (serverseitig, damit DMs beim Ausschalten benachrichtigt werden)
+  /**
+   * Geschichten-Ansicht: aktive Geschichte (null = Allgemein)
+   */
+  activeStoryId           String?
+  activeStory             Story?            @relation("ActiveStory", fields: [activeStoryId], references: [id], onDelete: SetNull)
   createdAt               DateTime          @default(now())
   updatedAt               DateTime          @updatedAt
   favorites               Favorite[]
@@ -157,6 +162,7 @@ model Story {
   encounters  Encounter[]
   bestiary    BestiaryEntry[]
   characters  Character[]
+  activeFor   User[]          @relation("ActiveStory")
 }
 
 /**
@@ -165,6 +171,10 @@ model Story {
 model StoryMember {
   storyId   String
   userId    String
+  /**
+   * Rolle in dieser Geschichte: player | dm (steuert Infotafel und Kampf)
+   */
+  role      String   @default("player")
   createdAt DateTime @default(now())
   story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

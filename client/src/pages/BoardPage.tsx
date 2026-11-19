@@ -12,7 +12,6 @@ import { refreshBoardUnread } from '../hooks/useBoardUnread';
 import { Alert, PageSpinner, Spinner } from '../components/ui';
 import { PostCard } from '../components/board/PostCard';
 import { PostForm } from '../components/board/PostForm';
-import { StoryManager } from '../components/board/StoryManager';
 
 const REFRESH_MS = 30_000;
 const LAST_STORY_KEY = 'zauberbuch.board.story';
@@ -36,11 +35,10 @@ export function BoardPage() {
   const { t } = useTranslation();
   const { storyId } = useParams();
   const navigate = useNavigate();
-  const { isEditor, isAdmin } = useAuth();
+  const { isEditor, isAdmin, user } = useAuth();
   const [stories, setStories] = useState<StoryDto[] | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [error, setError] = useState<unknown>(null);
-  const [managerOpen, setManagerOpen] = useState(false);
 
   const loadStories = useCallback(
     () =>
@@ -55,14 +53,14 @@ export function BoardPage() {
     void loadStories();
   }, [loadStories]);
 
-  // Ohne Auswahl: zuletzt geöffnete oder erste Geschichte
+  // Ohne Auswahl: Geschichten-Ansicht (aktive Geschichte), sonst zuletzt geöffnete oder erste Geschichte
   useEffect(() => {
     if (!stories || stories.length === 0) return;
     if (storyId && stories.some((s) => s.id === storyId)) return;
     const last = lastStory();
-    const target = stories.find((s) => s.id === last) ?? stories[0];
+    const target = stories.find((s) => s.id === user?.activeStoryId) ?? stories.find((s) => s.id === last) ?? stories[0];
     navigate(`/board/${target.id}`, { replace: true });
-  }, [stories, storyId, navigate]);
+  }, [stories, storyId, navigate, user?.activeStoryId]);
 
   const story = stories?.find((s) => s.id === storyId) ?? null;
 
@@ -86,10 +84,10 @@ export function BoardPage() {
           </Link>
         )}
         {isEditor && (
-          <button type="button" className="btn-secondary" onClick={() => setManagerOpen(true)}>
+          <Link to="/admin/stories" className="btn-secondary">
             <Settings2 className="h-4 w-4" />
             {t('board.manageStories')}
-          </button>
+          </Link>
         )}
       </div>
 
@@ -97,10 +95,10 @@ export function BoardPage() {
         <div className="parchment p-8 text-center">
           <p className="text-lg">{isEditor ? t('board.noStoriesEditor') : t('board.noStoriesUser')}</p>
           {isEditor && (
-            <button type="button" className="btn-primary mt-4" onClick={() => setManagerOpen(true)}>
+            <Link to="/admin/stories" className="btn-primary mt-4">
               <Plus className="h-4 w-4" />
               {t('board.newStory')}
-            </button>
+            </Link>
           )}
           {showArchived || (
             <button type="button" className="mt-4 block w-full text-sm underline" onClick={() => setShowArchived(true)}>
@@ -141,18 +139,6 @@ export function BoardPage() {
           {story && <StoryBoard key={story.id} story={story} onRead={clearUnread} />}
         </>
       )}
-
-      <StoryManager
-        open={managerOpen}
-        onClose={() => setManagerOpen(false)}
-        onChanged={(created) => {
-          void loadStories();
-          if (created) {
-            setManagerOpen(false);
-            navigate(`/board/${created.id}`);
-          }
-        }}
-      />
     </div>
   );
 }
@@ -254,7 +240,7 @@ function StoryBoard({ story, onRead }: { story: StoryDto; onRead: (id: string) =
         </div>
         <p className="mt-2 flex flex-wrap items-center gap-1.5 text-sm text-parchment-700 dark:text-parchment-400">
           <Users className="h-4 w-4" />
-          {story.members.length ? story.members.map((m) => m.username).join(', ') : t('board.noMembers')}
+          {story.members.length ? story.members.map((m) => (m.role === 'dm' ? `${m.username} (${t('storyRole.dmShort')})` : m.username)).join(', ') : t('board.noMembers')}
         </p>
         {story.archived && (
           <div className="mt-3">
@@ -325,6 +311,7 @@ function StoryBoard({ story, onRead }: { story: StoryDto; onRead: (id: string) =
                 key={p.id}
                 post={p}
                 readOnly={readOnly}
+                canPin={story.myRole === 'dm'}
                 onChange={(np) => setPosts((list) => list?.map((x) => (x.id === np.id ? np : x)) ?? null)}
                 onRemove={(id) => {
                   setPosts((list) => list?.filter((x) => x.id !== id) ?? null);

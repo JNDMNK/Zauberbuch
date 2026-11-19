@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Copy, Plus, ScrollText, Search, Trash2, Users } from 'lucide-react';
 import type { CharacterSummaryDto } from '@zauberbuch/shared';
@@ -47,18 +47,42 @@ export function CharactersPage() {
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
   const [toDelete, setToDelete] = useState<CharacterSummaryDto | null>(null);
-  const { isEditor } = useAuth();
-  const [shared, setShared] = useState<CharacterSummaryDto[]>([]);
+  const { isEditor, user } = useAuth();
+  const location = useLocation();
+  const allOwn = list;
+  const [allShared, setShared] = useState<CharacterSummaryDto[]>([]);
+  /** Fremde Bögen: Moderator/Admin alle, Dungeon Master die ihrer Geschichten */
+  const [allOthers, setOthers] = useState<CharacterSummaryDto[] | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const activeStoryId = user?.activeStoryId ?? null;
+  const fromNav = Boolean((location.state as { fromNav?: boolean } | null)?.fromNav);
 
   useEffect(() => {
-    api
-      .characters()
-      .then((r) => {
-        setList(r.characters);
-        setShared(r.shared);
+    Promise.all([api.characters(), api.allCharacters()])
+      .then(([mine, others]) => {
+        setList(mine.characters);
+        setShared(mine.shared);
+        setOthers(others.characters.filter((c) => c.owner?.id !== user?.id));
       })
       .catch(setError);
-  }, []);
+  }, [user?.id]);
+  useEffect(() => setShowAll(false), [activeStoryId]);
+
+  // Geschichten-Ansicht: nur Bögen der aktiven Geschichte
+  const storyMode = Boolean(activeStoryId) && !showAll;
+  const inStory = (c: CharacterSummaryDto) => !storyMode || c.story?.id === activeStoryId;
+  const shared = allShared.filter(inStory);
+  const others = (allOthers ?? []).filter(inStory);
+  const storyName = [...(allOwn ?? []), ...allShared, ...(allOthers ?? [])].find((c) => c.story?.id === activeStoryId)?.story?.name;
+
+  // Über das Menü aufgerufen, nur ein eigener Bogen in der Geschichte und keine weiteren sichtbar -> direkt hinein
+  useEffect(() => {
+    if (!fromNav || !storyMode || !allOwn || allOthers === null) return;
+    const own = allOwn.filter((c) => c.story?.id === activeStoryId);
+    const sharedHere = allShared.filter((c) => c.story?.id === activeStoryId);
+    const othersHere = allOthers.filter((c) => c.story?.id === activeStoryId);
+    if (own.length === 1 && sharedHere.length === 0 && othersHere.length === 0) navigate(`/characters/${own[0].id}`, { replace: true });
+  }, [fromNav, storyMode, allOwn, allShared, allOthers, activeStoryId, navigate]);
 
   const create = async () => {
     setBusy(true);
@@ -96,30 +120,37 @@ export function CharactersPage() {
 
   if (error) return <Alert>{errorMessage(t, error)}</Alert>;
   if (!list) return <PageSpinner />;
+  const ownShown = list.filter(inStory);
 
   return (
     <div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <h1 className="flex items-center gap-2 text-2xl font-bold sm:text-3xl">
           <ScrollText className="h-7 w-7 text-parchment-600" />
-          {isEditor ? t('characters.titleAll') : t('characters.title')}
+          {isEditor || others.length > 0 ? t('characters.titleAll') : t('characters.title')}
         </h1>
         <button type="button" className="btn-primary" onClick={create} disabled={busy}>
           {busy ? <Spinner className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
           {t('characters.new')}
         </button>
       </div>
-      {isEditor && (
-        <h2 className="mb-3 text-xl font-bold">{t('characters.mine')}</h2>
+      {activeStoryId && (
+        <p className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+          {showAll || !storyName ? t('storyView.showingAll') : t('storyView.filteredCharacters', { name: storyName })}
+          <button type="button" className="underline" onClick={() => setShowAll((v) => !v)}>
+            {showAll ? t('storyView.onlyStory') : t('storyView.showAll')}
+          </button>
+        </p>
       )}
-      {list.length === 0 ? (
+      {(isEditor || others.length > 0) && <h2 className="mb-3 text-xl font-bold">{t('characters.mine')}</h2>}
+      {ownShown.length === 0 ? (
         <div className="parchment px-6 py-16 text-center">
           <p className="font-display text-xl font-bold">{t('characters.empty')}</p>
           <p className="mt-2 text-parchment-700 dark:text-parchment-400">{t('characters.emptyHint')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {list.map((c) => (
+          {ownShown.map((c) => (
             <CharacterCard
               key={c.id}
               c={c}
@@ -157,7 +188,7 @@ export function CharactersPage() {
           </div>
         </section>
       )}
-      {isEditor && <OtherCharacters />}
+      {(isEditor || others.length > 0) && <OtherCharacters list={allOthers === null ? null : others} />}
       <ConfirmDialog
         open={!!toDelete}
         title={t('characters.delete')}
@@ -171,19 +202,10 @@ export function CharactersPage() {
 }
 
 /** Charakterbögen der anderen Benutzer (nur lesen) – nur für Dungeon Master und Admin */
-function OtherCharacters() {
+function OtherCharacters({ list }: { list: CharacterSummaryDto[] | null }) {
   const { t } = useTranslation();
-  const { user } = useAuth();
-  const [list, setList] = useState<CharacterSummaryDto[] | null>(null);
-  const [error, setError] = useState<unknown>(null);
+  const error: unknown = null;
   const [query, setQuery] = useState('');
-
-  useEffect(() => {
-    api
-      .allCharacters()
-      .then((r) => setList(r.characters.filter((c) => c.owner?.id !== user?.id)))
-      .catch(setError);
-  }, [user?.id]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLocaleLowerCase('de');

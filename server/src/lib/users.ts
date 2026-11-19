@@ -9,6 +9,7 @@ export function toUserDto(user: User): UserDto {
     role: user.role as Role,
     canEditSpells: user.canEditSpells,
     combatAsPlayer: user.combatAsPlayer,
+    activeStoryId: user.activeStoryId ?? null,
     language: user.language as Locale,
     createdAt: user.createdAt.toISOString(),
   };

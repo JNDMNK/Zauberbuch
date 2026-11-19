@@ -13,27 +13,27 @@ describe('Infotafel', () => {
     const frodo = await createUser('frodo');
     const sam = await createUser('sam');
     const pippin = await createUser('pippin');
-    const story = await dm.agent.post('/api/board/stories').set(CSRF).send({ name: 'Der Ring', memberIds: [frodo.user.id, sam.user.id] });
+    const story = await dm.agent.post('/api/stories').set(CSRF).send({ name: 'Der Ring', memberIds: [frodo.user.id, sam.user.id] });
     expect(story.status).toBe(201);
     return { admin, dm, frodo, sam, pippin, storyId: story.body.story.id as string };
   }
 
   it('Geschichten verwalten nur Admin und DM; Benutzer sehen nur ihre Geschichten', async () => {
     const { frodo, pippin, storyId, admin } = await setup();
-    expect((await frodo.agent.post('/api/board/stories').set(CSRF).send({ name: 'Eigene' })).status).toBe(403);
-    expect((await frodo.agent.patch(`/api/board/stories/${storyId}`).set(CSRF).send({ name: 'X' })).status).toBe(403);
-    expect((await frodo.agent.get('/api/board/users')).status).toBe(403);
+    expect((await frodo.agent.post('/api/stories').set(CSRF).send({ name: 'Eigene' })).status).toBe(403);
+    expect((await frodo.agent.patch(`/api/stories/${storyId}`).set(CSRF).send({ name: 'X' })).status).toBe(403);
+    expect((await frodo.agent.get('/api/stories/users')).status).toBe(403);
 
     const fl = await frodo.agent.get('/api/board/stories');
     expect(fl.body.stories.map((s: { name: string }) => s.name)).toEqual(['Der Ring']);
-    expect(fl.body.stories[0].members.map((m: { username: string }) => m.username)).toEqual(['frodo', 'sam']);
+    expect(fl.body.stories[0].members.map((m: { username: string }) => m.username)).toEqual(['frodo', 'meister', 'sam']);
     expect((await pippin.agent.get('/api/board/stories')).body.stories).toEqual([]);
     expect((await pippin.agent.get(`/api/board/stories/${storyId}/posts`)).status).toBe(404);
     expect((await pippin.agent.post(`/api/board/stories/${storyId}/posts`).set(CSRF).send({ body: 'Hallo' })).status).toBe(404);
 
     // Löschen der Geschichte nur durch Admin
-    expect((await (await loginAs('meister', 'password123')).delete(`/api/board/stories/${storyId}`).set(CSRF)).status).toBe(403);
-    expect((await admin.delete(`/api/board/stories/${storyId}`).set(CSRF)).status).toBe(204);
+    expect((await (await loginAs('meister', 'password123')).delete(`/api/stories/${storyId}`).set(CSRF)).status).toBe(403);
+    expect((await admin.delete(`/api/stories/${storyId}`).set(CSRF)).status).toBe(204);
   });
 
   it('setzt Ersteller und Zeitstempel serverseitig; nur Ersteller, DM und Admin dürfen ändern/löschen', async () => {
@@ -116,7 +116,7 @@ describe('Infotafel', () => {
 
   it('archivierte Geschichten sind schreibgeschützt und standardmäßig ausgeblendet', async () => {
     const { frodo, dm, storyId } = await setup();
-    await dm.agent.patch(`/api/board/stories/${storyId}`).set(CSRF).send({ archived: true });
+    await dm.agent.patch(`/api/stories/${storyId}`).set(CSRF).send({ archived: true });
     expect((await frodo.agent.get('/api/board/stories')).body.stories).toEqual([]);
     expect((await frodo.agent.get('/api/board/stories?archived=true')).body.stories[0].archived).toBe(true);
     expect((await frodo.agent.get(`/api/board/stories/${storyId}/posts`)).status).toBe(200);
@@ -168,7 +168,7 @@ describe('Infotafel', () => {
     await resetDb();
     const admin2 = await loginAs('admin', 'admin-password');
     const imp = await admin2.post('/api/board/import').set(CSRF).send(exp.body);
-    expect(imp.body).toMatchObject({ storiesCreated: 1, postsCreated: 1, commentsCreated: 1, unknownUsers: ['frodo', 'sam'] });
+    expect(imp.body).toMatchObject({ storiesCreated: 1, postsCreated: 1, commentsCreated: 1, unknownUsers: ['frodo', 'meister', 'sam'] });
     const s = (await admin2.get('/api/board/stories')).body.stories[0];
     expect(s.postCount).toBe(1);
   });
@@ -184,7 +184,7 @@ describe('Infotafel – Benachrichtigungen', () => {
     const frodo = await createUser('frodo');
     const sam = await createUser('sam');
     const pippin = await createUser('pippin');
-    const story = (await dm.agent.post('/api/board/stories').set(CSRF).send({ name: 'Der Ring', memberIds: [frodo.user.id, sam.user.id] })).body.story;
+    const story = (await dm.agent.post('/api/stories').set(CSRF).send({ name: 'Der Ring', memberIds: [frodo.user.id, sam.user.id] })).body.story;
 
     await frodo.agent.post(`/api/board/stories/${story.id}/posts`).set(CSRF).send({ title: 'Treffen', body: 'Samstag 18 Uhr' });
     const n = (await sam.agent.get('/api/notifications')).body;
@@ -201,5 +201,46 @@ describe('Infotafel – Benachrichtigungen', () => {
     const post = (await frodo.agent.get(`/api/board/stories/${story.id}/posts`)).body.posts[0];
     await frodo.agent.post(`/api/board/posts/${post.id}/comments`).set(CSRF).send({ body: 'Danke!' });
     expect((await sam.agent.get('/api/notifications')).body.unread).toBe(1);
+  });
+});
+
+describe('Geschichten – Verwaltung und Geschichten-Ansicht', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('Verwaltung durch Admin und Moderator, Rollen pro Geschichte, aktive Geschichte', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    const mod = await createUser('moderator', 'dungeonmaster');
+    const frodo = await createUser('frodo');
+    const sam = await createUser('sam');
+    // Spieler dürfen nicht verwalten
+    expect((await frodo.agent.post('/api/stories').set(CSRF).send({ name: 'X' })).status).toBe(403);
+    expect((await frodo.agent.get('/api/stories')).status).toBe(403);
+    const s = (await mod.agent.post('/api/stories').set(CSRF).send({ name: 'Strahd', members: [{ userId: frodo.user.id, role: 'player' }, { userId: sam.user.id, role: 'dm' }] })).body.story;
+    // Moderator hat sich selbst angegeben? Nein -> wird automatisch DM
+    expect(s.members.map((m: { username: string; role: string }) => `${m.username}:${m.role}`)).toEqual(['frodo:player', 'moderator:dm', 'sam:dm']);
+    // Rolle aus Sicht des Spielers
+    const fl = (await frodo.agent.get('/api/board/stories')).body.stories;
+    expect(fl[0].myRole).toBe('player');
+    // Sam (Benutzer, DM der Geschichte) darf anheften
+    const post = (await frodo.agent.post(`/api/board/stories/${s.id}/posts`).set(CSRF).send({ body: 'Hallo' })).body.post;
+    expect((await sam.agent.post(`/api/board/posts/${post.id}/pin`).set(CSRF).send({ pinned: true })).status).toBe(200);
+    expect((await frodo.agent.post(`/api/board/posts/${post.id}/pin`).set(CSRF).send({ pinned: false })).status).toBe(403);
+    // Moderator bearbeitet, Löschen nur Admin
+    expect((await mod.agent.patch(`/api/stories/${s.id}`).set(CSRF).send({ name: 'Der Fluch von Strahd' })).body.story.name).toBe('Der Fluch von Strahd');
+    expect((await mod.agent.delete(`/api/stories/${s.id}`).set(CSRF)).status).toBe(403);
+
+    // Geschichten-Ansicht
+    const mine = (await frodo.agent.get('/api/stories/mine')).body.stories;
+    expect(mine).toEqual([{ id: s.id, name: 'Der Fluch von Strahd', role: 'player' }]);
+    const r = await frodo.agent.put('/api/stories/active').set(CSRF).send({ storyId: s.id });
+    expect(r.body.user.activeStoryId).toBe(s.id);
+    expect((await frodo.agent.get('/api/auth/me')).body.user.activeStoryId).toBe(s.id);
+    const other = (await admin.post('/api/stories').set(CSRF).send({ name: 'Andere' })).body.story;
+    expect((await frodo.agent.put('/api/stories/active').set(CSRF).send({ storyId: other.id })).status).toBe(400);
+    expect((await frodo.agent.put('/api/stories/active').set(CSRF).send({ storyId: null })).body.user.activeStoryId).toBeNull();
+    expect((await admin.get('/api/stories/mine')).body.stories.map((x: { role: string }) => x.role)).toEqual(['dm', 'dm']);
+    expect((await admin.delete(`/api/stories/${s.id}`).set(CSRF)).status).toBe(204);
   });
 });

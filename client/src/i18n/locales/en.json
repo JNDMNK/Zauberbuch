@@ -189,7 +189,7 @@
   "role": {
     "admin": "Admin",
     "user": "User",
-    "dungeonmaster": "Dungeon Master"
+    "dungeonmaster": "Moderator"
   },
   "admin": {
     "title": "Administration",
@@ -273,7 +273,7 @@
     "setPasswordFor": "New password for “{{name}}”",
     "passwordSet": "Password set. The user has been logged out on all devices.",
     "emailOptional": "Email (optional)",
-    "rolesHint": "User: view spells and keep a personal spellbook (optionally with the extra permission “edit spells”) · Dungeon Master: also manage and delete spells and view all spellbooks and character sheets · Admin: also manage users, import and export",
+    "rolesHint": "User: view spells and keep a personal spellbook (optionally with the extra permission “edit spells”) · Moderator: also manage and delete spells, manage stories and view all spellbooks and character sheets · Admin: also manage users, import and export. Permissions for info board and combat are set in Admin → Stories.",
     "characters": "Character sheets",
     "charactersTitle": "User character sheets",
     "charactersHint": "All character sheets – read only. Only the owner can edit.",
@@ -326,7 +326,7 @@
     "canEditSpells": "May edit spells",
     "canEditSpellsShort": "Edit spells",
     "canEditSpellsHint": "Create, edit and duplicate spells (not delete), without further rights",
-    "canEditSpellsByRole": "Admins and Dungeon Masters can always edit spells",
+    "canEditSpellsByRole": "Admins and moderators can always edit spells",
     "rightChanged": "Permission changed",
     "boardSection": "Info board",
     "boardExportText": "Exports all stories with players, posts and comments (without trash). Authors are stored by username – so import users first.",
@@ -335,7 +335,8 @@
     "boardInvalidFile": "The file is not an info board export.",
     "boardFileSummary": "{{name}}: {{stories}} stories, {{posts}} posts",
     "boardImportDone": "Import finished: {{storiesCreated}} stories created, {{storiesMerged}} merged, {{postsCreated}} posts imported, {{postsSkipped}} skipped.",
-    "boardUnknownUsers": "Unknown users (imported as “deleted user”): {{names}}"
+    "boardUnknownUsers": "Unknown users (imported as “deleted user”): {{names}}",
+    "stories": "Stories"
   },
   "errors": {
     "unknown": "Unknown error.",
@@ -868,7 +869,8 @@
     "clear": "Clear all",
     "types": {
       "admin_player_mode_off": "Admin “{{admin}}” turned off combat player mode and can see all values again (including hidden monsters).",
-      "board_post": "{{author}} posted on the info board “{{story}}”: {{title}}"
+      "board_post": "{{author}} posted on the info board “{{story}}”: {{title}}",
+      "admin_story_role_changed": "Admin “{{admin}}” is no longer a player in “{{story}}” and can see all values there again (including hidden monsters)."
     },
     "open": "Open"
   },
@@ -912,5 +914,33 @@
     "damageHint": "Same as for spells, e.g. 1d6+2 or 2d8+4. Leave empty if no damage.",
     "hpRangePlaceholder": "e.g. 58 or 10-15",
     "hpRangeHint": "HP as a number or range (e.g. 10-15) – leave empty if unknown."
+  },
+  "storyView": {
+    "title": "View",
+    "general": "General",
+    "switched": "Story view: {{name}}",
+    "hint": "In story view, character sheet, info board and combat lead directly to this story.",
+    "filtered": "Story view “{{name}}” – only this story's encounters.",
+    "filteredCharacters": "Story view “{{name}}” – only this story's sheets.",
+    "showingAll": "Showing all (story view paused).",
+    "showAll": "Show all",
+    "onlyStory": "Only this story"
+  },
+  "storyRole": {
+    "player": "Player",
+    "dm": "Dungeon Master",
+    "dmShort": "DM",
+    "playerPlural": "Players",
+    "dmPlural": "Dungeon Masters"
+  },
+  "stories": {
+    "title": "Stories",
+    "hint": "Stories are created here and appear automatically on the info board and in combat. The role per story (player or Dungeon Master) decides what someone sees and may do there.",
+    "edit": "Edit story",
+    "members": "Members and permissions",
+    "membersHint": "Players see the story's info board and encounters and write posts. Dungeon Masters run encounters, see hidden values, manage posts and read the story's character sheets. Without an entry the story is invisible (the admin has DM rights everywhere unless listed as a player).",
+    "roleFor": "Role for",
+    "notMember": "–",
+    "deleteText": "“{{name}}” will be permanently deleted with all {{count}} posts, encounters and the players' monster database. Archive it instead to hide it."
   }
 }

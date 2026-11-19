@@ -21,7 +21,8 @@ import {
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { badRequest, forbidden, notFound } from '../lib/errors';
-import { requireAdmin, requireAuth, requireEditor } from '../middleware/auth';
+import { requireAdmin, requireAuth } from '../middleware/auth';
+import { dmStoryIds, storyRole } from '../lib/stories';
 
 /**
  * Charakterbögen: Jeder Benutzer verwaltet beliebig viele eigene Charaktere.
@@ -84,9 +85,11 @@ charactersRouter.get('/', async (req, res) => {
   });
 });
 
-/** Alle Charaktere (Admin/DM) */
-charactersRouter.get('/all', requireEditor, async (_req, res) => {
+/** Fremde Bögen: Admin/Moderator alle, Dungeon Master einer Geschichte die Bögen ihrer Geschichten */
+charactersRouter.get('/all', async (req, res) => {
+  const where = isEditorRole(req.user!.role) ? {} : { storyId: { in: await dmStoryIds(req.user!) } };
   const list = await prisma.character.findMany({
+    where,
     select: { ...summarySelect, user: { select: { id: true, username: true } } },
     orderBy: [{ user: { username: 'asc' } }, { name: 'asc' }],
   });
@@ -223,9 +226,12 @@ async function loadReadable(id: string, user: User) {
   });
   const isOwner = !!c && c.userId === user.id;
   const isCoEditor = !!c && c.editors.some((e) => e.userId === user.id);
+  // Dungeon Master der zugeordneten Geschichte: lesen und Einstellungen ändern
+  const isStoryDm = !!c?.storyId && (await storyRole(user, c.storyId)) === 'dm';
+  const privileged = isEditorRole(user.role) || isStoryDm;
   // Fremde Bögen gibt es für normale Benutzer „nicht“ (404 statt 403, verrät keine IDs)
-  if (!c || (!isOwner && !isCoEditor && !isEditorRole(user.role))) throw notFound('character_not_found', 'Character not found');
-  return { ...c, isOwner, canEdit: isOwner || isCoEditor, canManageSettings: isOwner || isEditorRole(user.role) };
+  if (!c || (!isOwner && !isCoEditor && !privileged)) throw notFound('character_not_found', 'Character not found');
+  return { ...c, isOwner, canEdit: isOwner || isCoEditor, canManageSettings: isOwner || privileged };
 }
 
 function toDto(c: Awaited<ReturnType<typeof loadReadable>>, data: CharacterSheet, updated?: Character): CharacterDto {

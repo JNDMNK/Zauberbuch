@@ -11,7 +11,7 @@ describe('Kampfhilfe', () => {
     const dm = await createUser('meister', 'dungeonmaster');
     const frodo = await createUser('frodo');
     const pippin = await createUser('pippin');
-    const story = (await dm.agent.post('/api/board/stories').set(CSRF).send({ name: 'Strahd', memberIds: [frodo.user.id] })).body.story;
+    const story = (await dm.agent.post('/api/stories').set(CSRF).send({ name: 'Strahd', memberIds: [frodo.user.id] })).body.story;
     // Frodos Charakterbogen
     const ch = (await frodo.agent.post('/api/characters').set(CSRF).send({ name: 'Vaelor' })).body.character;
     const sheet = { ...ch.data, identity: { ...ch.data.identity, name: 'Vaelor' }, combat: { ...ch.data.combat, ac: '16+1', hpMax: 24, hpCurrent: 10, hpTemp: 3 } };
@@ -120,66 +120,58 @@ describe('Kampfhilfe', () => {
   });
 });
 
-describe('Kampfhilfe – Spielermodus für Admins', () => {
+describe('Kampfhilfe – Rollen pro Geschichte', () => {
   beforeEach(async () => {
     await resetDb();
   });
 
-  it('Admin sieht im Spielermodus die Spieleransicht und nur Kämpfe als Mitspieler', async () => {
+  it('Admin: DM-Rechte, außer er ist in der Geschichte Spieler', async () => {
     const admin = await loginAs('admin', 'admin-password');
     const adminId = (await admin.get('/api/auth/me')).body.user.id;
-    const mit = (await admin.post('/api/board/stories').set(CSRF).send({ name: 'Mit Admin', memberIds: [adminId] })).body.story;
-    const ohne = (await admin.post('/api/board/stories').set(CSRF).send({ name: 'Ohne Admin' })).body.story;
-    const e1 = (await admin.post('/api/combat/encounters').set(CSRF).send({ storyId: mit.id, name: 'Kampf A' })).body.encounter;
-    await admin.post('/api/combat/encounters').set(CSRF).send({ storyId: ohne.id, name: 'Kampf B' });
-    await admin.post(`/api/combat/encounters/${e1.id}/monsters`).set(CSRF).send({ name: 'Oger', ac: 11, hpMax: 59 });
+    const spielt = (await admin.post('/api/stories').set(CSRF).send({ name: 'Admin spielt', memberIds: [adminId] })).body.story;
+    const leitet = (await admin.post('/api/stories').set(CSRF).send({ name: 'Admin leitet' })).body.story;
+    expect((await admin.post('/api/combat/encounters').set(CSRF).send({ storyId: spielt.id, name: 'X' })).status).toBe(403);
+    const eB = (await admin.post('/api/combat/encounters').set(CSRF).send({ storyId: leitet.id, name: 'Kampf B' })).body.encounter;
+    expect(eB.canManage).toBe(true);
 
-    expect((await admin.get('/api/combat/encounters')).body.encounters).toHaveLength(2);
-    expect((await admin.get(`/api/combat/encounters/${e1.id}`)).body.encounter.combatants[0]).toMatchObject({ ac: '11', hpMax: 59 });
-    // Alter Query-Parameter hat keine Wirkung mehr – maßgeblich ist die Einstellung im Konto
-    expect((await admin.get('/api/combat/encounters?asPlayer=true')).body.encounters).toHaveLength(2);
-
-    expect((await admin.put('/api/combat/player-mode').set(CSRF).send({ asPlayer: true })).body.asPlayer).toBe(true);
-    expect((await admin.get('/api/auth/me')).body.user.combatAsPlayer).toBe(true);
-    const list = (await admin.get('/api/combat/encounters')).body.encounters;
-    expect(list.map((e: { name: string }) => e.name)).toEqual(['Kampf A']);
-    expect((await admin.get('/api/combat/active')).body.count).toBe(1);
-    const pv = (await admin.get(`/api/combat/encounters/${e1.id}`)).body.encounter;
+    // Als Spieler eingetragen: Kampf von einem DM der Geschichte, Admin sieht Spieleransicht
+    const dm = await createUser('meister');
+    await admin.patch(`/api/stories/${spielt.id}`).set(CSRF).send({ members: [{ userId: adminId, role: 'player' }, { userId: dm.user.id, role: 'dm' }] });
+    const eA = (await dm.agent.post('/api/combat/encounters').set(CSRF).send({ storyId: spielt.id, name: 'Kampf A' })).body.encounter;
+    await dm.agent.post(`/api/combat/encounters/${eA.id}/monsters`).set(CSRF).send({ name: 'Oger', ac: 11, hpMax: 59 });
+    const pv = (await admin.get(`/api/combat/encounters/${eA.id}`)).body.encounter;
     expect(pv.canManage).toBe(false);
-    expect(pv.combatants[0]).toMatchObject({ ac: null, hpCurrent: null, hpMax: null, status: 'unharmed' });
-
-    // Nur Admins dürfen den Modus setzen
-    const dm = await createUser('meister', 'dungeonmaster');
-    expect((await dm.agent.put('/api/combat/player-mode').set(CSRF).send({ asPlayer: true })).status).toBe(403);
-    expect((await dm.agent.get('/api/combat/encounters')).body.encounters).toHaveLength(2);
+    expect(pv.combatants[0]).toMatchObject({ ac: null, hpMax: null, status: 'unharmed' });
+    expect((await admin.post(`/api/combat/encounters/${eA.id}/turn`).set(CSRF).send({ direction: 1 })).status).toBe(403);
+    expect((await admin.get('/api/combat/encounters')).body.encounters).toHaveLength(2);
   });
 
-  it('DMs werden benachrichtigt, wenn der Admin den Spielermodus ausschaltet', async () => {
+  it('Moderatoren sehen Kämpfe nur gemäß ihrer Rolle in der Geschichte', async () => {
     const admin = await loginAs('admin', 'admin-password');
-    const dm1 = await createUser('meister', 'dungeonmaster');
-    const dm2 = await createUser('meisterin', 'dungeonmaster');
+    const mod = await createUser('moderator', 'dungeonmaster');
+    const frodo = await createUser('frodo');
+    const story = (await admin.post('/api/stories').set(CSRF).send({ name: 'S', dmIds: [frodo.user.id] })).body.story;
+    const enc = (await frodo.agent.post('/api/combat/encounters').set(CSRF).send({ storyId: story.id, name: 'K' })).body.encounter;
+    expect(enc.canManage).toBe(true); // Benutzer, aber DM der Geschichte
+    expect((await mod.agent.get(`/api/combat/encounters/${enc.id}`)).status).toBe(404);
+    expect((await mod.agent.get('/api/combat/encounters')).body.encounters).toEqual([]);
+    await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ memberIds: [mod.user.id], dmIds: [frodo.user.id] });
+    const view = (await mod.agent.get(`/api/combat/encounters/${enc.id}`)).body.encounter;
+    expect(view.canManage).toBe(false);
+  });
+
+  it('DMs werden benachrichtigt, wenn der Admin seine Spielerrolle aufgibt', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    const adminId = (await admin.get('/api/auth/me')).body.user.id;
+    const dm = await createUser('meister');
     const player = await createUser('frodo');
-
-    await admin.put('/api/combat/player-mode').set(CSRF).send({ asPlayer: true });
-    expect((await dm1.agent.get('/api/notifications')).body.unread).toBe(0); // Einschalten: keine Nachricht
-    await admin.put('/api/combat/player-mode').set(CSRF).send({ asPlayer: false });
-    await admin.put('/api/combat/player-mode').set(CSRF).send({ asPlayer: false }); // bereits aus: keine weitere
-
-    for (const dm of [dm1, dm2]) {
-      const n = (await dm.agent.get('/api/notifications')).body;
-      expect(n.unread).toBe(1);
-      expect(n.notifications[0]).toMatchObject({ type: 'admin_player_mode_off', data: { admin: 'admin' }, readAt: null });
-    }
+    const story = (await admin.post('/api/stories').set(CSRF).send({ name: 'Strahd', memberIds: [adminId, player.user.id], dmIds: [dm.user.id] })).body.story;
+    expect((await dm.agent.get('/api/notifications')).body.unread).toBe(0);
+    await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ memberIds: [player.user.id], dmIds: [dm.user.id, adminId] });
+    const n = (await dm.agent.get('/api/notifications')).body;
+    expect(n.unread).toBe(1);
+    expect(n.notifications[0]).toMatchObject({ type: 'admin_story_role_changed', data: { admin: 'admin', story: 'Strahd' } });
     expect((await player.agent.get('/api/notifications')).body.unread).toBe(0);
-    expect((await admin.get('/api/notifications')).body.unread).toBe(0);
-
-    await dm1.agent.post('/api/notifications/read').set(CSRF).send({});
-    const after = (await dm1.agent.get('/api/notifications')).body;
-    expect(after.unread).toBe(0);
-    expect(after.notifications[0].readAt).not.toBeNull();
-    expect((await dm2.agent.get('/api/notifications')).body.unread).toBe(1);
-    await dm2.agent.delete('/api/notifications').set(CSRF);
-    expect((await dm2.agent.get('/api/notifications')).body.notifications).toEqual([]);
   });
 });
 
@@ -191,7 +183,7 @@ describe('Kampfhilfe – verbündete NSCs', () => {
   it('werden wie Monster gepflegt, aber als Verbündete gekennzeichnet', async () => {
     const dm = await createUser('meister', 'dungeonmaster');
     const frodo = await createUser('frodo');
-    const story = (await dm.agent.post('/api/board/stories').set(CSRF).send({ name: 'S', memberIds: [frodo.user.id] })).body.story;
+    const story = (await dm.agent.post('/api/stories').set(CSRF).send({ name: 'S', memberIds: [frodo.user.id] })).body.story;
     const enc = (await dm.agent.post('/api/combat/encounters').set(CSRF).send({ storyId: story.id, name: 'K' })).body.encounter;
     const r = await dm.agent.post(`/api/combat/encounters/${enc.id}/monsters`).set(CSRF).send({ name: 'Stadtwache', count: 2, ac: 16, hpMax: 11, initiative: 10, hideStats: false, allied: true });
     const [w1, w2] = r.body.encounter.combatants;

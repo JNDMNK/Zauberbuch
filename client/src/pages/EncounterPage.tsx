@@ -20,9 +20,6 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Modal } from '../components/Modal';
 import { CombatantCard } from '../components/combat/CombatantCard';
 import { DamageInput, checkDamage, type DamageState } from '../components/DamageInput';
-import { PlayerModeToggle } from '../components/combat/PlayerModeToggle';
-import { useCombatPlayerMode } from '../hooks/useCombatPlayerMode';
-import { ApiError } from '../lib/api';
 
 const POLL_MS = 3_000;
 /** D&D 5e: 1 Runde = 6 Sekunden (10 Runden = 1 Minute) */
@@ -57,7 +54,6 @@ export function EncounterPage() {
   const [dialog, setDialog] = useState<'players' | 'monster' | 'ally' | 'rename' | null>(null);
   const [confirm, setConfirm] = useState<{ kind: 'encounter' } | { kind: 'combatant'; c: CombatantDto } | null>(null);
   const [busy, setBusy] = useState(false);
-  const [asPlayer] = useCombatPlayerMode();
 
   const load = useCallback(
     (signal?: AbortSignal) =>
@@ -65,7 +61,7 @@ export function EncounterPage() {
         .encounter(id, signal)
         .then((r) => (setEnc(r.encounter), setError(null)))
         .catch((err) => (err as Error).name !== 'AbortError' && setError(err)),
-    [id, asPlayer],
+    [id],
   );
 
   useEffect(() => {
@@ -106,22 +102,7 @@ export function EncounterPage() {
     }
   };
 
-  if (error) {
-    // Spielermodus: Kampf einer Geschichte, in der der Admin kein Mitspieler ist
-    if (asPlayer && error instanceof ApiError && error.status === 404) {
-      return (
-        <div className="space-y-4">
-          <Link to="/combat" className="btn-ghost !px-2">
-            <ArrowLeft className="h-4 w-4" />
-            {t('combat.backToList')}
-          </Link>
-          <Alert kind="info">{t('combat.playerModeNotMember')}</Alert>
-          <PlayerModeToggle />
-        </div>
-      );
-    }
-    return <Alert>{errorMessage(t, error)}</Alert>;
-  }
+  if (error) return <Alert>{errorMessage(t, error)}</Alert>;
   if (!enc) return <PageSpinner />;
 
   const manage = enc.canManage;
@@ -154,7 +135,6 @@ export function EncounterPage() {
           <ArrowLeft className="h-4 w-4" />
           {t('combat.backToList')}
         </Link>
-        <PlayerModeToggle />
       </div>
 
       <div className="flex flex-wrap items-start gap-3">
@@ -327,7 +307,7 @@ function AddPlayersDialog({ open, enc, onClose, onDone }: { open: boolean; enc: 
     if (!open) return;
     setSelected(new Set());
     setShowAll(false);
-    Promise.all([api.allCharacters(), api.stories(true)])
+    Promise.all([api.combatCandidates(enc.id), api.stories(true)])
       .then(([c, s]) => {
         setChars(c.characters);
         setMembers(new Set(s.stories.find((x) => x.id === enc.storyId)?.members.map((m) => m.id) ?? []));

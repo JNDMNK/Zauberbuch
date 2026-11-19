@@ -8,12 +8,10 @@ import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { useCombatPlayerMode } from '../hooks/useCombatPlayerMode';
 import { Alert, PageSpinner, Spinner } from '../components/ui';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Modal } from '../components/Modal';
 import { CombatTabs } from '../components/combat/CombatTabs';
-import { PlayerModeToggle } from '../components/combat/PlayerModeToggle';
 
 /** Gemeinsame Form beider Datenbanken */
 interface Entry {
@@ -52,10 +50,10 @@ type Source = { kind: 'dm' } | { kind: 'story'; storyId: string };
  */
 export function BestiaryPage() {
   const { t } = useTranslation();
-  const { user, isEditor: editorRole } = useAuth();
-  const [asPlayer] = useCombatPlayerMode();
-  const isEditor = editorRole && !asPlayer;
+  const { user } = useAuth();
   const [stories, setStories] = useState<StoryDto[] | null>(null);
+  // DM-Datenbank: wer in mindestens einer Geschichte Dungeon Master ist (Admin immer)
+  const isEditor = Boolean(stories?.some((s) => s.myRole === 'dm')) || user?.role === 'admin';
   const [source, setSource] = useState<Source | null>(null);
   const [error, setError] = useState<unknown>(null);
 
@@ -64,13 +62,17 @@ export function BestiaryPage() {
     api
       .stories()
       .then((r) => {
-        // Spielersicht: nur Geschichten, in denen man Mitspieler ist
-        const list = isEditor ? r.stories : r.stories.filter((s) => s.members.some((m) => m.id === user?.id));
+        // Geschichten mit Rolle (Spieler: bearbeiten, Dungeon Master: nur lesen)
+        const list = r.stories.filter((s) => s.myRole);
+        const dm = list.some((s) => s.myRole === 'dm') || user?.role === 'admin';
         setStories(list);
-        setSource(isEditor ? { kind: 'dm' } : list[0] ? { kind: 'story', storyId: list[0].id } : null);
+        // Geschichten-Ansicht: deren Spieler-Datenbank vorauswählen (als Spieler), sonst DM-Datenbank bzw. erste Geschichte
+        const active = list.find((s) => s.id === user?.activeStoryId);
+        if (active && active.myRole === 'player') setSource({ kind: 'story', storyId: active.id });
+        else setSource(dm ? { kind: 'dm' } : list[0] ? { kind: 'story', storyId: list[0].id } : null);
       })
       .catch(setError);
-  }, [isEditor, user?.id]);
+  }, [user?.id, user?.activeStoryId, user?.role]);
 
   const sourceValue = source ? (source.kind === 'dm' ? 'dm' : source.storyId) : '';
 
@@ -78,7 +80,6 @@ export function BestiaryPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="flex-1 text-3xl font-bold">{t('combat.heading')}</h1>
-        <PlayerModeToggle />
       </div>
       <CombatTabs />
       {error ? (
@@ -103,7 +104,7 @@ export function BestiaryPage() {
                 {isEditor && <option value="dm">{t('bestiary.dmDatabase')}</option>}
                 {stories.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {isEditor ? t('bestiary.playerDatabaseOf', { name: s.name }) : s.name}
+                    {s.myRole === 'dm' ? t('bestiary.playerDatabaseOf', { name: s.name }) : s.name}
                   </option>
                 ))}
               </select>

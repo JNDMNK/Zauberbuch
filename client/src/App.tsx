@@ -12,6 +12,7 @@ import { AdminSpellsPage } from './pages/admin/AdminSpellsPage';
 import { SpellFormPage } from './pages/admin/SpellFormPage';
 import { ImportExportPage } from './pages/admin/ImportExportPage';
 import { UsersPage } from './pages/admin/UsersPage';
+import { StoriesAdminPage } from './pages/admin/StoriesAdminPage';
 import { SpellbooksPage, UserSpellbookPage } from './pages/admin/SpellbooksPage';
 import { CharactersPage } from './pages/CharactersPage';
 import { CharacterSheetPage } from './pages/CharacterSheetPage';
@@ -89,6 +90,14 @@ export default function App() {
               <Route path="spells" element={<AdminSpellsPage />} />
               <Route path="spells/new" element={<SpellFormPage key="new" />} />
               <Route path="spells/:slug/edit" element={<SpellFormPage />} />
+              <Route
+                path="stories"
+                element={
+                  <RequireAuth roles={EDITOR_ROLES}>
+                    <StoriesAdminPage />
+                  </RequireAuth>
+                }
+              />
               <Route path="spellbooks" element={<Navigate to="/spellbooks" replace />} />
               <Route path="spellbooks/:userId" element={<LegacySpellbookRedirect />} />
               <Route path="characters" element={<Navigate to="/characters" replace />} />

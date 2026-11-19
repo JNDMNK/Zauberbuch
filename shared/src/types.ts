@@ -49,6 +49,8 @@ export interface UserDto {
   canEditSpells: boolean;
   /** Admin: Kampfhilfe im Spielermodus */
   combatAsPlayer: boolean;
+  /** Geschichten-Ansicht: aktive Geschichte (null = Allgemein) */
+  activeStoryId: string | null;
   language: Locale;
   createdAt: string;
 }

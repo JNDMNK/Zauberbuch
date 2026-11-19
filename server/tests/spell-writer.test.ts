@@ -37,7 +37,7 @@ describe('Zusatzrecht „Zauber bearbeiten“', () => {
   it('gibt keine weiteren Rechte (Zauberbücher, Charakterbögen, Import/Export, Benutzer)', async () => {
     const { agent } = await writer();
     expect((await agent.get('/api/spellbooks')).status).toBe(403);
-    expect((await agent.get('/api/characters/all')).status).toBe(403);
+    expect((await agent.get('/api/characters/all')).body.characters).toEqual([]);
     expect((await agent.get('/api/spells/export')).status).toBe(403);
     expect((await agent.post('/api/spells/import').set(CSRF).send({ spells: [makeSpell()] })).status).toBe(403);
     expect((await agent.get('/api/users')).status).toBe(403);

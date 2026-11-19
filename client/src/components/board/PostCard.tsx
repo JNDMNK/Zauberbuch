@@ -5,7 +5,6 @@ import { MAX_COMMENT_LENGTH, type BoardCommentDto, type BoardPostDto } from '@za
 import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
 import { useToast } from '../../context/ToastContext';
-import { useAuth } from '../../context/AuthContext';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { Markdown } from '../Markdown';
 import { Spinner } from '../ui';
@@ -18,14 +17,15 @@ const VISIBLE_COMMENTS = 3;
 interface Props {
   post: BoardPostDto;
   readOnly: boolean;
+  /** Dungeon Master der Geschichte: anheften und lösen */
+  canPin: boolean;
   onChange: (post: BoardPostDto) => void;
   onRemove: (id: string) => void;
 }
 
-export function PostCard({ post, readOnly, onChange, onRemove }: Props) {
+export function PostCard({ post, readOnly, canPin, onChange, onRemove }: Props) {
   const { t, i18n } = useTranslation();
   const toast = useToast();
-  const { isEditor } = useAuth();
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -90,7 +90,7 @@ export function PostCard({ post, readOnly, onChange, onRemove }: Props) {
         </div>
         {!editing && (
           <div className="flex shrink-0 items-center gap-1">
-            {isEditor && (
+            {canPin && (
               <button type="button" className="btn-icon" onClick={togglePin} disabled={busy} title={post.pinned ? t('board.unpin') : t('board.pin')} aria-label={post.pinned ? t('board.unpin') : t('board.pin')}>
                 {post.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
               </button>

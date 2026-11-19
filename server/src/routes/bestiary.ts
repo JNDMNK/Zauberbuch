@@ -2,7 +2,6 @@ import { Router, type Request } from 'express';
 import type { BestiaryEntry, MonsterTemplate, Prisma, User } from '@prisma/client';
 import {
   bestiaryEntrySchema,
-  isEditorRole,
   monsterTemplateSchema,
   type BestiaryEntryDto,
   type DamageType,
@@ -12,13 +11,14 @@ import {
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { forbidden, notFound } from '../lib/errors';
-import { requireAuth, requireEditor } from '../middleware/auth';
+import { requireAuth } from '../middleware/auth';
+import { isDmAnywhere, storyRole } from '../lib/stories';
 
 /**
  * Monster-Datenbanken.
- * - /dm: Vorlagen des DM – gemeinsam für alle Dungeon Master und Admins, für Spieler unsichtbar.
- * - /stories/:storyId: Spieler-Datenbank je Geschichte – alle Mitspieler lesen und bearbeiten,
- *   DM/Admin dürfen nur lesen (ein Admin im Spielermodus, der Mitspieler ist, zählt als Spieler).
+ * - /dm: Vorlagen – gemeinsam für alle, die in einer Geschichte Dungeon Master sind (und den Admin).
+ * - /stories/:storyId: Spieler-Datenbank je Geschichte – Spieler der Geschichte lesen und bearbeiten,
+ *   Dungeon Master der Geschichte (und der Admin ohne Spielerrolle) nur lesen.
  */
 export const bestiaryRouter = Router();
 bestiaryRouter.use(requireAuth);
@@ -50,19 +50,19 @@ const search = (q: unknown): Prisma.StringFilter | undefined => (typeof q === 's
 
 // ---------------------------------------------------------------- DM-Datenbank
 
-bestiaryRouter.get('/dm', requireEditor, async (req, res) => {
+bestiaryRouter.get('/dm', requireStoryDm, async (req, res) => {
   const name = search(req.query.q);
   const list = await prisma.monsterTemplate.findMany({ where: name ? { name } : {}, include, orderBy: { name: 'asc' } });
   res.json({ templates: list.map(toTemplateDto) });
 });
 
-bestiaryRouter.post('/dm', requireEditor, async (req, res) => {
+bestiaryRouter.post('/dm', requireStoryDm, async (req, res) => {
   const input = validate(monsterTemplateSchema, req.body);
   const t = await prisma.monsterTemplate.create({ data: { ...input, createdById: req.user!.id, updatedById: req.user!.id }, include });
   res.status(201).json({ template: toTemplateDto(t) });
 });
 
-bestiaryRouter.put('/dm/:id', requireEditor, async (req, res) => {
+bestiaryRouter.put('/dm/:id', requireStoryDm, async (req, res) => {
   const id = String(req.params.id);
   if (!(await prisma.monsterTemplate.findUnique({ where: { id } }))) throw notFound();
   const input = validate(monsterTemplateSchema, req.body);
@@ -70,7 +70,7 @@ bestiaryRouter.put('/dm/:id', requireEditor, async (req, res) => {
   res.json({ template: toTemplateDto(t) });
 });
 
-bestiaryRouter.delete('/dm/:id', requireEditor, async (req, res) => {
+bestiaryRouter.delete('/dm/:id', requireStoryDm, async (req, res) => {
   const id = String(req.params.id);
   if (!(await prisma.monsterTemplate.findUnique({ where: { id } }))) throw notFound();
   await prisma.monsterTemplate.delete({ where: { id } });
@@ -81,15 +81,22 @@ bestiaryRouter.delete('/dm/:id', requireEditor, async (req, res) => {
 
 /** Zugriff auf die Spieler-Datenbank einer Geschichte; ohne Leserecht 404 */
 async function storyAccess(req: Request, storyId: string) {
-  const story = await prisma.story.findUnique({ where: { id: storyId }, include: { members: { where: { userId: req.user!.id }, select: { userId: true } } } });
+  const story = await prisma.story.findUnique({ where: { id: storyId } });
   if (!story) throw notFound();
-  const member = story.members.length > 0;
-  const editorRole = isEditorRole(req.user!.role);
-  const playingAdmin = req.user!.role === 'admin' && req.user!.combatAsPlayer;
-  const canRead = member || editorRole;
-  const canWrite = member && (!editorRole || playingAdmin);
-  if (!canRead) throw notFound();
-  return { story, canWrite };
+  // Rolle in der Geschichte: Spieler lesen und schreiben, Dungeon Master (und Admin ohne Spielerrolle) nur lesen
+  const role = await storyRole(req.user!, storyId);
+  if (!role) throw notFound();
+  return { story, canWrite: role === 'player' };
+}
+
+/** DM-Datenbank: wer in irgendeiner Geschichte Dungeon Master ist (Admin immer) */
+async function requireStoryDm(req: Request, _res: unknown, next: (err?: unknown) => void) {
+  try {
+    if (!(await isDmAnywhere(req.user!))) return next(forbidden());
+    next();
+  } catch (err) {
+    next(err);
+  }
 }
 
 bestiaryRouter.get('/stories/:storyId', async (req, res) => {

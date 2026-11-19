@@ -13,9 +13,9 @@ import {
   healthStatus,
   hpDeltaSchema,
   isEditorRole,
-  playerModeSchema,
   turnSchema,
   type CharacterSheet,
+  type CharacterSummaryDto,
   type CombatantDto,
   type Condition,
   type DamageType,
@@ -24,9 +24,9 @@ import {
 } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
-import { badRequest, notFound } from '../lib/errors';
-import { requireAdmin, requireAuth, requireEditor } from '../middleware/auth';
-import { notifyRole } from '../lib/notifications';
+import { badRequest, forbidden, notFound } from '../lib/errors';
+import { requireAuth } from '../middleware/auth';
+import { storyRole, visibleStoryWhere } from '../lib/stories';
 
 /**
  * Kampfhilfe je Geschichte.
@@ -38,12 +38,10 @@ import { notifyRole } from '../lib/notifications';
 export const combatRouter = Router();
 combatRouter.use(requireAuth);
 
-/**
- * Spielermodus für Admins (im Konto gespeichert, siehe PUT /player-mode): Der Admin sieht die Kampfhilfe wie ein Benutzer –
- * nur Kämpfe aus Geschichten, in denen er Mitspieler ist, verdeckte Monsterwerte entfernt, keine Verwaltung.
- */
-const asPlayer = (req: Request) => req.user!.role === 'admin' && req.user!.combatAsPlayer;
-const isEditor = (req: Request) => isEditorRole(req.user!.role) && !asPlayer(req);
+/** DM-Rechte und Geschichte des Kampfes der aktuellen Anfrage (gesetzt von loadEncounter) */
+const encDm = new WeakMap<Request, boolean>();
+const encStory = new WeakMap<Request, string>();
+const isDm = (req: Request) => encDm.get(req) === true;
 
 type CombatantWithCharacter = Combatant & { character: (Character & { user: Pick<User, 'id' | 'username'> }) | null };
 type EncounterFull = Encounter & { story: Pick<Story, 'name'>; combatants: CombatantWithCharacter[] };
@@ -88,13 +86,14 @@ function toCombatantDto(req: Request, c: CombatantWithCharacter): CombatantDto {
       hideStats: false,
       conditions,
       owner: c.character.user.username,
-      characterId: own || isEditor(req) ? c.character.id : null,
+      // Bogen öffnen: Besitzer, Moderator/Admin oder DM, wenn der Bogen dieser Geschichte zugeordnet ist
+      characterId: own || isEditorRole(req.user!.role) || (isDm(req) && c.character.storyId === encStory.get(req)) ? c.character.id : null,
       attack: null,
       description: null,
       damage: null,
     };
   }
-  const hidden = c.hideStats && !isEditor(req);
+  const hidden = c.hideStats && !isDm(req);
   return {
     id: c.id,
     kind: c.kind === 'ally' ? 'ally' : 'monster',
@@ -110,9 +109,9 @@ function toCombatantDto(req: Request, c: CombatantWithCharacter): CombatantDto {
     owner: null,
     characterId: null,
     // DM-Notizen: Spieler erhalten sie nie
-    attack: isEditor(req) ? c.attack : null,
-    description: isEditor(req) ? c.description : null,
-    damage: isEditor(req) && c.damageDice && c.damageType ? { dice: c.damageDice, type: c.damageType as DamageType } : null,
+    attack: isDm(req) ? c.attack : null,
+    description: isDm(req) ? c.description : null,
+    damage: isDm(req) && c.damageDice && c.damageType ? { dice: c.damageDice, type: c.damageType as DamageType } : null,
   };
 }
 
@@ -134,18 +133,24 @@ function toEncounterDto(req: Request, e: EncounterFull): EncounterDto {
     ...toSummary(e),
     turnCombatantId: e.turnCombatantId,
     combatants: e.combatants.map((c) => toCombatantDto(req, c)),
-    canManage: isEditor(req),
+    canManage: isDm(req),
   };
 }
 
 /** Geschichten, deren Kämpfe der Benutzer sehen darf */
 function storyFilter(req: Request): Prisma.StoryWhereInput {
-  return isEditor(req) ? {} : { members: { some: { userId: req.user!.id } } };
+  return visibleStoryWhere(req.user!);
 }
 
-async function loadEncounter(req: Request, id: string): Promise<EncounterFull> {
+/** Kampf laden; die Rolle in seiner Geschichte bestimmt die Rechte (manage = Dungeon Master) */
+async function loadEncounter(req: Request, id: string, opts: { manage?: boolean } = {}): Promise<EncounterFull> {
   const e = await prisma.encounter.findFirst({ where: { id, story: storyFilter(req) }, include: fullInclude });
   if (!e) throw notFound();
+  const role = await storyRole(req.user!, e.storyId);
+  if (!role) throw notFound();
+  encDm.set(req, role === 'dm');
+  encStory.set(req, e.storyId);
+  if (opts.manage && role !== 'dm') throw forbidden();
   return e;
 }
 
@@ -158,7 +163,7 @@ const touch = (id: string) => prisma.encounter.update({ where: { id }, data: { u
 async function loadCombatant(req: Request, id: string) {
   const c = await prisma.combatant.findUnique({ where: { id } });
   if (!c) throw notFound();
-  await loadEncounter(req, c.encounterId);
+  await loadEncounter(req, c.encounterId, { manage: true });
   return c;
 }
 
@@ -180,10 +185,11 @@ combatRouter.get('/active', async (req, res) => {
   res.json({ count });
 });
 
-combatRouter.post('/encounters', requireEditor, async (req, res) => {
+combatRouter.post('/encounters', async (req, res) => {
   const input = validate(encounterInputSchema, req.body);
   const story = await prisma.story.findUnique({ where: { id: input.storyId } });
   if (!story) throw badRequest('story_not_found', 'Story not found');
+  if ((await storyRole(req.user!, story.id)) !== 'dm') throw forbidden();
   const e = await prisma.encounter.create({ data: { storyId: story.id, name: input.name } });
   res.status(201);
   await sendEncounter(req, res, e.id);
@@ -193,23 +199,23 @@ combatRouter.get('/encounters/:id', async (req, res) => {
   await sendEncounter(req, res, String(req.params.id));
 });
 
-combatRouter.patch('/encounters/:id', requireEditor, async (req, res) => {
-  const e = await loadEncounter(req, String(req.params.id));
+combatRouter.patch('/encounters/:id', async (req, res) => {
+  const e = await loadEncounter(req, String(req.params.id), { manage: true });
   const input = validate(encounterUpdateSchema, req.body);
   if (input.turnCombatantId && !e.combatants.some((c) => c.id === input.turnCombatantId)) throw badRequest('invalid_combatant', 'Unknown combatant');
   await prisma.encounter.update({ where: { id: e.id }, data: input });
   await sendEncounter(req, res, e.id);
 });
 
-combatRouter.delete('/encounters/:id', requireEditor, async (req, res) => {
-  const e = await loadEncounter(req, String(req.params.id));
+combatRouter.delete('/encounters/:id', async (req, res) => {
+  const e = await loadEncounter(req, String(req.params.id), { manage: true });
   await prisma.encounter.delete({ where: { id: e.id } });
   res.status(204).end();
 });
 
 /** Nächster/vorheriger Zug in Initiative-Reihenfolge; besiegte Monster werden übersprungen */
-combatRouter.post('/encounters/:id/turn', requireEditor, async (req, res) => {
-  const e = await loadEncounter(req, String(req.params.id));
+combatRouter.post('/encounters/:id/turn', async (req, res) => {
+  const e = await loadEncounter(req, String(req.params.id), { manage: true });
   const { direction } = validate(turnSchema, req.body);
   const order = e.combatants
     .map((c) => ({ c, dto: toCombatantDto(req, c) }))
@@ -247,8 +253,8 @@ combatRouter.post('/encounters/:id/turn', requireEditor, async (req, res) => {
 
 // ---------------------------------------------------------------- Teilnehmer
 
-combatRouter.post('/encounters/:id/characters', requireEditor, async (req, res) => {
-  const e = await loadEncounter(req, String(req.params.id));
+combatRouter.post('/encounters/:id/characters', async (req, res) => {
+  const e = await loadEncounter(req, String(req.params.id), { manage: true });
   const { characterIds } = validate(addCharactersSchema, req.body);
   const present = new Set(e.combatants.map((c) => c.characterId).filter(Boolean));
   const chars = await prisma.character.findMany({ where: { id: { in: [...new Set(characterIds)] } }, select: { id: true } });
@@ -259,8 +265,8 @@ combatRouter.post('/encounters/:id/characters', requireEditor, async (req, res) 
   await sendEncounter(req, res, e.id);
 });
 
-combatRouter.post('/encounters/:id/monsters', requireEditor, async (req, res) => {
-  const e = await loadEncounter(req, String(req.params.id));
+combatRouter.post('/encounters/:id/monsters', async (req, res) => {
+  const e = await loadEncounter(req, String(req.params.id), { manage: true });
   const input = validate(addMonsterSchema, req.body);
   if (e.combatants.length + input.count > MAX_COMBATANTS) throw badRequest('too_many_combatants', `At most ${MAX_COMBATANTS} combatants`);
   await prisma.combatant.createMany({
@@ -288,7 +294,7 @@ combatRouter.post('/encounters/:id/monsters', requireEditor, async (req, res) =>
   await sendEncounter(req, res, e.id);
 });
 
-combatRouter.patch('/combatants/:id', requireEditor, async (req, res) => {
+combatRouter.patch('/combatants/:id', async (req, res) => {
   const c = await loadCombatant(req, String(req.params.id));
   const input = validate(combatantUpdateSchema, req.body);
   const data: Prisma.CombatantUpdateInput = {};
@@ -321,7 +327,7 @@ combatRouter.patch('/combatants/:id', requireEditor, async (req, res) => {
 });
 
 /** Schaden/Heilung für Monster, begrenzt auf 0 … LP-Maximum */
-combatRouter.post('/combatants/:id/hp', requireEditor, async (req, res) => {
+combatRouter.post('/combatants/:id/hp', async (req, res) => {
   const c = await loadCombatant(req, String(req.params.id));
   if (c.kind === 'character') throw badRequest('character_read_only', 'Character values come from the character sheet');
   const { delta } = validate(hpDeltaSchema, req.body);
@@ -330,7 +336,7 @@ combatRouter.post('/combatants/:id/hp', requireEditor, async (req, res) => {
   await sendEncounter(req, res, c.encounterId);
 });
 
-combatRouter.delete('/combatants/:id', requireEditor, async (req, res) => {
+combatRouter.delete('/combatants/:id', async (req, res) => {
   const c = await loadCombatant(req, String(req.params.id));
   await prisma.combatant.delete({ where: { id: c.id } });
   await prisma.encounter.updateMany({ where: { id: c.encounterId, turnCombatantId: c.id }, data: { turnCombatantId: null } });
@@ -338,16 +344,25 @@ combatRouter.delete('/combatants/:id', requireEditor, async (req, res) => {
   await sendEncounter(req, res, c.encounterId);
 });
 
-// ---------------------------------------------------------------- Spielermodus (Admin)
-
-/**
- * Spielermodus des Admins umschalten. Wird er ausgeschaltet (Admin sieht wieder alle Werte),
- * erhalten alle Dungeon Master eine Benachrichtigung.
- */
-combatRouter.put('/player-mode', requireAdmin, async (req, res) => {
-  const { asPlayer: on } = validate(playerModeSchema, req.body);
-  const was = req.user!.combatAsPlayer;
-  const user = await prisma.user.update({ where: { id: req.user!.id }, data: { combatAsPlayer: on } });
-  if (was && !on) await notifyRole('dungeonmaster', 'admin_player_mode_off', { admin: user.username });
-  res.json({ asPlayer: user.combatAsPlayer });
+/** Auswahl für „Spieler hinzufügen“: Bögen dieser Geschichte und Bögen ihrer Mitglieder (nur DM) */
+combatRouter.get('/encounters/:id/candidates', async (req, res) => {
+  const e = await loadEncounter(req, String(req.params.id), { manage: true });
+  const members = await prisma.storyMember.findMany({ where: { storyId: e.storyId }, select: { userId: true } });
+  const list = await prisma.character.findMany({
+    where: { OR: [{ storyId: e.storyId }, { userId: { in: members.map((m) => m.userId) } }] },
+    select: { id: true, name: true, classLevel: true, race: true, level: true, createdAt: true, updatedAt: true, user: { select: { id: true, username: true } }, story: { select: { id: true, name: true } } },
+    orderBy: [{ user: { username: 'asc' } }, { name: 'asc' }],
+  });
+  const characters: CharacterSummaryDto[] = list.map((c) => ({
+    id: c.id,
+    name: c.name,
+    classLevel: c.classLevel,
+    race: c.race,
+    level: c.level,
+    createdAt: c.createdAt.toISOString(),
+    updatedAt: c.updatedAt.toISOString(),
+    owner: c.user,
+    story: c.story,
+  }));
+  res.json({ characters });
 });

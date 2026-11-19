@@ -7,7 +7,7 @@ const POLL_MS = 60_000;
 export const refreshCombatActive = () => window.dispatchEvent(new Event(EVENT));
 
 /** Anzahl laufender Kämpfe in den eigenen Geschichten (Markierung im Menü) */
-export function useCombatActive(enabled: boolean, asPlayer = false): number {
+export function useCombatActive(enabled: boolean): number {
   const [count, setCount] = useState(0);
   useEffect(() => {
     if (!enabled) {
@@ -32,6 +32,6 @@ export function useCombatActive(enabled: boolean, asPlayer = false): number {
       window.removeEventListener(EVENT, load);
       document.removeEventListener('visibilitychange', load);
     };
-  }, [enabled, asPlayer]);
+  }, [enabled]);
   return count;
 }

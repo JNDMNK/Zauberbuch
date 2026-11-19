@@ -111,7 +111,8 @@ describe('Charakterbögen', () => {
 
     const admin = await loginAs('admin', 'admin-password');
     expect((await admin.get(`/api/characters/${id}`)).body.character.canEdit).toBe(false);
-    expect((await user.get('/api/characters/all')).status).toBe(403);
+    // ohne Moderator-Rolle und ohne DM-Rolle in einer Geschichte: keine fremden Bögen
+    expect((await user.get('/api/characters/all')).body.characters).toEqual([]);
   });
 
   it('dupliziert und löscht eigene Charaktere; Löschen des Benutzers entfernt seine Bögen', async () => {

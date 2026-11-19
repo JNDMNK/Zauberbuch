@@ -12,8 +12,8 @@ describe('Charakterbogen – Einstellungen', () => {
     const frodo = await createUser('frodo');
     const sam = await createUser('sam');
     const pippin = await createUser('pippin');
-    const story = (await dm.agent.post('/api/board/stories').set(CSRF).send({ name: 'Strahd' })).body.story;
-    const other = (await dm.agent.post('/api/board/stories').set(CSRF).send({ name: 'Tomb' })).body.story;
+    const story = (await dm.agent.post('/api/stories').set(CSRF).send({ name: 'Strahd' })).body.story;
+    const other = (await dm.agent.post('/api/stories').set(CSRF).send({ name: 'Tomb' })).body.story;
     const ch = (await frodo.agent.post('/api/characters').set(CSRF).send({ name: 'Vaelor' })).body.character;
     return { admin, dm, frodo, sam, pippin, storyId: story.id as string, otherStoryId: other.id as string, ch };
   }
@@ -70,11 +70,11 @@ describe('Charakterbogen – Einstellungen', () => {
 
     // Unbekannte bzw. archivierte Geschichte
     expect((await frodo.agent.put(`/api/characters/${ch.id}/settings`).set(CSRF).send({ storyId: 'gibtsnicht', editorIds: [] })).status).toBe(400);
-    await dm.agent.patch(`/api/board/stories/${storyId}`).set(CSRF).send({ archived: true });
+    await dm.agent.patch(`/api/stories/${storyId}`).set(CSRF).send({ archived: true });
     expect((await frodo.agent.put(`/api/characters/${ch.id}/settings`).set(CSRF).send({ storyId, editorIds: [] })).status).toBe(400);
 
     // Geschichte gelöscht -> Zuordnung fällt weg
-    await admin.delete(`/api/board/stories/${otherStoryId}`).set(CSRF);
+    await admin.delete(`/api/stories/${otherStoryId}`).set(CSRF);
     expect((await prisma.character.findUnique({ where: { id: ch.id } }))!.storyId).toBeNull();
   });
 
@@ -89,5 +89,26 @@ describe('Charakterbogen – Einstellungen', () => {
     const c = await prisma.character.findFirst({ include: { editors: true } });
     expect(c!.storyId).toBe(storyId);
     expect(c!.editors.map((e) => e.userId)).toEqual([sam.user.id]);
+  });
+});
+
+describe('Charakterbögen – Dungeon Master einer Geschichte', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('liest die Bögen seiner Geschichte und darf deren Einstellungen ändern', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    const dm = await createUser('leiterin');
+    const frodo = await createUser('frodo');
+    const story = (await admin.post('/api/stories').set(CSRF).send({ name: 'S', dmIds: [dm.user.id] })).body.story;
+    const ch = (await frodo.agent.post('/api/characters').set(CSRF).send({ name: 'Vaelor' })).body.character;
+    const other = (await frodo.agent.post('/api/characters').set(CSRF).send({ name: 'Zweitcharakter' })).body.character;
+    expect((await dm.agent.get(`/api/characters/${ch.id}`)).status).toBe(404);
+    await frodo.agent.put(`/api/characters/${ch.id}/settings`).set(CSRF).send({ storyId: story.id, editorIds: [] });
+    const view = (await dm.agent.get(`/api/characters/${ch.id}`)).body.character;
+    expect(view).toMatchObject({ canEdit: false, canManageSettings: true });
+    expect((await dm.agent.get(`/api/characters/${other.id}`)).status).toBe(404);
+    expect((await dm.agent.get('/api/characters/all')).body.characters.map((c: { name: string }) => c.name)).toEqual(['Vaelor']);
   });
 });

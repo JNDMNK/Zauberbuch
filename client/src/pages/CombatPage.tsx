@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus, Swords } from 'lucide-react';
 import type { EncounterSummaryDto, StoryDto } from '@zauberbuch/shared';
@@ -9,30 +9,50 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { refreshCombatActive } from '../hooks/useCombatActive';
 import { Alert, PageSpinner, Spinner } from '../components/ui';
-import { PlayerModeToggle } from '../components/combat/PlayerModeToggle';
 import { CombatTabs } from '../components/combat/CombatTabs';
-import { useCombatPlayerMode } from '../hooks/useCombatPlayerMode';
 
-/** Übersicht der Kämpfe aus den eigenen Geschichten; DM/Admin legen neue an */
+/**
+ * Übersicht der Kämpfe aus den eigenen Geschichten. Neue Kämpfe legen Dungeon Master einer Geschichte an.
+ * Geschichten-Ansicht: nur Kämpfe der aktiven Geschichte; beim Aufruf über das Menü direkt in den laufenden Kampf.
+ */
 export function CombatPage() {
   const { t, i18n } = useTranslation();
-  const { isEditor: editorRole } = useAuth();
-  const [asPlayer] = useCombatPlayerMode();
-  const isEditor = editorRole && !asPlayer;
-  const [encounters, setEncounters] = useState<EncounterSummaryDto[] | null>(null);
+  const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [all, setAll] = useState<EncounterSummaryDto[] | null>(null);
+  const [stories, setStories] = useState<StoryDto[]>([]);
+  const [showAll, setShowAll] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  const activeStoryId = user?.activeStoryId ?? null;
+  const fromNav = Boolean((location.state as { fromNav?: boolean } | null)?.fromNav);
 
   useEffect(() => {
-    setEncounters(null);
-    api
-      .encounters()
-      .then((r) => setEncounters(r.encounters))
+    Promise.all([api.encounters(), api.stories()])
+      .then(([e, s]) => {
+        setAll(e.encounters);
+        setStories(s.stories);
+      })
       .catch(setError);
-  }, [asPlayer]);
+  }, []);
+  useEffect(() => setShowAll(false), [activeStoryId]);
+
+  const activeStory = stories.find((s) => s.id === activeStoryId) ?? null;
+  const storyMode = Boolean(activeStory) && !showAll;
+  const encounters = all && storyMode ? all.filter((e) => e.storyId === activeStoryId) : all;
+
+  // Geschichten-Ansicht + Klick im Menü: genau ein laufender Kampf -> direkt hinein
+  useEffect(() => {
+    if (!fromNav || !storyMode || !encounters) return;
+    const running = encounters.filter((e) => !e.ended);
+    if (running.length === 1) navigate(`/combat/${running[0].id}`, { replace: true });
+  }, [fromNav, storyMode, encounters, navigate]);
 
   if (error) return <Alert>{errorMessage(t, error)}</Alert>;
   if (!encounters) return <PageSpinner />;
 
+  const dmStories = stories.filter((s) => s.myRole === 'dm' && !s.archived);
+  const isEditor = dmStories.length > 0;
   const running = encounters.filter((e) => !e.ended);
   const ended = encounters.filter((e) => e.ended);
   const list = (items: EncounterSummaryDto[]) => (
@@ -58,13 +78,17 @@ export function CombatPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="flex-1 text-3xl font-bold">{t('combat.heading')}</h1>
-        <PlayerModeToggle />
-      </div>
+      <h1 className="text-3xl font-bold">{t('combat.heading')}</h1>
       <CombatTabs />
-      {asPlayer && <Alert kind="info">{t('combat.playerModeActive')}</Alert>}
-      {isEditor && <NewEncounterForm />}
+      {activeStory && (
+        <p className="flex flex-wrap items-center gap-2 text-sm">
+          {showAll ? t('storyView.showingAll') : t('storyView.filtered', { name: activeStory.name })}
+          <button type="button" className="underline" onClick={() => setShowAll((v) => !v)}>
+            {showAll ? t('storyView.onlyStory') : t('storyView.showAll')}
+          </button>
+        </p>
+      )}
+      {isEditor && <NewEncounterForm stories={storyMode && activeStory?.myRole === 'dm' ? [activeStory] : dmStories} />}
       <section>
         <h2 className="mb-3 text-xl font-bold">{t('combat.running', { count: running.length })}</h2>
         {running.length ? list(running) : <p className="text-parchment-700 dark:text-parchment-400">{isEditor ? t('combat.noneRunningEditor') : t('combat.noneRunningUser')}</p>}
@@ -79,24 +103,16 @@ export function CombatPage() {
   );
 }
 
-function NewEncounterForm() {
+function NewEncounterForm({ stories }: { stories: StoryDto[] }) {
   const { t } = useTranslation();
   const toast = useToast();
   const navigate = useNavigate();
-  const [stories, setStories] = useState<StoryDto[] | null>(null);
-  const [storyId, setStoryId] = useState('');
+  const [storyId, setStoryId] = useState(stories[0]?.id ?? '');
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
-
   useEffect(() => {
-    api
-      .stories()
-      .then((r) => {
-        setStories(r.stories);
-        if (r.stories[0]) setStoryId(r.stories[0].id);
-      })
-      .catch(() => setStories([]));
-  }, []);
+    if (!stories.some((s) => s.id === storyId)) setStoryId(stories[0]?.id ?? '');
+  }, [stories, storyId]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();

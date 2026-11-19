@@ -189,7 +189,7 @@
   "role": {
     "admin": "Admin",
     "user": "Benutzer",
-    "dungeonmaster": "Dungeon Master"
+    "dungeonmaster": "Moderator"
   },
   "admin": {
     "title": "Verwaltung",
@@ -273,7 +273,7 @@
     "setPasswordFor": "Neues Passwort für „{{name}}“",
     "passwordSet": "Passwort gesetzt. Der Benutzer wurde auf allen Geräten abgemeldet.",
     "emailOptional": "E-Mail (optional)",
-    "rolesHint": "Benutzer: Zauber ansehen und eigenes Zauberbuch führen (optional mit Zusatzrecht „Zauber bearbeiten“) · Dungeon Master: zusätzlich Zauber pflegen und löschen sowie alle Zauberbücher und Charakterbögen ansehen · Admin: zusätzlich Benutzer, Import und Export verwalten",
+    "rolesHint": "Benutzer: Zauber ansehen und eigenes Zauberbuch führen (optional mit Zusatzrecht „Zauber bearbeiten“) · Moderator: zusätzlich Zauber pflegen und löschen, Geschichten verwalten sowie alle Zauberbücher und Charakterbögen ansehen · Admin: zusätzlich Benutzer, Import und Export verwalten. Rechte auf Infotafel und Kampf vergibt Verwaltung → Geschichten.",
     "characters": "Charakterbögen",
     "charactersTitle": "Charakterbögen der Benutzer",
     "charactersHint": "Alle Charakterbögen – nur lesend. Bearbeiten kann nur der Besitzer.",
@@ -326,7 +326,7 @@
     "canEditSpells": "Darf Zauber bearbeiten",
     "canEditSpellsShort": "Zauber bearbeiten",
     "canEditSpellsHint": "Zauber anlegen, bearbeiten und duplizieren (nicht löschen), ohne weitere Rechte",
-    "canEditSpellsByRole": "Admins und Dungeon Master dürfen Zauber immer bearbeiten",
+    "canEditSpellsByRole": "Admins und Moderatoren dürfen Zauber immer bearbeiten",
     "rightChanged": "Recht geändert",
     "boardSection": "Infotafel",
     "boardExportText": "Exportiert alle Geschichten mit Mitspielern, Beiträgen und Kommentaren (ohne Papierkorb). Ersteller werden über den Benutzernamen gespeichert – Benutzer daher zuerst importieren.",
@@ -335,7 +335,8 @@
     "boardInvalidFile": "Die Datei ist kein Export der Infotafel.",
     "boardFileSummary": "{{name}}: {{stories}} Geschichten, {{posts}} Beiträge",
     "boardImportDone": "Import abgeschlossen: {{storiesCreated}} Geschichten neu, {{storiesMerged}} zusammengeführt, {{postsCreated}} Beiträge importiert, {{postsSkipped}} übersprungen.",
-    "boardUnknownUsers": "Unbekannte Benutzer (als „gelöschter Benutzer“ übernommen): {{names}}"
+    "boardUnknownUsers": "Unbekannte Benutzer (als „gelöschter Benutzer“ übernommen): {{names}}",
+    "stories": "Geschichten"
   },
   "errors": {
     "unknown": "Unbekannter Fehler.",
@@ -431,7 +432,7 @@
     "print": "Drucken",
     "mine": "Meine Charaktere",
     "others": "Charakterbögen weiterer Spieler",
-    "othersHint": "Nur lesend – bearbeiten kann nur der jeweilige Spieler.",
+    "othersHint": "Nur lesend – bearbeiten kann nur der jeweilige Spieler. Dungeon Master sehen die Bögen ihrer Geschichten.",
     "othersSearch": "Name, Klasse, Volk oder Spieler",
     "othersEmpty": "Andere Spieler haben noch keine Charakterbögen angelegt.",
     "titleAll": "Charakterbögen",
@@ -661,8 +662,8 @@
     "noPlayers": "Es gibt noch keine Benutzer mit der Rolle „Benutzer“.",
     "noMembers": "Noch keine Mitspieler",
     "noStoriesYet": "Noch keine Geschichten angelegt.",
-    "noStoriesEditor": "Lege eine Geschichte an, um die Infotafel zu nutzen.",
-    "noStoriesUser": "Du bist noch keiner Geschichte zugeordnet. Der Dungeon Master oder Admin kann dich als Mitspieler hinzufügen.",
+    "noStoriesEditor": "Lege unter Verwaltung → Geschichten eine Geschichte an, um die Infotafel zu nutzen.",
+    "noStoriesUser": "Du bist noch keiner Geschichte zugeordnet. Ein Moderator oder Admin kann dich unter Verwaltung → Geschichten eintragen – oder ordne deinen Charakterbogen einer Geschichte zu.",
     "storyCreated": "Geschichte angelegt",
     "storySaved": "Geschichte gespeichert",
     "storyArchived": "Geschichte archiviert",
@@ -745,7 +746,7 @@
     "name": "Name des Kampfes",
     "namePlaceholder": "z. B. Überfall am Pass",
     "start": "Kampf anlegen",
-    "needStory": "Ein Kampf gehört immer zu einer Geschichte. Lege zuerst auf der Infotafel eine Geschichte an:",
+    "needStory": "Kämpfe legt der Dungeon Master einer Geschichte an. Geschichten verwaltest du unter Verwaltung → Geschichten:",
     "running_one": "Laufender Kampf",
     "running_other": "Laufende Kämpfe",
     "ended": "Beendete Kämpfe",
@@ -868,7 +869,8 @@
     "clear": "Alle löschen",
     "types": {
       "admin_player_mode_off": "Admin „{{admin}}“ hat den Spielermodus der Kampfhilfe ausgeschaltet und sieht wieder alle Werte (auch verdeckte Monster).",
-      "board_post": "{{author}} hat auf der Infotafel „{{story}}“ geschrieben: {{title}}"
+      "board_post": "{{author}} hat auf der Infotafel „{{story}}“ geschrieben: {{title}}",
+      "admin_story_role_changed": "Admin „{{admin}}“ ist in „{{story}}“ nicht mehr als Spieler eingetragen und sieht dort wieder alle Werte (auch verdeckte Monster)."
     },
     "open": "Öffnen"
   },
@@ -878,7 +880,7 @@
     "dmDatabase": "DM-Datenbank (Vorlagen)",
     "playerDatabaseOf": "Spieler-Datenbank: {{name}} (nur lesen)",
     "noStory": "Die Monster-Datenbank der Spieler gehört zu einer Geschichte. Du bist noch keiner Geschichte als Mitspieler zugeordnet.",
-    "dmIntro": "Deine Monster-Vorlagen – gemeinsam für alle Dungeon Master und Admins, für Spieler unsichtbar. Im Kampf übernimmst du sie über „Monster hinzufügen“ oder „Verbündeten hinzufügen“.",
+    "dmIntro": "Deine Monster-Vorlagen – gemeinsam für alle, die in einer Geschichte Dungeon Master sind, für Spieler unsichtbar. Im Kampf übernimmst du sie über „Monster hinzufügen“ oder „Verbündeten hinzufügen“.",
     "playerIntro": "Gemeinsames Monster-Notizbuch eurer Gruppe „{{name}}“: Alle Mitspieler können Einträge anlegen und ergänzen. Die Daten des DM sind hier nicht enthalten.",
     "readOnlyIntro": "Monster-Datenbank der Spieler aus „{{name}}“ – das, was die Gruppe über Monster herausgefunden hat. Du kannst sie nur lesen.",
     "readOnly": "Nur lesen",
@@ -912,5 +914,33 @@
     "damageHint": "Wie bei den Zaubern, z. B. 1d6+2 oder 2W8+4. Leer lassen, wenn kein Schaden.",
     "hpRangePlaceholder": "z. B. 58 oder 10-15",
     "hpRangeHint": "LP als Zahl oder Bereich (z. B. 10-15) – leer lassen, wenn unbekannt."
+  },
+  "storyView": {
+    "title": "Ansicht",
+    "general": "Allgemein",
+    "switched": "Geschichten-Ansicht: {{name}}",
+    "hint": "In der Geschichten-Ansicht führen Charakterbogen, Infotafel und Kampf direkt zu dieser Geschichte.",
+    "filtered": "Geschichten-Ansicht „{{name}}“ – nur Kämpfe dieser Geschichte.",
+    "filteredCharacters": "Geschichten-Ansicht „{{name}}“ – nur Bögen dieser Geschichte.",
+    "showingAll": "Alle anzeigen (Geschichten-Ansicht pausiert).",
+    "showAll": "Alle anzeigen",
+    "onlyStory": "Nur diese Geschichte"
+  },
+  "storyRole": {
+    "player": "Spieler",
+    "dm": "Dungeon Master",
+    "dmShort": "DM",
+    "playerPlural": "Spieler",
+    "dmPlural": "Dungeon Master"
+  },
+  "stories": {
+    "title": "Geschichten",
+    "hint": "Hier werden die Geschichten angelegt. Sie erscheinen automatisch auf Infotafel und Kampf. Die Rolle je Geschichte (Spieler oder Dungeon Master) bestimmt, was jemand dort sieht und darf.",
+    "edit": "Geschichte bearbeiten",
+    "members": "Mitglieder und Rechte",
+    "membersHint": "Spieler sehen Infotafel und Kämpfe der Geschichte und schreiben Beiträge. Dungeon Master führen Kämpfe, sehen verdeckte Werte, verwalten Beiträge und lesen die Charakterbögen der Geschichte. Ohne Eintrag ist die Geschichte unsichtbar (der Admin hat ohne Spielerrolle überall DM-Rechte).",
+    "roleFor": "Rolle für",
+    "notMember": "–",
+    "deleteText": "„{{name}}“ wird mit allen {{count}} Beiträgen, Kämpfen und der Spieler-Monster-Datenbank endgültig gelöscht. Zum Ausblenden besser archivieren."
   }
 }

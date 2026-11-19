@@ -20,6 +20,7 @@ import type {
   PostInput,
   StoryDto,
   StoryInput,
+  StoryRole,
   StoryUpdate,
   CharacterDto,
   CharacterImportPreview,
@@ -158,10 +159,14 @@ export const api = {
 
   // Infotafel
   stories: (archived = false) => request<{ stories: StoryDto[] }>('GET', `/api/board/stories${archived ? '?archived=true' : ''}`),
-  boardUsers: () => request<{ users: { id: string; username: string; role: Role }[] }>('GET', '/api/board/users'),
-  createStory: (input: StoryInput) => request<{ story: StoryDto }>('POST', '/api/board/stories', input),
-  updateStory: (id: string, input: StoryUpdate) => request<{ story: StoryDto }>('PATCH', `/api/board/stories/${id}`, input),
-  deleteStory: (id: string) => request<void>('DELETE', `/api/board/stories/${id}`),
+  // Geschichten-Verwaltung (Admin/Moderator) und Geschichten-Ansicht
+  manageStories: () => request<{ stories: StoryDto[] }>('GET', '/api/stories'),
+  storyUsers: () => request<{ users: { id: string; username: string; role: Role }[] }>('GET', '/api/stories/users'),
+  createStory: (input: StoryInput) => request<{ story: StoryDto }>('POST', '/api/stories', input),
+  updateStory: (id: string, input: StoryUpdate) => request<{ story: StoryDto }>('PATCH', `/api/stories/${id}`, input),
+  deleteStory: (id: string) => request<void>('DELETE', `/api/stories/${id}`),
+  myStories: () => request<{ stories: { id: string; name: string; role: StoryRole | null }[] }>('GET', '/api/stories/mine'),
+  setActiveStory: (storyId: string | null) => request<{ user: UserDto }>('PUT', '/api/stories/active', { storyId }),
   markStoryRead: (id: string) => request<void>('POST', `/api/board/stories/${id}/read`),
   boardUnread: () => request<BoardUnreadDto>('GET', '/api/board/unread'),
   boardPosts: (storyId: string, params: URLSearchParams, signal?: AbortSignal) =>
@@ -182,8 +187,7 @@ export const api = {
   encounters: () => request<{ encounters: EncounterSummaryDto[] }>('GET', '/api/combat/encounters'),
   combatActive: () => request<{ count: number }>('GET', '/api/combat/active'),
   encounter: (id: string, signal?: AbortSignal) => request<{ encounter: EncounterDto }>('GET', `/api/combat/encounters/${id}`, undefined, signal),
-  /** Spielermodus des Admins (im Konto gespeichert) */
-  setCombatPlayerMode: (asPlayer: boolean) => request<{ asPlayer: boolean }>('PUT', '/api/combat/player-mode', { asPlayer }),
+  combatCandidates: (id: string) => request<{ characters: CharacterSummaryDto[] }>('GET', `/api/combat/encounters/${id}/candidates`),
   createEncounter: (storyId: string, name: string) => request<{ encounter: EncounterDto }>('POST', '/api/combat/encounters', { storyId, name }),
   updateEncounter: (id: string, data: { name?: string; round?: number; turnCombatantId?: string | null; ended?: boolean }) =>
     request<{ encounter: EncounterDto }>('PATCH', `/api/combat/encounters/${id}`, data),

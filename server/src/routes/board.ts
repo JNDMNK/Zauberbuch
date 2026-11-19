@@ -7,12 +7,9 @@ import {
   boardImportSchema,
   boardSearchText,
   commentInputSchema,
-  isEditorRole,
   pinSchema,
   postInputSchema,
   postQuerySchema,
-  storyInputSchema,
-  storyUpdateSchema,
   type BoardCategory,
   type BoardCommentDto,
   type BoardExportFile,
@@ -23,12 +20,14 @@ import {
   type BoardUserRef,
   type DeletedBoardPostDto,
   type StoryDto,
+  type StoryRole,
 } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { logger } from '../lib/logger';
-import { requireAdmin, requireAuth, requireEditor } from '../middleware/auth';
+import { requireAdmin, requireAuth } from '../middleware/auth';
+import { roleFromMembership, visibleStoryWhere } from '../lib/stories';
 import { notifyUsers } from '../lib/notifications';
 
 /**
@@ -44,9 +43,11 @@ boardRouter.use(requireAuth);
 const DAY_MS = 24 * 60 * 60 * 1000;
 const userRefSelect = { select: { id: true, username: true } } as const;
 
-const isEditor = (req: Request) => isEditorRole(req.user!.role);
 const ref = (u: Pick<User, 'id' | 'username'> | null | undefined): BoardUserRef | null => (u ? { id: u.id, username: u.username } : null);
-const canModify = (req: Request, authorId: string | null) => isEditor(req) || (authorId !== null && authorId === req.user!.id);
+
+/** DM-Rechte in der Geschichte der aktuellen Anfrage (gesetzt von loadStory) */
+const storyDm = new WeakMap<Request, boolean>();
+const canModify = (req: Request, authorId: string | null) => storyDm.get(req) === true || (authorId !== null && authorId === req.user!.id);
 
 type CommentWithAuthor = BoardComment & { author: Pick<User, 'id' | 'username'> | null };
 type PostWithRelations = BoardPost & {
@@ -100,10 +101,12 @@ function postSnippet(body: string, max = 80) {
 
 /** Lädt eine Geschichte und prüft den Zugriff. Ohne Zugriff 404, damit fremde Geschichten verborgen bleiben. */
 async function loadStory(req: Request, id: string) {
-  const story = await prisma.story.findUnique({ where: { id }, include: { members: { select: { userId: true } } } });
+  const story = await prisma.story.findUnique({ where: { id }, include: { members: { select: { userId: true, role: true } } } });
   if (!story) throw notFound();
-  if (!isEditor(req) && !story.members.some((m) => m.userId === req.user!.id)) throw notFound();
-  return story;
+  const role = roleFromMembership(req.user!, story.members.find((m) => m.userId === req.user!.id)?.role);
+  if (!role) throw notFound();
+  storyDm.set(req, role === 'dm');
+  return { ...story, role };
 }
 
 function assertWritable(story: Pick<Story, 'archived'>) {
@@ -120,10 +123,7 @@ async function loadPost(req: Request, id: string) {
 
 /** Geschichten, die der Benutzer sehen darf */
 function storyWhere(req: Request, includeArchived: boolean): Prisma.StoryWhereInput {
-  return {
-    ...(includeArchived ? {} : { archived: false }),
-    ...(isEditor(req) ? {} : { members: { some: { userId: req.user!.id } } }),
-  };
+  return { ...(includeArchived ? {} : { archived: false }), ...visibleStoryWhere(req.user!) };
 }
 
 /** Neue Beiträge und Kommentare anderer seit dem letzten Lesen, je Geschichte */
@@ -155,98 +155,37 @@ export async function purgeDeletedBoardPosts(now = new Date()): Promise<number> 
   return count;
 }
 
-async function setMembers(tx: Prisma.TransactionClient, storyId: string, memberIds: string[]) {
-  const unique = [...new Set(memberIds)];
-  const existing = await tx.user.findMany({ where: { id: { in: unique } }, select: { id: true } });
-  await tx.storyMember.deleteMany({ where: { storyId, userId: { notIn: existing.map((u) => u.id) } } });
-  for (const u of existing) {
-    await tx.storyMember.upsert({ where: { storyId_userId: { storyId, userId: u.id } }, create: { storyId, userId: u.id }, update: {} });
-  }
-}
+const storyInclude = {
+  members: { include: { user: userRefSelect }, orderBy: { user: { username: 'asc' } } },
+  _count: { select: { posts: { where: { deletedAt: null } } } },
+} satisfies Prisma.StoryInclude;
+type StoryWithMembers = Prisma.StoryGetPayload<{ include: typeof storyInclude }>;
 
-async function storyDto(req: Request, id: string): Promise<StoryDto> {
-  const s = await prisma.story.findUniqueOrThrow({
-    where: { id },
-    include: { members: { include: { user: userRefSelect }, orderBy: { user: { username: 'asc' } } }, _count: { select: { posts: { where: { deletedAt: null } } } } },
-  });
-  const unread = await unreadCounts(req.user!.id, [id]);
-  return {
+/** Geschichten als DTO inkl. Rollen, eigener Rolle und Ungelesen-Zähler */
+export async function buildStoryDtos(user: Pick<User, 'id' | 'role'>, stories: StoryWithMembers[]): Promise<StoryDto[]> {
+  const unread = await unreadCounts(user.id, stories.filter((s) => !s.archived).map((s) => s.id));
+  return stories.map((s) => ({
     id: s.id,
     name: s.name,
     description: s.description,
     archived: s.archived,
     createdAt: s.createdAt.toISOString(),
     updatedAt: s.updatedAt.toISOString(),
-    members: s.members.map((m) => ref(m.user)!),
-    postCount: s._count.posts,
-    unread: unread[id] ?? 0,
-  };
-}
-
-// ---------------------------------------------------------------- Geschichten
-
-boardRouter.get('/stories', async (req, res) => {
-  const includeArchived = req.query.archived === 'true';
-  const stories = await prisma.story.findMany({
-    where: storyWhere(req, includeArchived),
-    orderBy: [{ archived: 'asc' }, { name: 'asc' }],
-    include: { members: { include: { user: userRefSelect }, orderBy: { user: { username: 'asc' } } }, _count: { select: { posts: { where: { deletedAt: null } } } } },
-  });
-  const unread = await unreadCounts(req.user!.id, stories.filter((s) => !s.archived).map((s) => s.id));
-  const body: StoryDto[] = stories.map((s) => ({
-    id: s.id,
-    name: s.name,
-    description: s.description,
-    archived: s.archived,
-    createdAt: s.createdAt.toISOString(),
-    updatedAt: s.updatedAt.toISOString(),
-    members: s.members.map((m) => ref(m.user)!),
+    members: s.members.map((m) => ({ ...ref(m.user)!, role: (m.role === 'dm' ? 'dm' : 'player') as StoryRole })),
+    myRole: roleFromMembership(user, s.members.find((m) => m.userId === user.id)?.role),
     postCount: s._count.posts,
     unread: unread[s.id] ?? 0,
   }));
-  res.json({ stories: body });
-});
+}
+export { storyInclude };
 
-/** Benutzerliste zur Auswahl der Mitspieler */
-boardRouter.get('/users', requireEditor, async (_req, res) => {
-  const users = await prisma.user.findMany({ select: { id: true, username: true, role: true }, orderBy: { username: 'asc' } });
-  res.json({ users });
-});
+// ---------------------------------------------------------------- Geschichten
 
-boardRouter.post('/stories', requireEditor, async (req, res) => {
-  const input = validate(storyInputSchema, req.body);
-  const story = await prisma.$transaction(async (tx) => {
-    const s = await tx.story.create({ data: { name: input.name, description: input.description } });
-    await setMembers(tx, s.id, input.memberIds);
-    return s;
-  });
-  res.status(201).json({ story: await storyDto(req, story.id) });
-});
-
-boardRouter.patch('/stories/:id', requireEditor, async (req, res) => {
-  const id = String(req.params.id);
-  const input = validate(storyUpdateSchema, req.body);
-  await loadStory(req, id);
-  await prisma.$transaction(async (tx) => {
-    await tx.story.update({
-      where: { id },
-      data: {
-        ...(input.name !== undefined ? { name: input.name } : {}),
-        ...(input.description !== undefined ? { description: input.description } : {}),
-        ...(input.archived !== undefined ? { archived: input.archived } : {}),
-      },
-    });
-    if (input.memberIds) await setMembers(tx, id, input.memberIds);
-  });
-  res.json({ story: await storyDto(req, id) });
-});
-
-/** Geschichte samt aller Beiträge endgültig löschen – nur Admin */
-boardRouter.delete('/stories/:id', requireAdmin, async (req, res) => {
-  const id = String(req.params.id);
-  await loadStory(req, id);
-  await prisma.story.delete({ where: { id } });
-  res.status(204).end();
+/** Geschichten für Infotafel/Kampf (gemäß Rolle; Verwaltung siehe /api/stories) */
+boardRouter.get('/stories', async (req, res) => {
+  const includeArchived = req.query.archived === 'true';
+  const stories = await prisma.story.findMany({ where: storyWhere(req, includeArchived), orderBy: [{ archived: 'asc' }, { name: 'asc' }], include: storyInclude });
+  res.json({ stories: await buildStoryDtos(req.user!, stories) });
 });
 
 boardRouter.post('/stories/:id/read', async (req, res) => {
@@ -332,8 +271,9 @@ boardRouter.patch('/posts/:id', async (req, res) => {
   res.json({ post: toPostDto(req, updated) });
 });
 
-boardRouter.post('/posts/:id/pin', requireEditor, async (req, res) => {
-  const { post } = await loadPost(req, String(req.params.id));
+boardRouter.post('/posts/:id/pin', async (req, res) => {
+  const { post, story } = await loadPost(req, String(req.params.id));
+  if (story.role !== 'dm') throw forbidden();
   const { pinned } = validate(pinSchema, req.body);
   const updated = await prisma.boardPost.update({
     where: { id: post.id },
@@ -354,6 +294,7 @@ boardRouter.delete('/posts/:id', async (req, res) => {
 // ---------------------------------------------------------------- Papierkorb (Admin)
 
 boardRouter.get('/deleted', requireAdmin, async (req, res) => {
+  storyDm.set(req, true);
   await purgeDeletedBoardPosts();
   const storyId = typeof req.query.storyId === 'string' && req.query.storyId ? req.query.storyId : undefined;
   const posts = await prisma.boardPost.findMany({
@@ -376,6 +317,7 @@ boardRouter.post('/posts/:id/restore', requireAdmin, async (req, res) => {
   const post = await prisma.boardPost.findUnique({ where: { id: String(req.params.id) } });
   if (!post || !post.deletedAt) throw notFound();
   const updated = await prisma.boardPost.update({ where: { id: post.id }, data: { deletedAt: null, deletedById: null }, include: postInclude });
+  storyDm.set(req, true);
   res.json({ post: toPostDto(req, updated) });
 });
 
@@ -441,7 +383,8 @@ boardRouter.get('/export', requireAdmin, async (_req, res) => {
       name: s.name,
       description: s.description,
       archived: s.archived,
-      members: s.members.map((m) => m.user.username),
+      members: s.members.filter((m) => m.role !== 'dm').map((m) => m.user.username),
+      dms: s.members.filter((m) => m.role === 'dm').map((m) => m.user.username),
       posts: s.posts.map((p) => ({
         title: p.title,
         body: p.body,
@@ -485,9 +428,11 @@ boardRouter.post('/import', requireAdmin, async (req, res) => {
           story = await tx.story.create({ data: { name: s.name, description: s.description, archived: s.archived } });
           result.storiesCreated++;
         }
-        for (const m of s.members) {
-          const id = userId(m);
-          if (id) await tx.storyMember.upsert({ where: { storyId_userId: { storyId: story.id, userId: id } }, create: { storyId: story.id, userId: id }, update: {} });
+        for (const [names, role] of [[s.members, 'player'], [s.dms, 'dm']] as const) {
+          for (const m of names) {
+            const id = userId(m);
+            if (id) await tx.storyMember.upsert({ where: { storyId_userId: { storyId: story.id, userId: id } }, create: { storyId: story.id, userId: id, role }, update: { role } });
+          }
         }
         for (const p of s.posts) {
           const authorId = userId(p.author);

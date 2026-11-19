@@ -19,7 +19,10 @@ Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutze
   angehefteten Beiträgen, Ungelesen-Zähler und Papierkorb (siehe [Infotafel](#infotafel))
 - ⚔️ **Kampfhilfe**: Initiative-Reihenfolge mit Runden und aktivem Zug, Spielercharaktere live aus den
   Charakterbögen (RK, LP mit Lebensbalken), Monster mit verdeckbaren Werten, Zustände (siehe [Kampfhilfe](#kampfhilfe))
-- 👥 Rollen **Benutzer**, **Dungeon Master** und **Admin** (siehe [Rollen & Benutzer](#rollen--benutzer))
+- 👥 Server-Rollen **Benutzer**, **Moderator** und **Admin**, dazu **Rollen pro Geschichte** (Spieler / Dungeon Master)
+  für Infotafel und Kampf (siehe [Rollen & Benutzer](#rollen--benutzer))
+- 🧭 **Geschichten-Ansicht**: per Umschalter in der Kopfzeile führen Charakterbogen, Infotafel und Kampf direkt
+  zur gewählten Geschichte
 - 🔒 Ohne Anmeldung keine Daten – die Startseite ist der Login, es gibt keine Selbstregistrierung
 - 🌍 DE/EN-Umschalter für Oberfläche **und** Zaubertexte (pro Benutzer gespeichert, Gäste im localStorage);
   fehlende Übersetzungen fallen auf die andere Sprache zurück (mit Hinweis-Badge)
@@ -94,9 +97,19 @@ setzen (mindestens `ZAUBERBUCH_IMAGE` und `ADMIN_PASSWORD`). Dann **Compose Up**
 ## Rollen & Benutzer
 
 Die **Verwaltung** erreichst du über das Benutzermenü oben rechts (auf dem Handy über das ☰-Menü). „Alle Zauber“
-und „Mein Zauberbuch“ liegen im Aufklappmenü **Zauber** – für Dungeon Master und Admin dort zusätzlich
-**„Zauberbücher der Spieler“**. Die Charakterbögen der anderen Spieler sehen DM und Admin auf der Seite
-**Charakterbogen** unter „Charakterbögen weiterer Spieler“ (nur lesend).
+und „Mein Zauberbuch“ liegen im Aufklappmenü **Zauber** – für Moderator und Admin dort zusätzlich
+**„Zauberbücher der Spieler“**. Die Charakterbögen der anderen Spieler sehen Moderator und Admin (sowie der
+Dungeon Master einer Geschichte die Bögen seiner Geschichte) auf der Seite **Charakterbogen** unter
+„Charakterbögen weiterer Spieler“ (nur lesend).
+
+Es gibt zwei Ebenen von Rechten:
+
+- **Server-Rolle** (Verwaltung → Benutzer): **Benutzer**, **Moderator** (früher „Dungeon Master“) und **Admin**.
+  Sie regelt Zauber, Zauberbücher, alle Charakterbögen und die Verwaltung.
+- **Rolle pro Geschichte** (Verwaltung → Geschichten): **Spieler** oder **Dungeon Master**. Sie allein regelt, was
+  jemand auf **Infotafel und Kampf** sieht und darf – auch für Moderatoren. Ein normaler Benutzer kann also in einer
+  Geschichte Dungeon Master und in einer anderen Spieler sein. Der **Admin** hat in allen Geschichten DM-Rechte,
+  außer er ist dort als Spieler eingetragen.
 
 Ohne Anmeldung sind keine Daten sichtbar – weder in der Oberfläche noch über die API. Eine
 Selbstregistrierung gibt es nicht: Benutzer legt der Admin unter **Verwaltung → Benutzer → Neuer Benutzer**
@@ -104,7 +117,7 @@ an (Benutzername, optional E-Mail, Passwort, Rolle). Dort kann er auch Rollen ä
 „Zauber bearbeiten“ vergeben, Passwörter neu
 setzen (der Benutzer wird dabei auf allen Geräten abgemeldet) und Benutzer löschen.
 
-| Recht | Benutzer | Dungeon Master | Admin |
+| Recht (Server-Rolle) | Benutzer | Moderator | Admin |
 |---|:---:|:---:|:---:|
 | Zauber suchen, filtern, ansehen | ✔ | ✔ | ✔ |
 | Eigenes Zauberbuch („Mein Zauberbuch“) führen | ✔ | ✔ | ✔ |
@@ -113,19 +126,26 @@ setzen (der Benutzer wird dabei auf allen Geräten abgemeldet) und Benutzer lös
 | Zauberbücher aller Benutzer ansehen | – | ✔ | ✔ |
 | Eigene Charakterbögen anlegen und bearbeiten (inkl. Einstellungen: Geschichte, Mitbearbeiter) | ✔ | ✔ | ✔ |
 | Geteilte Charakterbögen bearbeiten (als Mitbearbeiter) | ✔ | ✔ | ✔ |
-| Einstellungen fremder Bögen ändern (Geschichte, Mitbearbeiter) | – | ✔ | ✔ |
-| Charakterbögen aller Benutzer ansehen (nur lesen) | – | ✔ | ✔ |
-| Infotafel: Geschichten lesen und Beiträge/Kommentare schreiben | (✔)² | ✔ | ✔ |
-| Infotafel: fremde Beiträge/Kommentare bearbeiten und löschen, anheften | – | ✔ | ✔ |
-| Infotafel: Geschichten anlegen, Mitspieler zuordnen, archivieren | – | ✔ | ✔ |
-| Infotafel: Geschichten löschen, Papierkorb (wiederherstellen) | – | – | ✔ |
-| Kampfhilfe ansehen (Kämpfe der eigenen Geschichten, nur lesen) | (✔)² | ✔ | ✔ |
-| Kampfhilfe führen (Kämpfe anlegen, Teilnehmer, Initiative, Monster, Zustände) | – | ✔ | ✔ |
+| Einstellungen fremder Bögen ändern (Geschichte, Mitbearbeiter) | (✔)² | ✔ | ✔ |
+| Charakterbögen aller Benutzer ansehen (nur lesen) | (✔)² | ✔ | ✔ |
+| Geschichten anlegen, bearbeiten, Rollen vergeben, archivieren (Verwaltung → Geschichten) | – | ✔ | ✔ |
+| Geschichten löschen, Papierkorb der Infotafel (wiederherstellen) | – | – | ✔ |
 | JSON-Import und -Export (Zauber, Benutzer, Charakterbögen, Infotafel) | – | – | ✔ |
 | Benutzer anlegen, Rollen ändern, Passwörter setzen, löschen | – | – | ✔ |
 
-² Nur in Geschichten, in denen der Benutzer als Mitspieler eingetragen ist. Eigene Beiträge und Kommentare
-darf jeder selbst bearbeiten und löschen.
+² Als Dungeon Master einer Geschichte: für die Bögen, die dieser Geschichte zugeordnet sind.
+
+| Recht (Rolle in der Geschichte) | Spieler | Dungeon Master |
+|---|:---:|:---:|
+| Infotafel lesen, Beiträge und Kommentare schreiben, eigene bearbeiten/löschen | ✔ | ✔ |
+| Fremde Beiträge/Kommentare bearbeiten und löschen, anheften | – | ✔ |
+| Kämpfe ansehen (verdeckte Monsterwerte nur als grober Zustand) | ✔ | ✔ |
+| Kämpfe führen (anlegen, Teilnehmer, Initiative, Monster, Zustände, verdeckte Werte) | – | ✔ |
+| Spieler-Monster-Datenbank der Geschichte bearbeiten | ✔ | nur lesen |
+| DM-Monster-Datenbank nutzen | – | ✔ |
+| Charakterbögen der Geschichte lesen und deren Einstellungen ändern | – | ✔ |
+
+Ohne Eintrag ist eine Geschichte (mit Infotafel und Kämpfen) unsichtbar.
 
 ¹ Nur mit dem Zusatzrecht **„Zauber bearbeiten“**, das der Admin pro Benutzer unter **Verwaltung → Benutzer**
 per Häkchen vergibt (auch direkt beim Anlegen). Der Benutzer behält ansonsten seine Rechte: In der Verwaltung
@@ -154,12 +174,13 @@ Rettungswürfe, Fertigkeiten, passive Wahrnehmung, Initiative, Angriffsbonus, Za
 -Angriffsbonus, Sprungweiten, Gewichte (50 Münzen = 1 lb) und Traglastgrenzen.
 
 Änderungen werden automatisch gespeichert (kurz nach der letzten Eingabe sowie beim Verlassen der Seite).
-Bilder werden im Browser verkleinert und mit dem Bogen gespeichert. Admin und Dungeon Master sehen alle
+Bilder werden im Browser verkleinert und mit dem Bogen gespeichert. Admin und Moderator sehen alle
 Bögen auf der Seite **Charakterbogen** unter „Charakterbögen weiterer Spieler“ – nur lesend. Der Bogen lässt sich über das Drucker-Symbol drucken.
 
 ### Einstellungen eines Bogens
 
-Die letzte Seite des Bogens, **Einstellungen**, sehen Besitzer, Dungeon Master und Admin:
+Die letzte Seite des Bogens, **Einstellungen**, sehen Besitzer, Moderator, Admin und der Dungeon Master der
+zugeordneten Geschichte:
 
 - **Geschichte:** ordnet den Bogen einer Geschichte der Infotafel zu. Der Besitzer wird dadurch automatisch
   **Mitspieler** dieser Geschichte (Infotafel, Kämpfe, Spieler-Monster-Datenbank). Im Kampf zeigt
@@ -230,14 +251,16 @@ Format:
 Unter **Infotafel** halten die Spieler wichtige Infos zum Spiel fest – Termine, Orte, NSCs, Quests, Gegenstände,
 Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Gruppen parallel spielen können.
 
-- **Geschichten** legen Admin und Dungeon Master unter **Geschichten verwalten** an und ordnen die Mitspieler
-  zu. Benutzer sehen nur Geschichten, in denen sie Mitspieler sind; Admin und Dungeon Master sehen alle.
-  Abgeschlossene Geschichten lassen sich **archivieren** (lesbar, aber schreibgeschützt; über „Archivierte
-  anzeigen“ einblendbar). Endgültig löschen kann eine Geschichte nur der Admin.
+- **Geschichten** legen Admin und Moderatoren unter **Verwaltung → Geschichten** an; sie erscheinen automatisch auf
+  Infotafel und Kampf. Beim Bearbeiten trägt man Mitglieder mit ihrer Rolle ein (**Spieler** oder **Dungeon
+  Master**) – diese Rollen sind die Ansichtsregeln für Infotafel und Kampf. Ein Moderator, der eine Geschichte
+  anlegt, wird automatisch ihr Dungeon Master. Abgeschlossene Geschichten lassen sich **archivieren** (lesbar,
+  aber schreibgeschützt; über „Archivierte anzeigen“ einblendbar). Endgültig löschen kann eine Geschichte nur der
+  Admin. Spieler werden außerdem automatisch Mitglied, wenn sie ihren Charakterbogen der Geschichte zuordnen.
 - **Beiträge** haben einen optionalen Titel, eine **Kategorie** und Text mit Markdown. **Ersteller und
   Zeitstempel** setzt der Server automatisch; Änderungen werden mit „bearbeitet am … von …“ gekennzeichnet.
-  Ändern und löschen dürfen der Ersteller, Dungeon Master und Admin. Lange Beiträge werden eingeklappt.
-- **Anheften** (📌, Dungeon Master und Admin) hält wichtige Beiträge oben.
+  Ändern und löschen dürfen der Ersteller und die Dungeon Master der Geschichte. Lange Beiträge werden eingeklappt.
+- **Anheften** (📌, Dungeon Master der Geschichte) hält wichtige Beiträge oben.
 - **Kommentare** unter jedem Beitrag; dieselben Rechte wie bei Beiträgen.
 - **Benachrichtigung:** Ein neuer Beitrag löst bei allen anderen Mitspielern der Geschichte die Glocke aus
   („frodo hat auf der Infotafel „…“ geschrieben: …“); ein Klick darauf öffnet die Infotafel der Geschichte.
@@ -250,10 +273,10 @@ Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Grupp
 
 ## Kampfhilfe
 
-Unter **Kampf** führt der Dungeon Master (oder Admin) Kämpfe. Jeder Kampf gehört zu einer **Geschichte** der
-Infotafel; deren Mitspieler sehen ihn – nur lesend – in derselben Ansicht.
+Unter **Kampf** führt der Dungeon Master einer Geschichte Kämpfe. Jeder Kampf gehört zu einer **Geschichte**; deren
+Spieler sehen ihn – nur lesend – in derselben Ansicht.
 
-- **Spieler hinzufügen:** Auswahl aus allen Charakterbögen (Charaktere der Mitspieler stehen oben). Name,
+- **Spieler hinzufügen:** Auswahl aus den Charakterbögen der Geschichte und ihrer Mitglieder. Name,
   Rüstungsklasse und LP (aktuell/maximal, temporäre LP, Lebensbalken) kommen **live aus dem Bogen** und werden
   in der Kampfhilfe nie verändert. Ändert ein Spieler seine LP im Bogen, sieht man das nach wenigen Sekunden.
 - **Initiative** trägt der DM direkt im Kreis auf der Karte ein.
@@ -275,11 +298,9 @@ Infotafel; deren Mitspieler sehen ihn – nur lesend – in derselben Ansicht.
 - **Sortierung** der Karten wählt jeder für sich: nach Initiative oder alphabetisch.
 - Die Ansicht aktualisiert sich alle 3 Sekunden; ein roter Punkt am Reiter zeigt laufende Kämpfe.
 - Beendete Kämpfe bleiben in der Liste und lassen sich fortsetzen oder löschen.
-- **Spielermodus für Admins:** Mit dem Schalter **„Als Spieler“** (oben im Reiter Kampf) sieht und spielt der Admin
-  die Kampfhilfe wie ein Benutzer – nur Kämpfe aus Geschichten, in denen er als Mitspieler eingetragen ist,
-  verdeckte Monsterwerte ausgeblendet, keine Verwaltung. Praktisch, wenn der Admin in einer Gruppe mitspielt, die ein
-  Dungeon Master leitet. Die Einstellung wird im Konto gespeichert (gilt auf allen Geräten). **Schaltet der Admin
-  den Spielermodus aus, erhalten alle Dungeon Master eine Benachrichtigung** (Glocke oben rechts).
+- **Admin als Spieler:** Ist der Admin in einer Geschichte als Spieler eingetragen, sieht er deren Kämpfe wie ein
+  Spieler (ohne verdeckte Werte, ohne Verwaltung). Gibt er diese Rolle auf, erhalten die Dungeon Master der
+  Geschichte eine Benachrichtigung (Glocke oben rechts).
 
 ### Monster-Datenbanken
 
@@ -288,7 +309,8 @@ Im Bereich **Kampf → Monster-Datenbank** gibt es zwei getrennte Datenbanken mi
 hinterlegt – Würfelausdruck (z. B. `1d6+2` oder `2W8+4`) plus Schadensart aus derselben Liste – und erscheint im
 gleichen Design (Symbol, Farbe der Schadensart, z. B. „1W6 + 2 Hieb“):
 
-- **DM-Datenbank:** Vorlagen des Dungeon Master – gemeinsam für alle DMs und Admins, für Spieler unsichtbar.
+- **DM-Datenbank:** Vorlagen – gemeinsam für alle, die in einer Geschichte Dungeon Master sind (und den Admin),
+  für Spieler unsichtbar.
   Beim Hinzufügen von Monstern oder Verbündeten im Kampf wählt der DM oben eine Vorlage; Name, RK, LP, Angriff und
   Beschreibung und Schaden werden übernommen (Anzahl und Initiative kommen dazu). Neue Monster lassen sich dort mit
   „Zusätzlich als Vorlage speichern“ direkt in die Datenbank übernehmen. Angriff, Schaden und Beschreibung stehen auf der
@@ -296,8 +318,21 @@ gleichen Design (Symbol, Farbe der Schadensart, z. B. „1W6 + 2 Hieb“):
 - **Spieler-Datenbank je Geschichte:** gemeinsames Monster-Notizbuch der Mitspieler – ohne die Daten des DM. Alle
   Mitspieler dürfen Einträge anlegen, ergänzen und löschen (RK/LP dürfen leer bleiben, LP auch als Bereich wie
   „10-15“, wenn die Gruppe nur schätzen kann); angezeigt wird, wer einen
-  Eintrag angelegt und zuletzt geändert hat. DM und Admin können die Spieler-Datenbanken **nur lesen**
-  (ein Admin im Spielermodus, der Mitspieler ist, gilt als Spieler).
+  Eintrag angelegt und zuletzt geändert hat. Die Dungeon Master der Geschichte können sie **nur lesen**.
+
+### Geschichten-Ansicht
+
+Rechts in der Kopfzeile schaltet jeder zwischen **„Allgemein“** und einer seiner Geschichten um (die Auswahl wird
+im Konto gespeichert). In der Geschichten-Ansicht:
+
+- **Charakterbogen:** Ist genau ein eigener Bogen der Geschichte zugeordnet und sieht man keine weiteren Bögen
+  dieser Geschichte (geteilt oder als Dungeon Master), öffnet der Klick im Menü direkt diesen Bogen. Sonst zeigt die
+  Übersicht nur die Bögen der Geschichte („Alle anzeigen“ hebt den Filter auf).
+- **Infotafel:** öffnet direkt die Tafel der Geschichte.
+- **Kampf:** zeigt nur die Kämpfe der Geschichte; läuft genau einer, führt der Klick im Menü direkt hinein.
+- **Monster-Datenbank:** die Spieler-Datenbank der Geschichte ist vorausgewählt.
+
+In der Ansicht **„Allgemein“** bleibt die Menüführung wie gewohnt.
 
 ### Benachrichtigungen
 
@@ -551,9 +586,11 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET /api/characters/export` | Admin | Alle Charakterbögen als JSON-Datei |
 | `POST /api/characters/import/preview` | Admin | `{ characters: [...], fallbackOwnerId? }` → Status je Bogen |
 | `POST /api/characters/import` | Admin | `{ characters: [...], fallbackOwnerId?, duplicates: "skip" \| "create" }` |
-| `GET /api/board/stories?archived=true` | User | Sichtbare Geschichten inkl. Mitspieler, Beitragszahl, ungelesen |
-| `POST /api/board/stories` · `PATCH /api/board/stories/:id` | DM/Admin | `{ name, description?, memberIds?, archived? }` |
-| `DELETE /api/board/stories/:id` | Admin | Geschichte samt Beiträgen löschen |
+| `GET /api/stories` · `GET /api/stories/users` | Moderator/Admin | Verwaltung: alle Geschichten mit Rollen bzw. Benutzerliste |
+| `POST /api/stories` · `PATCH /api/stories/:id` | Moderator/Admin | `{ name, description?, archived?, members?: [{ userId, role: "player" \| "dm" }] }` |
+| `DELETE /api/stories/:id` | Admin | Geschichte samt Beiträgen und Kämpfen löschen |
+| `GET /api/stories/mine` · `PUT /api/stories/active` | User | Geschichten zum Umschalten bzw. `{ storyId \| null }` (Geschichten-Ansicht) |
+| `GET /api/board/stories?archived=true` | User | Sichtbare Geschichten inkl. Mitglieder mit Rolle, eigene Rolle, Beitragszahl, ungelesen |
 | `GET /api/board/stories/:id/posts?q=&category=&page=` | Mitspieler, DM/Admin | Beiträge (angeheftete zuerst) inkl. Kommentare |
 | `POST /api/board/stories/:id/posts` | Mitspieler, DM/Admin | `{ title?, body, category? }` |
 | `PATCH /api/board/posts/:id` · `DELETE /api/board/posts/:id` | Ersteller, DM/Admin | Bearbeiten bzw. in den Papierkorb |
@@ -569,7 +606,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `PATCH /api/combat/combatants/:id` · `POST …/hp` · `DELETE …` | DM/Admin | Initiative, Zustände, Monster-/NSC-Werte; `{ delta }` Schaden/Heilung |
 | `GET`/`POST /api/bestiary/dm` · `PUT`/`DELETE /api/bestiary/dm/:id` | DM/Admin | DM-Datenbank (Vorlagen) |
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
-| `PUT /api/combat/player-mode` | Admin | `{ asPlayer }` – Spielermodus; beim Ausschalten werden alle DMs benachrichtigt |
+| `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
 | `GET /api/notifications` · `POST /api/notifications/read` · `DELETE /api/notifications` | User | Eigene Benachrichtigungen |
 | `GET /api/users` | Admin | Benutzerliste |
 | `POST /api/users` | Admin | `{ username, email?, password, role? }` – Benutzer anlegen |
@@ -625,7 +662,7 @@ npm test
 Die API-Tests (Vitest + Supertest) laufen gegen eine eigene, temporäre SQLite-Datenbank
 (`server/tests/.tmp`) und decken Authentifizierung (Login per Name/E-Mail, Logout, CSRF,
 Passwortwechsel, keine Selbstregistrierung, Login-Pflicht), Benutzerverwaltung und Rollen
-(Admin/Dungeon Master/Benutzer), Suche & Filter (sprachübergreifend, Grad, Klasse, Zauberzeit,
+(Admin/Moderator/Benutzer, Rollen pro Geschichte), Suche & Filter (sprachübergreifend, Grad, Klasse, Zauberzeit,
 Sortierung, Paginierung), Verwaltung (CRUD, Duplizieren, Import mit Dublettenprüfung, Export) sowie
 Zauberbücher (eigene und fremde) sowie Charakterbögen (Rechte, Bereinigung ungültiger Werte, Lesezugriff
 für DM/Admin) ab.

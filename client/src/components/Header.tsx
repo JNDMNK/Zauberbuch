@@ -8,7 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { useBoardUnread } from '../hooks/useBoardUnread';
 import { useCombatActive } from '../hooks/useCombatActive';
-import { useCombatPlayerMode } from '../hooks/useCombatPlayerMode';
+import { StorySwitcher } from './StorySwitcher';
 import { NotificationBell } from './NotificationBell';
 
 function LanguageSwitch() {
@@ -170,8 +170,7 @@ export function Header() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const unread = useBoardUnread(Boolean(user));
-  const [combatAsPlayer] = useCombatPlayerMode();
-  const combats = useCombatActive(Boolean(user), combatAsPlayer);
+  const combats = useCombatActive(Boolean(user));
 
   useEffect(() => setMobileOpen(false), [location.pathname]);
 
@@ -192,16 +191,16 @@ export function Header() {
   // Ohne Anmeldung gibt es keine Navigation – die Startseite ist der Login
   const sharedLinks = (
     <>
-      <NavLink to="/characters" className={navCls}>
+      <NavLink to="/characters" state={{ fromNav: true }} className={navCls}>
         <ScrollText className="h-4 w-4" />
         {t('nav.characters')}
       </NavLink>
-      <NavLink to="/board" className={navCls}>
+      <NavLink to="/board" state={{ fromNav: true }} className={navCls}>
         <MessagesSquare className="h-4 w-4" />
         {t('nav.board')}
         {unreadBadge}
       </NavLink>
-      <NavLink to="/combat" className={navCls}>
+      <NavLink to="/combat" state={{ fromNav: true }} className={navCls}>
         <Swords className="h-4 w-4" />
         {t('nav.combat')}
         {combatDot}
@@ -254,6 +253,7 @@ export function Header() {
         </Link>
         <nav className="ml-4 hidden items-center gap-1 lg:flex">{desktopLinks}</nav>
         <div className="ml-auto flex items-center gap-1.5">
+          {user && <StorySwitcher />}
           <LanguageSwitch />
           <ThemeToggle />
           {user && <NotificationBell />}

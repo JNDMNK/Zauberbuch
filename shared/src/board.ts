@@ -14,12 +14,23 @@ export const MAX_POST_LENGTH = 10_000;
 export const MAX_COMMENT_LENGTH = 2_000;
 export const BOARD_PAGE_SIZE = 20;
 
-const memberIds = z.array(z.string().min(1).max(64)).max(1000);
+/** Rolle eines Benutzers in einer Geschichte – steuert Infotafel und Kampf */
+export const STORY_ROLES = ['player', 'dm'] as const;
+export type StoryRole = (typeof STORY_ROLES)[number];
 
+const memberIds = z.array(z.string().min(1).max(64)).max(1000);
+const members = z.array(z.object({ userId: z.string().min(1).max(64), role: z.enum(STORY_ROLES) })).max(1000);
+
+/**
+ * Geschichte anlegen/bearbeiten (Verwaltung: Admin und Moderatoren).
+ * `members` mit Rollen; `memberIds` (Spieler) und `dmIds` (Dungeon Master) als Kurzform.
+ */
 export const storyInputSchema = z.object({
   name: z.string().trim().min(1).max(100),
   description: z.string().trim().max(1000).optional().default(''),
-  memberIds: memberIds.optional().default([]),
+  members: members.optional(),
+  memberIds: memberIds.optional(),
+  dmIds: memberIds.optional(),
 });
 export type StoryInput = z.input<typeof storyInputSchema>;
 
@@ -28,10 +39,15 @@ export const storyUpdateSchema = z
     name: z.string().trim().min(1).max(100).optional(),
     description: z.string().trim().max(1000).optional(),
     archived: z.boolean().optional(),
+    members: members.optional(),
     memberIds: memberIds.optional(),
+    dmIds: memberIds.optional(),
   })
   .refine((v) => Object.values(v).some((x) => x !== undefined), { message: 'Nothing to update' });
 export type StoryUpdate = z.input<typeof storyUpdateSchema>;
+
+/** Aktive Geschichte für die Geschichten-Ansicht (null = Allgemein) */
+export const activeStorySchema = z.object({ storyId: z.string().min(1).max(64).nullable() });
 
 export const postInputSchema = z.object({
   title: z.string().trim().max(150).optional().default(''),
@@ -57,6 +73,10 @@ export interface BoardUserRef {
   username: string;
 }
 
+export interface StoryMemberDto extends BoardUserRef {
+  role: StoryRole;
+}
+
 export interface StoryDto {
   id: string;
   name: string;
@@ -64,7 +84,9 @@ export interface StoryDto {
   archived: boolean;
   createdAt: string;
   updatedAt: string;
-  members: BoardUserRef[];
+  members: StoryMemberDto[];
+  /** Eigene Rolle in dieser Geschichte (Admin ohne Spielerrolle = dm) */
+  myRole: StoryRole | null;
   postCount: number;
   unread: number;
 }
@@ -140,7 +162,10 @@ export interface BoardExportStory {
   name: string;
   description: string;
   archived: boolean;
+  /** Benutzernamen der Spieler */
   members: string[];
+  /** Benutzernamen der Dungeon Master */
+  dms?: string[];
   posts: BoardExportPost[];
 }
 
@@ -186,6 +211,7 @@ export const boardImportSchema = z.object({
         description: z.string().trim().max(1000).optional().default(''),
         archived: z.boolean().optional().default(false),
         members: z.array(z.string().max(100)).max(1000).optional().default([]),
+        dms: z.array(z.string().max(100)).max(1000).optional().default([]),
         posts: z.array(importPost).max(20_000).optional().default([]),
       }),
     )

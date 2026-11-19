@@ -12,7 +12,7 @@ describe('Monster-Datenbanken', () => {
     const frodo = await createUser('frodo');
     const sam = await createUser('sam');
     const pippin = await createUser('pippin');
-    const story = (await dm.agent.post('/api/board/stories').set(CSRF).send({ name: 'Strahd', memberIds: [frodo.user.id, sam.user.id] })).body.story;
+    const story = (await dm.agent.post('/api/stories').set(CSRF).send({ name: 'Strahd', memberIds: [frodo.user.id, sam.user.id] })).body.story;
     return { admin, dm, frodo, sam, pippin, storyId: story.id as string };
   }
 
@@ -66,13 +66,23 @@ describe('Monster-Datenbanken', () => {
     expect((await sam.agent.delete(`/api/bestiary/entries/${e.body.entry.id}`).set(CSRF)).status).toBe(204);
   });
 
-  it('Admin im Spielermodus, der Mitspieler ist, darf die Spieler-Datenbank bearbeiten', async () => {
+  it('Admin mit Spielerrolle darf die Spieler-Datenbank bearbeiten, ohne Spielerrolle nur lesen', async () => {
     const admin = await loginAs('admin', 'admin-password');
     const adminId = (await admin.get('/api/auth/me')).body.user.id;
-    const story = (await admin.post('/api/board/stories').set(CSRF).send({ name: 'Admin spielt mit', memberIds: [adminId] })).body.story;
+    const story = (await admin.post('/api/stories').set(CSRF).send({ name: 'Admin spielt mit' })).body.story;
+    expect((await admin.get(`/api/bestiary/stories/${story.id}`)).body.canWrite).toBe(false);
     expect((await admin.post(`/api/bestiary/stories/${story.id}`).set(CSRF).send({ name: 'Ghul' })).status).toBe(403);
-    await admin.put('/api/combat/player-mode').set(CSRF).send({ asPlayer: true });
+    await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ members: [{ userId: adminId, role: 'player' }] });
     expect((await admin.post(`/api/bestiary/stories/${story.id}`).set(CSRF).send({ name: 'Ghul' })).status).toBe(201);
+  });
+
+  it('DM-Datenbank nur für Dungeon Master einer Geschichte, nicht für Moderatoren ohne Geschichte', async () => {
+    const mod = await createUser('moderator', 'dungeonmaster');
+    expect((await mod.agent.get('/api/bestiary/dm')).status).toBe(403);
+    const frodo = await createUser('frodo');
+    const admin = await loginAs('admin', 'admin-password');
+    await admin.post('/api/stories').set(CSRF).send({ name: 'S', dmIds: [frodo.user.id] });
+    expect((await frodo.agent.get('/api/bestiary/dm')).status).toBe(200); // Benutzer, aber DM der Geschichte
   });
 
   it('Vorlagen im Kampf: Angriff/Beschreibung nur für den DM, optional als Vorlage speichern', async () => {
@@ -102,6 +112,7 @@ describe('Monster-Datenbanken – Schaden und LP-Bereiche', () => {
 
   it('Schaden wie bei Zaubern (Würfel + Art), Würfel normalisiert, nur gemeinsam', async () => {
     const dm = await createUser('meister', 'dungeonmaster');
+    await dm.agent.post('/api/stories').set(CSRF).send({ name: 'Eigene Geschichte' }); // wird dadurch DM
     const ok = await dm.agent.post('/api/bestiary/dm').set(CSRF).send({ name: 'Goblin', ac: 15, hp: 7, attack: 'Krummsäbel +4', damageDice: '1W6 + 2', damageType: 'slashing' });
     expect(ok.status).toBe(201);
     expect(ok.body.template).toMatchObject({ damageDice: '1d6+2', damageType: 'slashing' });
@@ -114,7 +125,7 @@ describe('Monster-Datenbanken – Schaden und LP-Bereiche', () => {
   it('Spieler-LP als Zahl oder Bereich', async () => {
     const dm = await createUser('meister', 'dungeonmaster');
     const frodo = await createUser('frodo');
-    const story = (await dm.agent.post('/api/board/stories').set(CSRF).send({ name: 'S', memberIds: [frodo.user.id] })).body.story;
+    const story = (await dm.agent.post('/api/stories').set(CSRF).send({ name: 'S', memberIds: [frodo.user.id] })).body.story;
     const post = (hp: unknown) => frodo.agent.post(`/api/bestiary/stories/${story.id}`).set(CSRF).send({ name: 'Oger', hp, damageDice: '2w8+4', damageType: 'bludgeoning' });
     expect((await post('10 - 15')).body.entry).toMatchObject({ hp: '10-15', damageDice: '2d8+4', damageType: 'bludgeoning' });
     expect((await post('10–15')).body.entry.hp).toBe('10-15');
@@ -128,7 +139,7 @@ describe('Monster-Datenbanken – Schaden und LP-Bereiche', () => {
   it('Schaden im Kampf: aus Vorlage übernehmen, nur für den DM, änderbar', async () => {
     const dm = await createUser('meister', 'dungeonmaster');
     const frodo = await createUser('frodo');
-    const story = (await dm.agent.post('/api/board/stories').set(CSRF).send({ name: 'S', memberIds: [frodo.user.id] })).body.story;
+    const story = (await dm.agent.post('/api/stories').set(CSRF).send({ name: 'S', memberIds: [frodo.user.id] })).body.story;
     const enc = (await dm.agent.post('/api/combat/encounters').set(CSRF).send({ storyId: story.id, name: 'K' })).body.encounter;
     const r = await dm.agent.post(`/api/combat/encounters/${enc.id}/monsters`).set(CSRF).send({ name: 'Oger', hpMax: 59, hideStats: false, damageDice: '2d8+4', damageType: 'bludgeoning', saveAsTemplate: true });
     const c = r.body.encounter.combatants[0];
