@@ -29,6 +29,7 @@ export function CatalogItemDialog({
   const [weight, setWeight] = useState('');
   const [value, setValue] = useState('');
   const [ac, setAc] = useState('');
+  const [strength, setStrength] = useState('');
   const [damage, setDamage] = useState<DamageState>({ dice: '', type: '' });
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -37,6 +38,7 @@ export function CatalogItemDialog({
     setDescription(item?.description ?? '');
     setWeight(item?.weight ? String(item.weight).replace('.', ',') : '');
     setAc(item?.ac ?? '');
+    setStrength(item?.strength ? String(item.strength) : '');
     setValue(item?.value ?? '');
     setDamage({ dice: item?.damage?.dice ?? '', type: item?.damage?.type ?? '' });
   }, [open, item]);
@@ -44,7 +46,9 @@ export function CatalogItemDialog({
   const parsedWeight = weight.trim() === '' ? 0 : Number(weight.trim().replace(',', '.'));
   const weightInvalid = !Number.isFinite(parsedWeight) || parsedWeight < 0 || parsedWeight > 99999;
   const dmg = checkDamage(damage);
-  const invalid = !name.trim() || weightInvalid || (category !== 'armor' && dmg.error !== null);
+  const parsedStrength = strength.trim() === '' ? null : Number(strength);
+  const strengthInvalid = parsedStrength !== null && (!Number.isInteger(parsedStrength) || parsedStrength < 1 || parsedStrength > 30);
+  const invalid = !name.trim() || weightInvalid || (category === 'armor' && strengthInvalid) || (category !== 'armor' && dmg.error !== null);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -58,6 +62,7 @@ export function CatalogItemDialog({
         weight: parsedWeight,
         value: value.trim(),
         ac: category === 'armor' ? ac.trim() : '',
+        strength: category === 'armor' ? parsedStrength : null,
         damageDice: category === 'armor' ? null : dmg.value?.dice ?? null,
         damageType: category === 'armor' ? null : dmg.value?.type ?? null,
       });
@@ -84,6 +89,22 @@ export function CatalogItemDialog({
                 {t('combat.ac')}
               </label>
               <input id="cat-ac" className="input" value={ac} maxLength={40} onChange={(e) => setAc(e.target.value)} placeholder="13 + GES (max. 2)" />
+            </div>
+          )}
+          {category === 'armor' && (
+            <div>
+              <label htmlFor="cat-strength" className="label">
+                {t('catalog.strength')}
+              </label>
+              <input
+                id="cat-strength"
+                className={`input text-right ${strengthInvalid ? 'input-error' : ''}`}
+                inputMode="numeric"
+                value={strength}
+                maxLength={2}
+                onChange={(e) => setStrength(e.target.value.replace(/\D/g, ''))}
+                placeholder={t('catalog.strengthPlaceholder')}
+              />
             </div>
           )}
           <div>

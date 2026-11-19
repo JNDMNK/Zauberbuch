@@ -19,6 +19,8 @@ export const catalogItemSchema = z
     value: z.string().trim().max(40).optional().default(''),
     /** Rüstung: Rüstungsklasse als Text („11 + GES“, „+2“) */
     ac: z.string().trim().max(40).optional().default(''),
+    /** Rüstung: benötigter Stärkewert (z. B. 13 bei Kettenpanzer) */
+    strength: z.number().int().min(1).max(30).optional().nullable().default(null),
     /** Waffen: Schaden; Gegenstände: Schaden oder Heilung (z. B. Heiltrank) */
     damageDice: damageDiceSchema.optional().nullable().default(null),
     damageType: z.enum(DAMAGE_TYPES).optional().nullable().default(null),
@@ -41,6 +43,8 @@ export interface CatalogItemDto {
   /** Wert, z. B. „5 GM“ */
   value: string;
   ac: string;
+  /** Rüstung: benötigter Stärkewert */
+  strength: number | null;
   damage: { dice: string; type: DamageType } | null;
   origin: CatalogOrigin;
   /** Bei Anpassungen: der Standard-Eintrag, der überdeckt wird */
@@ -50,10 +54,11 @@ export interface CatalogItemDto {
 }
 
 /** Text für das Inventar: „Name · Schaden/RK · Beschreibung“ (max. 150 Zeichen) */
-export function catalogInventoryText(item: Pick<CatalogItemDto, 'name' | 'description' | 'ac' | 'damage'>, formatDamage: (d: { dice: string; type: DamageType }) => string): string {
+export function catalogInventoryText(item: Pick<CatalogItemDto, 'name' | 'description' | 'ac' | 'damage'> & { strength?: number | null }, formatDamage: (d: { dice: string; type: DamageType }) => string): string {
   const parts = [item.name];
   if (item.damage) parts.push(formatDamage(item.damage));
   if (item.ac) parts.push(`RK ${item.ac}`);
+  if (item.strength) parts.push(`Stä ${item.strength}`);
   if (item.description) parts.push(item.description);
   const text = parts.join(' · ');
   return text.length > 150 ? `${text.slice(0, 149)}…` : text;

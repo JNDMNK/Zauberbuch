@@ -477,6 +477,8 @@ model CatalogItem {
   /// Wert als Freitext, z. B. „5 GM“
   value       String        @default("")
   ac          String        @default("")
+  /// Rüstung: benötigter Stärkewert (leer = keine Anforderung)
+  strength    Int?
   damageDice  String?
   damageType  String?
   createdAt   DateTime      @default(now())

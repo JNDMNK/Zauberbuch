@@ -16,14 +16,16 @@ describe('Gegenstands-Datenbank', () => {
     const lang = list.find((i: { name: string }) => i.name === 'Langschwert');
     expect(lang).toMatchObject({ category: 'weapon', damage: { dice: '1d8', type: 'slashing' }, weight: 3, value: '15 GM', origin: 'standard' });
     expect(list.find((i: { name: string }) => i.name === 'Kettenhemd')).toMatchObject({ category: 'armor', ac: '13 + GES (max. 2)', weight: 20, damage: null });
+    expect(list.find((i: { name: string }) => i.name === 'Plattenpanzer')).toMatchObject({ category: 'armor', ac: '18', strength: 15 });
+    expect(list.find((i: { name: string }) => i.name === 'Kettenhemd').strength).toBeNull();
     expect(list.find((i: { name: string }) => i.name === 'Heiltrank')).toMatchObject({ category: 'gear', damage: { dice: '2d4+2', type: 'healing' } });
 
     expect((await frodo.agent.post('/api/catalog/standard').set(CSRF).send({ category: 'gear', name: 'X' })).status).toBe(403);
     const created = await mod.agent.post('/api/catalog/standard').set(CSRF).send({ category: 'weapon', name: 'Sternenklinge', damageDice: '1W10', damageType: 'force', weight: 2.5, value: ' 120 GM ', description: 'Funkelt.' });
     expect(created.body.item).toMatchObject({ name: 'Sternenklinge', damage: { dice: '1d10', type: 'force' }, weight: 2.5, value: '120 GM' });
     // Rüstung ignoriert Schaden, Waffe ignoriert RK
-    const armor = await mod.agent.put(`/api/catalog/${created.body.item.id}`).set(CSRF).send({ category: 'armor', name: 'Sternenpanzer', ac: '15', damageDice: '1d4', damageType: 'fire' });
-    expect(armor.body.item).toMatchObject({ category: 'armor', ac: '15', damage: null });
+    const armor = await mod.agent.put(`/api/catalog/${created.body.item.id}`).set(CSRF).send({ category: 'armor', name: 'Sternenpanzer', ac: '15', strength: 14, damageDice: '1d4', damageType: 'fire' });
+    expect(armor.body.item).toMatchObject({ category: 'armor', ac: '15', strength: 14, damage: null });
     expect((await mod.agent.post('/api/catalog/standard').set(CSRF).send({ category: 'gear', name: 'Y', damageDice: '1d4' })).status).toBe(400);
     expect((await mod.agent.delete(`/api/catalog/${created.body.item.id}`).set(CSRF)).status).toBe(204);
   });

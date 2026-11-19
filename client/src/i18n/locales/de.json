@@ -1063,6 +1063,8 @@
     "take": "Übernehmen",
     "openCard": "Karte öffnen",
     "suggestions": "Vorschläge aus der Gegenstands-Datenbank",
-    "valuePlaceholder": "z. B. 5 GM"
+    "valuePlaceholder": "z. B. 5 GM",
+    "strength": "Stärke (benötigt)",
+    "strengthPlaceholder": "keine"
   }
 }

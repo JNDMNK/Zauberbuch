@@ -27,6 +27,7 @@ function toDto(i: CatalogItem, origin: CatalogOrigin, extra: Partial<CatalogItem
     weight: i.weight,
     value: i.value,
     ac: i.ac,
+    strength: i.strength,
     damage: i.damageDice && i.damageType ? { dice: i.damageDice, type: i.damageType as DamageType } : null,
     origin,
     baseId: i.baseId,
@@ -62,6 +63,7 @@ function data(input: ReturnType<typeof catalogItemSchema.parse>) {
     weight: input.weight,
     value: input.value,
     ac: input.category === 'armor' ? input.ac : '',
+    strength: input.category === 'armor' ? input.strength : null,
     damageDice: input.category === 'armor' ? null : input.damageDice,
     damageType: input.category === 'armor' ? null : input.damageType,
   };

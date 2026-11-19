@@ -1063,6 +1063,8 @@
     "take": "Take over",
     "openCard": "Open card",
     "suggestions": "Suggestions from the item database",
-    "valuePlaceholder": "e.g. 5 gp"
+    "valuePlaceholder": "e.g. 5 gp",
+    "strength": "Strength (required)",
+    "strengthPlaceholder": "none"
   }
 }
