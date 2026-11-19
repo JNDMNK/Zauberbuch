@@ -989,8 +989,8 @@
     "deleted": "Gegenstand gelöscht",
     "deleteTitle": "Gegenstand löschen?",
     "deleteText": "„{{name}}“ wird gelöscht und verschwindet aus allen Charakterbögen.",
-    "sheetHint": "Magische Gegenstände dieses Charakters. Du kannst sie an einen anderen Charakter der Geschichte weitergeben oder an den DM zurückgeben.",
-    "sheetHintReadOnly": "Magische Gegenstände dieses Charakters.",
+    "sheetHint": "Magische Gegenstände dieses Charakters – Karte anklicken für alle Details. Dort kannst du sie an einen anderen Charakter der Geschichte weitergeben oder an den DM zurückgeben.",
+    "sheetHintReadOnly": "Magische Gegenstände dieses Charakters – Karte anklicken für alle Details.",
     "sheetEmpty": "Dieser Charakter besitzt noch keine magischen Gegenstände.",
     "giveTo": "Weitergeben an …",
     "noTargets": "Keine anderen Charaktere in der Geschichte",
@@ -1009,7 +1009,8 @@
     "value": "Wert",
     "valuePlaceholder": "z. B. 200 GM",
     "requiresAttunement": "Einstimmung benötigt",
-    "attunementHint": "Nur Gegenstände mit „Einstimmung benötigt“ können im Charakterbogen bei „Einstimmung“ gewählt werden."
+    "attunementHint": "Nur Gegenstände mit „Einstimmung benötigt“ können im Charakterbogen bei „Einstimmung“ gewählt werden.",
+    "noDescription": "Keine Beschreibung."
   },
   "catalog": {
     "title": "Gegenstände",

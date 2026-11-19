@@ -227,6 +227,8 @@ anderen Zeilen gesperrt.
   erreichen die Verwaltung dafür über das Benutzermenü): Geschichte wählen, Gegenstände mit **Name**,
   **Beschreibung**, **Gewicht** (lb) und **Wert** (Freitext, z. B. „200 GM“) als Karten anlegen, durchsuchen und den **Charakterbögen** der Geschichte zuweisen – auch
   mehreren gleichzeitig. Gegenstände ohne Besitzer liegen „beim DM“.
+- **Karten wie bei den Zaubern:** Name, Textvorschau, Wert, Gewicht und Besitzer; ein Klick auf die Karte zeigt den
+  Gegenstand vollständig im Vordergrund (im Charakterbogen dort auch Weitergeben/Zurückgeben).
 - Wer einen Gegenstand erhält, bekommt eine **Benachrichtigung** (Glocke); ein Klick öffnet den Bogen.
 - Im Charakterbogen zeigt der Reiter **„Magische Gegenstände“** (vor „Einstellungen“) die Gegenstände des
   Charakters als Karten. Besitzer und Mitbearbeiter können einen Gegenstand **an einen anderen Charakter der

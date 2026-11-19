@@ -989,8 +989,8 @@
     "deleted": "Item deleted",
     "deleteTitle": "Delete item?",
     "deleteText": "“{{name}}” will be deleted and removed from all character sheets.",
-    "sheetHint": "This character's magic items. You can pass them to another character of the story or return them to the DM.",
-    "sheetHintReadOnly": "This character's magic items.",
+    "sheetHint": "This character's magic items – click a card for all details. There you can pass an item to another character of the story or return it to the DM.",
+    "sheetHintReadOnly": "This character's magic items – click a card for all details.",
     "sheetEmpty": "This character has no magic items yet.",
     "giveTo": "Give to …",
     "noTargets": "No other characters in the story",
@@ -1009,7 +1009,8 @@
     "value": "Value",
     "valuePlaceholder": "e.g. 200 gp",
     "requiresAttunement": "Requires attunement",
-    "attunementHint": "Only items that require attunement can be chosen as attuned items on the character sheet."
+    "attunementHint": "Only items that require attunement can be chosen as attuned items on the character sheet.",
+    "noDescription": "No description."
   },
   "catalog": {
     "title": "Items",
