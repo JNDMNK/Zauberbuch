@@ -10,6 +10,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { Modal } from '../../components/Modal';
 import { Alert, PageSpinner, Spinner } from '../../components/ui';
 import { ItemCard } from '../../components/ItemCard';
+import { MarkdownEditor } from '../../components/MarkdownEditor';
 
 /**
  * Verwaltung → Magische Gegenstände (Admin, Moderator, Dungeon Master der Geschichte):
@@ -303,7 +304,7 @@ function ItemDialog({
           <label htmlFor="item-desc" className="label">
             {t('bestiary.description')}
           </label>
-          <textarea id="item-desc" className="input min-h-[7rem]" rows={6} value={description} maxLength={5000} onChange={(e) => setDescription(e.target.value)} />
+          <MarkdownEditor id="item-desc" value={description} onChange={(v) => setDescription(v.slice(0, 5000))} rows={8} />
         </div>
         <fieldset>
           <legend className="label">{t('items.holders')}</legend>

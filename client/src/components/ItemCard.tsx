@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Coins, Gem, Sparkles, UserRound, Weight } from 'lucide-react';
 import type { MagicItemDto } from '@zauberbuch/shared';
 import { Modal } from './Modal';
+import { Markdown } from './Markdown';
 
 const ACCENT = { '--accent': '#7c3aed' } as CSSProperties;
 
@@ -22,7 +23,7 @@ export function ItemCard({ item, actions, footer, attuned = false }: { item: Mag
           <Gem className="accent-text mt-1 h-5 w-5 shrink-0" aria-hidden />
           <div className="min-w-0 flex-1">
             <h3 className="break-words font-display text-lg font-bold leading-tight">
-              <button type="button" onClick={() => setOpen(true)} className="text-left outline-none after:absolute after:inset-0 after:content-[''] focus-visible:underline" aria-haspopup="dialog">
+              <button type="button" onClick={() => setOpen(true)} className="text-left outline-none after:absolute after:inset-0 after:z-[5] after:content-[''] focus-visible:underline" aria-haspopup="dialog">
                 {item.name}
               </button>
             </h3>
@@ -33,9 +34,16 @@ export function ItemCard({ item, actions, footer, attuned = false }: { item: Mag
         <div className="divider-ornament px-4 text-xs" aria-hidden>
           ✦
         </div>
-        <p className="line-clamp-3 flex-1 whitespace-pre-line break-words px-4 text-sm">
-          {item.description || <span className="italic text-parchment-700 dark:text-parchment-400">{t('items.noDescription')}</span>}
-        </p>
+        <div className="flex-1 px-4">
+          {item.description ? (
+            // Vorschau: formatierter Text, nach etwa drei Zeilen ausgeblendet
+            <div className="max-h-[4.6rem] overflow-hidden text-sm [mask-image:linear-gradient(to_bottom,black_60%,transparent)]">
+              <Markdown className="!text-sm [&_*]:!my-0 [&_*]:!text-sm">{item.description}</Markdown>
+            </div>
+          ) : (
+            <p className="text-sm italic text-parchment-700 dark:text-parchment-400">{t('items.noDescription')}</p>
+          )}
+        </div>
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-parchment-300/70 px-4 py-3 text-sm dark:border-night-700">
           <ItemMeta item={item} />
           <Holders item={item} compact />
@@ -70,7 +78,7 @@ export function ItemCard({ item, actions, footer, attuned = false }: { item: Mag
               <div className="divider-ornament text-xs" aria-hidden>
                 ✦
               </div>
-              <p className="whitespace-pre-wrap break-words">{item.description || <span className="italic text-parchment-700 dark:text-parchment-400">{t('items.noDescription')}</span>}</p>
+              {item.description ? <Markdown className="break-words">{item.description}</Markdown> : <p className="italic text-parchment-700 dark:text-parchment-400">{t('items.noDescription')}</p>}
               <div className="flex flex-wrap items-center gap-1.5 border-t border-parchment-300/70 pt-3 text-sm dark:border-night-700">
                 <span className="sheet-label !inline">{t('items.holders')}:</span>
                 <Holders item={item} />

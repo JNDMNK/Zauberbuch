@@ -225,7 +225,8 @@ anderen Zeilen gesperrt.
 
 - **Verwaltung → Magische Gegenstände** (Admin, Moderator und die Dungeon Master der jeweiligen Geschichte – DMs
   erreichen die Verwaltung dafür über das Benutzermenü): Geschichte wählen, Gegenstände mit **Name**,
-  **Beschreibung**, **Gewicht** (lb) und **Wert** (Freitext, z. B. „200 GM“) als Karten anlegen, durchsuchen und den **Charakterbögen** der Geschichte zuweisen – auch
+  **Beschreibung** (mit Textformatierung wie bei den Zaubern: Markdown mit Fett, Kursiv, Listen, Tabellen und
+  Vorschau), **Gewicht** (lb) und **Wert** (Freitext, z. B. „200 GM“) als Karten anlegen, durchsuchen und den **Charakterbögen** der Geschichte zuweisen – auch
   mehreren gleichzeitig. Gegenstände ohne Besitzer liegen „beim DM“.
 - **Karten wie bei den Zaubern:** Name, Textvorschau, Wert, Gewicht und Besitzer; ein Klick auf die Karte zeigt den
   Gegenstand vollständig im Vordergrund (im Charakterbogen dort auch Weitergeben/Zurückgeben). In der Verwaltung
