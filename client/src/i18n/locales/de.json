@@ -336,7 +336,8 @@
     "boardFileSummary": "{{name}}: {{stories}} Geschichten, {{posts}} Beiträge",
     "boardImportDone": "Import abgeschlossen: {{storiesCreated}} Geschichten neu, {{storiesMerged}} zusammengeführt, {{postsCreated}} Beiträge importiert, {{postsSkipped}} übersprungen.",
     "boardUnknownUsers": "Unbekannte Benutzer (als „gelöschter Benutzer“ übernommen): {{names}}",
-    "stories": "Geschichten"
+    "stories": "Geschichten",
+    "items": "Magische Gegenstände"
   },
   "errors": {
     "unknown": "Unbekannter Fehler.",
@@ -388,7 +389,10 @@
     "no_combatants": "Keine aktiven Teilnehmer.",
     "hp_range_invalid": "LP als Zahl oder Bereich angeben, z. B. 58 oder 10-15.",
     "lifestyle_duplicate": "Jeder Lebensstil darf nur einmal vorkommen.",
-    "option_duplicate": "Dieser Eintrag ist schon vorhanden."
+    "option_duplicate": "Dieser Eintrag ist schon vorhanden.",
+    "invalid_holder": "Nur Charakterbögen dieser Geschichte können Gegenstände erhalten.",
+    "invalid_target": "Weitergeben nur an Charaktere derselben Geschichte.",
+    "not_holder": "Dieser Charakter besitzt den Gegenstand nicht (mehr)."
   },
   "damageType": {
     "acid": "Säure",
@@ -448,7 +452,8 @@
       "features": "Merkmale & Inventar",
       "background": "Hintergrund",
       "spells": "Zauber",
-      "settings": "Einstellungen"
+      "settings": "Einstellungen",
+      "items": "Magische Gegenstände"
     },
     "characterName": "Charaktername",
     "classLevel": "Klassen & Stufen",
@@ -874,7 +879,9 @@
     "types": {
       "admin_player_mode_off": "Admin „{{admin}}“ hat den Spielermodus der Kampfhilfe ausgeschaltet und sieht wieder alle Werte (auch verdeckte Monster).",
       "board_post": "{{author}} hat auf der Infotafel „{{story}}“ geschrieben: {{title}}",
-      "admin_story_role_changed": "Admin „{{admin}}“ ist in „{{story}}“ nicht mehr als Spieler eingetragen und sieht dort wieder alle Werte (auch verdeckte Monster)."
+      "admin_story_role_changed": "Admin „{{admin}}“ ist in „{{story}}“ nicht mehr als Spieler eingetragen und sieht dort wieder alle Werte (auch verdeckte Monster).",
+      "item_received": "{{from}} hat dir den magischen Gegenstand „{{item}}“ gegeben ({{character}}, {{story}}).",
+      "item_returned": "{{from}} hat „{{item}}“ an den DM zurückgegeben ({{character}}, {{story}})."
     },
     "open": "Öffnen"
   },
@@ -963,5 +970,38 @@
     "addOption": "Hinzufügen",
     "optionExists": "Dieser Eintrag ist schon vorhanden.",
     "expand": "Anzeigen"
+  },
+  "items": {
+    "title": "Magische Gegenstände",
+    "hint": "Gegenstände je Geschichte anlegen und den Charakterbögen der Spieler zuweisen (auch mehreren). Die Spieler werden benachrichtigt und sehen sie im Bogen.",
+    "new": "Neuer Gegenstand",
+    "edit": "Gegenstand bearbeiten",
+    "search": "Name, Beschreibung oder Besitzer durchsuchen …",
+    "empty": "Noch keine magischen Gegenstände in dieser Geschichte.",
+    "noStories": "Du verwaltest noch keine Geschichte. Magische Gegenstände verwalten Admin, Moderatoren und die Dungeon Master einer Geschichte.",
+    "holders": "Besitzer",
+    "holdersHint": "Charakterbögen, die dieser Geschichte zugeordnet sind (Charakterbogen → Einstellungen). Mehrfachauswahl möglich.",
+    "noCharacters": "Dieser Geschichte sind noch keine Charakterbögen zugeordnet.",
+    "withDm": "beim DM",
+    "namePlaceholder": "z. B. Ring der Unsichtbarkeit",
+    "saved": "Gegenstand gespeichert",
+    "deleted": "Gegenstand gelöscht",
+    "deleteTitle": "Gegenstand löschen?",
+    "deleteText": "„{{name}}“ wird gelöscht und verschwindet aus allen Charakterbögen.",
+    "sheetHint": "Magische Gegenstände dieses Charakters. Du kannst sie an einen anderen Charakter der Geschichte weitergeben oder an den DM zurückgeben.",
+    "sheetHintReadOnly": "Magische Gegenstände dieses Charakters.",
+    "sheetEmpty": "Dieser Charakter besitzt noch keine magischen Gegenstände.",
+    "giveTo": "Weitergeben an …",
+    "noTargets": "Keine anderen Charaktere in der Geschichte",
+    "give": "Weitergeben",
+    "returnToDm": "An den DM zurückgeben",
+    "giveTitle": "Gegenstand weitergeben?",
+    "giveText": "„{{item}}“ geht an {{name}} ({{owner}}). Der Spieler wird benachrichtigt.",
+    "returnTitle": "An den DM zurückgeben?",
+    "returnText": "„{{item}}“ wird an den DM zurückgegeben und verschwindet aus diesem Bogen.",
+    "given": "An {{name}} weitergegeben",
+    "returned": "An den DM zurückgegeben",
+    "attuned": "eingestimmt",
+    "attuneHint": "Einstimmen kannst du dich auf magische Gegenstände, die dein Charakter besitzt (Reiter „Magische Gegenstände“)."
   }
 }

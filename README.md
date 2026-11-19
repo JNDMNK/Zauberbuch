@@ -205,6 +205,20 @@ anderen Zeilen gesperrt.
   deren Listen.
 - Gespeichert wird weiterhin ein Eintrag je Zeile; früher frei eingetragene Werte bleiben erhalten und wählbar.
 
+### Magische Gegenstände
+
+- **Verwaltung → Magische Gegenstände** (Admin, Moderator und die Dungeon Master der jeweiligen Geschichte – DMs
+  erreichen die Verwaltung dafür über das Benutzermenü): Geschichte wählen, Gegenstände mit **Name** und
+  **Beschreibung** als Karten anlegen, durchsuchen und den **Charakterbögen** der Geschichte zuweisen – auch
+  mehreren gleichzeitig. Gegenstände ohne Besitzer liegen „beim DM“.
+- Wer einen Gegenstand erhält, bekommt eine **Benachrichtigung** (Glocke); ein Klick öffnet den Bogen.
+- Im Charakterbogen zeigt der Reiter **„Magische Gegenstände“** (vor „Einstellungen“) die Gegenstände des
+  Charakters als Karten. Besitzer und Mitbearbeiter können einen Gegenstand **an einen anderen Charakter der
+  Geschichte weitergeben** (dessen Spieler wird benachrichtigt) oder **an den DM zurückgeben** (die Dungeon Master
+  der Geschichte werden benachrichtigt).
+- **Einstimmung:** Die drei Felder „Eingestimmte magische Gegenstände“ sind Auswahllisten der Gegenstände, die
+  der Charakter besitzt; eingestimmte Gegenstände sind auf ihrer Karte markiert.
+
 ### Einstellungen eines Bogens
 
 Die letzte Seite des Bogens, **Einstellungen**, sehen Besitzer, Moderator, Admin und der Dungeon Master der
@@ -635,6 +649,8 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET`/`POST /api/bestiary/dm` · `PUT`/`DELETE /api/bestiary/dm/:id` | DM/Admin | DM-Datenbank (Vorlagen) |
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
+| `GET /api/items/stories` · `GET`/`POST /api/items/stories/:storyId` · `PUT`/`DELETE /api/items/:id` | Moderator/Admin, DM der Geschichte | Magische Gegenstände verwalten (`{ name, description?, holderIds? }`) |
+| `GET /api/items/character/:characterId` · `POST /api/items/:id/transfer` | Besitzer/Mitbearbeiter (lesen auch DM) | Gegenstände eines Bogens; `{ fromCharacterId, toCharacterId \| null }` |
 | `GET /api/notifications` · `POST /api/notifications/read` · `DELETE /api/notifications` | User | Eigene Benachrichtigungen |
 | `GET /api/users` | Admin | Benutzerliste |
 | `POST /api/users` | Admin | `{ username, email?, password, role? }` – Benutzer anlegen |

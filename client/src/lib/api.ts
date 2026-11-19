@@ -1,5 +1,10 @@
 import type {
   AddMonsterInput,
+  CharacterItemsDto,
+  ItemCharacterRef,
+  ItemStoryDto,
+  MagicItemDto,
+  MagicItemInput,
   CharacterSettingsDto,
   CharacterSettingsInput,
   BestiaryEntryDto,
@@ -209,6 +214,15 @@ export const api = {
   createBestiaryEntry: (storyId: string, input: BestiaryEntryInput) => request<{ entry: BestiaryEntryDto }>('POST', `/api/bestiary/stories/${storyId}`, input),
   updateBestiaryEntry: (id: string, input: BestiaryEntryInput) => request<{ entry: BestiaryEntryDto }>('PUT', `/api/bestiary/entries/${id}`, input),
   deleteBestiaryEntry: (id: string) => request<void>('DELETE', `/api/bestiary/entries/${id}`),
+
+  // Magische Gegenstände
+  itemStories: () => request<{ stories: ItemStoryDto[] }>('GET', '/api/items/stories'),
+  storyItems: (storyId: string) => request<{ items: MagicItemDto[]; characters: ItemCharacterRef[] }>('GET', `/api/items/stories/${storyId}`),
+  createItem: (storyId: string, input: MagicItemInput) => request<{ item: MagicItemDto }>('POST', `/api/items/stories/${storyId}`, input),
+  updateItem: (id: string, input: MagicItemInput) => request<{ item: MagicItemDto }>('PUT', `/api/items/${id}`, input),
+  deleteItem: (id: string) => request<void>('DELETE', `/api/items/${id}`),
+  characterItems: (characterId: string) => request<CharacterItemsDto>('GET', `/api/items/character/${characterId}`),
+  transferItem: (id: string, fromCharacterId: string, toCharacterId: string | null) => request<void>('POST', `/api/items/${id}/transfer`, { fromCharacterId, toCharacterId }),
 
   // Benachrichtigungen
   notifications: () => request<{ notifications: NotificationDto[]; unread: number }>('GET', '/api/notifications'),

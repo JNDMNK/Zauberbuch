@@ -123,27 +123,43 @@ export function FeaturesTab() {
 
 function AttunedItems() {
   const { t } = useTranslation();
-  const { sheet, set } = useSheet();
-  const items = [0, 1, 2].map((i) => sheet.attunedItems[i] ?? '');
+  const { sheet, set, readOnly, items } = useSheet();
+  const slots = [0, 1, 2].map((i) => sheet.attunedItems[i] ?? '');
+  // Auswahl aus den magischen Gegenständen des Bogens; frühere freie Einträge bleiben wählbar
+  const owned = (items.data?.items ?? []).map((i) => i.name);
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-      {items.map((v, i) => (
-        <input
-          key={i}
-          className="sheet-input"
-          value={v}
-          maxLength={150}
-          placeholder={t('sheet.attunedSlot', { n: i + 1 })}
-          aria-label={t('sheet.attunedSlot', { n: i + 1 })}
-          onChange={(e) => {
-            const next = [...items];
-            next[i] = e.target.value;
-            // leere Einträge am Ende abschneiden
-            while (next.length && !next[next.length - 1]) next.pop();
-            set(['attunedItems'], next);
-          }}
-        />
-      ))}
+    <div>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        {slots.map((v, i) => {
+          const chosen = new Set(slots.filter((_, j) => j !== i && slots[j]).map((x) => x.toLocaleLowerCase('de')));
+          const known = !v || owned.some((o) => o.toLocaleLowerCase('de') === v.toLocaleLowerCase('de'));
+          return (
+            <select
+              key={i}
+              className="sheet-input"
+              value={v}
+              disabled={readOnly}
+              aria-label={t('sheet.attunedSlot', { n: i + 1 })}
+              onChange={(e) => {
+                const next = [...slots];
+                next[i] = e.target.value;
+                // leere Einträge am Ende abschneiden
+                while (next.length && !next[next.length - 1]) next.pop();
+                set(['attunedItems'], next);
+              }}
+            >
+              <option value="">{t('sheet.attunedSlot', { n: i + 1 })}</option>
+              {owned.map((o) => (
+                <option key={o} value={o} disabled={chosen.has(o.toLocaleLowerCase('de'))}>
+                  {o}
+                </option>
+              ))}
+              {!known && <option value={v}>{v}</option>}
+            </select>
+          );
+        })}
+      </div>
+      {items.data && owned.length === 0 && <p className="mt-1 text-xs text-parchment-700 dark:text-parchment-400 print:hidden">{t('items.attuneHint')}</p>}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { CharacterSheet, Lifestyle } from '@zauberbuch/shared';
+import type { CharacterItemsDto, CharacterSheet, Lifestyle } from '@zauberbuch/shared';
 
 export type Path = readonly (string | number)[];
 
@@ -12,6 +12,8 @@ export interface SheetCtx {
   /** Auswahllisten für Sprachen und Werkzeuge & andere */
   languages: string[];
   tools: string[];
+  /** Magische Gegenstände des Bogens (null = lädt) */
+  items: { data: CharacterItemsDto | null; reload: () => void };
 }
 
 export const SheetContext = createContext<SheetCtx | null>(null);

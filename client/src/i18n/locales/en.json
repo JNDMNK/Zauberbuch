@@ -336,7 +336,8 @@
     "boardFileSummary": "{{name}}: {{stories}} stories, {{posts}} posts",
     "boardImportDone": "Import finished: {{storiesCreated}} stories created, {{storiesMerged}} merged, {{postsCreated}} posts imported, {{postsSkipped}} skipped.",
     "boardUnknownUsers": "Unknown users (imported as “deleted user”): {{names}}",
-    "stories": "Stories"
+    "stories": "Stories",
+    "items": "Magic items"
   },
   "errors": {
     "unknown": "Unknown error.",
@@ -388,7 +389,10 @@
     "no_combatants": "No active combatants.",
     "hp_range_invalid": "Enter HP as a number or range, e.g. 58 or 10-15.",
     "lifestyle_duplicate": "Each lifestyle may only appear once.",
-    "option_duplicate": "This entry already exists."
+    "option_duplicate": "This entry already exists.",
+    "invalid_holder": "Only character sheets of this story can receive items.",
+    "invalid_target": "Items can only be given to characters of the same story.",
+    "not_holder": "This character no longer holds the item."
   },
   "damageType": {
     "acid": "Acid",
@@ -448,7 +452,8 @@
       "features": "Features & Inventory",
       "background": "Background",
       "spells": "Spells",
-      "settings": "Settings"
+      "settings": "Settings",
+      "items": "Magic items"
     },
     "characterName": "Character name",
     "classLevel": "Class & level",
@@ -874,7 +879,9 @@
     "types": {
       "admin_player_mode_off": "Admin “{{admin}}” turned off combat player mode and can see all values again (including hidden monsters).",
       "board_post": "{{author}} posted on the info board “{{story}}”: {{title}}",
-      "admin_story_role_changed": "Admin “{{admin}}” is no longer a player in “{{story}}” and can see all values there again (including hidden monsters)."
+      "admin_story_role_changed": "Admin “{{admin}}” is no longer a player in “{{story}}” and can see all values there again (including hidden monsters).",
+      "item_received": "{{from}} gave you the magic item “{{item}}” ({{character}}, {{story}}).",
+      "item_returned": "{{from}} returned “{{item}}” to the DM ({{character}}, {{story}})."
     },
     "open": "Open"
   },
@@ -963,5 +970,38 @@
     "addOption": "Add",
     "optionExists": "This entry already exists.",
     "expand": "Show"
+  },
+  "items": {
+    "title": "Magic items",
+    "hint": "Create items per story and assign them to the players' character sheets (also several). Players are notified and see them on their sheet.",
+    "new": "New item",
+    "edit": "Edit item",
+    "search": "Search name, description or holder …",
+    "empty": "No magic items in this story yet.",
+    "noStories": "You don't manage any story yet. Magic items are managed by admin, moderators and a story's Dungeon Masters.",
+    "holders": "Holders",
+    "holdersHint": "Character sheets assigned to this story (character sheet → Settings). Multiple selection possible.",
+    "noCharacters": "No character sheets are assigned to this story yet.",
+    "withDm": "with the DM",
+    "namePlaceholder": "e.g. Ring of Invisibility",
+    "saved": "Item saved",
+    "deleted": "Item deleted",
+    "deleteTitle": "Delete item?",
+    "deleteText": "“{{name}}” will be deleted and removed from all character sheets.",
+    "sheetHint": "This character's magic items. You can pass them to another character of the story or return them to the DM.",
+    "sheetHintReadOnly": "This character's magic items.",
+    "sheetEmpty": "This character has no magic items yet.",
+    "giveTo": "Give to …",
+    "noTargets": "No other characters in the story",
+    "give": "Give",
+    "returnToDm": "Return to the DM",
+    "giveTitle": "Give item?",
+    "giveText": "“{{item}}” goes to {{name}} ({{owner}}). The player will be notified.",
+    "returnTitle": "Return to the DM?",
+    "returnText": "“{{item}}” is returned to the DM and removed from this sheet.",
+    "given": "Given to {{name}}",
+    "returned": "Returned to the DM",
+    "attuned": "attuned",
+    "attuneHint": "You can attune to magic items your character owns (tab “Magic items”)."
   }
 }

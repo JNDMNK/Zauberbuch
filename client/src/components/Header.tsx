@@ -49,7 +49,7 @@ function ThemeToggle() {
 
 function UserMenu() {
   const { t } = useTranslation();
-  const { user, logout, canWriteSpells } = useAuth();
+  const { user, logout, canAccessAdmin } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -83,7 +83,7 @@ function UserMenu() {
             <Settings className="h-4 w-4" />
             {t('nav.account')}
           </Link>
-          {canWriteSpells && (
+          {canAccessAdmin && (
             <Link role="menuitem" to="/admin" onClick={() => setOpen(false)} className="flex items-center gap-2 px-4 py-2 hover:bg-parchment-200/70 dark:hover:bg-night-700">
               <Shield className="h-4 w-4" />
               {t('nav.admin')}
@@ -166,7 +166,7 @@ function SpellsMenu({ navCls }: { navCls: (s: { isActive: boolean }) => string }
 
 export function Header() {
   const { t } = useTranslation();
-  const { user, canWriteSpells, isEditor } = useAuth();
+  const { user, canAccessAdmin, isEditor } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const unread = useBoardUnread(Boolean(user));
@@ -232,7 +232,7 @@ export function Header() {
         </NavLink>
       )}
       {sharedLinks}
-      {canWriteSpells && (
+      {canAccessAdmin && (
         <NavLink to="/admin" className={navCls}>
           <Shield className="h-4 w-4" />
           {t('nav.admin')}

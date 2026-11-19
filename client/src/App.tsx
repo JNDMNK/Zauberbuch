@@ -13,6 +13,10 @@ import { SpellFormPage } from './pages/admin/SpellFormPage';
 import { ImportExportPage } from './pages/admin/ImportExportPage';
 import { UsersPage } from './pages/admin/UsersPage';
 import { StoriesAdminPage } from './pages/admin/StoriesAdminPage';
+import { ItemsAdminPage } from './pages/admin/ItemsAdminPage';
+import { useAuth } from './context/AuthContext';
+import { PageSpinner } from './components/ui';
+import type { ReactNode } from 'react';
 import { SpellbooksPage, UserSpellbookPage } from './pages/admin/SpellbooksPage';
 import { CharactersPage } from './pages/CharactersPage';
 import { CharacterSheetPage } from './pages/CharacterSheetPage';
@@ -81,15 +85,16 @@ export default function App() {
             <Route
               path="admin"
               element={
-                <RequireAuth allow={canWriteSpells}>
+                <AdminGuard>
                   <AdminLayout />
-                </RequireAuth>
+                </AdminGuard>
               }
             >
-              <Route index element={<Navigate to="spells" replace />} />
-              <Route path="spells" element={<AdminSpellsPage />} />
-              <Route path="spells/new" element={<SpellFormPage key="new" />} />
-              <Route path="spells/:slug/edit" element={<SpellFormPage />} />
+              <Route index element={<AdminIndex />} />
+              <Route path="spells" element={<RequireAuth allow={canWriteSpells}><AdminSpellsPage /></RequireAuth>} />
+              <Route path="spells/new" element={<RequireAuth allow={canWriteSpells}><SpellFormPage key="new" /></RequireAuth>} />
+              <Route path="spells/:slug/edit" element={<RequireAuth allow={canWriteSpells}><SpellFormPage /></RequireAuth>} />
+              <Route path="items" element={<ItemsAdminPage />} />
               <Route
                 path="stories"
                 element={
@@ -135,4 +140,21 @@ export default function App() {
 function LegacySpellbookRedirect() {
   const { userId } = useParams();
   return <Navigate to={`/spellbooks/${userId ?? ''}`} replace />;
+}
+
+/** Verwaltung: Zauber-Bearbeiter, Moderator/Admin oder Dungeon Master einer Geschichte (magische Gegenstände) */
+function AdminGuard({ children }: { children: ReactNode }) {
+  const { user, loading, canAccessAdmin, storyDmLoading } = useAuth();
+  if (loading) return <PageSpinner />;
+  if (!user) return <Navigate to="/login" replace />;
+  // Zauber-Bearbeiter dürfen sofort; sonst erst nach der Prüfung „DM einer Geschichte?“ entscheiden
+  if (!canAccessAdmin && storyDmLoading) return <PageSpinner />;
+  if (!canAccessAdmin) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
+/** Startseite der Verwaltung: Zauber, sonst magische Gegenstände */
+function AdminIndex() {
+  const { user } = useAuth();
+  return <Navigate to={canWriteSpells(user) ? 'spells' : 'items'} replace />;
 }

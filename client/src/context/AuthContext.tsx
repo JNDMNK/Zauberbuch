@@ -25,6 +25,12 @@ interface AuthApi {
   canWriteSpells: boolean;
   /** Darf Zauber löschen (Editor) */
   canDeleteSpells: boolean;
+  /** Dungeon Master in mindestens einer Geschichte (verwaltet dort magische Gegenstände) */
+  isStoryDm: boolean;
+  /** Zugang zur Verwaltung: Zauber bearbeiten, Moderator/Admin oder Dungeon Master einer Geschichte */
+  canAccessAdmin: boolean;
+  /** Prüfung „Dungeon Master einer Geschichte?“ läuft noch */
+  storyDmLoading: boolean;
   language: Locale;
   login: (identifier: string, password: string) => Promise<UserDto>;
   logout: () => Promise<void>;
@@ -138,6 +144,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [favoriteIds]);
 
+  // Dungeon Master einer Geschichte? (Zugang zu Verwaltung → Magische Gegenstände)
+  const [storyDm, setStoryDm] = useState(false);
+  /** Benutzer, für den die Prüfung abgeschlossen ist (sonst läuft sie noch) */
+  const [storyDmFor, setStoryDmFor] = useState<string | null>(null);
+  const storyDmLoading = Boolean(user) && storyDmFor !== `${user?.id}:${user?.role}`;
+  useEffect(() => {
+    if (!user) {
+      setStoryDm(false);
+      setStoryDmFor(null);
+      return;
+    }
+    const key = `${user.id}:${user.role}`;
+    let cancelled = false;
+    api
+      .itemStories()
+      .then((r) => !cancelled && setStoryDm(r.stories.length > 0))
+      .catch(() => !cancelled && setStoryDm(false))
+      .finally(() => !cancelled && setStoryDmFor(key));
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, user?.role]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const value = useMemo<AuthApi>(
     () => ({
       user,
@@ -147,6 +176,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isEditor: isEditorRole(user?.role),
       canWriteSpells: canWriteSpells(user),
       canDeleteSpells: canDeleteSpells(user),
+      isStoryDm: storyDm,
+      canAccessAdmin: canWriteSpells(user) || storyDm,
+      storyDmLoading,
       language: asLocale(i18n.language),
       login,
       logout,
@@ -156,7 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isFavorite: (id) => favoriteIds.has(id),
       toggleFavorite,
     }),
-    [user, config, loading, i18n.language, login, logout, setLanguage, favoriteIds, toggleFavorite],
+    [user, config, loading, i18n.language, login, logout, setLanguage, favoriteIds, toggleFavorite, storyDm, storyDmLoading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -6,3 +6,4 @@ export * from './board';
 export * from './combat';
 export * from './bestiary';
 export * from './lifestyle';
+export * from './items';

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, ArrowLeft, Check, Eye, Printer } from 'lucide-react';
-import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, characterSheetSchema, type CharacterDto, type CharacterSheet } from '@zauberbuch/shared';
+import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, characterSheetSchema, type CharacterDto, type CharacterItemsDto, type CharacterSheet } from '@zauberbuch/shared';
 import { api, saveCharacterKeepalive } from '../lib/api';
 import { errorMessage } from '../lib/errors';
 import { Alert, PageSpinner, Spinner } from '../components/ui';
@@ -12,8 +12,9 @@ import { FeaturesTab } from '../components/sheet/FeaturesTab';
 import { BackgroundTab, PhysicalHeader } from '../components/sheet/BackgroundTab';
 import { SpellsTab } from '../components/sheet/SpellsTab';
 import { SettingsTab } from '../components/sheet/SettingsTab';
+import { ItemsTab } from '../components/sheet/ItemsTab';
 
-const TABS = ['main', 'features', 'background', 'spells'] as const;
+const TABS = ['main', 'features', 'background', 'spells', 'items'] as const;
 /** „Einstellungen“ nur für Besitzer, DM und Admin; nicht im Druck */
 type Tab = (typeof TABS)[number] | 'settings';
 type SaveState = 'saved' | 'dirty' | 'saving' | 'error';
@@ -114,12 +115,24 @@ export function CharacterSheetPage() {
   const lifestyles = character?.lifestyles;
   const languages = character?.languages;
   const tools = character?.tools;
+  // Magische Gegenstände des Bogens (Reiter und Einstimmung)
+  const [itemData, setItemData] = useState<CharacterItemsDto | null>(null);
+  const reloadItems = useCallback(() => {
+    if (!id) return;
+    api
+      .characterItems(id)
+      .then(setItemData)
+      .catch(() => setItemData({ items: [], canTransfer: false, targets: [] }));
+  }, [id]);
+  useEffect(reloadItems, [reloadItems]);
+  const items = useMemo(() => ({ data: itemData, reload: reloadItems }), [itemData, reloadItems]);
+
   const ctx = useMemo<SheetCtx | null>(
     () =>
       sheet
-        ? { sheet, set, readOnly: !canEdit, lifestyles: lifestyles ?? DEFAULT_LIFESTYLES, languages: languages ?? DEFAULT_LANGUAGES, tools: tools ?? DEFAULT_TOOLS }
+        ? { sheet, set, readOnly: !canEdit, lifestyles: lifestyles ?? DEFAULT_LIFESTYLES, languages: languages ?? DEFAULT_LANGUAGES, tools: tools ?? DEFAULT_TOOLS, items }
         : null,
-    [sheet, set, canEdit, lifestyles, languages, tools],
+    [sheet, set, canEdit, lifestyles, languages, tools, items],
   );
 
   useEffect(() => {
@@ -236,6 +249,7 @@ export function CharacterSheetPage() {
                 </>
               )}
               {k === 'spells' && <SpellsTab />}
+              {k === 'items' && <ItemsTab characterId={character.id} />}
             </div>
           ))}
         </fieldset>

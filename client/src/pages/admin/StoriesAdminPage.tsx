@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Archive, ArchiveRestore, BookOpen, Coins, MessagesSquare, Pencil, Plus, RotateCcw, Save, Search, Swords, Trash2, X } from 'lucide-react';
+import { Archive, ArchiveRestore, BookOpen, Coins, Gem, MessagesSquare, Pencil, Plus, RotateCcw, Save, Search, Swords, Trash2, X } from 'lucide-react';
 import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, type Lifestyle, type Role, type StoryDto, type StoryRole } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
@@ -140,6 +140,10 @@ export function StoriesAdminPage() {
                   <Link to="/combat" className="inline-flex items-center gap-1 underline">
                     <Swords className="h-4 w-4" />
                     {t('nav.combat')}
+                  </Link>
+                  <Link to={`/admin/items?story=${s.id}`} className="inline-flex items-center gap-1 underline">
+                    <Gem className="h-4 w-4" />
+                    {t('admin.items')}
                   </Link>
                 </div>
               </li>

@@ -140,6 +140,7 @@ model Character {
    * Weitere Benutzer, die den Bogen bearbeiten dürfen
    */
   editors    CharacterEditor[]
+  magicItems MagicItemHolder[]
 
   @@index([userId])
 }
@@ -172,6 +173,7 @@ model Story {
   bestiary    BestiaryEntry[]
   characters  Character[]
   activeFor   User[]          @relation("ActiveStory")
+  magicItems  MagicItem[]
 }
 
 /**
@@ -400,4 +402,36 @@ model CharacterEditor {
 
   @@id([characterId, userId])
   @@index([userId])
+}
+
+// ---- Magische Gegenstände ----
+
+/**
+ * Magischer Gegenstand einer Geschichte; verwaltet von Admin, Moderator und den Dungeon Mastern der Geschichte
+ */
+model MagicItem {
+  id          String            @id @default(cuid())
+  storyId     String
+  story       Story             @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  name        String
+  description String            @default("")
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  holders     MagicItemHolder[]
+
+  @@index([storyId, name])
+}
+
+/**
+ * Welche Charakterbögen den Gegenstand besitzen (mehrere möglich)
+ */
+model MagicItemHolder {
+  itemId      String
+  characterId String
+  createdAt   DateTime  @default(now())
+  item        MagicItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, characterId])
+  @@index([characterId])
 }
