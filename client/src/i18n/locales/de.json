@@ -1066,5 +1066,26 @@
     "valuePlaceholder": "z. B. 5 GM",
     "strength": "Stärke (benötigt)",
     "strengthPlaceholder": "keine"
+  },
+  "dmNotes": {
+    "tab": "DM-Notizen",
+    "tabPosts": "Beiträge",
+    "hint": "Nur für die Dungeon Master dieser Geschichte sichtbar – Spieler sehen diesen Reiter nicht.",
+    "search": "Notizen durchsuchen …",
+    "new": "Neuer Abschnitt",
+    "expandAll": "Alle aufklappen",
+    "collapseAll": "Alle zuklappen",
+    "empty": "Noch keine Notizen. Lege Abschnitte an, z. B. „Dorf A“, und notiere, was dort passieren kann.",
+    "up": "Nach oben",
+    "down": "Nach unten",
+    "noText": "Noch kein Text.",
+    "updated": "Zuletzt geändert {{date}} von {{user}}",
+    "saved": "Abschnitt gespeichert",
+    "deleted": "Abschnitt gelöscht",
+    "deleteTitle": "Abschnitt löschen?",
+    "deleteText": "„{{name}}“ wird mit allen Notizen gelöscht.",
+    "title": "Abschnitt",
+    "titlePlaceholder": "z. B. Dorf A",
+    "body": "Notizen"
   }
 }

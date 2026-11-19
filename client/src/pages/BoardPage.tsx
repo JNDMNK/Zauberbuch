@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Archive, Plus, Search, Settings2, Trash, Users, X } from 'lucide-react';
+import { Archive, MessagesSquare, NotebookPen, Plus, Search, Settings2, Trash, Users, X } from 'lucide-react';
 import { BOARD_CATEGORIES, type BoardCategory, type BoardPostDto, type StoryDto } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
@@ -12,6 +12,7 @@ import { refreshBoardUnread } from '../hooks/useBoardUnread';
 import { Alert, PageSpinner, Spinner } from '../components/ui';
 import { PostCard } from '../components/board/PostCard';
 import { PostForm } from '../components/board/PostForm';
+import { DmNotesPanel } from '../components/board/DmNotesPanel';
 
 const REFRESH_MS = 30_000;
 const LAST_STORY_KEY = 'zauberbuch.board.story';
@@ -156,6 +157,9 @@ function StoryBoard({ story, onRead }: { story: StoryDto; onRead: (id: string) =
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const readOnly = story.archived;
+  const isDm = story.myRole === 'dm';
+  const [params_, setParams] = useSearchParams();
+  const tab = isDm && params_.get('tab') === 'dm' ? 'dm' : 'posts';
   const pagesRef = useRef(pages);
   pagesRef.current = pages;
 
@@ -249,84 +253,116 @@ function StoryBoard({ story, onRead }: { story: StoryDto; onRead: (id: string) =
         )}
       </section>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-[14rem] flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-700 dark:text-parchment-400" />
-          <input type="search" className="input !pl-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('board.searchPlaceholder')} aria-label={t('common.search')} />
-        </div>
-        {!readOnly && !writing && (
-          <button type="button" className="btn-primary" onClick={() => setWriting(true)}>
-            <Plus className="h-4 w-4" />
-            {t('board.newPost')}
-          </button>
-        )}
-      </div>
-      <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('board.category')}>
-        <CategoryChip active={category === null} onClick={() => setCategory(null)} label={t('common.any')} />
-        {BOARD_CATEGORIES.map((c) => (
-          <CategoryChip key={c} active={category === c} onClick={() => setCategory(category === c ? null : c)} label={t(`board.categories.${c}`)} />
-        ))}
-      </div>
-
-      {writing && (
-        <section className="parchment p-5">
-          <h3 className="mb-3 font-display text-lg font-bold">{t('board.newPost')}</h3>
-          <PostForm
-            submitLabel={t('board.publish')}
-            onCancel={() => setWriting(false)}
-            onSubmit={async (input) => {
-              try {
-                await api.createPost(story.id, input);
-                setWriting(false);
-                toast.success(t('board.postCreated'));
-                await reload(pagesRef.current);
-              } catch (err) {
-                toast.error(errorMessage(t, err));
-              }
-            }}
-          />
-        </section>
+      {isDm && (
+        <nav className="flex gap-1 overflow-x-auto border-b border-parchment-400/60 dark:border-night-700" aria-label={t('board.heading')}>
+          {(
+            [
+              ['posts', MessagesSquare, t('dmNotes.tabPosts')],
+              ['dm', NotebookPen, t('dmNotes.tab')],
+            ] as const
+          ).map(([key, Icon, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setParams(key === 'dm' ? { tab: 'dm' } : {}, { replace: true })}
+              aria-pressed={tab === key}
+              className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-2 font-display text-sm font-semibold ${
+                tab === key
+                  ? 'border-parchment-800 text-ink dark:border-parchment-300 dark:text-parchment-50'
+                  : 'border-transparent text-parchment-700 hover:text-ink dark:text-parchment-400 dark:hover:text-parchment-100'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          ))}
+        </nav>
       )}
 
-      {error ? (
-        <Alert>{errorMessage(t, error)}</Alert>
-      ) : !posts ? (
-        <PageSpinner />
-      ) : posts.length === 0 ? (
-        <p className="parchment p-8 text-center text-parchment-700 dark:text-parchment-400">{filtered ? t('board.noResults') : t('board.empty')}</p>
+      {tab === 'dm' ? (
+        <DmNotesPanel storyId={story.id} readOnly={readOnly} />
       ) : (
         <>
-          {filtered && (
-            <p className="flex items-center gap-2 text-sm">
-              {t('board.resultCount', { count: total })}
-              <button type="button" className="inline-flex items-center gap-1 underline" onClick={() => (setQ(''), setCategory(null))}>
-                <X className="h-3.5 w-3.5" />
-                {t('board.resetFilter')}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-[14rem] flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-700 dark:text-parchment-400" />
+              <input type="search" className="input !pl-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('board.searchPlaceholder')} aria-label={t('common.search')} />
+            </div>
+            {!readOnly && !writing && (
+              <button type="button" className="btn-primary" onClick={() => setWriting(true)}>
+                <Plus className="h-4 w-4" />
+                {t('board.newPost')}
               </button>
-            </p>
-          )}
-          <div className="space-y-4">
-            {posts.map((p) => (
-              <PostCard
-                key={p.id}
-                post={p}
-                readOnly={readOnly}
-                canPin={story.myRole === 'dm'}
-                onChange={(np) => setPosts((list) => list?.map((x) => (x.id === np.id ? np : x)) ?? null)}
-                onRemove={(id) => {
-                  setPosts((list) => list?.filter((x) => x.id !== id) ?? null);
-                  setTotal((n) => n - 1);
-                }}
-              />
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('board.category')}>
+            <CategoryChip active={category === null} onClick={() => setCategory(null)} label={t('common.any')} />
+            {BOARD_CATEGORIES.map((c) => (
+              <CategoryChip key={c} active={category === c} onClick={() => setCategory(category === c ? null : c)} label={t(`board.categories.${c}`)} />
             ))}
           </div>
-          {posts.length < total && (
-            <div className="flex justify-center">
-              <button type="button" className="btn-secondary" onClick={loadMore} disabled={loadingMore}>
-                {loadingMore && <Spinner className="h-4 w-4" />}
-                {t('board.loadMore', { count: total - posts.length })}
-              </button>
-            </div>
+
+          {writing && (
+            <section className="parchment p-5">
+              <h3 className="mb-3 font-display text-lg font-bold">{t('board.newPost')}</h3>
+              <PostForm
+                submitLabel={t('board.publish')}
+                onCancel={() => setWriting(false)}
+                onSubmit={async (input) => {
+                  try {
+                    await api.createPost(story.id, input);
+                    setWriting(false);
+                    toast.success(t('board.postCreated'));
+                    await reload(pagesRef.current);
+                  } catch (err) {
+                    toast.error(errorMessage(t, err));
+                  }
+                }}
+              />
+            </section>
+          )}
+
+          {error ? (
+            <Alert>{errorMessage(t, error)}</Alert>
+          ) : !posts ? (
+            <PageSpinner />
+          ) : posts.length === 0 ? (
+            <p className="parchment p-8 text-center text-parchment-700 dark:text-parchment-400">{filtered ? t('board.noResults') : t('board.empty')}</p>
+          ) : (
+            <>
+              {filtered && (
+                <p className="flex items-center gap-2 text-sm">
+                  {t('board.resultCount', { count: total })}
+                  <button type="button" className="inline-flex items-center gap-1 underline" onClick={() => (setQ(''), setCategory(null))}>
+                    <X className="h-3.5 w-3.5" />
+                    {t('board.resetFilter')}
+                  </button>
+                </p>
+              )}
+              <div className="space-y-4">
+                {posts.map((p) => (
+                  <PostCard
+                    key={p.id}
+                    post={p}
+                    readOnly={readOnly}
+                    canPin={story.myRole === 'dm'}
+                    onChange={(np) => setPosts((list) => list?.map((x) => (x.id === np.id ? np : x)) ?? null)}
+                    onRemove={(id) => {
+                      setPosts((list) => list?.filter((x) => x.id !== id) ?? null);
+                      setTotal((n) => n - 1);
+                    }}
+                  />
+                ))}
+              </div>
+              {posts.length < total && (
+                <div className="flex justify-center">
+                  <button type="button" className="btn-secondary" onClick={loadMore} disabled={loadingMore}>
+                    {loadingMore && <Spinner className="h-4 w-4" />}
+                    {t('board.loadMore', { count: total - posts.length })}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

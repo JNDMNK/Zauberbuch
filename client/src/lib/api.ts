@@ -1,4 +1,6 @@
 import type {
+  DmNoteDto,
+  DmNoteInput,
   AddMonsterInput,
   CatalogItemDto,
   CatalogItemInput,
@@ -222,6 +224,11 @@ export const api = {
   storyItems: (storyId: string) => request<{ items: MagicItemDto[]; characters: ItemCharacterRef[] }>('GET', `/api/items/stories/${storyId}`),
   createItem: (storyId: string, input: MagicItemInput) => request<{ item: MagicItemDto }>('POST', `/api/items/stories/${storyId}`, input),
   updateItem: (id: string, input: MagicItemInput) => request<{ item: MagicItemDto }>('PUT', `/api/items/${id}`, input),
+  dmNotes: (storyId: string) => request<{ notes: DmNoteDto[] }>('GET', `/api/dm-notes/stories/${storyId}`),
+  createDmNote: (storyId: string, input: DmNoteInput) => request<{ note: DmNoteDto }>('POST', `/api/dm-notes/stories/${storyId}`, input),
+  updateDmNote: (id: string, input: DmNoteInput) => request<{ note: DmNoteDto }>('PUT', `/api/dm-notes/${id}`, input),
+  deleteDmNote: (id: string) => request<void>('DELETE', `/api/dm-notes/${id}`),
+  orderDmNotes: (storyId: string, ids: string[]) => request<{ notes: DmNoteDto[] }>('PUT', `/api/dm-notes/stories/${storyId}/order`, { ids }),
   deleteItem: (id: string) => request<void>('DELETE', `/api/items/${id}`),
   characterItems: (characterId: string) => request<CharacterItemsDto>('GET', `/api/items/character/${characterId}`),
   transferItem: (id: string, fromCharacterId: string, toCharacterId: string | null) => request<void>('POST', `/api/items/${id}/transfer`, { fromCharacterId, toCharacterId }),

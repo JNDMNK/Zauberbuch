@@ -340,6 +340,16 @@ Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Grupp
   wiederherstellen; danach werden sie automatisch endgültig entfernt. Gelöschte Kommentare sind sofort weg.
 - Wird ein Benutzer gelöscht, bleiben seine Beiträge erhalten („gelöschter Benutzer“).
 
+### DM-Notizen
+
+- Dungeon Master einer Geschichte (und der Admin, sofern er dort nicht Spieler ist) sehen auf der Infotafel den
+  zusätzlichen Reiter **„DM-Notizen“** – Spieler sehen ihn nicht, auch die API verweigert ihnen den Zugriff.
+- Notizen sind in **Abschnitte** gegliedert (z. B. „Dorf A“) mit formatiertem Text (Markdown wie bei den Zaubern),
+  etwa um mögliche Ereignisse und Abläufe festzuhalten.
+- Abschnitte lassen sich mit Pfeilen **sortieren**, auf- und zuklappen (wird im Browser gemerkt), bearbeiten,
+  löschen und durchsuchen. Jeder Abschnitt zeigt, wann und von wem er zuletzt geändert wurde; mehrere DMs einer
+  Geschichte teilen sich die Notizen.
+
 ## Kampfhilfe
 
 Unter **Kampf** führt der Dungeon Master einer Geschichte Kämpfe. Jeder Kampf gehört zu einer **Geschichte**; deren
@@ -676,6 +686,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET`/`POST /api/bestiary/dm` · `PUT`/`DELETE /api/bestiary/dm/:id` | DM/Admin | DM-Datenbank (Vorlagen) |
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
+| `GET`/`POST /api/dm-notes/stories/:storyId` · `PUT …/order` · `PUT`/`DELETE /api/dm-notes/:id` | DM der Geschichte | DM-Notizen (`{ title, body? }`; Reihenfolge `{ ids }`) |
 | `GET /api/catalog?storyId=` | angemeldet | Wirksame Gegenstands-Datenbank (Standard bzw. Geschichte) |
 | `POST /api/catalog/standard` · `PUT`/`DELETE /api/catalog/:id` | Moderator/Admin | Standard-Datenbank bzw. eigene Einträge bearbeiten (`{ category, name, description?, weight?, value?, ac?, strength?, damageDice?, damageType? }`) |
 | `GET`/`POST /api/catalog/stories/:storyId` · `PUT`/`DELETE …/override/:baseId` · `POST …/hide/:baseId` | Moderator/Admin | Liste einer Geschichte: anpassen, zurücksetzen, ausblenden, eigene Einträge |

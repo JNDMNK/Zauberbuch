@@ -1066,5 +1066,26 @@
     "valuePlaceholder": "e.g. 5 gp",
     "strength": "Strength (required)",
     "strengthPlaceholder": "none"
+  },
+  "dmNotes": {
+    "tab": "DM notes",
+    "tabPosts": "Posts",
+    "hint": "Only visible to this story's Dungeon Masters – players don't see this tab.",
+    "search": "Search notes …",
+    "new": "New section",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all",
+    "empty": "No notes yet. Create sections, e.g. “Village A”, and note what can happen there.",
+    "up": "Move up",
+    "down": "Move down",
+    "noText": "No text yet.",
+    "updated": "Last changed {{date}} by {{user}}",
+    "saved": "Section saved",
+    "deleted": "Section deleted",
+    "deleteTitle": "Delete section?",
+    "deleteText": "“{{name}}” will be deleted with all its notes.",
+    "title": "Section",
+    "titlePlaceholder": "e.g. Village A",
+    "body": "Notes"
   }
 }
