@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, ArrowLeft, Check, Eye, Printer } from 'lucide-react';
-import { characterSheetSchema, type CharacterDto, type CharacterSheet } from '@zauberbuch/shared';
+import { DEFAULT_LIFESTYLES, characterSheetSchema, type CharacterDto, type CharacterSheet } from '@zauberbuch/shared';
 import { api, saveCharacterKeepalive } from '../lib/api';
 import { errorMessage } from '../lib/errors';
 import { Alert, PageSpinner, Spinner } from '../components/ui';
@@ -111,7 +111,8 @@ export function CharacterSheetPage() {
     [canEdit, flush],
   );
 
-  const ctx = useMemo<SheetCtx | null>(() => (sheet ? { sheet, set, readOnly: !canEdit } : null), [sheet, set, canEdit]);
+  const lifestyles = character?.lifestyles;
+  const ctx = useMemo<SheetCtx | null>(() => (sheet ? { sheet, set, readOnly: !canEdit, lifestyles: lifestyles ?? DEFAULT_LIFESTYLES } : null), [sheet, set, canEdit, lifestyles]);
 
   useEffect(() => {
     const name = sheet?.identity.name;
@@ -232,7 +233,15 @@ export function CharacterSheetPage() {
         </fieldset>
         {/* Einstellungen außerhalb des Bogens: auch DM/Admin (nur lesend im Bogen) dürfen sie ändern */}
         {tab === 'settings' && character.canManageSettings && (
-          <SettingsTab characterId={character.id} ownerName={character.owner?.username ?? ''} onStoryChange={(story) => setCharacter((c) => (c ? { ...c, story } : c))} />
+          <SettingsTab characterId={character.id} ownerName={character.owner?.username ?? ''} onStoryChange={(story) => {
+              setCharacter((c) => (c ? { ...c, story } : c));
+              // Lebensstil-Tabelle der (neuen) Geschichte übernehmen
+              api
+                .character(character.id)
+                .then((r) => setCharacter((c) => (c ? { ...c, lifestyles: r.character.lifestyles } : c)))
+                .catch(() => undefined);
+            }}
+          />
         )}
       </div>
     </SheetContext.Provider>

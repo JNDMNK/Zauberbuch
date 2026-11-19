@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { Lifestyle } from './lifestyle';
 
 /** Charakterbogen (angelehnt an den D&D-5e-Charakterbogen v2.7). Wird als JSON-Dokument gespeichert. */
 
@@ -236,6 +237,8 @@ export interface CharacterDto extends CharacterSummaryDto {
   canManageSettings: boolean;
   /** Betrachter ist Besitzer (löschen/duplizieren) */
   isOwner: boolean;
+  /** Lebensstile mit täglichen Kosten (aus der zugeordneten Geschichte, sonst Standardwerte) */
+  lifestyles: Lifestyle[];
 }
 
 /** Einstellungen eines Bogens: Mitbearbeiter und Geschichte */

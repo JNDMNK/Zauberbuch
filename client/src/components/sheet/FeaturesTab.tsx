@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { carrying, jumps } from '@zauberbuch/shared';
+import { carrying, jumps, lifestyleCost } from '@zauberbuch/shared';
 import { useSheet } from './SheetContext';
-import { Box, NF, TA, TF } from './fields';
+import { Box, NF, TA } from './fields';
 import { InventoryTable } from './InventoryTable';
 
 const fmt = (n: number, lang: string) => n.toLocaleString(lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -91,10 +91,7 @@ export function FeaturesTab() {
           <TA path={['features', 'senses']} label={t('sheet.senses')} rows={5} />
         </Box>
         <Box label={t('sheet.lifestyle')}>
-          <div className="grid grid-cols-2 gap-3">
-            <TF path={['lifestyle', 'name']} label={t('sheet.lifestyleName')} maxLength={50} />
-            <TF path={['lifestyle', 'dailyCost']} label={t('sheet.dailyCost')} maxLength={30} align="center" />
-          </div>
+          <LifestyleFields />
         </Box>
         <JumpBox />
         <Box>
@@ -147,6 +144,54 @@ function AttunedItems() {
           }}
         />
       ))}
+    </div>
+  );
+}
+
+/**
+ * Lebensstil als Auswahl; die täglichen Kosten kommen aus der Tabelle (Geschichte des Bogens bzw. Standardwerte).
+ * Ein früher frei eingetragener Lebensstil, der nicht in der Tabelle steht, bleibt wählbar und behält seine Kosten.
+ */
+function LifestyleFields() {
+  const { t } = useTranslation();
+  const { sheet, set, readOnly, lifestyles } = useSheet();
+  const current = sheet.lifestyle.name;
+  const tableCost = current ? lifestyleCost(lifestyles, current) : null;
+  const inTable = tableCost !== null;
+  const cost = tableCost ?? sheet.lifestyle.dailyCost;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <div>
+        <select
+          id="sheet-lifestyle"
+          className="sheet-input"
+          value={current}
+          disabled={readOnly}
+          onChange={(e) => {
+            const name = e.target.value;
+            set(['lifestyle'], { name, dailyCost: name ? (lifestyleCost(lifestyles, name) ?? '') : '' });
+          }}
+        >
+          <option value="">–</option>
+          {lifestyles.map((l) => (
+            <option key={l.name} value={l.name}>
+              {l.name}
+            </option>
+          ))}
+          {current && !inTable && <option value={current}>{current}</option>}
+        </select>
+        <label htmlFor="sheet-lifestyle" className="sheet-label">
+          {t('sheet.lifestyleName')}
+        </label>
+      </div>
+      <div>
+        <output className="sheet-input flex min-h-[2.125rem] items-center justify-center tabular-nums" aria-labelledby="sheet-daily-cost" title={t('sheet.dailyCostHint')}>
+          {cost || '–'}
+        </output>
+        <span id="sheet-daily-cost" className="sheet-label">
+          {t('sheet.dailyCost')}
+        </span>
+      </div>
     </div>
   );
 }

@@ -386,7 +386,8 @@
     "character_read_only": "Werte von Spielercharakteren kommen aus dem Charakterbogen.",
     "too_many_combatants": "Zu viele Teilnehmer (höchstens 60).",
     "no_combatants": "Keine aktiven Teilnehmer.",
-    "hp_range_invalid": "LP als Zahl oder Bereich angeben, z. B. 58 oder 10-15."
+    "hp_range_invalid": "LP als Zahl oder Bereich angeben, z. B. 58 oder 10-15.",
+    "lifestyle_duplicate": "Jeder Lebensstil darf nur einmal vorkommen."
   },
   "damageType": {
     "acid": "Säure",
@@ -644,7 +645,8 @@
       "noUsers": "Es gibt keine weiteren Benutzer.",
       "save": "Einstellungen speichern",
       "saved": "Einstellungen gespeichert"
-    }
+    },
+    "dailyCostHint": "Aus der Lebensstil-Tabelle der Geschichte (bzw. den Standardwerten)"
   },
   "board": {
     "heading": "Infotafel",
@@ -941,6 +943,14 @@
     "membersHint": "Spieler sehen Infotafel und Kämpfe der Geschichte und schreiben Beiträge. Dungeon Master führen Kämpfe, sehen verdeckte Werte, verwalten Beiträge und lesen die Charakterbögen der Geschichte. Ohne Eintrag ist die Geschichte unsichtbar (der Admin hat ohne Spielerrolle überall DM-Rechte).",
     "roleFor": "Rolle für",
     "notMember": "–",
-    "deleteText": "„{{name}}“ wird mit allen {{count}} Beiträgen, Kämpfen und der Spieler-Monster-Datenbank endgültig gelöscht. Zum Ausblenden besser archivieren."
+    "deleteText": "„{{name}}“ wird mit allen {{count}} Beiträgen, Kämpfen und der Spieler-Monster-Datenbank endgültig gelöscht. Zum Ausblenden besser archivieren.",
+    "lifestyles": "Lebensstil & tägliche Kosten",
+    "lifestylesReset": "Standardwerte",
+    "lifestylesHint": "Diese Werte gelten für alle Charakterbögen, die dieser Geschichte zugeordnet sind: Der Lebensstil wird im Bogen ausgewählt, die täglichen Kosten kommen von hier. Neue Geschichten starten mit den Standardwerten aus dem Spielerhandbuch.",
+    "lifestyleAdd": "Lebensstil hinzufügen",
+    "lifestyleError": {
+      "name": "Jeder Lebensstil braucht einen Namen.",
+      "duplicate": "Jeder Lebensstil darf nur einmal vorkommen."
+    }
   }
 }

@@ -5,3 +5,4 @@ export * from './character';
 export * from './board';
 export * from './combat';
 export * from './bestiary';
+export * from './lifestyle';

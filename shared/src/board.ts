@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { lifestylesSchema, type Lifestyle } from './lifestyle';
 
 /**
  * Infotafel: Pro Geschichte (Story) eine gemeinsame Tafel, auf der Mitspieler wichtige Infos
@@ -31,6 +32,8 @@ export const storyInputSchema = z.object({
   members: members.optional(),
   memberIds: memberIds.optional(),
   dmIds: memberIds.optional(),
+  /** Lebensstile mit täglichen Kosten; ohne Angabe = Standardwerte */
+  lifestyles: lifestylesSchema.optional(),
 });
 export type StoryInput = z.input<typeof storyInputSchema>;
 
@@ -42,6 +45,7 @@ export const storyUpdateSchema = z
     members: members.optional(),
     memberIds: memberIds.optional(),
     dmIds: memberIds.optional(),
+    lifestyles: lifestylesSchema.optional(),
   })
   .refine((v) => Object.values(v).some((x) => x !== undefined), { message: 'Nothing to update' });
 export type StoryUpdate = z.input<typeof storyUpdateSchema>;
@@ -87,6 +91,8 @@ export interface StoryDto {
   members: StoryMemberDto[];
   /** Eigene Rolle in dieser Geschichte (Admin ohne Spielerrolle = dm) */
   myRole: StoryRole | null;
+  /** Lebensstile mit täglichen Kosten für die Charakterbögen dieser Geschichte */
+  lifestyles: Lifestyle[];
   postCount: number;
   unread: number;
 }
@@ -166,6 +172,8 @@ export interface BoardExportStory {
   members: string[];
   /** Benutzernamen der Dungeon Master */
   dms?: string[];
+  /** Lebensstile mit täglichen Kosten */
+  lifestyles?: Lifestyle[];
   posts: BoardExportPost[];
 }
 
@@ -212,6 +220,7 @@ export const boardImportSchema = z.object({
         archived: z.boolean().optional().default(false),
         members: z.array(z.string().max(100)).max(1000).optional().default([]),
         dms: z.array(z.string().max(100)).max(1000).optional().default([]),
+        lifestyles: lifestylesSchema.optional(),
         posts: z.array(importPost).max(20_000).optional().default([]),
       }),
     )

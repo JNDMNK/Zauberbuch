@@ -177,6 +177,21 @@ Rettungswürfe, Fertigkeiten, passive Wahrnehmung, Initiative, Angriffsbonus, Za
 Bilder werden im Browser verkleinert und mit dem Bogen gespeichert. Admin und Moderator sehen alle
 Bögen auf der Seite **Charakterbogen** unter „Charakterbögen weiterer Spieler“ – nur lesend. Der Bogen lässt sich über das Drucker-Symbol drucken.
 
+### Lebensstil & tägliche Kosten
+
+Der **Lebensstil** wird im Bogen (Seite „Merkmale & Inventar“) aus einer Liste gewählt, die **täglichen Kosten**
+kommen automatisch aus einer Tabelle:
+
+- Ohne Geschichte gelten die Standardwerte aus dem Spielerhandbuch: Jämmerlich —, Ärmlich 1 SM, Schlecht 2 SM,
+  Einfach 1 GM, Komfortabel 2 GM, Wohlhabend 4 GM, Edel 10 GM min.
+- Jede **neue Geschichte** startet mit diesen Standardwerten. Unter **Verwaltung → Geschichten → Geschichte
+  bearbeiten** lassen sich Namen und Kosten anpassen, Lebensstile hinzufügen oder entfernen („Standardwerte“ setzt
+  zurück).
+- Ist ein Bogen einer Geschichte zugeordnet, gelten **deren** Werte. Ändert der DM die Kosten, zeigen alle Bögen der
+  Geschichte sofort die neuen Werte.
+- Ein früher frei eingetragener Lebensstil, den es in der Tabelle nicht gibt, bleibt erhalten und behält seine
+  Kosten.
+
 ### Einstellungen eines Bogens
 
 Die letzte Seite des Bogens, **Einstellungen**, sehen Besitzer, Moderator, Admin und der Dungeon Master der

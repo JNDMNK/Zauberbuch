@@ -112,3 +112,49 @@ describe('Charakterbögen – Dungeon Master einer Geschichte', () => {
     expect((await dm.agent.get('/api/characters/all')).body.characters.map((c: { name: string }) => c.name)).toEqual(['Vaelor']);
   });
 });
+
+describe('Lebensstil und tägliche Kosten', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('Standardwerte, Tabelle der Geschichte und Kosten beim Speichern', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    const frodo = await createUser('frodo');
+    const ch = (await frodo.agent.post('/api/characters').set(CSRF).send({ name: 'Vaelor' })).body.character;
+    expect(ch.lifestyles).toHaveLength(7);
+    expect(ch.lifestyles[3]).toEqual({ name: 'Einfach', cost: '1 GM' });
+
+    // Ohne Geschichte: Standardkosten
+    let saved = await frodo.agent.put(`/api/characters/${ch.id}`).set(CSRF).send({ data: { ...ch.data, lifestyle: { name: 'Komfortabel', dailyCost: 'egal' } } });
+    expect(saved.body.character.data.lifestyle).toEqual({ name: 'Komfortabel', dailyCost: '2 GM' });
+
+    // Neue Geschichte bekommt Standardwerte, Admin passt sie an
+    const story = (await admin.post('/api/stories').set(CSRF).send({ name: 'Teure Stadt' })).body.story;
+    expect(story.lifestyles).toHaveLength(7);
+    const custom = [
+      { name: 'Einfach', cost: '3 GM' },
+      { name: 'Komfortabel', cost: '6 GM' },
+      { name: 'Palast', cost: '50 GM' },
+    ];
+    const upd = await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ lifestyles: custom });
+    expect(upd.body.story.lifestyles).toEqual(custom);
+    expect((await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ lifestyles: [{ name: 'A', cost: '1' }, { name: 'a', cost: '2' }] })).status).toBe(400);
+    expect((await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ lifestyles: [] })).status).toBe(400);
+
+    // Export/Import der Infotafel nimmt die Tabelle mit
+    const exp = (await admin.get('/api/board/export')).body;
+    expect(exp.stories[0].lifestyles).toEqual(custom);
+
+    // Bogen der Geschichte zuordnen -> deren Tabelle gilt
+    await frodo.agent.put(`/api/characters/${ch.id}/settings`).set(CSRF).send({ storyId: story.id, editorIds: [] });
+    const view = (await frodo.agent.get(`/api/characters/${ch.id}`)).body.character;
+    expect(view.lifestyles).toEqual(custom);
+    saved = await frodo.agent.put(`/api/characters/${ch.id}`).set(CSRF).send({ data: view.data });
+    expect(saved.body.character.data.lifestyle.dailyCost).toBe('6 GM');
+    expect(saved.body.character.lifestyles).toEqual(custom);
+    // Unbekannter Lebensstil: eingegebene Kosten bleiben
+    saved = await frodo.agent.put(`/api/characters/${ch.id}`).set(CSRF).send({ data: { ...view.data, lifestyle: { name: 'Hausboot', dailyCost: '5 SM' } } });
+    expect(saved.body.character.data.lifestyle).toEqual({ name: 'Hausboot', dailyCost: '5 SM' });
+  });
+});

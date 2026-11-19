@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type { Prisma } from '@prisma/client';
-import { activeStorySchema, storyInputSchema, storyUpdateSchema, type StoryInput, type StoryRole, type StoryUpdate } from '@zauberbuch/shared';
+import { DEFAULT_LIFESTYLES, activeStorySchema, storyInputSchema, storyUpdateSchema, type StoryInput, type StoryRole, type StoryUpdate } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { badRequest, notFound } from '../lib/errors';
@@ -61,7 +61,8 @@ storiesRouter.post('/', requireEditor, async (req, res) => {
   // Ein Moderator, der eine Geschichte anlegt, wird (sofern nicht anders angegeben) ihr Dungeon Master
   if (req.user!.role !== 'admin' && !members.has(req.user!.id)) members.set(req.user!.id, 'dm');
   const story = await prisma.$transaction(async (tx) => {
-    const s = await tx.story.create({ data: { name: input.name, description: input.description } });
+    // Neue Geschichten erhalten die Standard-Lebensstile (anpassbar unter Verwaltung → Geschichten)
+    const s = await tx.story.create({ data: { name: input.name, description: input.description, lifestyles: JSON.stringify(input.lifestyles ?? DEFAULT_LIFESTYLES) } });
     await setMembers(tx, s.id, members);
     return s;
   });
@@ -83,6 +84,7 @@ storiesRouter.patch('/:id', requireEditor, async (req, res) => {
         ...(input.name !== undefined ? { name: input.name } : {}),
         ...(input.description !== undefined ? { description: input.description } : {}),
         ...(input.archived !== undefined ? { archived: input.archived } : {}),
+        ...(input.lifestyles !== undefined ? { lifestyles: JSON.stringify(input.lifestyles) } : {}),
       },
     });
     if (members) await setMembers(tx, id, members);

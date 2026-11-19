@@ -17,6 +17,9 @@ import {
   type CharacterSummaryDto,
   type CharacterSettingsDto,
   characterSettingsSchema,
+  DEFAULT_LIFESTYLES,
+  parseLifestyles,
+  lifestyleCost,
 } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
@@ -215,14 +218,14 @@ charactersRouter.post('/', async (req, res) => {
   const c = await prisma.character.create({
     data: { userId: req.user!.id, ...summaryFields(sheet), data: JSON.stringify(sheet) },
   });
-  const body: CharacterDto = { ...toSummary(c), data: sheet, canEdit: true, canManageSettings: true, isOwner: true };
+  const body: CharacterDto = { ...toSummary(c), data: sheet, canEdit: true, canManageSettings: true, isOwner: true, lifestyles: DEFAULT_LIFESTYLES };
   res.status(201).json({ character: body });
 });
 
 async function loadReadable(id: string, user: User) {
   const c = await prisma.character.findUnique({
     where: { id },
-    include: { user: { select: { id: true, username: true } }, story: { select: { id: true, name: true } }, editors: { select: { userId: true } } },
+    include: { user: { select: { id: true, username: true } }, story: { select: { id: true, name: true, lifestyles: true } }, editors: { select: { userId: true } } },
   });
   const isOwner = !!c && c.userId === user.id;
   const isCoEditor = !!c && c.editors.some((e) => e.userId === user.id);
@@ -236,11 +239,12 @@ async function loadReadable(id: string, user: User) {
 
 function toDto(c: Awaited<ReturnType<typeof loadReadable>>, data: CharacterSheet, updated?: Character): CharacterDto {
   return {
-    ...toSummary({ ...(updated ?? c), story: c.story }, c.user),
+    ...toSummary({ ...(updated ?? c), story: c.story ? { id: c.story.id, name: c.story.name } : null }, c.user),
     data,
     canEdit: c.canEdit,
     canManageSettings: c.canManageSettings,
     isOwner: c.isOwner,
+    lifestyles: parseLifestyles(c.story?.lifestyles),
   };
 }
 
@@ -260,6 +264,9 @@ charactersRouter.put('/:id', async (req, res) => {
       throw badRequest('too_many_attacks', `At most ${MAX_ATTACKS} attacks allowed`);
     }
   }
+  // Tägliche Kosten kommen aus der Lebensstil-Tabelle (Geschichte bzw. Standardwerte)
+  const cost = data.lifestyle.name ? lifestyleCost(parseLifestyles(c.story?.lifestyles), data.lifestyle.name) : null;
+  if (cost !== null) data.lifestyle.dailyCost = cost;
   const updated = await prisma.character.update({
     where: { id: c.id },
     data: { ...summaryFields(data), data: JSON.stringify(data) },
@@ -276,9 +283,18 @@ charactersRouter.post('/:id/duplicate', async (req, res) => {
   sheet.identity.name = sheet.identity.name ? `${sheet.identity.name} (Kopie)` : '';
   const copy = await prisma.character.create({
     data: { userId: req.user!.id, ...summaryFields(sheet), data: JSON.stringify(sheet), storyId: c.storyId },
-    include: { story: { select: { id: true, name: true } } },
+    include: { story: { select: { id: true, name: true, lifestyles: true } } },
   });
-  res.status(201).json({ character: { ...toSummary(copy), data: sheet, canEdit: true, canManageSettings: true, isOwner: true } satisfies CharacterDto });
+  res.status(201).json({
+    character: {
+      ...toSummary({ ...copy, story: copy.story ? { id: copy.story.id, name: copy.story.name } : null }),
+      data: sheet,
+      canEdit: true,
+      canManageSettings: true,
+      isOwner: true,
+      lifestyles: parseLifestyles(copy.story?.lifestyles),
+    } satisfies CharacterDto,
+  });
 });
 
 charactersRouter.delete('/:id', async (req, res) => {

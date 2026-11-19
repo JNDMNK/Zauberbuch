@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Archive, ArchiveRestore, BookOpen, MessagesSquare, Pencil, Plus, Save, Search, Swords, Trash2, X } from 'lucide-react';
-import type { Role, StoryDto, StoryRole } from '@zauberbuch/shared';
+import { Archive, ArchiveRestore, BookOpen, Coins, MessagesSquare, Pencil, Plus, RotateCcw, Save, Search, Swords, Trash2, X } from 'lucide-react';
+import { DEFAULT_LIFESTYLES, type Lifestyle, type Role, type StoryDto, type StoryRole } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
 import { useAuth } from '../../context/AuthContext';
@@ -167,6 +167,7 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
   const [members, setMembers] = useState<Map<string, StoryRole>>(new Map(story?.members.map((m) => [m.id, m.role]) ?? []));
   const [filter, setFilter] = useState('');
   const [busy, setBusy] = useState(false);
+  const [lifestyles, setLifestyles] = useState<Lifestyle[]>(story?.lifestyles ?? DEFAULT_LIFESTYLES);
   const [initial] = useState(() => new Set(story?.members.map((m) => m.id) ?? []));
 
   const setRole = (uid: string, role: StoryRole | '') =>
@@ -192,7 +193,12 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
     if (!name.trim()) return;
     setBusy(true);
     try {
-      const input = { name: name.trim(), description: description.trim(), members: [...members.entries()].map(([userId, role]) => ({ userId, role })) };
+      const input = {
+        name: name.trim(),
+        description: description.trim(),
+        members: [...members.entries()].map(([userId, role]) => ({ userId, role })),
+        lifestyles: lifestyles.map((l) => ({ name: l.name.trim(), cost: l.cost.trim() })),
+      };
       if (story) await api.updateStory(story.id, input);
       else await api.createStory(input);
       toast.success(story ? t('board.storySaved') : t('board.storyCreated'));
@@ -279,15 +285,70 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
         </ul>
       </section>
 
+      <LifestyleEditor value={lifestyles} onChange={setLifestyles} />
+
       <div className="flex flex-wrap justify-end gap-2">
         <button type="button" className="btn-secondary" onClick={onCancel} disabled={busy}>
           {t('common.cancel')}
         </button>
-        <button type="submit" className="btn-primary" disabled={busy || !name.trim()}>
+        <button type="submit" className="btn-primary" disabled={busy || !name.trim() || lifestyleError(lifestyles) !== null}>
           {busy ? <Spinner className="h-4 w-4" /> : <Save className="h-4 w-4" />}
           {story ? t('common.save') : t('board.createStory')}
         </button>
       </div>
     </form>
+  );
+}
+
+/** Prüfung wie auf dem Server: mindestens ein Eintrag, Namen vorhanden und eindeutig */
+function lifestyleError(list: Lifestyle[]): string | null {
+  if (list.length === 0) return 'empty';
+  if (list.some((l) => !l.name.trim())) return 'name';
+  const names = list.map((l) => l.name.trim().toLocaleLowerCase('de'));
+  return new Set(names).size === names.length ? null : 'duplicate';
+}
+
+/** Tabelle „Lebensstil & tägliche Kosten“ einer Geschichte */
+function LifestyleEditor({ value, onChange }: { value: Lifestyle[]; onChange: (v: Lifestyle[]) => void }) {
+  const { t } = useTranslation();
+  const error = lifestyleError(value);
+  const update = (i: number, patch: Partial<Lifestyle>) => onChange(value.map((l, j) => (j === i ? { ...l, ...patch } : l)));
+  return (
+    <section className="parchment space-y-3 p-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="flex flex-1 items-center gap-2 font-display text-lg font-bold">
+          <Coins className="h-5 w-5" />
+          {t('stories.lifestyles')}
+        </h3>
+        <button type="button" className="btn-ghost !py-1 text-sm" onClick={() => onChange(DEFAULT_LIFESTYLES)}>
+          <RotateCcw className="h-4 w-4" />
+          {t('stories.lifestylesReset')}
+        </button>
+      </div>
+      <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('stories.lifestylesHint')}</p>
+      <div className="max-w-xl space-y-2 text-sm">
+        <div className="grid grid-cols-[minmax(0,1fr)_9rem_2.5rem] gap-2">
+          <span className="sheet-label">{t('sheet.lifestyleName')}</span>
+          <span className="sheet-label">{t('sheet.dailyCost')}</span>
+          <span />
+        </div>
+        {value.map((l, i) => (
+          <div key={i} className="grid grid-cols-[minmax(0,1fr)_9rem_2.5rem] items-center gap-2">
+            <input className="input !py-1" value={l.name} maxLength={50} onChange={(e) => update(i, { name: e.target.value })} aria-label={`${t('sheet.lifestyleName')} ${i + 1}`} />
+            <input className="input !py-1" value={l.cost} maxLength={30} onChange={(e) => update(i, { cost: e.target.value })} placeholder="1 GM" aria-label={`${t('sheet.dailyCost')} ${i + 1}`} />
+            <button type="button" className="btn-icon text-red-700 dark:text-red-400" onClick={() => onChange(value.filter((_, j) => j !== i))} disabled={value.length <= 1} title={t('common.delete')} aria-label={`${t('common.delete')}: ${l.name}`}>
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+      {error && error !== 'empty' && <p className="text-xs text-red-700 dark:text-red-400">{t(`stories.lifestyleError.${error}`)}</p>}
+      {value.length < 20 && (
+        <button type="button" className="btn-ghost !px-2 !py-1 text-sm" onClick={() => onChange([...value, { name: '', cost: '' }])}>
+          <Plus className="h-4 w-4" />
+          {t('stories.lifestyleAdd')}
+        </button>
+      )}
+    </section>
   );
 }

@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { CharacterSheet } from '@zauberbuch/shared';
+import type { CharacterSheet, Lifestyle } from '@zauberbuch/shared';
 
 export type Path = readonly (string | number)[];
 
@@ -7,6 +7,8 @@ export interface SheetCtx {
   sheet: CharacterSheet;
   set: (path: Path, value: unknown) => void;
   readOnly: boolean;
+  /** Lebensstile mit täglichen Kosten (Geschichte des Bogens bzw. Standardwerte) */
+  lifestyles: Lifestyle[];
 }
 
 export const SheetContext = createContext<SheetCtx | null>(null);

@@ -386,7 +386,8 @@
     "character_read_only": "Player character values come from the character sheet.",
     "too_many_combatants": "Too many combatants (max. 60).",
     "no_combatants": "No active combatants.",
-    "hp_range_invalid": "Enter HP as a number or range, e.g. 58 or 10-15."
+    "hp_range_invalid": "Enter HP as a number or range, e.g. 58 or 10-15.",
+    "lifestyle_duplicate": "Each lifestyle may only appear once."
   },
   "damageType": {
     "acid": "Acid",
@@ -644,7 +645,8 @@
       "noUsers": "There are no other users.",
       "save": "Save settings",
       "saved": "Settings saved"
-    }
+    },
+    "dailyCostHint": "From the story's lifestyle table (or the defaults)"
   },
   "board": {
     "heading": "Info board",
@@ -941,6 +943,14 @@
     "membersHint": "Players see the story's info board and encounters and write posts. Dungeon Masters run encounters, see hidden values, manage posts and read the story's character sheets. Without an entry the story is invisible (the admin has DM rights everywhere unless listed as a player).",
     "roleFor": "Role for",
     "notMember": "–",
-    "deleteText": "“{{name}}” will be permanently deleted with all {{count}} posts, encounters and the players' monster database. Archive it instead to hide it."
+    "deleteText": "“{{name}}” will be permanently deleted with all {{count}} posts, encounters and the players' monster database. Archive it instead to hide it.",
+    "lifestyles": "Lifestyle & daily expenses",
+    "lifestylesReset": "Defaults",
+    "lifestylesHint": "These values apply to all character sheets assigned to this story: the lifestyle is chosen on the sheet, the daily expenses come from here. New stories start with the Player's Handbook defaults.",
+    "lifestyleAdd": "Add lifestyle",
+    "lifestyleError": {
+      "name": "Every lifestyle needs a name.",
+      "duplicate": "Each lifestyle may only appear once."
+    }
   }
 }
