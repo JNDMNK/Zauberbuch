@@ -320,11 +320,13 @@ export const coinWeight = (sheet: CharacterSheet) =>
 
 export const itemsWeight = (items: SheetItem[]) => round(items.reduce((s, i) => s + i.qty * i.weight, 0));
 
-export function carrying(sheet: CharacterSheet) {
+/** Last; `extraWeight` = weiteres Gewicht außerhalb des Bogens (z. B. magische Gegenstände des Charakters) */
+export function carrying(sheet: CharacterSheet, extraWeight = 0) {
   const str = sheet.abilities.str;
-  const total = round(itemsWeight(sheet.inventory) + itemsWeight(sheet.extraEquipment) + coinWeight(sheet));
+  const total = round(itemsWeight(sheet.inventory) + itemsWeight(sheet.extraEquipment) + coinWeight(sheet) + extraWeight);
   return {
     total,
+    extra: round(extraWeight),
     encumberedFrom: str * 5 + 1,
     encumberedTo: str * 10,
     heavyFrom: str * 10 + 1,

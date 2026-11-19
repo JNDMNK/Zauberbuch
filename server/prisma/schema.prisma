@@ -415,6 +415,10 @@ model MagicItem {
   story       Story             @relation(fields: [storyId], references: [id], onDelete: Cascade)
   name        String
   description String            @default("")
+  /**
+   * Gewicht in lb – zählt zur Last der Charaktere, die den Gegenstand besitzen
+   */
+  weight      Float             @default(0)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   holders     MagicItemHolder[]

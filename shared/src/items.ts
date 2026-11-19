@@ -9,6 +9,8 @@ export const MAX_ITEM_DESCRIPTION = 5000;
 export const magicItemSchema = z.object({
   name: z.string().trim().min(1).max(100),
   description: z.string().trim().max(MAX_ITEM_DESCRIPTION).optional().default(''),
+  /** Gewicht in lb (zählt zur Last der Besitzer) */
+  weight: z.number().min(0).max(9999).optional().default(0),
   holderIds: z.array(z.string().min(1).max(64)).max(50).optional().default([]),
 });
 export type MagicItemInput = z.input<typeof magicItemSchema>;
@@ -30,6 +32,8 @@ export interface MagicItemDto {
   storyId: string;
   name: string;
   description: string;
+  /** Gewicht in lb */
+  weight: number;
   holders: ItemCharacterRef[];
   createdAt: string;
   updatedAt: string;

@@ -157,27 +157,33 @@ function ItemDialog({
   item: MagicItemDto | null;
   characters: ItemCharacterRef[];
   onClose: () => void;
-  onSave: (input: { name: string; description: string; holderIds: string[] }) => Promise<void>;
+  onSave: (input: { name: string; description: string; weight: number; holderIds: string[] }) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [weight, setWeight] = useState('');
   const [holders, setHolders] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (!open) return;
     setName(item?.name ?? '');
     setDescription(item?.description ?? '');
+    setWeight(item?.weight ? String(item.weight).replace('.', ',') : '');
     setHolders(new Set(item?.holders.map((h) => h.id) ?? []));
   }, [open, item]);
 
+  // Gewicht in lb, Komma oder Punkt; leer = 0
+  const parsedWeight = weight.trim() === '' ? 0 : Number(weight.trim().replace(',', '.'));
+  const weightInvalid = !Number.isFinite(parsedWeight) || parsedWeight < 0 || parsedWeight > 9999;
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || weightInvalid) return;
     setBusy(true);
     try {
-      await onSave({ name: name.trim(), description: description.trim(), holderIds: [...holders] });
+      await onSave({ name: name.trim(), description: description.trim(), weight: parsedWeight ?? 0, holderIds: [...holders] });
     } catch (err) {
       toast.error(errorMessage(t, err));
     } finally {
@@ -193,6 +199,15 @@ function ItemDialog({
             {t('combat.monsterName')}
           </label>
           <input id="item-name" className="input" value={name} maxLength={100} required autoFocus onChange={(e) => setName(e.target.value)} placeholder={t('items.namePlaceholder')} />
+        </div>
+        <div className="max-w-[12rem]">
+          <label htmlFor="item-weight" className="label">
+            {t('items.weight')}
+          </label>
+          <div className="relative">
+            <input id="item-weight" className={`input !pr-10 text-right ${weightInvalid ? 'input-error' : ''}`} inputMode="decimal" value={weight} maxLength={8} onChange={(e) => setWeight(e.target.value.replace(/[^\d.,]/g, ''))} placeholder="0" />
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-parchment-700 dark:text-parchment-400">lb</span>
+          </div>
         </div>
         <div>
           <label htmlFor="item-desc" className="label">
@@ -234,7 +249,7 @@ function ItemDialog({
           <button type="button" className="btn-secondary" onClick={onClose}>
             {t('common.cancel')}
           </button>
-          <button type="submit" className="btn-primary" disabled={busy || !name.trim()}>
+          <button type="submit" className="btn-primary" disabled={busy || !name.trim() || weightInvalid}>
             {busy ? <Spinner className="h-4 w-4" /> : <Save className="h-4 w-4" />}
             {t('common.save')}
           </button>

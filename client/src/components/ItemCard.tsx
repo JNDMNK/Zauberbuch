@@ -1,11 +1,11 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Gem, Sparkles, UserRound } from 'lucide-react';
+import { Gem, Sparkles, UserRound, Weight } from 'lucide-react';
 import type { MagicItemDto } from '@zauberbuch/shared';
 
 /** Karte eines magischen Gegenstands (auch im Charakterbogen genutzt) */
 export function ItemCard({ item, actions, footer, attuned = false }: { item: MagicItemDto; actions?: ReactNode; footer?: ReactNode; attuned?: boolean }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const long = item.description.length > 260 || item.description.split('\n').length > 5;
   return (
@@ -32,6 +32,13 @@ export function ItemCard({ item, actions, footer, attuned = false }: { item: Mag
             </button>
           )}
         </div>
+      )}
+      {item.weight > 0 && (
+        <p className="flex items-center gap-1.5 text-sm">
+          <Weight className="h-4 w-4 text-parchment-700 dark:text-parchment-400" aria-hidden />
+          <span className="sheet-label !inline">{t('items.weight')}:</span>
+          <span className="tabular-nums">{item.weight.toLocaleString(i18n.language)} lb</span>
+        </p>
       )}
       <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-1 text-sm">
         <span className="sheet-label !inline">{t('items.holders')}:</span>

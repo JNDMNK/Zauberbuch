@@ -1002,6 +1002,8 @@
     "given": "An {{name}} weitergegeben",
     "returned": "An den DM zurückgegeben",
     "attuned": "eingestimmt",
-    "attuneHint": "Einstimmen kannst du dich auf magische Gegenstände, die dein Charakter besitzt (Reiter „Magische Gegenstände“)."
+    "attuneHint": "Einstimmen kannst du dich auf magische Gegenstände, die dein Charakter besitzt (Reiter „Magische Gegenstände“).",
+    "weight": "Gewicht",
+    "weightShare": "davon magische Gegenstände: {{weight}} lb"
   }
 }

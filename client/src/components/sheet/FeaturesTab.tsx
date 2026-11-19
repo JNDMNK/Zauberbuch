@@ -39,8 +39,10 @@ function JumpBox() {
 
 export function CoinsAndLoad() {
   const { t, i18n } = useTranslation();
-  const { sheet } = useSheet();
-  const c = carrying(sheet);
+  const { sheet, items } = useSheet();
+  // Magische Gegenstände des Charakters zählen zur Last
+  const magicWeight = (items.data?.items ?? []).reduce((sum, i) => sum + (i.weight || 0), 0);
+  const c = carrying(sheet, magicWeight);
   const stateCls =
     c.state === 'heavy' ? 'text-red-700 dark:text-red-400' : c.state === 'encumbered' ? 'text-amber-700 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400';
   return (
@@ -57,6 +59,7 @@ export function CoinsAndLoad() {
           <dd className="font-semibold tabular-nums">
             {c.total.toLocaleString(i18n.language)} lb · <span className={stateCls}>{t(`sheet.loadState.${c.state}`)}</span>
           </dd>
+          {c.extra > 0 && <dd className="text-xs text-parchment-700 dark:text-parchment-400">{t('items.weightShare', { weight: c.extra.toLocaleString(i18n.language) })}</dd>}
         </div>
         <div>
           <dt className="sheet-label">{t('sheet.encumbered')}</dt>
