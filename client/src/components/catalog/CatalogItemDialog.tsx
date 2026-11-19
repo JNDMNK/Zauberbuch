@@ -27,6 +27,7 @@ export function CatalogItemDialog({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [weight, setWeight] = useState('');
+  const [value, setValue] = useState('');
   const [ac, setAc] = useState('');
   const [damage, setDamage] = useState<DamageState>({ dice: '', type: '' });
   const [busy, setBusy] = useState(false);
@@ -36,6 +37,7 @@ export function CatalogItemDialog({
     setDescription(item?.description ?? '');
     setWeight(item?.weight ? String(item.weight).replace('.', ',') : '');
     setAc(item?.ac ?? '');
+    setValue(item?.value ?? '');
     setDamage({ dice: item?.damage?.dice ?? '', type: item?.damage?.type ?? '' });
   }, [open, item]);
 
@@ -54,6 +56,7 @@ export function CatalogItemDialog({
         name: name.trim(),
         description: description.trim(),
         weight: parsedWeight,
+        value: value.trim(),
         ac: category === 'armor' ? ac.trim() : '',
         damageDice: category === 'armor' ? null : dmg.value?.dice ?? null,
         damageType: category === 'armor' ? null : dmg.value?.type ?? null,
@@ -91,6 +94,12 @@ export function CatalogItemDialog({
               <input id="cat-weight" className={`input !pr-10 text-right ${weightInvalid ? 'input-error' : ''}`} inputMode="decimal" value={weight} maxLength={8} onChange={(e) => setWeight(e.target.value.replace(/[^\d.,]/g, ''))} placeholder="0" />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-parchment-700 dark:text-parchment-400">lb</span>
             </div>
+          </div>
+          <div>
+            <label htmlFor="cat-value" className="label">
+              {t('items.value')}
+            </label>
+            <input id="cat-value" className="input" value={value} maxLength={40} onChange={(e) => setValue(e.target.value)} placeholder={t('catalog.valuePlaceholder')} />
           </div>
         </div>
         {category !== 'armor' && (

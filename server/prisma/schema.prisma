@@ -474,6 +474,8 @@ model CatalogItem {
   /**
    * Rüstungsklasse als Text, z. B. "11 + GES" oder "+2"
    */
+  /// Wert als Freitext, z. B. „5 GM“
+  value       String        @default("")
   ac          String        @default("")
   damageDice  String?
   damageType  String?

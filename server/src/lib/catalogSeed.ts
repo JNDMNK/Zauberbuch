@@ -7,6 +7,8 @@ export interface CatalogSeedItem {
   name: string;
   description: string;
   weight: number;
+  /** Wert (Preis nach SRD), z. B. „15 GM“ */
+  value: string;
   ac: string;
   damageDice: string | null;
   damageType: string | null;
@@ -20,7 +22,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "bludgeoning",
     "weight": 2,
     "description": "Einfache Nahkampfwaffe. Leicht.",
-    "ac": ""
+    "ac": "",
+    "value": "1 SM"
   },
   {
     "category": "weapon",
@@ -29,7 +32,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 1,
     "description": "Einfache Nahkampfwaffe. Finesse, leicht, Wurfwaffe (Reichweite 6/18 m).",
-    "ac": ""
+    "ac": "",
+    "value": "2 GM"
   },
   {
     "category": "weapon",
@@ -38,7 +42,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "bludgeoning",
     "weight": 10,
     "description": "Einfache Nahkampfwaffe. Zweihändig.",
-    "ac": ""
+    "ac": "",
+    "value": "2 SM"
   },
   {
     "category": "weapon",
@@ -47,7 +52,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "slashing",
     "weight": 2,
     "description": "Einfache Nahkampfwaffe. Leicht, Wurfwaffe (Reichweite 6/18 m).",
-    "ac": ""
+    "ac": "",
+    "value": "5 GM"
   },
   {
     "category": "weapon",
@@ -56,7 +62,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 2,
     "description": "Einfache Nahkampfwaffe. Wurfwaffe (Reichweite 9/36 m).",
-    "ac": ""
+    "ac": "",
+    "value": "5 SM"
   },
   {
     "category": "weapon",
@@ -65,7 +72,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "bludgeoning",
     "weight": 2,
     "description": "Einfache Nahkampfwaffe. Leicht, Wurfwaffe (Reichweite 6/18 m).",
-    "ac": ""
+    "ac": "",
+    "value": "2 GM"
   },
   {
     "category": "weapon",
@@ -74,7 +82,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "bludgeoning",
     "weight": 4,
     "description": "Einfache Nahkampfwaffe.",
-    "ac": ""
+    "ac": "",
+    "value": "5 GM"
   },
   {
     "category": "weapon",
@@ -83,7 +92,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "bludgeoning",
     "weight": 4,
     "description": "Einfache Nahkampfwaffe. Vielseitig (1W8).",
-    "ac": ""
+    "ac": "",
+    "value": "2 SM"
   },
   {
     "category": "weapon",
@@ -92,7 +102,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "slashing",
     "weight": 2,
     "description": "Einfache Nahkampfwaffe. Leicht.",
-    "ac": ""
+    "ac": "",
+    "value": "1 GM"
   },
   {
     "category": "weapon",
@@ -101,7 +112,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 3,
     "description": "Einfache Nahkampfwaffe. Wurfwaffe (Reichweite 6/18 m), vielseitig (1W8).",
-    "ac": ""
+    "ac": "",
+    "value": "1 GM"
   },
   {
     "category": "weapon",
@@ -110,7 +122,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 5,
     "description": "Einfache Fernkampfwaffe. Munition (Reichweite 24/96 m), Laden, zweihändig.",
-    "ac": ""
+    "ac": "",
+    "value": "25 GM"
   },
   {
     "category": "weapon",
@@ -119,7 +132,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 0.25,
     "description": "Einfache Fernkampfwaffe. Finesse, Wurfwaffe (Reichweite 6/18 m).",
-    "ac": ""
+    "ac": "",
+    "value": "5 KM"
   },
   {
     "category": "weapon",
@@ -128,7 +142,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 2,
     "description": "Einfache Fernkampfwaffe. Munition (Reichweite 24/96 m), zweihändig.",
-    "ac": ""
+    "ac": "",
+    "value": "25 GM"
   },
   {
     "category": "weapon",
@@ -137,7 +152,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "bludgeoning",
     "weight": 0,
     "description": "Einfache Fernkampfwaffe. Munition (Reichweite 9/36 m).",
-    "ac": ""
+    "ac": "",
+    "value": "1 SM"
   },
   {
     "category": "weapon",
@@ -146,7 +162,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "slashing",
     "weight": 4,
     "description": "Kriegswaffe (Nahkampf). Vielseitig (1W10).",
-    "ac": ""
+    "ac": "",
+    "value": "10 GM"
   },
   {
     "category": "weapon",
@@ -155,7 +172,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "bludgeoning",
     "weight": 2,
     "description": "Kriegswaffe (Nahkampf).",
-    "ac": ""
+    "ac": "",
+    "value": "10 GM"
   },
   {
     "category": "weapon",
@@ -164,7 +182,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "slashing",
     "weight": 6,
     "description": "Kriegswaffe (Nahkampf). Schwer, Reichweite, zweihändig.",
-    "ac": ""
+    "ac": "",
+    "value": "20 GM"
   },
   {
     "category": "weapon",
@@ -173,7 +192,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "slashing",
     "weight": 7,
     "description": "Kriegswaffe (Nahkampf). Schwer, zweihändig.",
-    "ac": ""
+    "ac": "",
+    "value": "30 GM"
   },
   {
     "category": "weapon",
@@ -182,7 +202,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "slashing",
     "weight": 6,
     "description": "Kriegswaffe (Nahkampf). Schwer, zweihändig.",
-    "ac": ""
+    "ac": "",
+    "value": "50 GM"
   },
   {
     "category": "weapon",
@@ -191,7 +212,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "slashing",
     "weight": 6,
     "description": "Kriegswaffe (Nahkampf). Schwer, Reichweite, zweihändig.",
-    "ac": ""
+    "ac": "",
+    "value": "20 GM"
   },
   {
     "category": "weapon",
@@ -200,7 +222,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 6,
     "description": "Kriegswaffe (Nahkampf). Reichweite, besonders (Nachteil auf 1,5 m; beritten einhändig).",
-    "ac": ""
+    "ac": "",
+    "value": "10 GM"
   },
   {
     "category": "weapon",
@@ -209,7 +232,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "slashing",
     "weight": 3,
     "description": "Kriegswaffe (Nahkampf). Vielseitig (1W10).",
-    "ac": ""
+    "ac": "",
+    "value": "15 GM"
   },
   {
     "category": "weapon",
@@ -218,7 +242,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "bludgeoning",
     "weight": 10,
     "description": "Kriegswaffe (Nahkampf). Schwer, zweihändig.",
-    "ac": ""
+    "ac": "",
+    "value": "10 GM"
   },
   {
     "category": "weapon",
@@ -227,7 +252,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 4,
     "description": "Kriegswaffe (Nahkampf).",
-    "ac": ""
+    "ac": "",
+    "value": "15 GM"
   },
   {
     "category": "weapon",
@@ -236,7 +262,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 18,
     "description": "Kriegswaffe (Nahkampf). Schwer, Reichweite, zweihändig.",
-    "ac": ""
+    "ac": "",
+    "value": "5 GM"
   },
   {
     "category": "weapon",
@@ -245,7 +272,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 2,
     "description": "Kriegswaffe (Nahkampf). Finesse.",
-    "ac": ""
+    "ac": "",
+    "value": "25 GM"
   },
   {
     "category": "weapon",
@@ -254,7 +282,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "slashing",
     "weight": 3,
     "description": "Kriegswaffe (Nahkampf). Finesse, leicht.",
-    "ac": ""
+    "ac": "",
+    "value": "25 GM"
   },
   {
     "category": "weapon",
@@ -263,7 +292,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 2,
     "description": "Kriegswaffe (Nahkampf). Finesse, leicht.",
-    "ac": ""
+    "ac": "",
+    "value": "10 GM"
   },
   {
     "category": "weapon",
@@ -272,7 +302,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 4,
     "description": "Kriegswaffe (Nahkampf). Wurfwaffe (Reichweite 6/18 m), vielseitig (1W8).",
-    "ac": ""
+    "ac": "",
+    "value": "5 GM"
   },
   {
     "category": "weapon",
@@ -281,7 +312,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 2,
     "description": "Kriegswaffe (Nahkampf).",
-    "ac": ""
+    "ac": "",
+    "value": "5 GM"
   },
   {
     "category": "weapon",
@@ -290,7 +322,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "bludgeoning",
     "weight": 2,
     "description": "Kriegswaffe (Nahkampf). Vielseitig (1W10).",
-    "ac": ""
+    "ac": "",
+    "value": "15 GM"
   },
   {
     "category": "weapon",
@@ -299,7 +332,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "slashing",
     "weight": 3,
     "description": "Kriegswaffe (Nahkampf). Finesse, Reichweite.",
-    "ac": ""
+    "ac": "",
+    "value": "2 GM"
   },
   {
     "category": "weapon",
@@ -308,7 +342,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 1,
     "description": "Kriegswaffe (Fernkampf). Munition (Reichweite 7,5/30 m), Laden.",
-    "ac": ""
+    "ac": "",
+    "value": "10 GM"
   },
   {
     "category": "weapon",
@@ -317,7 +352,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 3,
     "description": "Kriegswaffe (Fernkampf). Munition (Reichweite 9/36 m), leicht, Laden.",
-    "ac": ""
+    "ac": "",
+    "value": "75 GM"
   },
   {
     "category": "weapon",
@@ -326,7 +362,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 18,
     "description": "Kriegswaffe (Fernkampf). Munition (Reichweite 30/120 m), schwer, Laden, zweihändig.",
-    "ac": ""
+    "ac": "",
+    "value": "50 GM"
   },
   {
     "category": "weapon",
@@ -335,7 +372,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 2,
     "description": "Kriegswaffe (Fernkampf). Munition (Reichweite 45/180 m), schwer, zweihändig.",
-    "ac": ""
+    "ac": "",
+    "value": "50 GM"
   },
   {
     "category": "weapon",
@@ -344,7 +382,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 3,
     "description": "Kriegswaffe (Fernkampf). Wurfwaffe (Reichweite 1,5/4,5 m). Ein getroffenes Wesen bis Größe groß ist festgesetzt (Befreien: SG-10-Stärkewurf oder 5 Hiebschaden gegen das Netz).",
-    "ac": ""
+    "ac": "",
+    "value": "1 GM"
   },
   {
     "category": "armor",
@@ -353,7 +392,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "weight": 8,
     "description": "Leichte Rüstung. Nachteil auf Geschicklichkeit (Heimlichkeit).",
     "damageDice": null,
-    "damageType": null
+    "damageType": null,
+    "value": "5 GM"
   },
   {
     "category": "armor",
@@ -362,7 +402,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "weight": 10,
     "description": "Leichte Rüstung aus gehärtetem Leder.",
     "damageDice": null,
-    "damageType": null
+    "damageType": null,
+    "value": "10 GM"
   },
   {
     "category": "armor",
@@ -371,7 +412,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "weight": 13,
     "description": "Leichte Rüstung, mit Nieten oder Dornen verstärkt.",
     "damageDice": null,
-    "damageType": null
+    "damageType": null,
+    "value": "45 GM"
   },
   {
     "category": "armor",
@@ -380,7 +422,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "weight": 12,
     "description": "Mittelschwere Rüstung aus dicken Fellen.",
     "damageDice": null,
-    "damageType": null
+    "damageType": null,
+    "value": "10 GM"
   },
   {
     "category": "armor",
@@ -389,7 +432,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "weight": 20,
     "description": "Mittelschwere Rüstung aus verflochtenen Metallringen, unter der Kleidung getragen.",
     "damageDice": null,
-    "damageType": null
+    "damageType": null,
+    "value": "50 GM"
   },
   {
     "category": "armor",
@@ -398,7 +442,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "weight": 45,
     "description": "Mittelschwere Rüstung. Nachteil auf Geschicklichkeit (Heimlichkeit).",
     "damageDice": null,
-    "damageType": null
+    "damageType": null,
+    "value": "50 GM"
   },
   {
     "category": "armor",
@@ -407,7 +452,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "weight": 20,
     "description": "Mittelschwere Rüstung, schützt Brust und Rücken.",
     "damageDice": null,
-    "damageType": null
+    "damageType": null,
+    "value": "400 GM"
   },
   {
     "category": "armor",
@@ -416,7 +462,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "weight": 40,
     "description": "Mittelschwere Rüstung. Nachteil auf Geschicklichkeit (Heimlichkeit).",
     "damageDice": null,
-    "damageType": null
+    "damageType": null,
+    "value": "750 GM"
   },
   {
     "category": "armor",
@@ -425,7 +472,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "weight": 40,
     "description": "Schwere Rüstung. Nachteil auf Geschicklichkeit (Heimlichkeit).",
     "damageDice": null,
-    "damageType": null
+    "damageType": null,
+    "value": "30 GM"
   },
   {
     "category": "armor",
@@ -434,7 +482,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "weight": 55,
     "description": "Schwere Rüstung. Stärke 13 erforderlich, Nachteil auf Geschicklichkeit (Heimlichkeit).",
     "damageDice": null,
-    "damageType": null
+    "damageType": null,
+    "value": "75 GM"
   },
   {
     "category": "armor",
@@ -443,7 +492,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "weight": 60,
     "description": "Schwere Rüstung. Stärke 15 erforderlich, Nachteil auf Geschicklichkeit (Heimlichkeit).",
     "damageDice": null,
-    "damageType": null
+    "damageType": null,
+    "value": "200 GM"
   },
   {
     "category": "armor",
@@ -452,7 +502,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "weight": 65,
     "description": "Schwere Rüstung. Stärke 15 erforderlich, Nachteil auf Geschicklichkeit (Heimlichkeit).",
     "damageDice": null,
-    "damageType": null
+    "damageType": null,
+    "value": "1.500 GM"
   },
   {
     "category": "armor",
@@ -461,7 +512,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "weight": 6,
     "description": "Wird in einer Hand getragen und erhöht die Rüstungsklasse um 2.",
     "damageDice": null,
-    "damageType": null
+    "damageType": null,
+    "value": "10 GM"
   },
   {
     "category": "gear",
@@ -470,7 +522,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "healing",
     "weight": 0.5,
     "description": "Wer den Trank trinkt, erhält Trefferpunkte zurück. Eine Aktion zum Trinken oder Verabreichen.",
-    "ac": ""
+    "ac": "",
+    "value": "50 GM"
   },
   {
     "category": "gear",
@@ -479,7 +532,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "healing",
     "weight": 0.5,
     "description": "Stärkerer Heiltrank.",
-    "ac": ""
+    "ac": "",
+    "value": "100 GM"
   },
   {
     "category": "gear",
@@ -488,7 +542,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 0,
     "description": "Vorteil auf Rettungswürfe gegen Gift für 1 Stunde.",
-    "ac": ""
+    "ac": "",
+    "value": "50 GM"
   },
   {
     "category": "gear",
@@ -497,7 +552,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "fire",
     "weight": 1,
     "description": "Als improvisierte Wurfwaffe (Reichweite 6 m); das Ziel brennt, bis es die Flammen löscht (SG 10 Geschicklichkeit).",
-    "ac": ""
+    "ac": "",
+    "value": "50 GM"
   },
   {
     "category": "gear",
@@ -506,7 +562,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "acid",
     "weight": 1,
     "description": "Als improvisierte Wurfwaffe (Reichweite 6 m) gegen ein Wesen oder Objekt.",
-    "ac": ""
+    "ac": "",
+    "value": "25 GM"
   },
   {
     "category": "gear",
@@ -515,7 +572,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "radiant",
     "weight": 1,
     "description": "Als improvisierte Wurfwaffe (Reichweite 6 m); wirkt nur gegen Unholde und Untote.",
-    "ac": ""
+    "ac": "",
+    "value": "25 GM"
   },
   {
     "category": "gear",
@@ -524,7 +582,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "fire",
     "weight": 1,
     "description": "Kann ausgegossen und angezündet werden; brennt 2 Runden.",
-    "ac": ""
+    "ac": "",
+    "value": "1 SM"
   },
   {
     "category": "gear",
@@ -533,7 +592,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": "piercing",
     "weight": 2,
     "description": "Bedeckt eine Fläche von 1,5 m × 1,5 m; wer sie betritt, macht einen SG-15-Geschicklichkeitsrettungswurf.",
-    "ac": ""
+    "ac": "",
+    "value": "1 GM"
   },
   {
     "category": "gear",
@@ -542,7 +602,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 2,
     "description": "Bedeckt eine Fläche von 3 m × 3 m; wer sie betritt, kann stürzen (SG 10 Geschicklichkeit).",
-    "ac": ""
+    "ac": "",
+    "value": "1 GM"
   },
   {
     "category": "gear",
@@ -551,7 +612,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 1,
     "description": "Munition für Bögen.",
-    "ac": ""
+    "ac": "",
+    "value": "1 GM"
   },
   {
     "category": "gear",
@@ -560,7 +622,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 1.5,
     "description": "Munition für Armbrüste.",
-    "ac": ""
+    "ac": "",
+    "value": "1 GM"
   },
   {
     "category": "gear",
@@ -569,7 +632,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 1,
     "description": "Fasst bis zu 20 Pfeile.",
-    "ac": ""
+    "ac": "",
+    "value": "1 GM"
   },
   {
     "category": "gear",
@@ -578,7 +642,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 5,
     "description": "Fasst etwa 30 Pfund Ausrüstung.",
-    "ac": ""
+    "ac": "",
+    "value": "2 GM"
   },
   {
     "category": "gear",
@@ -587,7 +652,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 7,
     "description": "Für die Nacht unter freiem Himmel.",
-    "ac": ""
+    "ac": "",
+    "value": "1 GM"
   },
   {
     "category": "gear",
@@ -596,7 +662,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 3,
     "description": "Wärmende Wolldecke.",
-    "ac": ""
+    "ac": "",
+    "value": "5 SM"
   },
   {
     "category": "gear",
@@ -605,7 +672,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 1,
     "description": "Brennt 1 Stunde; helles Licht im Umkreis von 6 m, dämmriges Licht weitere 6 m.",
-    "ac": ""
+    "ac": "",
+    "value": "1 KM"
   },
   {
     "category": "gear",
@@ -614,7 +682,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 2,
     "description": "Brennt 6 Stunden mit einer Flasche Öl; helles Licht 9 m, dämmriges Licht weitere 9 m.",
-    "ac": ""
+    "ac": "",
+    "value": "5 GM"
   },
   {
     "category": "gear",
@@ -623,7 +692,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 0,
     "description": "Brennt 1 Stunde; helles Licht 1,5 m.",
-    "ac": ""
+    "ac": "",
+    "value": "1 KM"
   },
   {
     "category": "gear",
@@ -632,7 +702,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 1,
     "description": "Feuerstein, Stahl und Zunder zum Entzünden eines Feuers.",
-    "ac": ""
+    "ac": "",
+    "value": "5 SM"
   },
   {
     "category": "gear",
@@ -641,7 +712,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 2,
     "description": "Haltbare Reiseverpflegung.",
-    "ac": ""
+    "ac": "",
+    "value": "5 SM"
   },
   {
     "category": "gear",
@@ -650,7 +722,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 5,
     "description": "Fasst etwa 2 Liter (voll).",
-    "ac": ""
+    "ac": "",
+    "value": "2 SM"
   },
   {
     "category": "gear",
@@ -659,7 +732,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 10,
     "description": "Hält bis zu 2 Trefferpunkte Schaden aus; zerreißen mit SG 17 Stärke.",
-    "ac": ""
+    "ac": "",
+    "value": "1 GM"
   },
   {
     "category": "gear",
@@ -668,7 +742,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 5,
     "description": "Leichter als Hanfseil.",
-    "ac": ""
+    "ac": "",
+    "value": "10 GM"
   },
   {
     "category": "gear",
@@ -677,7 +752,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 0.25,
     "description": "Zum Sichern beim Klettern.",
-    "ac": ""
+    "ac": "",
+    "value": "5 KM"
   },
   {
     "category": "gear",
@@ -686,7 +762,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 4,
     "description": "Zum Werfen und Festhaken.",
-    "ac": ""
+    "ac": "",
+    "value": "2 GM"
   },
   {
     "category": "gear",
@@ -695,7 +772,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 5,
     "description": "Vorteil auf Stärkewürfe, bei denen die Hebelwirkung hilft.",
-    "ac": ""
+    "ac": "",
+    "value": "2 GM"
   },
   {
     "category": "gear",
@@ -704,7 +782,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 3,
     "description": "Einfacher Werkzeughammer.",
-    "ac": ""
+    "ac": "",
+    "value": "1 GM"
   },
   {
     "category": "gear",
@@ -713,7 +792,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 5,
     "description": "Zum Graben.",
-    "ac": ""
+    "ac": "",
+    "value": "2 GM"
   },
   {
     "category": "gear",
@@ -722,7 +802,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 0.5,
     "description": "Kleiner Handspiegel.",
-    "ac": ""
+    "ac": "",
+    "value": "5 GM"
   },
   {
     "category": "gear",
@@ -731,7 +812,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 3,
     "description": "10 Anwendungen: ein Wesen mit 0 TP ohne Weisheitswurf (Heilkunde) stabilisieren.",
-    "ac": ""
+    "ac": "",
+    "value": "5 GM"
   },
   {
     "category": "gear",
@@ -740,7 +822,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 12,
     "description": "Haken, Stiefelspitzen, Handschuhe und Gurt.",
-    "ac": ""
+    "ac": "",
+    "value": "25 GM"
   },
   {
     "category": "gear",
@@ -749,7 +832,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 0,
     "description": "Zum Markieren von Wegen.",
-    "ac": ""
+    "ac": "",
+    "value": "1 KM"
   },
   {
     "category": "gear",
@@ -758,7 +842,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 0,
     "description": "Tintenfass (30 ml) und Schreibfeder.",
-    "ac": ""
+    "ac": "",
+    "value": "10 GM"
   },
   {
     "category": "gear",
@@ -767,7 +852,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 0,
     "description": "Zum Schreiben und Zeichnen.",
-    "ac": ""
+    "ac": "",
+    "value": "1 SM"
   },
   {
     "category": "gear",
@@ -776,6 +862,7 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageType": null,
     "weight": 20,
     "description": "Einfaches Zelt aus Leinwand.",
-    "ac": ""
+    "ac": "",
+    "value": "2 GM"
   }
 ];

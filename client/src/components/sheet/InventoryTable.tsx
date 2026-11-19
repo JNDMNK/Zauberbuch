@@ -25,7 +25,7 @@ export function InventoryTable({ listKey }: { listKey: 'inventory' | 'extraEquip
       {/* Vorschläge aus der Gegenstands-Datenbank (Name wie bei den Zaubern) */}
       <datalist id={listId}>
         {catalog.map((c) => (
-          <option key={c.id} value={c.name} label={`${t(`catalog.categoriesOne.${c.category}`)}${c.damage ? ` · ${formatDamage(c.damage)}` : ''}${c.ac ? ` · RK ${c.ac}` : ''} · ${c.weight} lb`} />
+          <option key={c.id} value={c.name} label={`${t(`catalog.categoriesOne.${c.category}`)}${c.damage ? ` · ${formatDamage(c.damage)}` : ''}${c.ac ? ` · RK ${c.ac}` : ''} · ${c.weight} lb${c.value ? ` · ${c.value}` : ''}`} />
         ))}
       </datalist>
       <Modal open={!!openItem} title={openItem ? t(`catalog.categoriesOne.${openItem.category}`) : ''} onClose={() => setOpenRef(null)} size="max-w-md">

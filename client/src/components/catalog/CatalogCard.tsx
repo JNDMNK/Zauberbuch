@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Package, Shield, Swords, Weight } from 'lucide-react';
+import { Coins, Package, Shield, Swords, Weight } from 'lucide-react';
 import type { CatalogCategory, CatalogItemDto } from '@zauberbuch/shared';
 import { DamageValue } from '../DamageValue';
 
@@ -31,6 +31,13 @@ export function CatalogCard({ item, actions, badge, dimmed = false }: { item: Ca
           <span className="inline-flex items-center gap-1">
             <Shield className="h-4 w-4 text-sky-700 dark:text-sky-300" aria-hidden />
             <span className="sheet-label !inline">{t('combat.acShort')}</span> <strong>{item.ac}</strong>
+          </span>
+        )}
+        {item.value && (
+          <span className="inline-flex items-center gap-1 tabular-nums" title={t('items.value')}>
+            <Coins className="h-4 w-4 text-amber-700 dark:text-amber-300" aria-hidden />
+            <span className="sr-only">{t('items.value')}:</span>
+            {item.value}
           </span>
         )}
         <span className="inline-flex items-center gap-1 tabular-nums">

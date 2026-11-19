@@ -15,6 +15,8 @@ export const catalogItemSchema = z
     name: z.string().trim().min(1).max(100),
     description: z.string().trim().max(2000).optional().default(''),
     weight: z.number().min(0).max(99999).optional().default(0),
+    /** Wert als Freitext, z. B. „5 GM“ */
+    value: z.string().trim().max(40).optional().default(''),
     /** Rüstung: Rüstungsklasse als Text („11 + GES“, „+2“) */
     ac: z.string().trim().max(40).optional().default(''),
     /** Waffen: Schaden; Gegenstände: Schaden oder Heilung (z. B. Heiltrank) */
@@ -36,6 +38,8 @@ export interface CatalogItemDto {
   name: string;
   description: string;
   weight: number;
+  /** Wert, z. B. „5 GM“ */
+  value: string;
   ac: string;
   damage: { dice: string; type: DamageType } | null;
   origin: CatalogOrigin;

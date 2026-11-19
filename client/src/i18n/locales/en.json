@@ -1062,6 +1062,7 @@
     "revertText": "The adjustment of “{{name}}” in this story is discarded; the standard entry applies again.",
     "take": "Take over",
     "openCard": "Open card",
-    "suggestions": "Suggestions from the item database"
+    "suggestions": "Suggestions from the item database",
+    "valuePlaceholder": "e.g. 5 gp"
   }
 }

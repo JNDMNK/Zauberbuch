@@ -14,13 +14,13 @@ describe('Gegenstands-Datenbank', () => {
     const list = (await frodo.agent.get('/api/catalog')).body.items;
     expect(list.length).toBeGreaterThan(80);
     const lang = list.find((i: { name: string }) => i.name === 'Langschwert');
-    expect(lang).toMatchObject({ category: 'weapon', damage: { dice: '1d8', type: 'slashing' }, weight: 3, origin: 'standard' });
+    expect(lang).toMatchObject({ category: 'weapon', damage: { dice: '1d8', type: 'slashing' }, weight: 3, value: '15 GM', origin: 'standard' });
     expect(list.find((i: { name: string }) => i.name === 'Kettenhemd')).toMatchObject({ category: 'armor', ac: '13 + GES (max. 2)', weight: 20, damage: null });
     expect(list.find((i: { name: string }) => i.name === 'Heiltrank')).toMatchObject({ category: 'gear', damage: { dice: '2d4+2', type: 'healing' } });
 
     expect((await frodo.agent.post('/api/catalog/standard').set(CSRF).send({ category: 'gear', name: 'X' })).status).toBe(403);
-    const created = await mod.agent.post('/api/catalog/standard').set(CSRF).send({ category: 'weapon', name: 'Sternenklinge', damageDice: '1W10', damageType: 'force', weight: 2.5, description: 'Funkelt.' });
-    expect(created.body.item).toMatchObject({ name: 'Sternenklinge', damage: { dice: '1d10', type: 'force' }, weight: 2.5 });
+    const created = await mod.agent.post('/api/catalog/standard').set(CSRF).send({ category: 'weapon', name: 'Sternenklinge', damageDice: '1W10', damageType: 'force', weight: 2.5, value: ' 120 GM ', description: 'Funkelt.' });
+    expect(created.body.item).toMatchObject({ name: 'Sternenklinge', damage: { dice: '1d10', type: 'force' }, weight: 2.5, value: '120 GM' });
     // Rüstung ignoriert Schaden, Waffe ignoriert RK
     const armor = await mod.agent.put(`/api/catalog/${created.body.item.id}`).set(CSRF).send({ category: 'armor', name: 'Sternenpanzer', ac: '15', damageDice: '1d4', damageType: 'fire' });
     expect(armor.body.item).toMatchObject({ category: 'armor', ac: '15', damage: null });

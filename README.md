@@ -210,6 +210,7 @@ anderen Zeilen gesperrt.
 - **Verwaltung → Gegenstände** (Admin und Moderator) ist die **Standard-Datenbank**, aufgeteilt in die Unterreiter
   **Rüstung**, **Waffen** und **Gegenstände** in Kartenansicht mit Suche. Sie ist mit einer SRD-Grundausstattung
   vorbefüllt (Waffen, Rüstungen, Abenteurerausrüstung, Heiltränke).
+  - Alle Einträge haben einen **Wert** (Freitext, z. B. „5 GM“); die Grundausstattung bringt die SRD-Preise mit.
   - Gegenstände: Name, Beschreibung, Gewicht, optional Heilung oder Schaden (z. B. Heiltrank 2W4+2 Heilung).
   - Waffen: Name, Schadenswürfel + Schadensart (wie bei den Zauberkarten), Gewicht, Beschreibung.
   - Rüstung: Name, Rüstungsklasse (Text, z. B. „13 + GES (max. 2)“), Gewicht, Beschreibung.
@@ -675,7 +676,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
 | `GET /api/catalog?storyId=` | angemeldet | Wirksame Gegenstands-Datenbank (Standard bzw. Geschichte) |
-| `POST /api/catalog/standard` · `PUT`/`DELETE /api/catalog/:id` | Moderator/Admin | Standard-Datenbank bzw. eigene Einträge bearbeiten (`{ category, name, description?, weight?, ac?, damageDice?, damageType? }`) |
+| `POST /api/catalog/standard` · `PUT`/`DELETE /api/catalog/:id` | Moderator/Admin | Standard-Datenbank bzw. eigene Einträge bearbeiten (`{ category, name, description?, weight?, value?, ac?, damageDice?, damageType? }`) |
 | `GET`/`POST /api/catalog/stories/:storyId` · `PUT`/`DELETE …/override/:baseId` · `POST …/hide/:baseId` | Moderator/Admin | Liste einer Geschichte: anpassen, zurücksetzen, ausblenden, eigene Einträge |
 | `GET /api/items/stories` · `GET`/`POST /api/items/stories/:storyId` · `PUT`/`DELETE /api/items/:id` | Moderator/Admin, DM der Geschichte | Magische Gegenstände verwalten (`{ name, description?, weight?, value?, attunement?, holderIds? }`) |
 | `GET /api/items/character/:characterId` · `POST /api/items/:id/transfer` | Besitzer/Mitbearbeiter (lesen auch DM) | Gegenstände eines Bogens; `{ fromCharacterId, toCharacterId \| null }` |

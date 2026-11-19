@@ -1062,6 +1062,7 @@
     "revertText": "Die Anpassung von „{{name}}“ in dieser Geschichte wird verworfen; es gilt wieder der Standard-Eintrag.",
     "take": "Übernehmen",
     "openCard": "Karte öffnen",
-    "suggestions": "Vorschläge aus der Gegenstands-Datenbank"
+    "suggestions": "Vorschläge aus der Gegenstands-Datenbank",
+    "valuePlaceholder": "z. B. 5 GM"
   }
 }
