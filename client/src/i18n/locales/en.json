@@ -869,7 +869,8 @@
     "showingAll": "All {{count}} sheets",
     "showAllCharacters": "Show all sheets",
     "onlyStory": "Only this story's sheets",
-    "noneAssigned": "No sheets assigned to “{{story}}” yet (character sheet → Settings) – showing all."
+    "noneAssigned": "No sheets assigned to “{{story}}” yet (character sheet → Settings) – showing all.",
+    "openStatBlock": "Open stat block"
   },
   "notifications": {
     "title": "Notifications",

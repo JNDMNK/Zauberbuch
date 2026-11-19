@@ -73,6 +73,8 @@ export const addMonsterSchema = z.object({
   description: z.string().trim().max(5000).optional().default(''),
   damageDice: damageDiceSchema.optional().nullable().default(null),
   damageType: z.enum(DAMAGE_TYPES).optional().nullable().default(null),
+  /** Vorlage aus der DM-Datenbank (Werteblock im Kampf öffnen) */
+  templateId: z.string().min(1).max(64).nullable().optional().default(null),
   /** Zusätzlich als Vorlage in der DM-Datenbank speichern */
   saveAsTemplate: z.boolean().optional().default(false),
 }).superRefine((v, ctx) => {
@@ -131,6 +133,8 @@ export interface CombatantDto {
   description: string | null;
   /** Monster/NSC: Schaden wie bei Zaubern – nur für DM/Admin */
   damage: { dice: string; type: DamageType } | null;
+  /** Monster/NSC aus der DM-Datenbank: Vorlage zum Öffnen des Werteblocks – nur für DM/Admin */
+  templateId: string | null;
 }
 
 export interface EncounterSummaryDto {

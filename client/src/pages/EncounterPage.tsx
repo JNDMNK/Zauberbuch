@@ -19,6 +19,7 @@ import { Alert, PageSpinner, Spinner } from '../components/ui';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Modal } from '../components/Modal';
 import { CombatantCard } from '../components/combat/CombatantCard';
+import { StatBlock } from '../components/bestiary/StatBlock';
 import { DamageInput, checkDamage, type DamageState } from '../components/DamageInput';
 
 const POLL_MS = 3_000;
@@ -53,6 +54,8 @@ export function EncounterPage() {
   const [sort, setSort] = useState<SortMode>(storedSort);
   const [dialog, setDialog] = useState<'players' | 'monster' | 'ally' | 'rename' | null>(null);
   const [confirm, setConfirm] = useState<{ kind: 'encounter' } | { kind: 'combatant'; c: CombatantDto } | null>(null);
+  // Werteblock einer Vorlage aus der DM-Datenbank (nur DM)
+  const [card, setCard] = useState<{ name: string; template: MonsterTemplateDto | null; error: unknown } | null>(null);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(
@@ -269,10 +272,25 @@ export function EncounterPage() {
               onUpdate={(data: CombatantUpdate) => act(() => api.updateCombatant(c.id, data))}
               onHp={(delta) => act(() => api.combatantHp(c.id, delta))}
               onRemove={() => setConfirm({ kind: 'combatant', c })}
+              onOpenCard={
+                manage && c.templateId
+                  ? () => {
+                      setCard({ name: c.name, template: null, error: null });
+                      api
+                        .monsterTemplate(enc.storyId, c.templateId!)
+                        .then((r) => setCard((x) => (x ? { ...x, template: r.template } : x)))
+                        .catch((error) => setCard((x) => (x ? { ...x, error } : x)));
+                    }
+                  : undefined
+              }
             />
           ))}
         </div>
       )}
+
+      <Modal open={!!card} title={card?.template?.name ?? card?.name ?? ''} onClose={() => setCard(null)} size="max-w-5xl">
+        {card?.error ? <Alert>{errorMessage(t, card.error)}</Alert> : card?.template ? <StatBlock entry={card.template} /> : <PageSpinner />}
+      </Modal>
 
       {manage && (
         <>
@@ -480,6 +498,7 @@ function AddMonsterDialog({ open, encId, storyId, allied = false, onClose, onDon
         description: description.trim(),
         damageDice: dmg.value?.dice ?? null,
         damageType: dmg.value?.type ?? null,
+        templateId,
         saveAsTemplate: save && !templateId,
       });
       if (save && !templateId) toast.success(t('bestiary.savedAsTemplate'));

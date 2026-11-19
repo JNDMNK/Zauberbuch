@@ -311,6 +311,11 @@ model Combatant {
   damageDice  String?
   damageType  String?
   description String     @default("")
+  /**
+   * Vorlage aus der DM-Monster-Datenbank, aus der das Monster stammt (Werteblock im Kampf öffnen)
+   */
+  templateId  String?
+  template    MonsterTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
   createdAt   DateTime   @default(now())
 
   @@index([encounterId])
@@ -362,6 +367,8 @@ model MonsterTemplate {
   updatedBy   User?    @relation("MonsterTemplateUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  combatants  Combatant[]
 
   @@index([name])
 }

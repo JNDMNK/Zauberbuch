@@ -75,6 +75,12 @@ bestiaryRouter.post('/dm', requireStoryDm, async (req, res) => {
   res.status(201).json({ template: toTemplateDto(t) });
 });
 
+bestiaryRouter.get('/dm/:id', requireStoryDm, async (req, res) => {
+  const t = await prisma.monsterTemplate.findUnique({ where: { id: String(req.params.id) }, include });
+  if (!t) throw notFound();
+  res.json({ template: toTemplateDto(t) });
+});
+
 bestiaryRouter.put('/dm/:id', requireStoryDm, async (req, res) => {
   const id = String(req.params.id);
   if (!(await prisma.monsterTemplate.findUnique({ where: { id } }))) throw notFound();

@@ -211,6 +211,7 @@ export const api = {
 
   // Monster-Datenbanken
   monsterTemplates: (storyId: string) => request<{ templates: MonsterTemplateDto[] }>('GET', `/api/bestiary/dm?storyId=${encodeURIComponent(storyId)}`),
+  monsterTemplate: (storyId: string, id: string) => request<{ template: MonsterTemplateDto }>('GET', `/api/bestiary/dm/${id}?storyId=${encodeURIComponent(storyId)}`),
   createMonsterTemplate: (storyId: string, input: MonsterTemplateInput) => request<{ template: MonsterTemplateDto }>('POST', `/api/bestiary/dm?storyId=${encodeURIComponent(storyId)}`, input),
   updateMonsterTemplate: (storyId: string, id: string, input: MonsterTemplateInput) => request<{ template: MonsterTemplateDto }>('PUT', `/api/bestiary/dm/${id}?storyId=${encodeURIComponent(storyId)}`, input),
   deleteMonsterTemplate: (storyId: string, id: string) => request<void>('DELETE', `/api/bestiary/dm/${id}?storyId=${encodeURIComponent(storyId)}`),

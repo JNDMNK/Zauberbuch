@@ -869,7 +869,8 @@
     "showingAll": "Alle {{count}} Bögen",
     "showAllCharacters": "Alle Bögen anzeigen",
     "onlyStory": "Nur Bögen dieser Geschichte",
-    "noneAssigned": "Noch keine Bögen „{{story}}“ zugeordnet (Charakterbogen → Einstellungen) – es werden alle angezeigt."
+    "noneAssigned": "Noch keine Bögen „{{story}}“ zugeordnet (Charakterbogen → Einstellungen) – es werden alle angezeigt.",
+    "openStatBlock": "Werteblock öffnen"
   },
   "notifications": {
     "title": "Benachrichtigungen",

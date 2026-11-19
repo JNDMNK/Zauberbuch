@@ -91,6 +91,7 @@ function toCombatantDto(req: Request, c: CombatantWithCharacter): CombatantDto {
       attack: null,
       description: null,
       damage: null,
+      templateId: null,
     };
   }
   const hidden = c.hideStats && !isDm(req);
@@ -112,6 +113,7 @@ function toCombatantDto(req: Request, c: CombatantWithCharacter): CombatantDto {
     attack: isDm(req) ? c.attack : null,
     description: isDm(req) ? c.description : null,
     damage: isDm(req) && c.damageDice && c.damageType ? { dice: c.damageDice, type: c.damageType as DamageType } : null,
+    templateId: isDm(req) ? c.templateId : null,
   };
 }
 
@@ -269,6 +271,14 @@ combatRouter.post('/encounters/:id/monsters', async (req, res) => {
   const e = await loadEncounter(req, String(req.params.id), { manage: true });
   const input = validate(addMonsterSchema, req.body);
   if (e.combatants.length + input.count > MAX_COMBATANTS) throw badRequest('too_many_combatants', `At most ${MAX_COMBATANTS} combatants`);
+  // Verknüpfung mit der Vorlage (unbekannte ids werden ignoriert); „als Vorlage speichern“ legt sie zuerst an
+  let templateId = input.templateId && (await prisma.monsterTemplate.findUnique({ where: { id: input.templateId }, select: { id: true } })) ? input.templateId : null;
+  if (input.saveAsTemplate && !templateId) {
+    const tpl = await prisma.monsterTemplate.create({
+      data: { name: input.name, ac: input.ac, hp: input.hpMax, attack: input.attack, description: input.description, damageDice: input.damageDice, damageType: input.damageType, createdById: req.user!.id, updatedById: req.user!.id },
+    });
+    templateId = tpl.id;
+  }
   await prisma.combatant.createMany({
     data: Array.from({ length: input.count }, (_, i) => ({
       encounterId: e.id,
@@ -283,13 +293,9 @@ combatRouter.post('/encounters/:id/monsters', async (req, res) => {
       description: input.description,
       damageDice: input.damageDice,
       damageType: input.damageType,
+      templateId,
     })),
   });
-  if (input.saveAsTemplate) {
-    await prisma.monsterTemplate.create({
-      data: { name: input.name, ac: input.ac, hp: input.hpMax, attack: input.attack, description: input.description, damageDice: input.damageDice, damageType: input.damageType, createdById: req.user!.id, updatedById: req.user!.id },
-    });
-  }
   await touch(e.id);
   await sendEncounter(req, res, e.id);
 });

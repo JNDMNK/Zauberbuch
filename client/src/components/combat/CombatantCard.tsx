@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Eye, EyeOff, Handshake, Heart, Minus, Pencil, Plus, ScrollText, Shield, Skull, Swords, Tags, Trash2, UserRound, X } from 'lucide-react';
+import { BookOpen, Eye, EyeOff, Handshake, Heart, Minus, Pencil, Plus, ScrollText, Shield, Skull, Swords, Tags, Trash2, UserRound, X } from 'lucide-react';
 import { DamageInput, checkDamage, type DamageState } from '../DamageInput';
 import { DamageValue } from '../DamageValue';
 import { CONDITIONS, type CombatantDto, type CombatantUpdate, type Condition, type HealthStatus } from '@zauberbuch/shared';
@@ -26,9 +26,11 @@ interface Props {
   onUpdate: (data: CombatantUpdate) => Promise<void>;
   onHp: (delta: number) => Promise<void>;
   onRemove: () => void;
+  /** Monster aus der DM-Datenbank: Werteblock öffnen (nur DM) */
+  onOpenCard?: () => void;
 }
 
-export function CombatantCard({ c, active, manage, onUpdate, onHp, onRemove }: Props) {
+export function CombatantCard({ c, active, manage, onUpdate, onHp, onRemove, onOpenCard }: Props) {
   const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [condOpen, setCondOpen] = useState(false);
@@ -62,6 +64,12 @@ export function CombatantCard({ c, active, manage, onUpdate, onHp, onRemove }: P
             {c.name}
           </h3>
           {isAlly && <span className="badge mt-0.5 bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200">{t('combat.allyBadge')}</span>}
+          {onOpenCard && (
+            <button type="button" className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-red-800 underline decoration-dotted underline-offset-2 hover:decoration-solid dark:text-red-300" onClick={onOpenCard} aria-haspopup="dialog">
+              <BookOpen className="h-3.5 w-3.5" />
+              {t('combat.openStatBlock')}
+            </button>
+          )}
           {c.owner && <p className="text-xs text-parchment-700 dark:text-parchment-400">{t('combat.playedBy', { name: c.owner })}</p>}
           {manage && isMonster && c.hideStats && (
             <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-parchment-700 dark:text-parchment-400">

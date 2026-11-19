@@ -404,6 +404,9 @@ Der bisherige Angriff mit Schaden bleibt als „Kurzangriff für den Kampf“ er
   Beschreibung und Schaden werden übernommen (Anzahl und Initiative kommen dazu). Neue Monster lassen sich dort mit
   „Zusätzlich als Vorlage speichern“ direkt in die Datenbank übernehmen. Angriff, Schaden und Beschreibung stehen auf der
   Kampfkarte und sind **nur für den DM** sichtbar.
+  Monster, die aus einer Vorlage stammen, bleiben mit ihr verknüpft: Auf der Kampfkarte erscheint für den DM der
+  Link **„Werteblock öffnen“**, der den vollständigen Werteblock direkt auf der Kampfseite einblendet (Spieler sehen
+  den Link nie; wird die Vorlage gelöscht, entfällt er, das Monster bleibt im Kampf).
 - **Spieler-Datenbank je Geschichte:** gemeinsames Monster-Notizbuch der Mitspieler – ohne die Daten des DM. Alle
   Mitspieler dürfen Einträge anlegen, ergänzen und löschen (RK/LP dürfen leer bleiben, LP auch als Bereich wie
   „10-15“, wenn die Gruppe nur schätzen kann); angezeigt wird, wer einen
@@ -693,7 +696,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `POST /api/combat/encounters/:id/turn` | DM/Admin | `{ direction: 1 \| -1 }` – nächster/vorheriger Zug |
 | `POST /api/combat/encounters/:id/characters` · `/monsters` | DM/Admin | Spielercharaktere bzw. Monster/verbündete NSCs (`allied: true`) hinzufügen |
 | `PATCH /api/combat/combatants/:id` · `POST …/hp` · `DELETE …` | DM/Admin | Initiative, Zustände, Monster-/NSC-Werte; `{ delta }` Schaden/Heilung |
-| `GET`/`POST /api/bestiary/dm?storyId=` · `PUT`/`DELETE /api/bestiary/dm/:id?storyId=` | DM der angegebenen Geschichte | DM-Datenbank (Vorlagen) |
+| `GET`/`POST /api/bestiary/dm?storyId=` · `GET`/`PUT`/`DELETE /api/bestiary/dm/:id?storyId=` | DM der angegebenen Geschichte | DM-Datenbank (Vorlagen) |
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
 | `GET`/`POST /api/dm-notes/stories/:storyId` · `PUT …/order` · `PUT`/`DELETE /api/dm-notes/:id` | DM der Geschichte | DM-Notizen (`{ title, body? }`; Reihenfolge `{ ids }`) |

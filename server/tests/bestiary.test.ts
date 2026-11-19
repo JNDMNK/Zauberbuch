@@ -113,6 +113,27 @@ describe('Monster-Datenbanken', () => {
     const upd = await dm.agent.patch(`/api/combat/combatants/${c.id}`).set(CSRF).send({ attack: 'Wurfspeer +6, 2W6+4 Stich' });
     expect(upd.body.encounter.combatants[0].attack).toBe('Wurfspeer +6, 2W6+4 Stich');
   });
+
+  it('Monster aus der Vorlage bleiben verknüpft: DM öffnet den Werteblock, Spieler erhalten keine Verknüpfung', async () => {
+    const { dm, frodo, storyId } = await setup();
+    const tpl = (await dm.agent.post(`/api/bestiary/dm?storyId=${storyId}`).set(CSRF).send({ name: 'Goblin', ac: 15, hp: 7, stats: { size: 'small', cr: '1/4' } })).body.template;
+    const enc = (await dm.agent.post('/api/combat/encounters').set(CSRF).send({ storyId, name: 'K' })).body.encounter;
+    const list = (await dm.agent.post(`/api/combat/encounters/${enc.id}/monsters`).set(CSRF).send({ name: 'Goblin', count: 2, ac: 15, hpMax: 7, templateId: tpl.id })).body.encounter.combatants;
+    expect(list.map((c: { templateId: string }) => c.templateId)).toEqual([tpl.id, tpl.id]);
+    // Werteblock abrufen (nur im Kontext der Geschichte mit DM-Rolle)
+    expect((await dm.agent.get(`/api/bestiary/dm/${tpl.id}?storyId=${storyId}`)).body.template.stats).toMatchObject({ size: 'small', cr: '1/4' });
+    expect((await frodo.agent.get(`/api/bestiary/dm/${tpl.id}?storyId=${storyId}`)).status).toBe(403);
+    expect((await frodo.agent.get(`/api/combat/encounters/${enc.id}`)).body.encounter.combatants.every((c: { templateId: string | null }) => c.templateId === null)).toBe(true);
+    // unbekannte Vorlage wird ignoriert; „als Vorlage speichern“ verknüpft die neue Vorlage
+    const unk = (await dm.agent.post(`/api/combat/encounters/${enc.id}/monsters`).set(CSRF).send({ name: 'X', hpMax: 1, templateId: 'gibtsnicht' })).body.encounter.combatants;
+    expect(unk.find((c: { name: string }) => c.name === 'X').templateId).toBeNull();
+    const saved = (await dm.agent.post(`/api/combat/encounters/${enc.id}/monsters`).set(CSRF).send({ name: 'Ork', hpMax: 15, saveAsTemplate: true })).body.encounter.combatants;
+    expect(saved.find((c: { name: string }) => c.name === 'Ork').templateId).toEqual(expect.any(String));
+    // Vorlage gelöscht -> Verknüpfung entfällt, Monster bleibt im Kampf
+    await dm.agent.delete(`/api/bestiary/dm/${tpl.id}?storyId=${storyId}`).set(CSRF);
+    const after = (await dm.agent.get(`/api/combat/encounters/${enc.id}`)).body.encounter.combatants.filter((c: { name: string }) => c.name.startsWith('Goblin'));
+    expect(after.map((c: { templateId: string | null }) => c.templateId)).toEqual([null, null]);
+  });
 });
 
 describe('Monster-Datenbanken – Schaden und LP-Bereiche', () => {
