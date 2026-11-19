@@ -5,7 +5,7 @@ import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { badRequest, notFound } from '../lib/errors';
 import { requireAuth, requireEditor } from '../middleware/auth';
-import { CATALOG_SEED } from '../data/catalog';
+import { CATALOG_SEED } from '../lib/catalogSeed';
 import { logger } from '../lib/logger';
 
 /**
