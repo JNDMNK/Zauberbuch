@@ -424,6 +424,10 @@ model MagicItem {
    * Wert als Freitext, z. B. „200 GM“
    */
   value       String            @default("")
+  /**
+   * Einstimmung benötigt – nur dann im Charakterbogen bei „Einstimmung“ wählbar
+   */
+  attunement  Boolean           @default(false)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   holders     MagicItemHolder[]

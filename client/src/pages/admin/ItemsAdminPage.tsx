@@ -164,7 +164,7 @@ function ItemDialog({
   item: MagicItemDto | null;
   characters: ItemCharacterRef[];
   onClose: () => void;
-  onSave: (input: { name: string; description: string; weight: number; value: string; holderIds: string[] }) => Promise<void>;
+  onSave: (input: { name: string; description: string; weight: number; value: string; attunement: boolean; holderIds: string[] }) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const toast = useToast();
@@ -172,6 +172,7 @@ function ItemDialog({
   const [description, setDescription] = useState('');
   const [weight, setWeight] = useState('');
   const [value, setValue] = useState('');
+  const [attunement, setAttunement] = useState(false);
   const [holders, setHolders] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -180,6 +181,7 @@ function ItemDialog({
     setDescription(item?.description ?? '');
     setWeight(item?.weight ? String(item.weight).replace('.', ',') : '');
     setValue(item?.value ?? '');
+    setAttunement(item?.attunement ?? false);
     setHolders(new Set(item?.holders.map((h) => h.id) ?? []));
   }, [open, item]);
 
@@ -192,7 +194,7 @@ function ItemDialog({
     if (!name.trim() || weightInvalid) return;
     setBusy(true);
     try {
-      await onSave({ name: name.trim(), description: description.trim(), weight: parsedWeight ?? 0, value: value.trim(), holderIds: [...holders] });
+      await onSave({ name: name.trim(), description: description.trim(), weight: parsedWeight ?? 0, value: value.trim(), attunement, holderIds: [...holders] });
     } catch (err) {
       toast.error(errorMessage(t, err));
     } finally {
@@ -233,6 +235,13 @@ function ItemDialog({
             </label>
             <input id="item-value" className="input" value={value} maxLength={40} onChange={(e) => setValue(e.target.value)} placeholder={t('items.valuePlaceholder')} />
           </div>
+        </div>
+        <div>
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
+            <input id="item-attunement" type="checkbox" className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300" checked={attunement} onChange={(e) => setAttunement(e.target.checked)} />
+            {t('items.requiresAttunement')}
+          </label>
+          <p className="mt-0.5 text-xs text-parchment-700 dark:text-parchment-400">{t('items.attunementHint')}</p>
         </div>
         <div>
           <label htmlFor="item-desc" className="label">

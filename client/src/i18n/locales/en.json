@@ -1003,11 +1003,13 @@
     "given": "Given to {{name}}",
     "returned": "Returned to the DM",
     "attuned": "attuned",
-    "attuneHint": "You can attune to magic items your character owns (tab “Magic items”).",
+    "attuneHint": "You can attune to magic items your character owns that require attunement (\"Magic items\" tab).",
     "weight": "Weight",
     "weightShare": "incl. magic items: {{weight}} lb",
     "value": "Value",
-    "valuePlaceholder": "e.g. 200 gp"
+    "valuePlaceholder": "e.g. 200 gp",
+    "requiresAttunement": "Requires attunement",
+    "attunementHint": "Only items that require attunement can be chosen as attuned items on the character sheet."
   },
   "catalog": {
     "title": "Items",

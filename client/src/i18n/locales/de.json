@@ -1003,11 +1003,13 @@
     "given": "An {{name}} weitergegeben",
     "returned": "An den DM zurückgegeben",
     "attuned": "eingestimmt",
-    "attuneHint": "Einstimmen kannst du dich auf magische Gegenstände, die dein Charakter besitzt (Reiter „Magische Gegenstände“).",
+    "attuneHint": "Einstimmen kannst du dich auf magische Gegenstände deines Charakters, die eine Einstimmung benötigen (Reiter „Magische Gegenstände“).",
     "weight": "Gewicht",
     "weightShare": "davon magische Gegenstände: {{weight}} lb",
     "value": "Wert",
-    "valuePlaceholder": "z. B. 200 GM"
+    "valuePlaceholder": "z. B. 200 GM",
+    "requiresAttunement": "Einstimmung benötigt",
+    "attunementHint": "Nur Gegenstände mit „Einstimmung benötigt“ können im Charakterbogen bei „Einstimmung“ gewählt werden."
   },
   "catalog": {
     "title": "Gegenstände",

@@ -129,7 +129,8 @@ function AttunedItems() {
   const { sheet, set, readOnly, items } = useSheet();
   const slots = [0, 1, 2].map((i) => sheet.attunedItems[i] ?? '');
   // Auswahl aus den magischen Gegenständen des Bogens; frühere freie Einträge bleiben wählbar
-  const owned = (items.data?.items ?? []).map((i) => i.name);
+  // nur Gegenstände, die eine Einstimmung benötigen
+  const owned = (items.data?.items ?? []).filter((i) => i.attunement).map((i) => i.name);
   return (
     <div>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">

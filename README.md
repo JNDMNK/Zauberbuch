@@ -234,8 +234,10 @@ anderen Zeilen gesperrt.
   der Geschichte werden benachrichtigt).
 - **Gewicht:** Das Gewicht eines Gegenstands zählt bei jedem Charakter, der ihn besitzt, zur **Gesamtlast** und damit
   zu „belastet“/„stark belastet“; unter der Gesamtlast steht der Anteil der magischen Gegenstände.
-- **Einstimmung:** Die drei Felder „Eingestimmte magische Gegenstände“ sind Auswahllisten der Gegenstände, die
-  der Charakter besitzt; eingestimmte Gegenstände sind auf ihrer Karte markiert.
+- **Einstimmung:** Beim Gegenstand gibt es den Haken **„Einstimmung benötigt“**. Nur solche Gegenstände erscheinen in
+  den drei Auswahllisten „Eingestimmte magische Gegenstände“ des Charakters; Gegenstände ohne Haken bleiben nur im
+  Reiter „Magische Gegenstände“. Eingestimmte Gegenstände sind auf ihrer Karte markiert. (Beim Update auf diese Version
+  bekommen bereits vorhandene Gegenstände den Haken, damit bestehende Einstimmungen erhalten bleiben.)
 
 ### Einstellungen eines Bogens
 
@@ -670,7 +672,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET /api/catalog?storyId=` | angemeldet | Wirksame Gegenstands-Datenbank (Standard bzw. Geschichte) |
 | `POST /api/catalog/standard` · `PUT`/`DELETE /api/catalog/:id` | Moderator/Admin | Standard-Datenbank bzw. eigene Einträge bearbeiten (`{ category, name, description?, weight?, ac?, damageDice?, damageType? }`) |
 | `GET`/`POST /api/catalog/stories/:storyId` · `PUT`/`DELETE …/override/:baseId` · `POST …/hide/:baseId` | Moderator/Admin | Liste einer Geschichte: anpassen, zurücksetzen, ausblenden, eigene Einträge |
-| `GET /api/items/stories` · `GET`/`POST /api/items/stories/:storyId` · `PUT`/`DELETE /api/items/:id` | Moderator/Admin, DM der Geschichte | Magische Gegenstände verwalten (`{ name, description?, weight?, value?, holderIds? }`) |
+| `GET /api/items/stories` · `GET`/`POST /api/items/stories/:storyId` · `PUT`/`DELETE /api/items/:id` | Moderator/Admin, DM der Geschichte | Magische Gegenstände verwalten (`{ name, description?, weight?, value?, attunement?, holderIds? }`) |
 | `GET /api/items/character/:characterId` · `POST /api/items/:id/transfer` | Besitzer/Mitbearbeiter (lesen auch DM) | Gegenstände eines Bogens; `{ fromCharacterId, toCharacterId \| null }` |
 | `GET /api/notifications` · `POST /api/notifications/read` · `DELETE /api/notifications` | User | Eigene Benachrichtigungen |
 | `GET /api/users` | Admin | Benutzerliste |

@@ -13,6 +13,8 @@ export const magicItemSchema = z.object({
   weight: z.number().min(0).max(9999).optional().default(0),
   /** Wert als Freitext, z. B. „200 GM“ */
   value: z.string().trim().max(40).optional().default(''),
+  /** Einstimmung benötigt (nur dann im Bogen bei „Einstimmung“ wählbar) */
+  attunement: z.boolean().optional().default(false),
   holderIds: z.array(z.string().min(1).max(64)).max(50).optional().default([]),
 });
 export type MagicItemInput = z.input<typeof magicItemSchema>;
@@ -38,6 +40,8 @@ export interface MagicItemDto {
   weight: number;
   /** Wert, z. B. „200 GM“ (leer = unbekannt) */
   value: string;
+  /** Einstimmung benötigt */
+  attunement: boolean;
   holders: ItemCharacterRef[];
   createdAt: string;
   updatedAt: string;

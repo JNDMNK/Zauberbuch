@@ -33,6 +33,12 @@ export function ItemCard({ item, actions, footer, attuned = false }: { item: Mag
           )}
         </div>
       )}
+      {item.attunement && (
+        <p className="flex items-center gap-1.5 text-sm italic text-violet-900 dark:text-violet-200">
+          <Sparkles className="h-4 w-4" aria-hidden />
+          {t('items.requiresAttunement')}
+        </p>
+      )}
       {item.value && (
         <p className="flex items-center gap-1.5 text-sm">
           <Coins className="h-4 w-4 text-parchment-700 dark:text-parchment-400" aria-hidden />
