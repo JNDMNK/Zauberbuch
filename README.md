@@ -396,8 +396,10 @@ Reaktionen und legendäre Aktionen** (Name + Text mit Markdown) sowie Tags, Lebe
 eine Kurzfassung (RK, LP, HG, Merkmale/Aktionen); ein Klick öffnet den Werteblock im Stil des Monsterhandbuchs.
 Der bisherige Angriff mit Schaden bleibt als „Kurzangriff für den Kampf“ erhalten.
 
-- **DM-Datenbank:** Vorlagen – gemeinsam für alle, die in einer Geschichte Dungeon Master sind (und den Admin),
-  für Spieler unsichtbar.
+- **DM-Datenbank:** Vorlagen – eine gemeinsame Datenbank aller Dungeon Master, aber **nur im Kontext einer
+  Geschichte sichtbar, in der man Dungeon Master ist** (oben Geschichte wählen, dann zwischen DM- und
+  Spieler-Datenbank umschalten). Wer in der gewählten Geschichte Spieler ist – auch wenn er anderswo leitet, und
+  auch der Admin mit Spielerrolle –, sieht sie nicht; die API verlangt dafür `?storyId=` mit DM-Rolle.
   Beim Hinzufügen von Monstern oder Verbündeten im Kampf wählt der DM oben eine Vorlage; Name, RK, LP, Angriff und
   Beschreibung und Schaden werden übernommen (Anzahl und Initiative kommen dazu). Neue Monster lassen sich dort mit
   „Zusätzlich als Vorlage speichern“ direkt in die Datenbank übernehmen. Angriff, Schaden und Beschreibung stehen auf der
@@ -691,7 +693,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `POST /api/combat/encounters/:id/turn` | DM/Admin | `{ direction: 1 \| -1 }` – nächster/vorheriger Zug |
 | `POST /api/combat/encounters/:id/characters` · `/monsters` | DM/Admin | Spielercharaktere bzw. Monster/verbündete NSCs (`allied: true`) hinzufügen |
 | `PATCH /api/combat/combatants/:id` · `POST …/hp` · `DELETE …` | DM/Admin | Initiative, Zustände, Monster-/NSC-Werte; `{ delta }` Schaden/Heilung |
-| `GET`/`POST /api/bestiary/dm` · `PUT`/`DELETE /api/bestiary/dm/:id` | DM/Admin | DM-Datenbank (Vorlagen) |
+| `GET`/`POST /api/bestiary/dm?storyId=` · `PUT`/`DELETE /api/bestiary/dm/:id?storyId=` | DM der angegebenen Geschichte | DM-Datenbank (Vorlagen) |
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
 | `GET`/`POST /api/dm-notes/stories/:storyId` · `PUT …/order` · `PUT`/`DELETE /api/dm-notes/:id` | DM der Geschichte | DM-Notizen (`{ title, body? }`; Reihenfolge `{ ids }`) |

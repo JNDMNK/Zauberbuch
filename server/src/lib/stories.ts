@@ -42,9 +42,3 @@ export async function dmStoryIds(u: ViewUser): Promise<string[]> {
   const rows = await prisma.storyMember.findMany({ where: { userId: u.id, role: 'dm' }, select: { storyId: true } });
   return rows.map((r) => r.storyId);
 }
-
-/** Hat der Benutzer in irgendeiner Geschichte DM-Rechte? (z. B. für die DM-Monster-Datenbank) */
-export async function isDmAnywhere(u: ViewUser): Promise<boolean> {
-  if (isAdmin(u)) return true;
-  return (await prisma.storyMember.count({ where: { userId: u.id, role: 'dm' } })) > 0;
-}

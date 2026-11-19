@@ -210,10 +210,10 @@ export const api = {
   removeCombatant: (id: string) => request<{ encounter: EncounterDto }>('DELETE', `/api/combat/combatants/${id}`),
 
   // Monster-Datenbanken
-  monsterTemplates: () => request<{ templates: MonsterTemplateDto[] }>('GET', '/api/bestiary/dm'),
-  createMonsterTemplate: (input: MonsterTemplateInput) => request<{ template: MonsterTemplateDto }>('POST', '/api/bestiary/dm', input),
-  updateMonsterTemplate: (id: string, input: MonsterTemplateInput) => request<{ template: MonsterTemplateDto }>('PUT', `/api/bestiary/dm/${id}`, input),
-  deleteMonsterTemplate: (id: string) => request<void>('DELETE', `/api/bestiary/dm/${id}`),
+  monsterTemplates: (storyId: string) => request<{ templates: MonsterTemplateDto[] }>('GET', `/api/bestiary/dm?storyId=${encodeURIComponent(storyId)}`),
+  createMonsterTemplate: (storyId: string, input: MonsterTemplateInput) => request<{ template: MonsterTemplateDto }>('POST', `/api/bestiary/dm?storyId=${encodeURIComponent(storyId)}`, input),
+  updateMonsterTemplate: (storyId: string, id: string, input: MonsterTemplateInput) => request<{ template: MonsterTemplateDto }>('PUT', `/api/bestiary/dm/${id}?storyId=${encodeURIComponent(storyId)}`, input),
+  deleteMonsterTemplate: (storyId: string, id: string) => request<void>('DELETE', `/api/bestiary/dm/${id}?storyId=${encodeURIComponent(storyId)}`),
   bestiary: (storyId: string) => request<{ entries: BestiaryEntryDto[]; canWrite: boolean }>('GET', `/api/bestiary/stories/${storyId}`),
   createBestiaryEntry: (storyId: string, input: BestiaryEntryInput) => request<{ entry: BestiaryEntryDto }>('POST', `/api/bestiary/stories/${storyId}`, input),
   updateBestiaryEntry: (id: string, input: BestiaryEntryInput) => request<{ entry: BestiaryEntryDto }>('PUT', `/api/bestiary/entries/${id}`, input),

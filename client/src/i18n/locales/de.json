@@ -892,7 +892,7 @@
     "dmDatabase": "DM-Datenbank (Vorlagen)",
     "playerDatabaseOf": "Spieler-Datenbank: {{name}} (nur lesen)",
     "noStory": "Die Monster-Datenbank der Spieler gehört zu einer Geschichte. Du bist noch keiner Geschichte als Mitspieler zugeordnet.",
-    "dmIntro": "Deine Monster-Vorlagen – gemeinsam für alle, die in einer Geschichte Dungeon Master sind, für Spieler unsichtbar. Im Kampf übernimmst du sie über „Monster hinzufügen“ oder „Verbündeten hinzufügen“.",
+    "dmIntro": "Monster-Vorlagen – eine gemeinsame Datenbank aller Dungeon Master. Sichtbar nur in Geschichten, in denen du Dungeon Master bist; Spieler sehen sie nie. Im Kampf übernimmst du sie über „Monster hinzufügen“ oder „Verbündeten hinzufügen“.",
     "playerIntro": "Gemeinsames Monster-Notizbuch eurer Gruppe „{{name}}“: Alle Mitspieler können Einträge anlegen und ergänzen. Die Daten des DM sind hier nicht enthalten.",
     "readOnlyIntro": "Monster-Datenbank der Spieler aus „{{name}}“ – das, was die Gruppe über Monster herausgefunden hat. Du kannst sie nur lesen.",
     "readOnly": "Nur lesen",
@@ -986,7 +986,8 @@
       "habitatPlaceholder": "z. B. Wald, Grasland, Hügel",
       "source": "Quelle",
       "sourcePlaceholder": "z. B. Monsterhandbuch"
-    }
+    },
+    "playerDatabase": "Spieler-Datenbank"
   },
   "storyView": {
     "title": "Ansicht",

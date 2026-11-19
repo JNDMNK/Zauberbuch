@@ -45,8 +45,8 @@ interface EntryInput {
   stats: MonsterStats;
 }
 
-/** 'dm' = DM-Datenbank, sonst Geschichte (Spieler-Datenbank) */
-type Source = { kind: 'dm' } | { kind: 'story'; storyId: string };
+/** DM-Datenbank (gemeinsam, im Kontext einer Geschichte mit DM-Rolle) oder Spieler-Datenbank der Geschichte */
+type Source = { kind: 'dm'; storyId: string } | { kind: 'story'; storyId: string };
 
 /**
  * Monster-Datenbank im Bereich Kampf.
@@ -57,9 +57,8 @@ export function BestiaryPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [stories, setStories] = useState<StoryDto[] | null>(null);
-  // DM-Datenbank: wer in mindestens einer Geschichte Dungeon Master ist (Admin immer)
-  const isEditor = Boolean(stories?.some((s) => s.myRole === 'dm')) || user?.role === 'admin';
-  const [source, setSource] = useState<Source | null>(null);
+  const [storyId, setStoryId] = useState<string | null>(null);
+  const [view, setView] = useState<'dm' | 'story'>('story');
   const [error, setError] = useState<unknown>(null);
 
   useEffect(() => {
@@ -67,19 +66,25 @@ export function BestiaryPage() {
     api
       .stories()
       .then((r) => {
-        // Geschichten mit Rolle (Spieler: bearbeiten, Dungeon Master: nur lesen)
         const list = r.stories.filter((s) => s.myRole);
-        const dm = list.some((s) => s.myRole === 'dm') || user?.role === 'admin';
         setStories(list);
-        // Geschichten-Ansicht: deren Spieler-Datenbank vorauswählen (als Spieler), sonst DM-Datenbank bzw. erste Geschichte
-        const active = list.find((s) => s.id === user?.activeStoryId);
-        if (active && active.myRole === 'player') setSource({ kind: 'story', storyId: active.id });
-        else setSource(dm ? { kind: 'dm' } : list[0] ? { kind: 'story', storyId: list[0].id } : null);
+        // Geschichten-Ansicht vorauswählen, sonst die erste Geschichte
+        const first = list.find((s) => s.id === user?.activeStoryId) ?? list[0];
+        setStoryId(first?.id ?? null);
+        setView(first?.myRole === 'dm' ? 'dm' : 'story');
       })
       .catch(setError);
   }, [user?.id, user?.activeStoryId, user?.role]);
 
-  const sourceValue = source ? (source.kind === 'dm' ? 'dm' : source.storyId) : '';
+  const story = stories?.find((s) => s.id === storyId) ?? null;
+  // DM-Datenbank nur, wenn man in der gewählten Geschichte Dungeon Master ist
+  const isDm = story?.myRole === 'dm';
+  const source: Source | null = story ? (isDm && view === 'dm' ? { kind: 'dm', storyId: story.id } : { kind: 'story', storyId: story.id }) : null;
+
+  const pick = (id: string) => {
+    setStoryId(id);
+    setView(stories?.find((s) => s.id === id)?.myRole === 'dm' ? 'dm' : 'story');
+  };
 
   return (
     <div className="space-y-5">
@@ -91,31 +96,42 @@ export function BestiaryPage() {
         <Alert>{errorMessage(t, error)}</Alert>
       ) : !stories ? (
         <PageSpinner />
-      ) : !source ? (
+      ) : !story || !source ? (
         <Alert kind="info">{t('bestiary.noStory')}</Alert>
       ) : (
         <>
-          {(isEditor || stories.length > 1) && (
-            <div className="flex flex-wrap items-center gap-2">
-              <label htmlFor="bestiary-source" className="text-sm font-semibold">
-                {t('bestiary.database')}
-              </label>
-              <select
-                id="bestiary-source"
-                className="input !w-auto"
-                value={sourceValue}
-                onChange={(e) => setSource(e.target.value === 'dm' ? { kind: 'dm' } : { kind: 'story', storyId: e.target.value })}
-              >
-                {isEditor && <option value="dm">{t('bestiary.dmDatabase')}</option>}
-                {stories.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.myRole === 'dm' ? t('bestiary.playerDatabaseOf', { name: s.name }) : s.name}
-                  </option>
+          <div className="flex flex-wrap items-center gap-3">
+            {stories.length > 1 && (
+              <div className="flex items-center gap-2">
+                <label htmlFor="bestiary-story" className="text-sm font-semibold">
+                  {t('combat.story')}
+                </label>
+                <select id="bestiary-story" className="input !w-auto" value={story.id} onChange={(e) => pick(e.target.value)}>
+                  {stories.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({t(`storyRole.${s.myRole}`)})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {isDm && (
+              <div className="inline-flex overflow-hidden rounded-lg border border-parchment-500/70 dark:border-night-700" role="group" aria-label={t('bestiary.database')}>
+                {(['dm', 'story'] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    aria-pressed={view === v}
+                    onClick={() => setView(v)}
+                    className={`px-3 py-1.5 font-display text-sm font-semibold ${view === v ? 'bg-parchment-800 text-parchment-50 dark:bg-parchment-300 dark:text-ink' : 'hover:bg-parchment-200/80 dark:hover:bg-night-700'}`}
+                  >
+                    {v === 'dm' ? t('bestiary.dmDatabase') : t('bestiary.playerDatabase')}
+                  </button>
                 ))}
-              </select>
-            </div>
-          )}
-          <EntryList key={sourceValue} source={source} storyName={source.kind === 'story' ? (stories.find((s) => s.id === source.storyId)?.name ?? '') : ''} />
+              </div>
+            )}
+          </div>
+          <EntryList key={`${source.kind}:${source.storyId}`} source={source} storyName={story.name} />
         </>
       )}
     </div>
@@ -139,7 +155,7 @@ function EntryList({ source, storyName }: { source: Source; storyName: string })
   const load = useCallback(async () => {
     try {
       if (source.kind === 'dm') {
-        const r = await api.monsterTemplates();
+        const r = await api.monsterTemplates(source.storyId);
         setEntries(r.templates);
         setCanWrite(true);
       } else {
@@ -166,7 +182,7 @@ function EntryList({ source, storyName }: { source: Source; storyName: string })
     const id = editing && editing !== 'new' ? editing.id : null;
     if (source.kind === 'dm') {
       const data = { ...input, hp: Math.min(9999, Number(input.hp) || 0) };
-      const r = id ? await api.updateMonsterTemplate(id, data) : await api.createMonsterTemplate(data);
+      const r = id ? await api.updateMonsterTemplate(source.storyId, id, data) : await api.createMonsterTemplate(source.storyId, data);
       setEntries((list) => upsert(list, r.template));
       setViewing((v) => (v?.id === r.template.id ? r.template : v));
     } else {
@@ -183,7 +199,7 @@ function EntryList({ source, storyName }: { source: Source; storyName: string })
     if (!toDelete) return;
     setBusy(true);
     try {
-      if (isDm) await api.deleteMonsterTemplate(toDelete.id);
+      if (source.kind === 'dm') await api.deleteMonsterTemplate(source.storyId, toDelete.id);
       else await api.deleteBestiaryEntry(toDelete.id);
       setEntries((list) => list?.filter((e) => e.id !== toDelete.id) ?? null);
       setToDelete(null);

@@ -13,7 +13,7 @@ import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { forbidden, notFound } from '../lib/errors';
 import { requireAuth } from '../middleware/auth';
-import { isDmAnywhere, storyRole } from '../lib/stories';
+import { storyRole } from '../lib/stories';
 
 /**
  * Monster-Datenbanken.
@@ -102,10 +102,14 @@ async function storyAccess(req: Request, storyId: string) {
   return { story, canWrite: role === 'player' };
 }
 
-/** DM-Datenbank: wer in irgendeiner Geschichte Dungeon Master ist (Admin immer) */
+/**
+ * DM-Datenbank: gemeinsam für alle Dungeon Master, aber nur im Kontext einer Geschichte sichtbar, in der man DM ist
+ * (?storyId=…). Wer in dieser Geschichte Spieler ist – auch der Admin mit Spielerrolle –, sieht sie nicht.
+ */
 async function requireStoryDm(req: Request, _res: unknown, next: (err?: unknown) => void) {
   try {
-    if (!(await isDmAnywhere(req.user!))) return next(forbidden());
+    const storyId = typeof req.query.storyId === 'string' ? req.query.storyId : '';
+    if (!storyId || (await storyRole(req.user!, storyId)) !== 'dm') return next(forbidden());
     next();
   } catch (err) {
     next(err);

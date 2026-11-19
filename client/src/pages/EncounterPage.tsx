@@ -277,8 +277,8 @@ export function EncounterPage() {
       {manage && (
         <>
           <AddPlayersDialog open={dialog === 'players'} enc={enc} onClose={() => setDialog(null)} onDone={(e) => (setEnc(e), setDialog(null))} />
-          <AddMonsterDialog open={dialog === 'monster'} encId={enc.id} onClose={() => setDialog(null)} onDone={(e) => (setEnc(e), setDialog(null))} />
-          <AddMonsterDialog allied open={dialog === 'ally'} encId={enc.id} onClose={() => setDialog(null)} onDone={(e) => (setEnc(e), setDialog(null))} />
+          <AddMonsterDialog open={dialog === 'monster'} encId={enc.id} storyId={enc.storyId} onClose={() => setDialog(null)} onDone={(e) => (setEnc(e), setDialog(null))} />
+          <AddMonsterDialog allied open={dialog === 'ally'} encId={enc.id} storyId={enc.storyId} onClose={() => setDialog(null)} onDone={(e) => (setEnc(e), setDialog(null))} />
           <RenameDialog open={dialog === 'rename'} enc={enc} onClose={() => setDialog(null)} onDone={(e) => (setEnc(e), setDialog(null))} />
         </>
       )}
@@ -412,7 +412,7 @@ function AddPlayersDialog({ open, enc, onClose, onDone }: { open: boolean; enc: 
   );
 }
 
-function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { open: boolean; encId: string; allied?: boolean; onClose: () => void; onDone: (e: EncounterDto) => void }) {
+function AddMonsterDialog({ open, encId, storyId, allied = false, onClose, onDone }: { open: boolean; encId: string; storyId: string; allied?: boolean; onClose: () => void; onDone: (e: EncounterDto) => void }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [templates, setTemplates] = useState<MonsterTemplateDto[] | null>(null);
@@ -445,10 +445,10 @@ function AddMonsterDialog({ open, encId, allied = false, onClose, onDone }: { op
     // Verbündete sind standardmäßig offen sichtbar, Monster verdeckt
     setHide(!allied);
     api
-      .monsterTemplates()
+      .monsterTemplates(storyId)
       .then((r) => setTemplates(r.templates))
       .catch(() => setTemplates([]));
-  }, [open, allied]);
+  }, [open, allied, storyId]);
   const num = (v: string, allowMinus = false) => v.replace(allowMinus ? /[^\d-]/g : /\D/g, '').slice(0, 4);
 
   const applyTemplate = (tpl: MonsterTemplateDto) => {

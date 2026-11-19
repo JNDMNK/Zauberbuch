@@ -892,7 +892,7 @@
     "dmDatabase": "DM database (templates)",
     "playerDatabaseOf": "Player database: {{name}} (read-only)",
     "noStory": "The players' monster database belongs to a story. You have not been added to a story as a player yet.",
-    "dmIntro": "Your monster templates – shared by all Dungeon Masters and admins, invisible to players. Use them in combat via “Add monster” or “Add ally”.",
+    "dmIntro": "Monster templates – one database shared by all Dungeon Masters. Only visible in stories where you are the Dungeon Master; players never see it. In combat, use them via “Add monster” or “Add ally”.",
     "playerIntro": "Shared monster notebook of your group “{{name}}”: all players can add and extend entries. The DM's data is not included here.",
     "readOnlyIntro": "Players' monster database of “{{name}}” – what the group has found out about monsters. Read-only for you.",
     "readOnly": "Read-only",
@@ -986,7 +986,8 @@
       "habitatPlaceholder": "e.g. forest, grassland, hill",
       "source": "Source",
       "sourcePlaceholder": "e.g. Monster Manual"
-    }
+    },
+    "playerDatabase": "Player database"
   },
   "storyView": {
     "title": "View",
