@@ -8,6 +8,107 @@ import { damageDiceSchema } from './schemas';
  * - Spieler-Datenbank je Geschichte: gemeinsames Notizbuch der Mitspieler, DM/Admin nur lesend
  */
 
+/** Größenkategorien eines Monsters */
+export const MONSTER_SIZES = ['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan'] as const;
+export type MonsterSize = (typeof MONSTER_SIZES)[number];
+export const MONSTER_ABILITIES = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const;
+export type MonsterAbility = (typeof MONSTER_ABILITIES)[number];
+
+const statText = (max: number) => z.string().trim().max(max).catch('').default('');
+const score = z.number().int().min(1).max(30).nullable().catch(null).default(null);
+/** Merkmal / Aktion: Name + Text (Markdown); leere Einträge fallen weg */
+const featureSchema = z.object({ name: z.string().trim().max(100).default(''), text: z.string().trim().max(3000).default('') });
+const features = z
+  .array(featureSchema)
+  .max(40)
+  .catch([])
+  .default([])
+  .transform((l) => l.filter((f) => f.name || f.text));
+export type MonsterFeature = z.infer<typeof featureSchema>;
+
+/**
+ * Vollständiger Werteblock (wie im Monsterhandbuch). Alles optional; ungültige Einzelwerte werden verworfen statt
+ * den ganzen Eintrag abzulehnen. Gespeichert als JSON.
+ */
+const statsObject = z.object({
+  size: z.enum(MONSTER_SIZES).nullable().catch(null).default(null),
+  /** Typ inkl. Untertyp, z. B. „Humanoide (Goblinoide)“ */
+  type: statText(80),
+  alignment: statText(60),
+  /** Zusatz zur RK, z. B. „Lederrüstung, Schild“ */
+  acNote: statText(100),
+  /** Trefferwürfel der LP, z. B. „2W6“ */
+  hitDice: statText(40),
+  speed: statText(150),
+  abilities: z.object({ str: score, dex: score, con: score, int: score, wis: score, cha: score }).catch({ str: null, dex: null, con: null, int: null, wis: null, cha: null }).default({}),
+  saves: statText(300),
+  skills: statText(300),
+  vulnerabilities: statText(300),
+  resistances: statText(300),
+  immunities: statText(300),
+  conditionImmunities: statText(300),
+  senses: statText(300),
+  languages: statText(300),
+  /** Herausforderungsgrad, z. B. „1/4“ oder „5“ */
+  cr: statText(10),
+  traits: features,
+  actions: features,
+  bonusActions: features,
+  reactions: features,
+  legendaryActions: features,
+  habitat: statText(200),
+  tags: statText(200),
+  source: statText(100),
+});
+export const monsterStatsSchema = statsObject.catch(() => statsObject.parse({})).default({});
+export type MonsterStats = z.output<typeof monsterStatsSchema>;
+export type MonsterStatsInput = z.input<typeof monsterStatsSchema>;
+
+const CR_XP: Record<string, number> = {
+  '0': 10,
+  '1/8': 25,
+  '1/4': 50,
+  '1/2': 100,
+  '1': 200,
+  '2': 450,
+  '3': 700,
+  '4': 1100,
+  '5': 1800,
+  '6': 2300,
+  '7': 2900,
+  '8': 3900,
+  '9': 5000,
+  '10': 5900,
+  '11': 7200,
+  '12': 8400,
+  '13': 10000,
+  '14': 11500,
+  '15': 13000,
+  '16': 15000,
+  '17': 18000,
+  '18': 20000,
+  '19': 22000,
+  '20': 25000,
+  '21': 33000,
+  '22': 41000,
+  '23': 50000,
+  '24': 62000,
+  '25': 75000,
+  '26': 90000,
+  '27': 105000,
+  '28': 120000,
+  '29': 135000,
+  '30': 155000,
+};
+/** EP und Übungsbonus zum Herausforderungsgrad (null bei unbekanntem Wert) */
+export function challengeInfo(cr: string): { xp: number; proficiency: number } | null {
+  const key = cr.trim().replace(/\s+/g, '').replace('½', '1/2').replace('¼', '1/4').replace('⅛', '1/8');
+  const xp = CR_XP[key];
+  if (xp === undefined) return null;
+  const n = key.includes('/') ? 0 : Number(key);
+  return { xp, proficiency: n < 5 ? 2 : Math.min(9, 2 + Math.floor((n - 1) / 4)) };
+}
+
 export const MAX_ATTACK_LENGTH = 1000;
 export const MAX_MONSTER_DESCRIPTION = 5000;
 
@@ -19,6 +120,8 @@ const base = {
   /** Schaden wie bei Zaubern: Würfelausdruck + Schadensart (beide oder keiner) */
   damageDice: damageDiceSchema.optional().nullable().default(null),
   damageType: z.enum(DAMAGE_TYPES).optional().nullable().default(null),
+  /** Vollständiger Werteblock */
+  stats: monsterStatsSchema,
 };
 
 /** Würfel und Schadensart nur gemeinsam (gleiche Regel wie bei Zaubern) */
@@ -62,6 +165,7 @@ interface EntryBase {
   description: string;
   damageDice: string | null;
   damageType: DamageType | null;
+  stats: MonsterStats;
   createdBy: BestiaryUserRef | null;
   updatedBy: BestiaryUserRef | null;
   createdAt: string;

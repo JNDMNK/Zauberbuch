@@ -352,6 +352,10 @@ model MonsterTemplate {
   damageDice  String?
   damageType  String?
   description String   @default("")
+  /**
+   * Vollständiger Werteblock als JSON (Größe, Typ, Attribute, Merkmale, Aktionen …)
+   */
+  stats       String   @default("{}")
   createdById String?
   createdBy   User?    @relation("MonsterTemplateCreator", fields: [createdById], references: [id], onDelete: SetNull)
   updatedById String?
@@ -382,6 +386,10 @@ model BestiaryEntry {
   damageDice  String?
   damageType  String?
   description String   @default("")
+  /**
+   * Vollständiger Werteblock als JSON (Größe, Typ, Attribute, Merkmale, Aktionen …)
+   */
+  stats       String   @default("{}")
   createdById String?
   createdBy   User?    @relation("BestiaryCreator", fields: [createdById], references: [id], onDelete: SetNull)
   updatedById String?

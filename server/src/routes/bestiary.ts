@@ -2,6 +2,7 @@ import { Router, type Request } from 'express';
 import type { BestiaryEntry, MonsterTemplate, Prisma, User } from '@prisma/client';
 import {
   bestiaryEntrySchema,
+  monsterStatsSchema,
   monsterTemplateSchema,
   type BestiaryEntryDto,
   type DamageType,
@@ -37,6 +38,7 @@ function common(e: WithRefs<MonsterTemplate | BestiaryEntry>) {
     description: e.description,
     damageDice: e.damageDice,
     damageType: (e.damageType as DamageType | null) ?? null,
+    stats: parseStats(e.stats),
     createdBy: ref(e.createdBy),
     updatedBy: ref(e.updatedBy),
     createdAt: e.createdAt.toISOString(),
@@ -45,6 +47,17 @@ function common(e: WithRefs<MonsterTemplate | BestiaryEntry>) {
 }
 const toTemplateDto = (t: WithRefs<MonsterTemplate>): MonsterTemplateDto => ({ ...common(t), hp: t.hp });
 const toEntryDto = (e: WithRefs<BestiaryEntry>): BestiaryEntryDto => ({ ...common(e), hp: e.hp, storyId: e.storyId });
+
+/** Werteblock aus der Datenbank lesen (fehlerhaftes JSON → leerer Block) */
+function parseStats(raw: string) {
+  try {
+    return monsterStatsSchema.parse(JSON.parse(raw));
+  } catch {
+    return monsterStatsSchema.parse({});
+  }
+}
+/** Eingabe → Datenbankfelder (Werteblock als JSON) */
+const dbData = <T extends { stats?: unknown }>(input: T) => ({ ...input, stats: JSON.stringify(input.stats) });
 
 const search = (q: unknown): Prisma.StringFilter | undefined => (typeof q === 'string' && q.trim() ? { contains: q.trim() } : undefined);
 
@@ -58,7 +71,7 @@ bestiaryRouter.get('/dm', requireStoryDm, async (req, res) => {
 
 bestiaryRouter.post('/dm', requireStoryDm, async (req, res) => {
   const input = validate(monsterTemplateSchema, req.body);
-  const t = await prisma.monsterTemplate.create({ data: { ...input, createdById: req.user!.id, updatedById: req.user!.id }, include });
+  const t = await prisma.monsterTemplate.create({ data: { ...dbData(input), createdById: req.user!.id, updatedById: req.user!.id }, include });
   res.status(201).json({ template: toTemplateDto(t) });
 });
 
@@ -66,7 +79,7 @@ bestiaryRouter.put('/dm/:id', requireStoryDm, async (req, res) => {
   const id = String(req.params.id);
   if (!(await prisma.monsterTemplate.findUnique({ where: { id } }))) throw notFound();
   const input = validate(monsterTemplateSchema, req.body);
-  const t = await prisma.monsterTemplate.update({ where: { id }, data: { ...input, updatedById: req.user!.id }, include });
+  const t = await prisma.monsterTemplate.update({ where: { id }, data: { ...dbData(input), updatedById: req.user!.id }, include });
   res.json({ template: toTemplateDto(t) });
 });
 
@@ -110,7 +123,7 @@ bestiaryRouter.post('/stories/:storyId', async (req, res) => {
   const { story, canWrite } = await storyAccess(req, String(req.params.storyId));
   if (!canWrite) throw forbidden();
   const input = validate(bestiaryEntrySchema, req.body);
-  const e = await prisma.bestiaryEntry.create({ data: { ...input, storyId: story.id, createdById: req.user!.id, updatedById: req.user!.id }, include });
+  const e = await prisma.bestiaryEntry.create({ data: { ...dbData(input), storyId: story.id, createdById: req.user!.id, updatedById: req.user!.id }, include });
   res.status(201).json({ entry: toEntryDto(e) });
 });
 
@@ -125,7 +138,7 @@ async function loadEntry(req: Request, id: string) {
 bestiaryRouter.put('/entries/:id', async (req, res) => {
   const entry = await loadEntry(req, String(req.params.id));
   const input = validate(bestiaryEntrySchema, req.body);
-  const e = await prisma.bestiaryEntry.update({ where: { id: entry.id }, data: { ...input, updatedById: req.user!.id }, include });
+  const e = await prisma.bestiaryEntry.update({ where: { id: entry.id }, data: { ...dbData(input), updatedById: req.user!.id }, include });
   res.json({ entry: toEntryDto(e) });
 });
 

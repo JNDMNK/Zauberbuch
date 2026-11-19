@@ -122,6 +122,44 @@ describe('Monster-Datenbanken – Schaden und LP-Bereiche', () => {
     expect((await dm.agent.post('/api/bestiary/dm').set(CSRF).send({ name: 'X', hp: 1, damageDice: '2d6', damageType: 'banana' })).status).toBe(400);
   });
 
+  it('Vollständiger Werteblock (Größe, Attribute, Merkmale, Aktionen) in beiden Datenbanken', async () => {
+    const dm = await createUser('meister', 'dungeonmaster');
+    const frodo = await createUser('frodo');
+    const storyId = (await dm.agent.post('/api/stories').set(CSRF).send({ name: 'Strahd', memberIds: [frodo.user.id] })).body.story.id;
+    const stats = {
+      size: 'small',
+      type: 'Humanoide (Goblinoide)',
+      alignment: 'neutral böse',
+      acNote: 'Lederrüstung, Schild',
+      hitDice: '2W6',
+      speed: '9 m',
+      abilities: { str: 8, dex: 14, con: 10, int: 10, wis: 8, cha: 8 },
+      skills: 'Heimlichkeit +6',
+      senses: 'Dunkelsicht 18 m, passive Wahrnehmung 9',
+      languages: 'Gemeinsprache, Goblinisch',
+      cr: '1/4',
+      traits: [{ name: 'Flinke Flucht', text: 'Kann als Bonusaktion Rückzug oder Verstecken nutzen.' }],
+      actions: [
+        { name: 'Krummsäbel', text: '*Nahkampfwaffenangriff:* +4 zum Treffen, Reichweite 1,5 m. *Treffer:* 5 (1W6 + 2) Hieb.' },
+        { name: '', text: '' },
+      ],
+      habitat: 'Wald, Grasland, Hügel, Unterreich',
+      tags: 'Goblinoide',
+    };
+    const tpl = (await dm.agent.post('/api/bestiary/dm').set(CSRF).send({ name: 'Goblin', ac: 15, hp: 7, stats })).body.template;
+    expect(tpl.stats).toMatchObject({ size: 'small', abilities: { dex: 14, cha: 8 }, cr: '1/4', habitat: 'Wald, Grasland, Hügel, Unterreich' });
+    expect(tpl.stats.actions).toHaveLength(1); // leere Aktion verworfen
+    expect(tpl.stats.reactions).toEqual([]);
+    // ungültige Einzelwerte werden verworfen, der Eintrag bleibt gültig
+    const odd = await dm.agent.put(`/api/bestiary/dm/${tpl.id}`).set(CSRF).send({ name: 'Goblin', hp: 7, stats: { ...stats, size: 'riesig', abilities: { str: 99 } } });
+    expect(odd.body.template.stats).toMatchObject({ size: null, abilities: { str: null, dex: null } });
+    // ohne stats: leerer Block
+    expect((await dm.agent.post('/api/bestiary/dm').set(CSRF).send({ name: 'Ork', hp: 15 })).body.template.stats).toMatchObject({ size: null, traits: [] });
+    // Spieler-Datenbank
+    const e = (await frodo.agent.post(`/api/bestiary/stories/${storyId}`).set(CSRF).send({ name: 'Goblin', hp: '5-9', stats: { size: 'small', cr: '1/4' } })).body.entry;
+    expect(e.stats).toMatchObject({ size: 'small', cr: '1/4' });
+  });
+
   it('Spieler-LP als Zahl oder Bereich', async () => {
     const dm = await createUser('meister', 'dungeonmaster');
     const frodo = await createUser('frodo');

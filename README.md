@@ -388,6 +388,14 @@ Im Bereich **Kampf → Monster-Datenbank** gibt es zwei getrennte Datenbanken mi
 hinterlegt – Würfelausdruck (z. B. `1d6+2` oder `2W8+4`) plus Schadensart aus derselben Liste – und erscheint im
 gleichen Design (Symbol, Farbe der Schadensart, z. B. „1W6 + 2 Hieb“):
 
+**Vollständiger Werteblock** (in beiden Datenbanken, alle Felder optional): Größe, Typ, Gesinnung, RK mit Zusatz
+(z. B. „Lederrüstung, Schild“), LP mit Trefferwürfeln, Bewegungsrate, die sechs Attribute (Modifikator wird berechnet),
+Rettungswürfe, Fertigkeiten, Schadensanfälligkeiten/-resistenzen/-immunitäten, Zustandsimmunitäten, Sinne, Sprachen,
+Herausforderungsgrad (EP und Übungsbonus werden berechnet), beliebig viele **Merkmale, Aktionen, Bonusaktionen,
+Reaktionen und legendäre Aktionen** (Name + Text mit Markdown) sowie Tags, Lebensraum und Quelle. Die Karte zeigt
+eine Kurzfassung (RK, LP, HG, Merkmale/Aktionen); ein Klick öffnet den Werteblock im Stil des Monsterhandbuchs.
+Der bisherige Angriff mit Schaden bleibt als „Kurzangriff für den Kampf“ erhalten.
+
 - **DM-Datenbank:** Vorlagen – gemeinsam für alle, die in einer Geschichte Dungeon Master sind (und den Admin),
   für Spieler unsichtbar.
   Beim Hinzufügen von Monstern oder Verbündeten im Kampf wählt der DM oben eine Vorlage; Name, RK, LP, Angriff und
