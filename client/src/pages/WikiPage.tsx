@@ -200,7 +200,7 @@ export function WikiPage() {
                         )}
                       </div>
                       {e.summary && <p className="line-clamp-3 text-sm italic">{e.summary}</p>}
-                      <dl className="mt-auto space-y-1 pt-1 text-sm">
+                      <dl className="space-y-1 pt-1 text-sm">
                         {facts(e)
                           .filter((f) => f.value)
                           .map(({ Icon: FIcon, label, value }) => (
@@ -224,7 +224,7 @@ export function WikiPage() {
                           })}
                         </div>
                       )}
-                      <SourceBadge sourceId={e.sourceId} />
+                      <SourceBadge sourceId={e.sourceId} className="mt-auto pt-1" />
                     </article>
                   </li>
                 );
