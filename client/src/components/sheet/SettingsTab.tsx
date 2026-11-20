@@ -99,12 +99,11 @@ export function SettingsTab({ characterId, ownerName, onStoryChange }: { charact
         {settings.options.users.length === 0 ? (
           <p className="text-sm">{t('sheet.settings.noUsers')}</p>
         ) : (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="flex flex-wrap gap-2">
             {users.map((u) => (
-              <label key={u.id} className="flex cursor-pointer items-center gap-2 text-sm">
+              <label key={u.id} className="chip-check">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300"
                   checked={editors.has(u.id)}
                   onChange={(e) =>
                     setEditors((prev) => {

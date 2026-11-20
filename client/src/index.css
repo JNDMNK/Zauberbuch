@@ -35,6 +35,52 @@
 }
 
 @layer components {
+  /* ---- Haken-Optionen im Chip-Design (wie die Grad-Auswahl im Filter) ---- */
+  .chip-check {
+    @apply inline-flex cursor-pointer select-none items-center gap-2 rounded-full border border-parchment-500/60 px-3 py-1 text-sm transition hover:bg-parchment-200/70 dark:border-parchment-700/70 dark:bg-night-800/60 dark:hover:bg-night-700;
+  }
+  /* breite Variante für Optionen mit Erklärtext */
+  .chip-check-block {
+    @apply flex w-full items-start rounded-xl px-3 py-2;
+  }
+  .chip-check:has(input:checked) {
+    @apply border-parchment-800 bg-parchment-800 text-parchment-50 hover:bg-parchment-800 dark:border-parchment-300 dark:bg-parchment-300 dark:text-ink dark:hover:bg-parchment-300;
+  }
+  .chip-check:has(input:focus-visible) {
+    @apply ring-2 ring-parchment-500 ring-offset-2 ring-offset-parchment-50 dark:ring-parchment-300 dark:ring-offset-night-900;
+  }
+  .chip-check:has(input:disabled) {
+    @apply cursor-not-allowed opacity-60;
+  }
+  .chip-check input[type='checkbox'],
+  .chip-dot {
+    @apply grid h-4 w-4 shrink-0 cursor-pointer appearance-none place-items-center rounded-full border-[1.5px] border-parchment-600 bg-transparent outline-none dark:border-parchment-400;
+  }
+  .chip-check-block input[type='checkbox'] {
+    @apply mt-1;
+  }
+  .chip-check input[type='checkbox']:checked {
+    border-color: currentColor;
+  }
+  .chip-check input[type='checkbox']:checked::after {
+    content: '';
+    @apply h-2 w-2 rounded-full bg-current;
+  }
+  /* einzelnes Kästchen ohne Chip (Tabellen, Charakterbogen) */
+  .chip-dot:checked {
+    @apply border-parchment-800 bg-parchment-800 dark:border-parchment-300 dark:bg-parchment-300;
+  }
+  .chip-dot:checked::after {
+    content: '';
+    @apply h-1.5 w-1.5 rounded-full bg-parchment-50 dark:bg-night-900;
+  }
+  .chip-dot:focus-visible {
+    @apply ring-2 ring-parchment-500 ring-offset-1 dark:ring-parchment-300;
+  }
+  .chip-dot:disabled {
+    @apply cursor-not-allowed opacity-60;
+  }
+
   /* Pergament-Karte */
   .parchment {
     @apply relative rounded-xl border border-parchment-400/70 bg-parchment-50 shadow-card dark:border-night-700 dark:bg-night-800;

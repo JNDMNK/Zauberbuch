@@ -132,8 +132,8 @@ export function BoardPage() {
                 </Link>
               ))}
             </nav>
-            <label className="ml-auto flex cursor-pointer items-center gap-2 text-sm">
-              <input type="checkbox" className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
+            <label className="chip-check ml-auto">
+              <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
               {t('board.showArchived')}
             </label>
           </div>

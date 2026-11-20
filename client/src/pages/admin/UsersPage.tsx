@@ -77,16 +77,15 @@ function CreateUserForm({ onCreated, onCancel }: { onCreated: (u: AdminUserDto) 
           )}
         </Field>
       </div>
-      <label className="flex cursor-pointer items-start gap-2 text-sm">
+      <label className="chip-check chip-check-block">
         <input
           type="checkbox"
-          className="mt-1 h-4 w-4 accent-parchment-800 dark:accent-parchment-300"
           checked={form.canEditSpells || isEditorRole(form.role)}
           disabled={isEditorRole(form.role)}
           onChange={(e) => setForm((f) => ({ ...f, canEditSpells: e.target.checked }))}
         />
         <span>
-          {t('admin.canEditSpells')} <span className="text-parchment-700 dark:text-parchment-400">– {t('admin.canEditSpellsHint')}</span>
+          {t('admin.canEditSpells')} <span className="opacity-75">– {t('admin.canEditSpellsHint')}</span>
         </span>
       </label>
       <p className="text-xs text-parchment-700 dark:text-parchment-400">{t('admin.rolesHint')}</p>
@@ -274,7 +273,7 @@ export function UsersPage() {
                 <td className="text-center">
                   <input
                     type="checkbox"
-                    className="h-4 w-4 accent-parchment-800 disabled:opacity-60 dark:accent-parchment-300"
+                    className="chip-dot mx-auto"
                     checked={u.canEditSpells || isEditorRole(u.role)}
                     disabled={isEditorRole(u.role)}
                     title={isEditorRole(u.role) ? t('admin.canEditSpellsByRole') : t('admin.canEditSpellsHint')}

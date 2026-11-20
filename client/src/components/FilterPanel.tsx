@@ -86,13 +86,8 @@ export function FilterPanel({ filters, onChange, sources, showFavoritesToggle, f
       </div>
 
       {showFavoritesToggle && !favoritesPage && (
-        <label className="flex cursor-pointer items-center gap-2">
-          <input
-            type="checkbox"
-            checked={filters.favorites}
-            onChange={(e) => set('favorites', e.target.checked)}
-            className="h-4 w-4 accent-red-600"
-          />
+        <label className="chip-check">
+          <input type="checkbox" checked={filters.favorites} onChange={(e) => set('favorites', e.target.checked)} />
           <span>{t('filter.favoritesOnly')}</span>
         </label>
       )}

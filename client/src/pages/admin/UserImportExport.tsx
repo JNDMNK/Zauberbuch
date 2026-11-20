@@ -93,8 +93,8 @@ export function UserImportExport() {
       <section className="parchment h-fit p-6">
         <h3 className="text-lg font-bold">{t('admin.export')}</h3>
         <p className="mt-2 text-sm">{t('admin.userExportText')}</p>
-        <label className="mt-3 flex cursor-pointer items-start gap-2 text-sm">
-          <input type="checkbox" className="mt-1 h-4 w-4 accent-parchment-800" checked={withPasswords} onChange={(e) => setWithPasswords(e.target.checked)} />
+        <label className="chip-check chip-check-block mt-3">
+          <input type="checkbox" checked={withPasswords} onChange={(e) => setWithPasswords(e.target.checked)} />
           <span>{t('admin.userExportPasswords')}</span>
         </label>
         {withPasswords && (

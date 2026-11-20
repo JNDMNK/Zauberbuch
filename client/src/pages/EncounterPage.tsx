@@ -383,10 +383,9 @@ function AddPlayersDialog({ open, enc, onClose, onDone }: { open: boolean; enc: 
               const already = present.has(c.id);
               return (
                 <li key={c.id}>
-                  <label className={`flex items-center gap-3 py-2 ${already ? 'opacity-50' : 'cursor-pointer'}`}>
+                  <label className="chip-check chip-check-block my-1 !items-center">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300"
                       disabled={already}
                       checked={already || selected.has(c.id)}
                       onChange={(e) =>
@@ -609,16 +608,16 @@ function AddMonsterDialog({ open, encId, storyId, allied = false, onClose, onDon
           <textarea id="m-desc" className="input min-h-[3rem]" rows={3} value={description} maxLength={5000} onChange={(e) => setDescription(e.target.value)} />
           <p className="mt-1 text-xs text-parchment-700 dark:text-parchment-400">{t('bestiary.dmOnlyHint')}</p>
         </div>
-        <label className="flex cursor-pointer items-start gap-2 text-sm">
-          <input type="checkbox" className="mt-1 h-4 w-4 accent-parchment-800 dark:accent-parchment-300" checked={hide} onChange={(e) => setHide(e.target.checked)} />
+        <label className="chip-check chip-check-block">
+          <input type="checkbox" checked={hide} onChange={(e) => setHide(e.target.checked)} />
           <span>
             {t('combat.hideStatsLabel')}
-            <span className="block text-xs text-parchment-700 dark:text-parchment-400">{t('combat.hideStatsHint')}</span>
+            <span className="block text-xs opacity-75">{t('combat.hideStatsHint')}</span>
           </span>
         </label>
         {!templateId && (
-          <label className="flex cursor-pointer items-start gap-2 text-sm">
-            <input type="checkbox" className="mt-1 h-4 w-4 accent-parchment-800 dark:accent-parchment-300" checked={save} onChange={(e) => setSave(e.target.checked)} />
+          <label className="chip-check chip-check-block">
+            <input type="checkbox" checked={save} onChange={(e) => setSave(e.target.checked)} />
             <span>{t('bestiary.saveAsTemplate')}</span>
           </label>
         )}

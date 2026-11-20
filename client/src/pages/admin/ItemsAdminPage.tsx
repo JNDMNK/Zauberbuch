@@ -122,8 +122,8 @@ export function ItemsAdminPage() {
           <input type="search" className="input !pl-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('items.search')} aria-label={t('common.search')} />
         </div>
         {storyId && (
-          <label className="flex cursor-pointer items-center gap-2 text-sm">
-            <input type="checkbox" className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300" checked={onlyStory} onChange={(e) => setOnlyStory(e.target.checked)} />
+          <label className="chip-check">
+            <input type="checkbox" checked={onlyStory} onChange={(e) => setOnlyStory(e.target.checked)} />
             {t('items.onlyThisStory')}
           </label>
         )}
@@ -239,18 +239,17 @@ function HolderAssign({
       {characters.length === 0 ? (
         <p className="text-sm italic">{t('items.noCharacters')}</p>
       ) : (
-        <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+        <div className="flex flex-wrap gap-2">
           {characters.map((c) => (
-            <label key={c.id} className="flex cursor-pointer items-center gap-2 text-sm">
+            <label key={c.id} className="chip-check">
               <input
                 type="checkbox"
-                className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300"
                 checked={holders.has(c.id)}
                 disabled={busy !== null}
                 onChange={(e) => toggle(c.id, e.target.checked)}
               />
               <span>
-                <span className="font-semibold">{c.name}</span> <span className="text-xs text-parchment-700 dark:text-parchment-400">({c.owner})</span>
+                <span className="font-semibold">{c.name}</span> <span className="text-xs opacity-70">({c.owner})</span>
               </span>
               {busy === c.id && <Spinner className="h-3.5 w-3.5" />}
             </label>
@@ -349,8 +348,8 @@ function ItemDialog({
           </div>
         </div>
         <div>
-          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
-            <input id="item-attunement" type="checkbox" className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300" checked={attunement} onChange={(e) => setAttunement(e.target.checked)} />
+          <label className="chip-check font-semibold">
+            <input id="item-attunement" type="checkbox" checked={attunement} onChange={(e) => setAttunement(e.target.checked)} />
             {t('items.requiresAttunement')}
           </label>
           <p className="mt-0.5 text-xs text-parchment-700 dark:text-parchment-400">{t('items.attunementHint')}</p>
@@ -370,12 +369,11 @@ function ItemDialog({
             {characters.length === 0 ? (
               <p className="text-sm italic">{t('items.noCharacters')}</p>
             ) : (
-              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+              <div className="flex flex-wrap gap-2">
                 {characters.map((c) => (
-                  <label key={c.id} className="flex cursor-pointer items-center gap-2 text-sm">
+                  <label key={c.id} className="chip-check">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300"
                       checked={holders.has(c.id)}
                       onChange={(e) =>
                         setHolders((prev) => {
@@ -387,7 +385,7 @@ function ItemDialog({
                       }
                     />
                     <span>
-                      <span className="font-semibold">{c.name}</span> <span className="text-xs text-parchment-700 dark:text-parchment-400">({c.owner})</span>
+                      <span className="font-semibold">{c.name}</span> <span className="text-xs opacity-70">({c.owner})</span>
                     </span>
                   </label>
                 ))}

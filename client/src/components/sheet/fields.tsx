@@ -116,7 +116,7 @@ export function CheckField({ path, label, className = '' }: { path: Path; label:
         type="checkbox"
         checked={Boolean(getIn(sheet, path))}
         onChange={(e) => set(path, e.target.checked)}
-        className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300"
+        className="chip-dot"
       />
       {label}
     </label>

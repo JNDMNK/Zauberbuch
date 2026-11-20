@@ -353,19 +353,18 @@ function ConditionPicker({ selected, onChange, onClose }: { selected: Condition[
     };
   }, [onClose]);
   return (
-    <div ref={ref} className="parchment absolute bottom-full left-0 z-30 mb-1 grid w-64 grid-cols-2 gap-x-3 gap-y-1 p-3 text-sm">
+    <div ref={ref} className="parchment absolute bottom-full left-0 z-30 mb-1 flex w-72 flex-wrap gap-1.5 p-3 text-sm">
       {CONDITIONS.map((cond) => (
-        <label key={cond} className="flex cursor-pointer items-center gap-1.5">
+        <label key={cond} className="chip-check !px-2.5 !py-0.5">
           <input
             type="checkbox"
-            className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300"
             checked={sel.includes(cond)}
             onChange={(e) => toggle(cond, e.target.checked)}
           />
           {t(`combat.conditions.${cond}`)}
         </label>
       ))}
-      <button type="button" className="btn-ghost col-span-2 mt-1 justify-center !py-1 text-xs" onClick={onClose}>
+      <button type="button" className="btn-ghost mt-1 w-full justify-center !py-1 text-xs" onClick={onClose}>
         <Plus className="h-3.5 w-3.5 rotate-45" />
         {t('common.close')}
       </button>

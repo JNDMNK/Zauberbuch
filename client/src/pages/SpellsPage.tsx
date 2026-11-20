@@ -145,10 +145,9 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
                 </button>
               )}
             </div>
-            <label className="mt-1.5 inline-flex cursor-pointer items-center gap-2 text-sm text-parchment-800 dark:text-parchment-300">
+            <label className="chip-check mt-2">
               <input
                 type="checkbox"
-                className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300"
                 checked={filters.nameOnly}
                 onChange={(e) => update({ ...filters, q: query, nameOnly: e.target.checked }, true)}
               />
