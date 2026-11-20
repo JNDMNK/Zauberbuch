@@ -519,3 +519,19 @@ model DmNote {
 
   @@index([storyId, position])
 }
+
+/// Wiki (Völker und Klassen nach SRD): für alle lesbar, bearbeitbar von Admin und Moderator
+model WikiEntry {
+  id          String   @id @default(cuid())
+  kind        String // race | class
+  name        String
+  summary     String   @default("")
+  description String   @default("")
+  /// Detailfelder je Rubrik als JSON
+  data        String   @default("{}")
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([kind, name])
+}

@@ -22,6 +22,7 @@ import { SpellbooksPage, UserSpellbookPage } from './pages/admin/SpellbooksPage'
 import { CharactersPage } from './pages/CharactersPage';
 import { CharacterSheetPage } from './pages/CharacterSheetPage';
 import { BoardPage } from './pages/BoardPage';
+import { WikiPage } from './pages/WikiPage';
 import { BoardTrashPage } from './pages/BoardTrashPage';
 import { CombatPage } from './pages/CombatPage';
 import { EncounterPage } from './pages/EncounterPage';
@@ -63,6 +64,7 @@ export default function App() {
               }
             />
             <Route path="board/:storyId" element={<BoardPage />} />
+            <Route path="wiki" element={<WikiPage />} />
             <Route path="combat" element={<CombatPage />} />
             <Route path="combat/bestiary" element={<BestiaryPage />} />
             <Route path="combat/:id" element={<EncounterPage />} />

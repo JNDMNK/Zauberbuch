@@ -25,6 +25,7 @@ import { storiesRouter } from './routes/stories';
 import { itemsRouter } from './routes/items';
 import { catalogRouter } from './routes/catalog';
 import { dmNotesRouter } from './routes/dmnotes';
+import { wikiRouter } from './routes/wiki';
 
 const LARGE_BODY_PATHS = new Set(['/api/characters/import', '/api/characters/import/preview']);
 
@@ -108,6 +109,7 @@ export function createApp(options: { accessLog?: boolean } = {}) {
   api.use('/items', itemsRouter);
   api.use('/catalog', catalogRouter);
   api.use('/dm-notes', dmNotesRouter);
+  api.use('/wiki', wikiRouter);
 
   api.use((_req, _res, next) => next(new HttpError(404, 'not_found', 'API route not found')));
 

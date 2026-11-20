@@ -19,7 +19,8 @@
     "board": "Info board",
     "combat": "Combat",
     "allSpells": "All spells",
-    "spellbooks": "Players' spellbooks"
+    "spellbooks": "Players' spellbooks",
+    "wiki": "Wiki"
   },
   "common": {
     "save": "Save",
@@ -1157,5 +1158,74 @@
     "title": "Section",
     "titlePlaceholder": "e.g. Village A",
     "body": "Notes"
+  },
+  "wiki": {
+    "title": "Wiki",
+    "hint": "Reference for races and classes based on the System Reference Document 5.1. Click a card for all details.",
+    "search": "Search the wiki …",
+    "empty": "No entries yet.",
+    "kinds": {
+      "race": "Races",
+      "class": "Classes"
+    },
+    "new": {
+      "race": "New race",
+      "class": "New class"
+    },
+    "edit": "Edit “{{name}}”",
+    "name": "Name",
+    "summary": "Summary",
+    "summaryPlaceholder": "One sentence for the card",
+    "description": "Description",
+    "level": "Level",
+    "levelShort": "{{n}}",
+    "saved": "Entry saved",
+    "deleted": "Entry deleted",
+    "deleteTitle": "Delete entry?",
+    "deleteText": "“{{name}}” will be removed from the wiki for all users.",
+    "updated": "Last changed {{date}} by {{user}}",
+    "srdNote": "Based on the System Reference Document 5.1 by Wizards of the Coast LLC, licensed under CC-BY-4.0.",
+    "race": {
+      "traitsTitle": "Racial traits",
+      "abilityIncrease": "Ability score increase",
+      "abilityIncreaseShort": "Abilities",
+      "age": "Age",
+      "alignment": "Alignment",
+      "size": "Size",
+      "speed": "Speed",
+      "languages": "Languages",
+      "traits": "Traits",
+      "subraces": "Subraces",
+      "subraceName": "Subrace"
+    },
+    "class": {
+      "hitPoints": "Hit points",
+      "hitDie": "Hit die",
+      "hpFirst": "HP at 1st level",
+      "hpHigher": "HP at higher levels",
+      "primaryAbility": "Primary ability",
+      "proficiencies": "Proficiencies",
+      "armor": "Armor",
+      "weapons": "Weapons",
+      "tools": "Tools",
+      "saves": "Saving throws",
+      "skills": "Skills",
+      "equipment": "Equipment",
+      "spellcasting": "Spellcasting",
+      "features": "Class features",
+      "subclasses": "Subclasses",
+      "subclassTitle": "Name for subclasses",
+      "subclassTitlePlaceholder": "e.g. Arcane Tradition",
+      "subclassName": "Subclass"
+    },
+    "form": {
+      "traitName": "Trait name",
+      "traitText": "Description (Markdown supported)",
+      "featureName": "Feature name",
+      "addTrait": "Add trait",
+      "addFeature": "Add class feature",
+      "addSubrace": "Add subrace",
+      "addSubclass": "Add subclass"
+    }
   }
 }

@@ -11,6 +11,7 @@ export const CSRF = { 'X-Requested-With': 'zauberbuch' };
 
 export async function resetDb({ seed = false } = {}) {
   await prisma.dmNote.deleteMany();
+  await prisma.wikiEntry.deleteMany();
   await prisma.catalogItem.deleteMany({ where: { storyId: { not: null } } });
   await prisma.catalogItem.deleteMany();
   await prisma.magicItemHolder.deleteMany();

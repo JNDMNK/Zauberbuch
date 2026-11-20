@@ -9,3 +9,4 @@ export * from './lifestyle';
 export * from './items';
 export * from './catalog';
 export * from './dmnotes';
+export * from './wiki';

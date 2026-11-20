@@ -1,4 +1,6 @@
 import type {
+  WikiEntryDto,
+  WikiEntryInput,
   DmNoteDto,
   DmNoteInput,
   AddMonsterInput,
@@ -226,6 +228,10 @@ export const api = {
   createItem: (input: MagicItemInput) => request<{ item: MagicItemDto }>('POST', '/api/items', input),
   setItemHolders: (id: string, storyId: string, holderIds: string[]) => request<{ item: MagicItemDto }>('PUT', `/api/items/${id}/holders`, { storyId, holderIds }),
   updateItem: (id: string, input: MagicItemInput) => request<{ item: MagicItemDto }>('PUT', `/api/items/${id}`, input),
+  wiki: () => request<{ entries: WikiEntryDto[] }>('GET', '/api/wiki'),
+  createWiki: (input: WikiEntryInput) => request<{ entry: WikiEntryDto }>('POST', '/api/wiki', input),
+  updateWiki: (id: string, input: WikiEntryInput) => request<{ entry: WikiEntryDto }>('PUT', `/api/wiki/${id}`, input),
+  deleteWiki: (id: string) => request<void>('DELETE', `/api/wiki/${id}`),
   dmNotes: (storyId: string) => request<{ notes: DmNoteDto[] }>('GET', `/api/dm-notes/stories/${storyId}`),
   createDmNote: (storyId: string, input: DmNoteInput) => request<{ note: DmNoteDto }>('POST', `/api/dm-notes/stories/${storyId}`, input),
   updateDmNote: (id: string, input: DmNoteInput) => request<{ note: DmNoteDto }>('PUT', `/api/dm-notes/${id}`, input),

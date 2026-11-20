@@ -319,6 +319,22 @@ Format:
 
 `data` ist der komplette Bogen; fehlende Felder werden mit Standardwerten gefüllt.
 
+## Wiki
+
+- Hauptmenüpunkt **„Wiki“** (für alle angemeldeten Benutzer) mit den Rubriken **Völker** und **Klassen** in
+  Kartenansicht; Suche über alle Felder, ein Klick auf die Karte zeigt den vollständigen Eintrag (direkt verlinkbar
+  über `?tab=class&entry=…`).
+- Felder nach dem **System Reference Document 5.1**:
+  - **Volk:** Attributswerterhöhung, Alter, Gesinnung, Größe, Bewegungsrate, Sprachen, Merkmale (Name + Text) und
+    Unterrassen (Name, Attributswerterhöhung, Beschreibung, eigene Merkmale).
+  - **Klasse:** Trefferwürfel, TP auf der 1. und auf höheren Stufen, primäres Attribut, Übung (Rüstung, Waffen,
+    Werkzeuge, Rettungswürfe, Fertigkeiten), Ausrüstung, Zauberwirken, Klassenmerkmale je Stufe sowie Unterklassen
+    (Bezeichnung, z. B. „Arkane Tradition“, mit eigenen Merkmalen je Stufe).
+  - Dazu Kurzbeschreibung (für die Karte) und Beschreibung; Texte unterstützen Markdown.
+- Beim ersten Start ist das Wiki mit den **9 Völkern und 12 Klassen des SRD 5.1** befüllt (deutsche Zusammenfassung;
+  SRD 5.1 von Wizards of the Coast LLC, lizenziert unter CC-BY-4.0).
+- Einträge anlegen, bearbeiten und löschen dürfen nur **Admin und Moderator**.
+
 ## Infotafel
 
 Unter **Infotafel** halten die Spieler wichtige Infos zum Spiel fest – Termine, Orte, NSCs, Quests, Gegenstände,
@@ -703,6 +719,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET`/`POST /api/bestiary/dm?storyId=` · `GET`/`PUT`/`DELETE /api/bestiary/dm/:id?storyId=` | DM der angegebenen Geschichte | DM-Datenbank (Vorlagen) |
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
+| `GET /api/wiki` · `POST /api/wiki` · `PUT`/`DELETE /api/wiki/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Wiki (`{ kind: 'race' \| 'class', name, summary?, description?, data }`) |
 | `GET`/`POST /api/dm-notes/stories/:storyId` · `PUT …/order` · `PUT`/`DELETE /api/dm-notes/:id` | DM der Geschichte | DM-Notizen (`{ title, body? }`; Reihenfolge `{ ids }`) |
 | `GET /api/catalog?storyId=` | angemeldet | Wirksame Gegenstands-Datenbank (Standard bzw. Geschichte) |
 | `POST /api/catalog/standard` · `PUT`/`DELETE /api/catalog/:id` | Moderator/Admin | Standard-Datenbank bzw. eigene Einträge bearbeiten (`{ category, name, description?, weight?, value?, ac?, strength?, damageDice?, damageType? }`) |

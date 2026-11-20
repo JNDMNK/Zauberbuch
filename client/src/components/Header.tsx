@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BookHeart, BookOpen, ChevronDown, Library, LogOut, Menu, MessagesSquare, Moon, ScrollText, Settings, Shield, Sun, Swords, UserRound, X } from 'lucide-react';
+import { BookHeart, BookOpen, ChevronDown, Library, LogOut, Menu, MessagesSquare, Moon, ScrollText, Settings, Shield, Sun, Swords, UserRound, X, BookOpenText } from 'lucide-react';
 import { LOCALES } from '@zauberbuch/shared';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -204,6 +204,10 @@ export function Header() {
         <Swords className="h-4 w-4" />
         {t('nav.combat')}
         {combatDot}
+      </NavLink>
+      <NavLink to="/wiki" className={navCls}>
+        <BookOpenText className="h-4 w-4" />
+        {t('nav.wiki')}
       </NavLink>
     </>
   );
