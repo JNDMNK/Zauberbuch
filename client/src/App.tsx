@@ -97,7 +97,7 @@ export default function App() {
               <Route path="spells/new" element={<RequireAuth allow={canWriteSpells}><SpellFormPage key="new" /></RequireAuth>} />
               <Route path="spells/:slug/edit" element={<RequireAuth allow={canWriteSpells}><SpellFormPage /></RequireAuth>} />
               <Route path="items" element={<ItemsAdminPage />} />
-              <Route path="catalog" element={<Navigate to="/wiki?tab=items" replace />} />
+              <Route path="catalog" element={<Navigate to="/wiki?tab=weapon" replace />} />
               <Route
                 path="stories"
                 element={

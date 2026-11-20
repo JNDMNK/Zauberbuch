@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Footprints, GraduationCap, Heart, Package, Pencil, Plus, Search, Shield, Trash2, Users2 } from 'lucide-react';
-import { WIKI_KINDS, type WikiEntryDto, type WikiKind } from '@zauberbuch/shared';
+import { Footprints, GraduationCap, Heart, Pencil, Plus, Search, Shield, Trash2, Users2 } from 'lucide-react';
+import { CATALOG_CATEGORIES, WIKI_KINDS, type CatalogCategory, type CatalogItemDto, type WikiEntryDto, type WikiKind } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
 import { useAuth } from '../context/AuthContext';
@@ -13,9 +13,11 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { WikiDetail } from '../components/wiki/WikiDetail';
 import { WikiForm } from '../components/wiki/WikiForm';
 import { CatalogManager } from '../components/catalog/CatalogManager';
+import { CATEGORY_ICON } from '../components/catalog/CatalogCard';
 
-/** Reiter des Wikis: Völker, Klassen und die Gegenstands-Datenbank (Rüstung, Waffen, Gegenstände) */
-const TABS = [...WIKI_KINDS, 'items'] as const;
+/** Reiter des Wikis: Völker, Klassen und die Kategorien der Gegenstands-Datenbank (Rüstung, Waffen, Gegenstände) */
+const TABS = [...WIKI_KINDS, ...CATALOG_CATEGORIES] as const;
+const isCatalog = (t: string): t is CatalogCategory => (CATALOG_CATEGORIES as readonly string[]).includes(t);
 type Tab = (typeof TABS)[number];
 
 const KIND_ICON: Record<WikiKind, typeof Users2> = { race: Users2, class: GraduationCap };
@@ -39,6 +41,18 @@ export function WikiPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const openId = params.get('entry');
+  // Zähler der Gegenstands-Datenbank für die Reiter
+  const [catalogCounts, setCatalogCounts] = useState<Record<CatalogCategory, number> | null>(null);
+  const countCatalog = useCallback(
+    (items: CatalogItemDto[]) => setCatalogCounts(Object.fromEntries(CATALOG_CATEGORIES.map((c) => [c, items.filter((i) => i.category === c).length])) as Record<CatalogCategory, number>),
+    [],
+  );
+  useEffect(() => {
+    api
+      .catalog()
+      .then((r) => countCatalog(r.items))
+      .catch(() => undefined);
+  }, [countCatalog]);
 
   const load = useCallback(() => {
     api
@@ -102,7 +116,7 @@ export function WikiPage() {
       </div>
       <nav className="flex gap-1 overflow-x-auto border-b border-parchment-400/60 dark:border-night-700" aria-label={t('wiki.title')}>
         {TABS.map((k) => {
-          const Icon = k === 'items' ? Package : KIND_ICON[k];
+          const Icon = isCatalog(k) ? CATEGORY_ICON[k] : KIND_ICON[k];
           return (
             <button
               key={k}
@@ -116,15 +130,15 @@ export function WikiPage() {
               }`}
             >
               <Icon className="h-4 w-4" />
-              {k === 'items' ? t('wiki.kinds.items') : `${t(`wiki.kinds.${k}`)} (${counts[k]})`}
+              {isCatalog(k) ? `${t(`catalog.categories.${k}`)}${catalogCounts ? ` (${catalogCounts[k]})` : ''}` : `${t(`wiki.kinds.${k}`)} (${counts[k]})`}
             </button>
           );
         })}
       </nav>
-      {tab === 'items' ? (
+      {isCatalog(tab) ? (
         <div className="space-y-3">
           <p className="text-sm text-parchment-700 dark:text-parchment-400">{isEditor ? t('catalog.standardHint') : t('wiki.itemsHint')}</p>
-          <CatalogManager readOnly={!isEditor} />
+          <CatalogManager key={tab} category={tab} readOnly={!isEditor} onItems={countCatalog} />
         </div>
       ) : (
         <>

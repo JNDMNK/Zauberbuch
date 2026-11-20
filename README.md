@@ -207,7 +207,7 @@ anderen Zeilen gesperrt.
 
 ### Gegenstände (Rüstung, Waffen, Ausrüstung)
 
-- **Wiki → Gegenstände** (für alle lesbar, bearbeitbar von Admin und Moderator) ist die **Standard-Datenbank**, aufgeteilt in die Unterreiter
+- **Wiki → Rüstung / Waffen / Gegenstände** (für alle lesbar, bearbeitbar von Admin und Moderator) ist die **Standard-Datenbank**, aufgeteilt in die Reiter
   **Rüstung**, **Waffen** und **Gegenstände** in Kartenansicht mit Suche. Sie ist mit einer SRD-Grundausstattung
   vorbefüllt (Waffen, Rüstungen, Abenteurerausrüstung, Heiltränke).
   - Alle Einträge haben einen **Wert** (Freitext, z. B. „5 GM“); die Grundausstattung bringt die SRD-Preise mit.
@@ -321,8 +321,8 @@ Format:
 
 ## Wiki
 
-- Hauptmenüpunkt **„Wiki“** (für alle angemeldeten Benutzer) mit den Rubriken **Völker**, **Klassen** und
-  **Gegenstände** (Rüstung/Waffen/Ausrüstung, siehe unten) in Kartenansicht; Suche über alle Felder, ein Klick auf die Karte zeigt den vollständigen Eintrag (direkt verlinkbar
+- Hauptmenüpunkt **„Wiki“** (für alle angemeldeten Benutzer) mit den Reitern **Völker**, **Klassen**,
+  **Rüstung**, **Waffen** und **Gegenstände** (Gegenstands-Datenbank, siehe oben) in Kartenansicht; Suche über alle Felder, ein Klick auf die Karte zeigt den vollständigen Eintrag (direkt verlinkbar
   über `?tab=class&entry=…`).
 - Felder nach dem **System Reference Document 5.1**:
   - **Volk:** Attributswerterhöhung, Alter, Gesinnung, Größe, Bewegungsrate, Sprachen, Merkmale (Name + Text) und

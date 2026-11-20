@@ -15,11 +15,24 @@ import { CatalogItemDialog } from './CatalogItemDialog';
  * Ohne storyId die Standard-Datenbank; mit storyId die Liste der Geschichte (erbt den Standard, Einträge lassen sich
  * anpassen, ausblenden, zurücksetzen und eigene hinzufügen).
  */
-export function CatalogManager({ storyId, readOnly = false }: { storyId?: string; readOnly?: boolean }) {
+export function CatalogManager({
+  storyId,
+  readOnly = false,
+  category: fixedCategory,
+  onItems,
+}: {
+  storyId?: string;
+  readOnly?: boolean;
+  /** Feste Kategorie (z. B. im Wiki): dann ohne eigene Unterreiter */
+  category?: CatalogCategory;
+  /** Meldet die geladene Liste (z. B. für Zähler außerhalb) */
+  onItems?: (items: CatalogItemDto[]) => void;
+}) {
   const { t } = useTranslation();
   const toast = useToast();
   const [items, setItems] = useState<CatalogItemDto[] | null>(null);
-  const [category, setCategory] = useState<CatalogCategory>('weapon');
+  const [ownCategory, setCategory] = useState<CatalogCategory>('weapon');
+  const category = fixedCategory ?? ownCategory;
   const [q, setQ] = useState('');
   const [editing, setEditing] = useState<CatalogItemDto | 'new' | null>(null);
   const [confirm, setConfirm] = useState<{ kind: 'delete' | 'revert'; item: CatalogItemDto } | null>(null);
@@ -28,17 +41,18 @@ export function CatalogManager({ storyId, readOnly = false }: { storyId?: string
 
   const load = useCallback(() => {
     (storyId ? api.storyCatalog(storyId) : api.catalog())
-      .then((r) => setItems(r.items))
+      .then((r) => {
+        setItems(r.items);
+        onItems?.(r.items);
+      })
       .catch(setError);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storyId]);
   useEffect(load, [load]);
 
   const needle = q.trim().toLocaleLowerCase('de');
   const counts = useMemo(() => Object.fromEntries(CATALOG_CATEGORIES.map((c) => [c, (items ?? []).filter((i) => i.category === c && !i.hidden).length])), [items]);
-  const shown = useMemo(
-    () => (items ?? []).filter((i) => i.category === category && (!needle || `${i.name}\n${i.description}`.toLocaleLowerCase('de').includes(needle))),
-    [items, category, needle],
-  );
+  const shown = useMemo(() => (items ?? []).filter((i) => i.category === category && (!needle || `${i.name}\n${i.description}`.toLocaleLowerCase('de').includes(needle))), [items, category, needle]);
 
   const act = async (fn: () => Promise<unknown>, msg: string) => {
     try {
@@ -94,7 +108,13 @@ export function CatalogManager({ storyId, readOnly = false }: { storyId?: string
     const btn = 'btn-icon';
     if (storyId && i.hidden) {
       return (
-        <button type="button" className={btn} onClick={() => act(() => api.revertCatalogItem(storyId, i.id), t('catalog.shown'))} title={t('catalog.show')} aria-label={`${t('catalog.show')}: ${i.name}`}>
+        <button
+          type="button"
+          className={btn}
+          onClick={() => act(() => api.revertCatalogItem(storyId, i.id), t('catalog.shown'))}
+          title={t('catalog.show')}
+          aria-label={`${t('catalog.show')}: ${i.name}`}
+        >
           <Eye className="h-4 w-4" />
         </button>
       );
@@ -105,7 +125,13 @@ export function CatalogManager({ storyId, readOnly = false }: { storyId?: string
           <Pencil className="h-4 w-4" />
         </button>
         {storyId && i.origin === 'standard' && (
-          <button type="button" className={btn} onClick={() => act(() => api.hideCatalogItem(storyId, i.id), t('catalog.hiddenDone'))} title={t('catalog.hide')} aria-label={`${t('catalog.hide')}: ${i.name}`}>
+          <button
+            type="button"
+            className={btn}
+            onClick={() => act(() => api.hideCatalogItem(storyId, i.id), t('catalog.hiddenDone'))}
+            title={t('catalog.hide')}
+            aria-label={`${t('catalog.hide')}: ${i.name}`}
+          >
             <EyeOff className="h-4 w-4" />
           </button>
         )}
@@ -115,7 +141,13 @@ export function CatalogManager({ storyId, readOnly = false }: { storyId?: string
           </button>
         )}
         {(!storyId || i.origin === 'story') && (
-          <button type="button" className={`${btn} text-red-700 dark:text-red-400`} onClick={() => setConfirm({ kind: 'delete', item: i })} title={t('common.delete')} aria-label={`${t('common.delete')}: ${i.name}`}>
+          <button
+            type="button"
+            className={`${btn} text-red-700 dark:text-red-400`}
+            onClick={() => setConfirm({ kind: 'delete', item: i })}
+            title={t('common.delete')}
+            aria-label={`${t('common.delete')}: ${i.name}`}
+          >
             <Trash2 className="h-4 w-4" />
           </button>
         )}
@@ -125,25 +157,29 @@ export function CatalogManager({ storyId, readOnly = false }: { storyId?: string
 
   return (
     <div className="space-y-4">
-      <nav className="flex gap-1 overflow-x-auto border-b border-parchment-400/60 dark:border-night-700" aria-label={t('catalog.title')}>
-        {CATALOG_CATEGORIES.map((c) => {
-          const Icon = CATEGORY_ICON[c];
-          return (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setCategory(c)}
-              aria-pressed={category === c}
-              className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-2 font-display text-sm font-semibold ${
-                category === c ? 'border-parchment-800 text-ink dark:border-parchment-300 dark:text-parchment-50' : 'border-transparent text-parchment-700 hover:text-ink dark:text-parchment-400 dark:hover:text-parchment-100'
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              {t(`catalog.categories.${c}`)} ({counts[c]})
-            </button>
-          );
-        })}
-      </nav>
+      {!fixedCategory && (
+        <nav className="flex gap-1 overflow-x-auto border-b border-parchment-400/60 dark:border-night-700" aria-label={t('catalog.title')}>
+          {CATALOG_CATEGORIES.map((c) => {
+            const Icon = CATEGORY_ICON[c];
+            return (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCategory(c)}
+                aria-pressed={category === c}
+                className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-2 font-display text-sm font-semibold ${
+                  category === c
+                    ? 'border-parchment-800 text-ink dark:border-parchment-300 dark:text-parchment-50'
+                    : 'border-transparent text-parchment-700 hover:text-ink dark:text-parchment-400 dark:hover:text-parchment-100'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {t(`catalog.categories.${c}`)} ({counts[c]})
+              </button>
+            );
+          })}
+        </nav>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-[14rem] flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-600" />
@@ -167,11 +203,23 @@ export function CatalogManager({ storyId, readOnly = false }: { storyId?: string
           ))}
         </ul>
       )}
-      <CatalogItemDialog open={editing !== null} category={editing && editing !== 'new' ? editing.category : category} item={editing === 'new' ? null : editing} onClose={() => setEditing(null)} onSave={save} />
+      <CatalogItemDialog
+        open={editing !== null}
+        category={editing && editing !== 'new' ? editing.category : category}
+        item={editing === 'new' ? null : editing}
+        onClose={() => setEditing(null)}
+        onSave={save}
+      />
       <ConfirmDialog
         open={!!confirm}
         title={confirm?.kind === 'delete' ? t('catalog.deleteTitle') : t('catalog.revertTitle')}
-        message={confirm?.kind === 'delete' ? (storyId ? t('catalog.deleteStoryText', { name: confirm.item.name }) : t('catalog.deleteText', { name: confirm?.item.name ?? '' })) : t('catalog.revertText', { name: confirm?.item.name ?? '' })}
+        message={
+          confirm?.kind === 'delete'
+            ? storyId
+              ? t('catalog.deleteStoryText', { name: confirm.item.name })
+              : t('catalog.deleteText', { name: confirm?.item.name ?? '' })
+            : t('catalog.revertText', { name: confirm?.item.name ?? '' })
+        }
         busy={busy}
         danger={confirm?.kind === 'delete'}
         onConfirm={runConfirm}
