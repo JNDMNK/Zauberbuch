@@ -1088,7 +1088,7 @@
   "catalog": {
     "title": "Gegenstände",
     "standardTitle": "Gegenstände – Standard-Datenbank",
-    "standardHint": "Rüstung, Waffen und Gegenstände für alle Charakterbögen ohne Geschichte. Geschichten erben diese Datenbank und können sie unter Verwaltung → Geschichten → Geschichte bearbeiten anpassen. Vorbefüllt mit der 5e-Grundausstattung (SRD).",
+    "standardHint": "Standard-Datenbank für Rüstung, Waffen und Gegenstände – gilt für alle Charakterbögen ohne Geschichte. Geschichten erben sie und können sie unter Verwaltung → Geschichten → Geschichte bearbeiten anpassen. Vorbefüllt mit der 5e-Grundausstattung (SRD).",
     "storyTitle": "Gegenstände (Rüstung, Waffen, Gegenstände)",
     "storyHint": "Diese Geschichte nutzt die Standard-Datenbank. Einträge lassen sich hier für diese Geschichte anpassen (✎), ausblenden (Auge) oder zurücksetzen, eigene kommen dazu. Änderungen werden sofort gespeichert; spätere Änderungen am Standard kommen automatisch an, außer ein Eintrag wurde angepasst.",
     "storyAfterCreate": "Nach dem Anlegen der Geschichte können hier die Gegenstände angepasst werden.",
@@ -1161,12 +1161,13 @@
   },
   "wiki": {
     "title": "Wiki",
-    "hint": "Nachschlagewerk zu Völkern und Klassen nach dem System Reference Document 5.1. Karte anklicken für alle Details.",
+    "hint": "Nachschlagewerk zu Völkern, Klassen und Gegenständen nach dem System Reference Document 5.1. Karte anklicken für alle Details.",
     "search": "Wiki durchsuchen …",
     "empty": "Noch keine Einträge.",
     "kinds": {
       "race": "Völker",
-      "class": "Klassen"
+      "class": "Klassen",
+      "items": "Gegenstände"
     },
     "new": {
       "race": "Neues Volk",
@@ -1226,6 +1227,7 @@
       "addFeature": "Klassenmerkmal hinzufügen",
       "addSubrace": "Unterrasse hinzufügen",
       "addSubclass": "Unterklasse hinzufügen"
-    }
+    },
+    "itemsHint": "Rüstung, Waffen und Ausrüstung – diese Datenbank nutzen die Charakterbögen für die Vorschläge im Inventar. Geschichten können sie für sich anpassen."
   }
 }

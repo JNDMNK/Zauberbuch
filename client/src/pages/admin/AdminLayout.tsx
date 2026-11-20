@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, FileJson, Gem, Package, ScrollText, Users } from 'lucide-react';
+import { BookOpen, FileJson, Gem, ScrollText, Users } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export function AdminLayout() {
@@ -24,12 +24,6 @@ export function AdminLayout() {
           <NavLink to="/admin/stories" className={cls}>
             <BookOpen className="h-4 w-4" />
             {t('admin.stories')}
-          </NavLink>
-        )}
-        {isEditor && (
-          <NavLink to="/admin/catalog" className={cls}>
-            <Package className="h-4 w-4" />
-            {t('admin.catalog')}
           </NavLink>
         )}
         {(isEditor || isStoryDm) && (

@@ -14,7 +14,6 @@ import { ImportExportPage } from './pages/admin/ImportExportPage';
 import { UsersPage } from './pages/admin/UsersPage';
 import { StoriesAdminPage } from './pages/admin/StoriesAdminPage';
 import { ItemsAdminPage } from './pages/admin/ItemsAdminPage';
-import { CatalogAdminPage } from './pages/admin/CatalogAdminPage';
 import { useAuth } from './context/AuthContext';
 import { PageSpinner } from './components/ui';
 import type { ReactNode } from 'react';
@@ -98,7 +97,7 @@ export default function App() {
               <Route path="spells/new" element={<RequireAuth allow={canWriteSpells}><SpellFormPage key="new" /></RequireAuth>} />
               <Route path="spells/:slug/edit" element={<RequireAuth allow={canWriteSpells}><SpellFormPage /></RequireAuth>} />
               <Route path="items" element={<ItemsAdminPage />} />
-              <Route path="catalog" element={<RequireAuth roles={EDITOR_ROLES}><CatalogAdminPage /></RequireAuth>} />
+              <Route path="catalog" element={<Navigate to="/wiki?tab=items" replace />} />
               <Route
                 path="stories"
                 element={

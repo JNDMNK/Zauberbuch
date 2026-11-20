@@ -15,7 +15,7 @@ import { CatalogItemDialog } from './CatalogItemDialog';
  * Ohne storyId die Standard-Datenbank; mit storyId die Liste der Geschichte (erbt den Standard, Einträge lassen sich
  * anpassen, ausblenden, zurücksetzen und eigene hinzufügen).
  */
-export function CatalogManager({ storyId }: { storyId?: string }) {
+export function CatalogManager({ storyId, readOnly = false }: { storyId?: string; readOnly?: boolean }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [items, setItems] = useState<CatalogItemDto[] | null>(null);
@@ -90,6 +90,7 @@ export function CatalogManager({ storyId }: { storyId?: string }) {
   };
 
   const actions = (i: CatalogItemDto) => {
+    if (readOnly) return null;
     const btn = 'btn-icon';
     if (storyId && i.hidden) {
       return (
@@ -148,10 +149,12 @@ export function CatalogManager({ storyId }: { storyId?: string }) {
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-600" />
           <input type="search" className="input !pl-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('catalog.search')} aria-label={t('common.search')} />
         </div>
-        <button type="button" className="btn-primary" onClick={() => setEditing('new')}>
-          <Plus className="h-4 w-4" />
-          {t(`catalog.new.${category}`)}
-        </button>
+        {!readOnly && (
+          <button type="button" className="btn-primary shrink-0" onClick={() => setEditing('new')}>
+            <Plus className="h-4 w-4" />
+            {t(`catalog.new.${category}`)}
+          </button>
+        )}
       </div>
       {shown.length === 0 ? (
         <div className="parchment px-6 py-10 text-center italic">{needle ? t('search.noResults') : t('catalog.empty')}</div>
