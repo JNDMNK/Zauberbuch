@@ -122,7 +122,7 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
         </aside>
 
         <section className="min-w-0 flex-1" aria-label={t('common.search')}>
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start">
             <div className="flex-1">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-parchment-600" aria-hidden />
@@ -132,7 +132,7 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={filters.nameOnly ? t('search.placeholderName') : t('search.placeholder')}
                 aria-label={filters.nameOnly ? t('search.placeholderName') : t('search.placeholder')}
-                className="input !pl-10 !pr-10 text-lg"
+                className="input h-12 !pl-10 !pr-10 text-lg"
               />
               {query && (
                 <button
@@ -155,7 +155,8 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
               {t('search.nameOnly')}
             </label>
             </div>
-            <div className="flex items-center gap-2">
+            {/* gleiche Höhe wie das Suchfeld, oben bündig */}
+            <div className="flex h-12 items-stretch gap-2">
               <button type="button" className="btn-secondary lg:hidden" onClick={() => setMobileFilters(true)}>
                 <SlidersHorizontal className="h-4 w-4" />
                 {t('filter.title')}
@@ -166,7 +167,7 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
               </label>
               <select
                 id="sort"
-                className="input !w-auto"
+                className="input !h-full !w-auto"
                 value={filters.sort}
                 onChange={(e) => update({ ...filters, sort: e.target.value as SortField })}
               >
