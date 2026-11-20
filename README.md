@@ -225,11 +225,15 @@ anderen Zeilen gesperrt.
 
 ### Magische Gegenstände
 
-- **Verwaltung → Magische Gegenstände** (Admin, Moderator und die Dungeon Master der jeweiligen Geschichte – DMs
-  erreichen die Verwaltung dafür über das Benutzermenü): Geschichte wählen, Gegenstände mit **Name**,
-  **Beschreibung** (mit Textformatierung wie bei den Zaubern: Markdown mit Fett, Kursiv, Listen, Tabellen und
-  Vorschau), **Gewicht** (lb) und **Wert** (Freitext, z. B. „200 GM“) als Karten anlegen, durchsuchen und den **Charakterbögen** der Geschichte zuweisen – auch
-  mehreren gleichzeitig. Gegenstände ohne Besitzer liegen „beim DM“.
+- **Verwaltung → Magische Gegenstände** ist eine **allgemeine Datenbank für alle Geschichten**. Anlegen,
+  bearbeiten und löschen dürfen Admin, Moderatoren und **alle Dungeon Master** (DMs erreichen die Verwaltung über das
+  Benutzermenü). Gegenstände haben **Name**, **Beschreibung** (Markdown wie bei den Zaubern), **Gewicht** (lb),
+  **Wert** (Freitext, z. B. „200 GM“) und den Haken „Einstimmung benötigt“.
+- **Besitzer werden je Geschichte vergeben:** Oben „Besitzer vergeben in“ eine Geschichte wählen (DMs sehen nur die
+  Geschichten, die sie leiten; Admin/Moderator alle), dann die Charakterbögen dieser Geschichte ankreuzen – auch
+  mehrere. Derselbe Gegenstand kann so in mehreren Geschichten gleichzeitig vergeben sein; Besitzer aus Geschichten,
+  die man nicht leitet, erscheinen nur als Anzahl („+1 in einer anderen Geschichte“). Gegenstände ohne Besitzer in
+  der gewählten Geschichte liegen dort „beim DM“.
 - **Karten wie bei den Zaubern:** Name, Textvorschau, Wert, Gewicht und Besitzer; ein Klick auf die Karte zeigt den
   Gegenstand vollständig im Vordergrund (im Charakterbogen dort auch Weitergeben/Zurückgeben). In der Verwaltung
   lassen sich dort die **Besitzer direkt per Haken zuordnen** – ohne den Bearbeiten-Dialog, jede Änderung wird sofort
@@ -703,7 +707,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET /api/catalog?storyId=` | angemeldet | Wirksame Gegenstands-Datenbank (Standard bzw. Geschichte) |
 | `POST /api/catalog/standard` · `PUT`/`DELETE /api/catalog/:id` | Moderator/Admin | Standard-Datenbank bzw. eigene Einträge bearbeiten (`{ category, name, description?, weight?, value?, ac?, strength?, damageDice?, damageType? }`) |
 | `GET`/`POST /api/catalog/stories/:storyId` · `PUT`/`DELETE …/override/:baseId` · `POST …/hide/:baseId` | Moderator/Admin | Liste einer Geschichte: anpassen, zurücksetzen, ausblenden, eigene Einträge |
-| `GET /api/items/stories` · `GET`/`POST /api/items/stories/:storyId` · `PUT`/`DELETE /api/items/:id` | Moderator/Admin, DM der Geschichte | Magische Gegenstände verwalten (`{ name, description?, weight?, value?, attunement?, holderIds? }`) |
+| `GET /api/items/stories` · `GET`/`POST /api/items` · `PUT`/`DELETE /api/items/:id` · `PUT /api/items/:id/holders` | Moderator/Admin, alle DMs (Besitzer nur in eigenen Geschichten) | Allgemeine Datenbank (`{ name, description?, weight?, value?, attunement?, storyId?, holderIds? }`; Besitzer `{ storyId, holderIds }`) |
 | `GET /api/items/character/:characterId` · `POST /api/items/:id/transfer` | Besitzer/Mitbearbeiter (lesen auch DM) | Gegenstände eines Bogens; `{ fromCharacterId, toCharacterId \| null }` |
 | `GET /api/notifications` · `POST /api/notifications/read` · `DELETE /api/notifications` | User | Eigene Benachrichtigungen |
 | `GET /api/users` | Admin | Benutzerliste |

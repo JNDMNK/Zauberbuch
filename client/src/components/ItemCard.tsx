@@ -137,7 +137,14 @@ function ItemMeta({ item, labels = false }: { item: MagicItemDto; labels?: boole
 
 function Holders({ item, compact = false }: { item: MagicItemDto; compact?: boolean }) {
   const { t } = useTranslation();
-  if (item.holders.length === 0) return <span className="italic text-parchment-700 dark:text-parchment-400">{t('items.withDm')}</span>;
+  const others = item.otherHolders > 0 && <span className="text-xs italic text-parchment-700 dark:text-parchment-400">{t('items.otherHolders', { count: item.otherHolders })}</span>;
+  if (item.holders.length === 0)
+    return (
+      <span className={`flex flex-wrap items-center gap-1.5 ${compact ? 'ml-auto' : ''}`}>
+        <span className="italic text-parchment-700 dark:text-parchment-400">{t('items.withDm')}</span>
+        {others}
+      </span>
+    );
   return (
     <span className={`flex flex-wrap gap-1 ${compact ? 'ml-auto' : ''}`}>
       {item.holders.map((h) => (
@@ -146,6 +153,7 @@ function Holders({ item, compact = false }: { item: MagicItemDto; compact?: bool
           {compact ? h.name : `${h.name} · ${h.owner}`}
         </span>
       ))}
+      {others}
     </span>
   );
 }

@@ -13,8 +13,8 @@ import { ItemCard } from '../../components/ItemCard';
 import { MarkdownEditor } from '../../components/MarkdownEditor';
 
 /**
- * Verwaltung → Magische Gegenstände (Admin, Moderator, Dungeon Master der Geschichte):
- * Gegenstände je Geschichte anlegen und Charakterbögen (auch mehreren) zuweisen.
+ * Verwaltung → Magische Gegenstände (Admin, Moderator, alle Dungeon Master): eine Datenbank für alle Geschichten,
+ * Besitzer werden je Geschichte vergeben (Charakterbögen der gewählten Geschichte, auch mehrere).
  */
 export function ItemsAdminPage() {
   const { t } = useTranslation();
@@ -27,7 +27,9 @@ export function ItemsAdminPage() {
   const [editing, setEditing] = useState<MagicItemDto | 'new' | null>(null);
   const [toDelete, setToDelete] = useState<MagicItemDto | null>(null);
   const [busy, setBusy] = useState(false);
+  const [onlyStory, setOnlyStory] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  // Geschichte, in der Besitzer vergeben werden (die Datenbank selbst gilt für alle Geschichten)
   const storyId = params.get('story') ?? '';
 
   useEffect(() => {
@@ -41,23 +43,34 @@ export function ItemsAdminPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const load = useCallback(() => {
-    if (!storyId) return;
-    setItems(null);
+  const refreshCounts = () => {
     api
-      .storyItems(storyId)
+      .itemStories()
+      .then((r) => setStories(r.stories))
+      .catch(() => undefined);
+  };
+
+  const load = useCallback(() => {
+    if (!stories) return;
+    api
+      .items(storyId && stories.some((s) => s.id === storyId) ? storyId : null)
       .then((r) => {
         setItems(r.items);
         setCharacters(r.characters);
       })
       .catch(setError);
-  }, [storyId]);
+  }, [storyId, stories]);
   useEffect(load, [load]);
 
   const needle = q.trim().toLocaleLowerCase('de');
   const shown = useMemo(
-    () => (items ?? []).filter((i) => !needle || `${i.name}\n${i.description}\n${i.value}\n${i.holders.map((h) => `${h.name} ${h.owner}`).join(' ')}`.toLocaleLowerCase('de').includes(needle)),
-    [items, needle],
+    () =>
+      (items ?? []).filter(
+        (i) =>
+          (!onlyStory || !storyId || i.holders.some((h) => h.storyId === storyId)) &&
+          (!needle || `${i.name}\n${i.description}\n${i.value}\n${i.holders.map((h) => `${h.name} ${h.owner}`).join(' ')}`.toLocaleLowerCase('de').includes(needle)),
+      ),
+    [items, needle, onlyStory, storyId],
   );
 
   const remove = async () => {
@@ -77,7 +90,6 @@ export function ItemsAdminPage() {
 
   if (error) return <Alert>{errorMessage(t, error)}</Alert>;
   if (!stories) return <PageSpinner />;
-  if (stories.length === 0) return <Alert kind="info">{t('items.noStories')}</Alert>;
 
   return (
     <div className="space-y-4">
@@ -86,23 +98,35 @@ export function ItemsAdminPage() {
           <h2 className="text-xl font-bold">{t('items.title')}</h2>
           <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('items.hint')}</p>
         </div>
-        <button type="button" className="btn-primary" onClick={() => setEditing('new')} disabled={!storyId}>
+        <button type="button" className="btn-primary shrink-0 whitespace-nowrap" onClick={() => setEditing('new')}>
           <Plus className="h-4 w-4" />
           {t('items.new')}
         </button>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <select className="input !w-auto" value={storyId} onChange={(e) => setParams({ story: e.target.value })} aria-label={t('combat.story')}>
-          {stories.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name} ({s.itemCount})
-            </option>
-          ))}
-        </select>
+        {stories.length > 0 && (
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            {t('items.holderStory')}
+            <select className="input !w-auto font-normal" value={storyId} onChange={(e) => setParams(e.target.value ? { story: e.target.value } : {})}>
+              <option value="">{t('items.noHolderStory')}</option>
+              {stories.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} ({s.itemCount})
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <div className="relative min-w-[14rem] flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-600" />
           <input type="search" className="input !pl-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('items.search')} aria-label={t('common.search')} />
         </div>
+        {storyId && (
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input type="checkbox" className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300" checked={onlyStory} onChange={(e) => setOnlyStory(e.target.checked)} />
+            {t('items.onlyThisStory')}
+          </label>
+        )}
       </div>
       {!items ? (
         <PageSpinner />
@@ -114,7 +138,19 @@ export function ItemsAdminPage() {
             <li key={i.id}>
               <ItemCard
                 item={i}
-                footer={<HolderAssign item={i} characters={characters} onSaved={(item) => setItems((l) => l?.map((x) => (x.id === item.id ? item : x)) ?? null)} />}
+                footer={
+                  storyId ? (
+                    <HolderAssign
+                      item={i}
+                      storyId={storyId}
+                      storyName={stories.find((s) => s.id === storyId)?.name ?? ''}
+                      characters={characters}
+                      onSaved={(item) => (setItems((l) => l?.map((x) => (x.id === item.id ? item : x)) ?? null), refreshCounts())}
+                    />
+                  ) : (
+                    <p className="text-sm italic text-parchment-700 dark:text-parchment-400">{t('items.chooseStoryForHolders')}</p>
+                  )
+                }
                 actions={
                   <>
                     <button type="button" className="btn-icon" onClick={() => setEditing(i)} title={t('common.edit')} aria-label={`${t('common.edit')}: ${i.name}`}>
@@ -134,11 +170,14 @@ export function ItemsAdminPage() {
         open={editing !== null}
         item={editing === 'new' ? null : editing}
         characters={characters}
+        storyId={storyId}
+        storyName={stories.find((s) => s.id === storyId)?.name ?? ''}
         onClose={() => setEditing(null)}
         onSave={async (input) => {
-          const r = editing && editing !== 'new' ? await api.updateItem(editing.id, input) : await api.createItem(storyId, input);
+          const data = { ...input, storyId: storyId || null, holderIds: storyId ? input.holderIds : [] };
+          const r = editing && editing !== 'new' ? await api.updateItem(editing.id, data) : await api.createItem(data);
           setItems((l) => [...(l ?? []).filter((x) => x.id !== r.item.id), r.item].sort((a, b) => a.name.localeCompare(b.name, 'de')));
-          setStories((l) => l?.map((s) => (s.id === storyId && editing === 'new' ? { ...s, itemCount: s.itemCount + 1 } : s)) ?? null);
+          refreshCounts();
           setEditing(null);
           toast.success(t('items.saved'));
         }}
@@ -156,13 +195,25 @@ export function ItemsAdminPage() {
 }
 
 /** Besitzer direkt in der Detailansicht zuordnen (ohne den Bearbeiten-Dialog); jede Änderung wird sofort gespeichert */
-function HolderAssign({ item, characters, onSaved }: { item: MagicItemDto; characters: ItemCharacterRef[]; onSaved: (item: MagicItemDto) => void }) {
+function HolderAssign({
+  item,
+  storyId,
+  storyName,
+  characters,
+  onSaved,
+}: {
+  item: MagicItemDto;
+  storyId: string;
+  storyName: string;
+  characters: ItemCharacterRef[];
+  onSaved: (item: MagicItemDto) => void;
+}) {
   const { t } = useTranslation();
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
   // sofort anzeigen, bis die Antwort des Servers da ist
   const [pending, setPending] = useState<Set<string> | null>(null);
-  const holders = pending ?? new Set(item.holders.map((h) => h.id));
+  const holders = pending ?? new Set(item.holders.filter((h) => h.storyId === storyId).map((h) => h.id));
 
   const toggle = async (id: string, on: boolean) => {
     const next = new Set(holders);
@@ -171,7 +222,7 @@ function HolderAssign({ item, characters, onSaved }: { item: MagicItemDto; chara
     setBusy(id);
     setPending(next);
     try {
-      const r = await api.updateItem(item.id, { name: item.name, description: item.description, weight: item.weight, value: item.value, attunement: item.attunement, holderIds: [...next] });
+      const r = await api.setItemHolders(item.id, storyId, [...next]);
       onSaved(r.item);
       toast.success(t('items.holdersSaved'));
     } catch (err) {
@@ -184,7 +235,7 @@ function HolderAssign({ item, characters, onSaved }: { item: MagicItemDto; chara
 
   return (
     <fieldset className="rounded-lg border border-parchment-400/60 p-3 dark:border-night-700">
-      <legend className="label px-1">{t('items.assign')}</legend>
+      <legend className="label px-1">{t('items.holdersIn', { name: storyName })}</legend>
       {characters.length === 0 ? (
         <p className="text-sm italic">{t('items.noCharacters')}</p>
       ) : (
@@ -214,12 +265,16 @@ function ItemDialog({
   open,
   item,
   characters,
+  storyId,
+  storyName,
   onClose,
   onSave,
 }: {
   open: boolean;
   item: MagicItemDto | null;
   characters: ItemCharacterRef[];
+  storyId: string;
+  storyName: string;
   onClose: () => void;
   onSave: (input: { name: string; description: string; weight: number; value: string; attunement: boolean; holderIds: string[] }) => Promise<void>;
 }) {
@@ -239,8 +294,8 @@ function ItemDialog({
     setWeight(item?.weight ? String(item.weight).replace('.', ',') : '');
     setValue(item?.value ?? '');
     setAttunement(item?.attunement ?? false);
-    setHolders(new Set(item?.holders.map((h) => h.id) ?? []));
-  }, [open, item]);
+    setHolders(new Set(item?.holders.filter((h) => h.storyId === storyId).map((h) => h.id) ?? []));
+  }, [open, item, storyId]);
 
   // Gewicht in lb, Komma oder Punkt; leer = 0
   const parsedWeight = weight.trim() === '' ? 0 : Number(weight.trim().replace(',', '.'));
@@ -306,36 +361,40 @@ function ItemDialog({
           </label>
           <MarkdownEditor id="item-desc" value={description} onChange={(v) => setDescription(v.slice(0, 5000))} rows={8} />
         </div>
-        <fieldset>
-          <legend className="label">{t('items.holders')}</legend>
-          <p className="mb-2 text-xs text-parchment-700 dark:text-parchment-400">{t('items.holdersHint')}</p>
-          {characters.length === 0 ? (
-            <p className="text-sm italic">{t('items.noCharacters')}</p>
-          ) : (
-            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-              {characters.map((c) => (
-                <label key={c.id} className="flex cursor-pointer items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300"
-                    checked={holders.has(c.id)}
-                    onChange={(e) =>
-                      setHolders((prev) => {
-                        const next = new Set(prev);
-                        if (e.target.checked) next.add(c.id);
-                        else next.delete(c.id);
-                        return next;
-                      })
-                    }
-                  />
-                  <span>
-                    <span className="font-semibold">{c.name}</span> <span className="text-xs text-parchment-700 dark:text-parchment-400">({c.owner})</span>
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
-        </fieldset>
+        {!storyId ? (
+          <p className="text-sm italic text-parchment-700 dark:text-parchment-400">{t('items.chooseStoryForHolders')}</p>
+        ) : (
+          <fieldset>
+            <legend className="label">{t('items.holdersIn', { name: storyName })}</legend>
+            <p className="mb-2 text-xs text-parchment-700 dark:text-parchment-400">{t('items.holdersHint')}</p>
+            {characters.length === 0 ? (
+              <p className="text-sm italic">{t('items.noCharacters')}</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                {characters.map((c) => (
+                  <label key={c.id} className="flex cursor-pointer items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 accent-parchment-800 dark:accent-parchment-300"
+                      checked={holders.has(c.id)}
+                      onChange={(e) =>
+                        setHolders((prev) => {
+                          const next = new Set(prev);
+                          if (e.target.checked) next.add(c.id);
+                          else next.delete(c.id);
+                          return next;
+                        })
+                      }
+                    />
+                    <span>
+                      <span className="font-semibold">{c.name}</span> <span className="text-xs text-parchment-700 dark:text-parchment-400">({c.owner})</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </fieldset>
+        )}
         <div className="flex justify-end gap-2">
           <button type="button" className="btn-secondary" onClick={onClose}>
             {t('common.cancel')}

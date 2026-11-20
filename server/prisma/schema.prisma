@@ -173,7 +173,6 @@ model Story {
   bestiary     BestiaryEntry[]
   characters   Character[]
   activeFor    User[]          @relation("ActiveStory")
-  magicItems   MagicItem[]
   catalogItems CatalogItem[]
   dmNotes      DmNote[]
 }
@@ -426,10 +425,12 @@ model CharacterEditor {
 /**
  * Magischer Gegenstand einer Geschichte; verwaltet von Admin, Moderator und den Dungeon Mastern der Geschichte
  */
+/**
+ * Magische Gegenstände: eine allgemeine Datenbank für alle Geschichten (Admin, Moderator und alle Dungeon Master).
+ * Besitzer werden je Geschichte vergeben (Charakterbögen der Geschichte).
+ */
 model MagicItem {
   id          String            @id @default(cuid())
-  storyId     String
-  story       Story             @relation(fields: [storyId], references: [id], onDelete: Cascade)
   name        String
   description String            @default("")
   /**
@@ -448,7 +449,7 @@ model MagicItem {
   updatedAt   DateTime          @updatedAt
   holders     MagicItemHolder[]
 
-  @@index([storyId, name])
+  @@index([name])
 }
 
 /**

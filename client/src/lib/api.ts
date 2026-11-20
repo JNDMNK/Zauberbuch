@@ -222,8 +222,9 @@ export const api = {
 
   // Magische Gegenstände
   itemStories: () => request<{ stories: ItemStoryDto[] }>('GET', '/api/items/stories'),
-  storyItems: (storyId: string) => request<{ items: MagicItemDto[]; characters: ItemCharacterRef[] }>('GET', `/api/items/stories/${storyId}`),
-  createItem: (storyId: string, input: MagicItemInput) => request<{ item: MagicItemDto }>('POST', `/api/items/stories/${storyId}`, input),
+  items: (storyId: string | null) => request<{ items: MagicItemDto[]; characters: ItemCharacterRef[] }>('GET', `/api/items${storyId ? `?storyId=${encodeURIComponent(storyId)}` : ''}`),
+  createItem: (input: MagicItemInput) => request<{ item: MagicItemDto }>('POST', '/api/items', input),
+  setItemHolders: (id: string, storyId: string, holderIds: string[]) => request<{ item: MagicItemDto }>('PUT', `/api/items/${id}/holders`, { storyId, holderIds }),
   updateItem: (id: string, input: MagicItemInput) => request<{ item: MagicItemDto }>('PUT', `/api/items/${id}`, input),
   dmNotes: (storyId: string) => request<{ notes: DmNoteDto[] }>('GET', `/api/dm-notes/stories/${storyId}`),
   createDmNote: (storyId: string, input: DmNoteInput) => request<{ note: DmNoteDto }>('POST', `/api/dm-notes/stories/${storyId}`, input),

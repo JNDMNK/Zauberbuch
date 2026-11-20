@@ -15,7 +15,15 @@ export const magicItemSchema = z.object({
   value: z.string().trim().max(40).optional().default(''),
   /** Einstimmung benötigt (nur dann im Bogen bei „Einstimmung“ wählbar) */
   attunement: z.boolean().optional().default(false),
+  /** Beim Anlegen: Besitzer aus dieser Geschichte (optional) */
+  storyId: z.string().min(1).max(64).nullable().optional().default(null),
   holderIds: z.array(z.string().min(1).max(64)).max(50).optional().default([]),
+});
+
+/** Besitzer eines Gegenstands innerhalb einer Geschichte neu setzen */
+export const itemHoldersSchema = z.object({
+  storyId: z.string().min(1).max(64),
+  holderIds: z.array(z.string().min(1).max(64)).max(50),
 });
 export type MagicItemInput = z.input<typeof magicItemSchema>;
 
@@ -29,11 +37,12 @@ export interface ItemCharacterRef {
   id: string;
   name: string;
   owner: string;
+  /** Geschichte des Bogens */
+  storyId?: string | null;
 }
 
 export interface MagicItemDto {
   id: string;
-  storyId: string;
   name: string;
   description: string;
   /** Gewicht in lb */
@@ -42,7 +51,10 @@ export interface MagicItemDto {
   value: string;
   /** Einstimmung benötigt */
   attunement: boolean;
+  /** Besitzer in den Geschichten, die der Betrachter sieht */
   holders: ItemCharacterRef[];
+  /** Anzahl weiterer Besitzer in Geschichten, die der Betrachter nicht verwaltet */
+  otherHolders: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -56,10 +68,11 @@ export interface CharacterItemsDto {
   targets: ItemCharacterRef[];
 }
 
-/** Geschichten, deren Gegenstände der Benutzer verwalten darf */
+/** Geschichten, in denen der Benutzer Besitzer vergeben darf */
 export interface ItemStoryDto {
   id: string;
   name: string;
   archived: boolean;
+  /** Gegenstände, die Charakteren dieser Geschichte gehören */
   itemCount: number;
 }
