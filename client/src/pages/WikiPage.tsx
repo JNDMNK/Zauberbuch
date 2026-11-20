@@ -14,6 +14,7 @@ import { WikiDetail } from '../components/wiki/WikiDetail';
 import { WikiForm } from '../components/wiki/WikiForm';
 import { CatalogManager } from '../components/catalog/CatalogManager';
 import { CATEGORY_ICON } from '../components/catalog/CatalogCard';
+import { SourceBadge, SourceFilter, matchesSource } from '../components/sources/SourceFields';
 
 /** Reiter des Wikis: Völker, Klassen und die Kategorien der Gegenstands-Datenbank (Rüstung, Waffen, Gegenstände) */
 const TABS = [...WIKI_KINDS, ...CATALOG_CATEGORIES] as const;
@@ -36,6 +37,7 @@ export function WikiPage() {
   const kind: WikiKind = tab === 'class' ? 'class' : 'race';
   const [entries, setEntries] = useState<WikiEntryDto[] | null>(null);
   const [q, setQ] = useState('');
+  const [sourceFilter, setSourceFilter] = useState('');
   const [editing, setEditing] = useState<WikiEntryDto | 'new' | null>(null);
   const [toDelete, setToDelete] = useState<WikiEntryDto | null>(null);
   const [busy, setBusy] = useState(false);
@@ -74,8 +76,8 @@ export function WikiPage() {
   const needle = q.trim().toLocaleLowerCase('de');
   const counts = useMemo(() => Object.fromEntries(WIKI_KINDS.map((k) => [k, (entries ?? []).filter((e) => e.kind === k).length])) as Record<WikiKind, number>, [entries]);
   const shown = useMemo(
-    () => (entries ?? []).filter((e) => e.kind === kind && (!needle || `${e.name}\n${e.summary}\n${e.description}\n${JSON.stringify(e.data)}`.toLocaleLowerCase('de').includes(needle))),
-    [entries, kind, needle],
+    () => (entries ?? []).filter((e) => e.kind === kind && matchesSource(sourceFilter, e.sourceId) && (!needle || `${e.name}\n${e.summary}\n${e.description}\n${JSON.stringify(e.data)}`.toLocaleLowerCase('de').includes(needle))),
+    [entries, kind, needle, sourceFilter],
   );
   const opened = entries?.find((e) => e.id === openId) ?? null;
 
@@ -147,6 +149,7 @@ export function WikiPage() {
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-700 dark:text-parchment-400" />
               <input type="search" className="input !pl-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('wiki.search')} aria-label={t('common.search')} />
             </div>
+            <SourceFilter value={sourceFilter} onChange={setSourceFilter} />
             {isEditor && (
               <button type="button" className="btn-primary shrink-0" onClick={() => setEditing('new')}>
                 <Plus className="h-4 w-4" />
@@ -215,6 +218,7 @@ export function WikiPage() {
                           ))}
                         </div>
                       )}
+                      <SourceBadge sourceId={e.sourceId} />
                     </article>
                   </li>
                 );

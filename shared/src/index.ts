@@ -10,3 +10,4 @@ export * from './items';
 export * from './catalog';
 export * from './dmnotes';
 export * from './wiki';
+export * from './sources';

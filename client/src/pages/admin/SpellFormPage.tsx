@@ -20,6 +20,7 @@ import {
   type SpellInput,
 } from '@zauberbuch/shared';
 import { api, ApiError } from '../../lib/api';
+import { useSources } from '../../hooks/useSources';
 import { errorMessage, fieldMessage } from '../../lib/errors';
 import { slugify, toggleInList } from '../../lib/filters';
 import { DamageValue } from '../../components/DamageValue';
@@ -144,6 +145,7 @@ export function SpellFormPage() {
   const { slug } = useParams();
   const isEdit = Boolean(slug);
   const { t } = useTranslation();
+  const { sources } = useSources();
   const toast = useToast();
   const navigate = useNavigate();
   const { canDeleteSpells } = useAuth();
@@ -377,11 +379,10 @@ export function SpellFormPage() {
             {(id) => <TextInput id={id} value={form.source} onChange={(e) => update({ source: e.target.value })} invalid={!!errors.source} list="source-suggestions" />}
           </Field>
           <datalist id="source-suggestions">
-            <option value="SRD" />
+            {sources.map((s) => (
+              <option key={s.id} value={s.name} />
+            ))}
             <option value="Homebrew" />
-            <option value="PHB" />
-            <option value="XGtE" />
-            <option value="TCoE" />
           </datalist>
         </div>
 

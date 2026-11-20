@@ -14,6 +14,7 @@ import { ImportExportPage } from './pages/admin/ImportExportPage';
 import { UsersPage } from './pages/admin/UsersPage';
 import { StoriesAdminPage } from './pages/admin/StoriesAdminPage';
 import { ItemsAdminPage } from './pages/admin/ItemsAdminPage';
+import { SourcesAdminPage } from './pages/admin/SourcesAdminPage';
 import { useAuth } from './context/AuthContext';
 import { PageSpinner } from './components/ui';
 import type { ReactNode } from 'react';
@@ -93,11 +94,40 @@ export default function App() {
               }
             >
               <Route index element={<AdminIndex />} />
-              <Route path="spells" element={<RequireAuth allow={canWriteSpells}><AdminSpellsPage /></RequireAuth>} />
-              <Route path="spells/new" element={<RequireAuth allow={canWriteSpells}><SpellFormPage key="new" /></RequireAuth>} />
-              <Route path="spells/:slug/edit" element={<RequireAuth allow={canWriteSpells}><SpellFormPage /></RequireAuth>} />
+              <Route
+                path="spells"
+                element={
+                  <RequireAuth allow={canWriteSpells}>
+                    <AdminSpellsPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="spells/new"
+                element={
+                  <RequireAuth allow={canWriteSpells}>
+                    <SpellFormPage key="new" />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="spells/:slug/edit"
+                element={
+                  <RequireAuth allow={canWriteSpells}>
+                    <SpellFormPage />
+                  </RequireAuth>
+                }
+              />
               <Route path="items" element={<ItemsAdminPage />} />
               <Route path="catalog" element={<Navigate to="/wiki?tab=weapon" replace />} />
+              <Route
+                path="sources"
+                element={
+                  <RequireAuth roles={EDITOR_ROLES}>
+                    <SourcesAdminPage />
+                  </RequireAuth>
+                }
+              />
               <Route
                 path="stories"
                 element={

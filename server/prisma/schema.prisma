@@ -498,6 +498,8 @@ model CatalogItem {
   strength    Int?
   damageDice  String?
   damageType  String?
+  sourceId    String?
+  source      Source?       @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -529,9 +531,23 @@ model WikiEntry {
   description String   @default("")
   /// Detailfelder je Rubrik als JSON
   data        String   @default("{}")
+  sourceId    String?
+  source      Source?  @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   updatedBy   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([kind, name])
+}
+
+/// Quellen (Bücher), app-weit auswählbar (Wiki, Gegenstände, Vorschläge bei Zaubern); Admin und Moderator pflegen sie
+model Source {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  /// Kürzel, z. B. „SHB“
+  abbreviation String        @default("")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  wikiEntries  WikiEntry[]
+  catalogItems CatalogItem[]
 }

@@ -7,6 +7,7 @@ import { useToast } from '../../context/ToastContext';
 import { Modal } from '../Modal';
 import { MarkdownEditor } from '../MarkdownEditor';
 import { Spinner } from '../ui';
+import { SourceSelect } from '../sources/SourceFields';
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -223,6 +224,7 @@ export function WikiForm({ open, kind, entry, onClose, onSave }: { open: boolean
   const [name, setName] = useState('');
   const [summary, setSummary] = useState('');
   const [description, setDescription] = useState('');
+  const [sourceId, setSourceId] = useState<string | null>(null);
   const [race, setRace] = useState<WikiRaceData>(() => raceDataSchema.parse({}));
   const [cls, setCls] = useState<WikiClassData>(() => classDataSchema.parse({}));
   const [busy, setBusy] = useState(false);
@@ -231,6 +233,7 @@ export function WikiForm({ open, kind, entry, onClose, onSave }: { open: boolean
     setName(entry?.name ?? '');
     setSummary(entry?.summary ?? '');
     setDescription(entry?.description ?? '');
+    setSourceId(entry?.sourceId ?? null);
     setRace(entry?.kind === 'race' ? entry.data : raceDataSchema.parse({}));
     setCls(entry?.kind === 'class' ? entry.data : classDataSchema.parse({}));
   }, [open, entry]);
@@ -240,7 +243,7 @@ export function WikiForm({ open, kind, entry, onClose, onSave }: { open: boolean
     if (!name.trim()) return;
     setBusy(true);
     try {
-      const base = { name: name.trim(), summary: summary.trim(), description };
+      const base = { name: name.trim(), summary: summary.trim(), description, sourceId };
       await onSave(k === 'race' ? { kind: 'race', ...base, data: race } : { kind: 'class', ...base, data: cls });
     } catch (err) {
       toast.error(errorMessage(t, err));
@@ -260,6 +263,7 @@ export function WikiForm({ open, kind, entry, onClose, onSave }: { open: boolean
             <input id="w-name" className="input" value={name} maxLength={120} required autoFocus onChange={(e) => setName(e.target.value)} />
           </div>
           <TextInput id="w-summary" label={t('wiki.summary')} value={summary} onChange={setSummary} max={500} placeholder={t('wiki.summaryPlaceholder')} />
+          <SourceSelect id="w-source" value={sourceId} onChange={setSourceId} />
         </div>
         <div>
           <label htmlFor="w-desc" className="label">

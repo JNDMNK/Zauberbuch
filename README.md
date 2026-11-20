@@ -319,6 +319,19 @@ Format:
 
 `data` ist der komplette Bogen; fehlende Felder werden mit Standardwerten gefüllt.
 
+## Quellen
+
+- **Verwaltung → Quellen** (Admin und Moderator): Liste der Bücher mit Name und Kürzel, die in der ganzen App als
+  Quelle auswählbar sind. Vorbefüllt mit **Spielerhandbuch (SHB)**, **Tashas Kessel der Schöpfung (TKS)** und
+  **Xanathars Ratgeber für alles (XRA)**; je Quelle wird angezeigt, wie viele Wiki-Einträge, Gegenstände und Zauber
+  sie verwenden.
+- Im **Wiki** (Völker, Klassen, Rüstung, Waffen, Gegenstände) hat jeder Eintrag das Feld **„Quelle“**; Karten zeigen
+  das Kürzel, die Detailansicht den vollen Namen, und die Listen lassen sich nach Quelle filtern. Die mitgelieferte
+  SRD-Grundausstattung ist dem Spielerhandbuch zugeordnet.
+- Beim **Zauber-Formular** schlägt das Feld „Quelle“ die Quellen aus der Liste vor. Zauber speichern die Quelle als
+  Text; benennt man eine Quelle um, werden die Zauber mit dem alten Namen automatisch angepasst. Löscht man eine
+  Quelle, verlieren Wiki-Einträge und Gegenstände die Angabe, Zauber behalten ihren Text.
+
 ## Wiki
 
 - Hauptmenüpunkt **„Wiki“** (für alle angemeldeten Benutzer) mit den Reitern **Völker**, **Klassen**,
@@ -719,6 +732,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET`/`POST /api/bestiary/dm?storyId=` · `GET`/`PUT`/`DELETE /api/bestiary/dm/:id?storyId=` | DM der angegebenen Geschichte | DM-Datenbank (Vorlagen) |
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
+| `GET /api/sources` · `POST /api/sources` · `PUT`/`DELETE /api/sources/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Quellen (`{ name, abbreviation? }`) |
 | `GET /api/wiki` · `POST /api/wiki` · `PUT`/`DELETE /api/wiki/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Wiki (`{ kind: 'race' \| 'class', name, summary?, description?, data }`) |
 | `GET`/`POST /api/dm-notes/stories/:storyId` · `PUT …/order` · `PUT`/`DELETE /api/dm-notes/:id` | DM der Geschichte | DM-Notizen (`{ title, body? }`; Reihenfolge `{ ids }`) |
 | `GET /api/catalog?storyId=` | angemeldet | Wirksame Gegenstands-Datenbank (Standard bzw. Geschichte) |

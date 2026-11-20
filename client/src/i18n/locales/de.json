@@ -339,7 +339,8 @@
     "boardUnknownUsers": "Unbekannte Benutzer (als „gelöschter Benutzer“ übernommen): {{names}}",
     "stories": "Geschichten",
     "items": "Magische Gegenstände",
-    "catalog": "Gegenstände"
+    "catalog": "Gegenstände",
+    "sources": "Quellen"
   },
   "errors": {
     "unknown": "Unbekannter Fehler.",
@@ -394,7 +395,8 @@
     "option_duplicate": "Dieser Eintrag ist schon vorhanden.",
     "invalid_holder": "Nur Charakterbögen dieser Geschichte können Gegenstände erhalten.",
     "invalid_target": "Weitergeben nur an Charaktere derselben Geschichte.",
-    "not_holder": "Dieser Charakter besitzt den Gegenstand nicht (mehr)."
+    "not_holder": "Dieser Charakter besitzt den Gegenstand nicht (mehr).",
+    "source_exists": "Diese Quelle gibt es schon."
   },
   "damageType": {
     "acid": "Säure",
@@ -1229,5 +1231,24 @@
       "addSubclass": "Unterklasse hinzufügen"
     },
     "itemsHint": "Rüstung, Waffen und Ausrüstung – diese Datenbank nutzen die Charakterbögen für die Vorschläge im Inventar. Geschichten können sie für sich anpassen."
+  },
+  "sources": {
+    "title": "Quellen",
+    "hint": "Bücher, die in der ganzen App als Quelle wählbar sind – im Wiki (Völker, Klassen, Rüstung, Waffen, Gegenstände) und als Vorschlag beim Zauber-Formular. Admin und Moderator pflegen die Liste.",
+    "new": "Neue Quelle",
+    "empty": "Noch keine Quellen.",
+    "name": "Name",
+    "namePlaceholder": "z. B. Monsterhandbuch",
+    "abbreviation": "Kürzel",
+    "source": "Quelle",
+    "none": "– keine Angabe –",
+    "filter": "Nach Quelle filtern",
+    "withoutSource": "ohne Quelle",
+    "usage": "Verwendet: {{wiki}} Wiki-Einträge · {{catalog}} Gegenstände · {{spells}} Zauber",
+    "saved": "Quelle gespeichert",
+    "deleted": "Quelle gelöscht",
+    "deleteTitle": "Quelle löschen?",
+    "deleteText": "„{{name}}“ wird gelöscht. Wiki-Einträge und Gegenstände verlieren die Angabe; Zauber behalten ihren Quellentext.",
+    "renameHint": "Beim Umbenennen werden {{count}} Zauber mit dieser Quelle automatisch angepasst."
   }
 }

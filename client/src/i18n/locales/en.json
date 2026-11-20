@@ -339,7 +339,8 @@
     "boardUnknownUsers": "Unknown users (imported as “deleted user”): {{names}}",
     "stories": "Stories",
     "items": "Magic items",
-    "catalog": "Items"
+    "catalog": "Items",
+    "sources": "Sources"
   },
   "errors": {
     "unknown": "Unknown error.",
@@ -394,7 +395,8 @@
     "option_duplicate": "This entry already exists.",
     "invalid_holder": "Only character sheets of this story can receive items.",
     "invalid_target": "Items can only be given to characters of the same story.",
-    "not_holder": "This character no longer holds the item."
+    "not_holder": "This character no longer holds the item.",
+    "source_exists": "This source already exists."
   },
   "damageType": {
     "acid": "Acid",
@@ -1229,5 +1231,24 @@
       "addSubclass": "Add subclass"
     },
     "itemsHint": "Armor, weapons and gear – character sheets use this database for inventory suggestions. Stories can adjust it for themselves."
+  },
+  "sources": {
+    "title": "Sources",
+    "hint": "Books that can be chosen as a source throughout the app – in the wiki (races, classes, armor, weapons, items) and as suggestions in the spell form. Maintained by the admin and moderators.",
+    "new": "New source",
+    "empty": "No sources yet.",
+    "name": "Name",
+    "namePlaceholder": "e.g. Monster Manual",
+    "abbreviation": "Abbreviation",
+    "source": "Source",
+    "none": "– not specified –",
+    "filter": "Filter by source",
+    "withoutSource": "without source",
+    "usage": "Used by: {{wiki}} wiki entries · {{catalog}} items · {{spells}} spells",
+    "saved": "Source saved",
+    "deleted": "Source deleted",
+    "deleteTitle": "Delete source?",
+    "deleteText": "“{{name}}” will be deleted. Wiki entries and items lose the reference; spells keep their source text.",
+    "renameHint": "Renaming updates {{count}} spells with this source automatically."
   }
 }

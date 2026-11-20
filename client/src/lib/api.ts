@@ -1,4 +1,6 @@
 import type {
+  SourceDto,
+  SourceInput,
   WikiEntryDto,
   WikiEntryInput,
   DmNoteDto,
@@ -228,6 +230,10 @@ export const api = {
   createItem: (input: MagicItemInput) => request<{ item: MagicItemDto }>('POST', '/api/items', input),
   setItemHolders: (id: string, storyId: string, holderIds: string[]) => request<{ item: MagicItemDto }>('PUT', `/api/items/${id}/holders`, { storyId, holderIds }),
   updateItem: (id: string, input: MagicItemInput) => request<{ item: MagicItemDto }>('PUT', `/api/items/${id}`, input),
+  sourceList: () => request<{ sources: SourceDto[] }>('GET', '/api/sources'),
+  createSource: (input: SourceInput) => request<{ source: SourceDto }>('POST', '/api/sources', input),
+  updateSource: (id: string, input: SourceInput) => request<{ source: SourceDto }>('PUT', `/api/sources/${id}`, input),
+  deleteSource: (id: string) => request<void>('DELETE', `/api/sources/${id}`),
   wiki: () => request<{ entries: WikiEntryDto[] }>('GET', '/api/wiki'),
   createWiki: (input: WikiEntryInput) => request<{ entry: WikiEntryDto }>('POST', '/api/wiki', input),
   updateWiki: (id: string, input: WikiEntryInput) => request<{ entry: WikiEntryDto }>('PUT', `/api/wiki/${id}`, input),

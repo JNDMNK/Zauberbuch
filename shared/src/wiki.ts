@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { sourceIdSchema } from './sources';
 
 /**
  * Wiki (für alle angemeldeten Benutzer lesbar, bearbeitbar von Admin und Moderator).
@@ -82,8 +83,8 @@ export const classDataSchema = classObject.catch(() => classObject.parse({})).de
 export type WikiClassData = z.output<typeof classDataSchema>;
 
 export const wikiEntrySchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('race'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), data: raceDataSchema }),
-  z.object({ kind: z.literal('class'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), data: classDataSchema }),
+  z.object({ kind: z.literal('race'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: raceDataSchema }),
+  z.object({ kind: z.literal('class'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: classDataSchema }),
 ]);
 export type WikiEntryInput = z.input<typeof wikiEntrySchema>;
 
@@ -92,6 +93,8 @@ interface WikiBase {
   name: string;
   summary: string;
   description: string;
+  /** Quelle (Buch) */
+  sourceId: string | null;
   updatedAt: string;
   updatedBy: string | null;
 }

@@ -9,6 +9,7 @@ import { ConfirmDialog } from '../ConfirmDialog';
 import { Alert, PageSpinner } from '../ui';
 import { CATEGORY_ICON, CatalogCard } from './CatalogCard';
 import { CatalogItemDialog } from './CatalogItemDialog';
+import { SourceFilter, matchesSource } from '../sources/SourceFields';
 
 /**
  * Verwaltung der Gegenstands-Datenbank: Unterreiter Rüstung / Waffen / Gegenstände in Kartenansicht.
@@ -34,6 +35,7 @@ export function CatalogManager({
   const [ownCategory, setCategory] = useState<CatalogCategory>('weapon');
   const category = fixedCategory ?? ownCategory;
   const [q, setQ] = useState('');
+  const [sourceFilter, setSourceFilter] = useState('');
   const [editing, setEditing] = useState<CatalogItemDto | 'new' | null>(null);
   const [confirm, setConfirm] = useState<{ kind: 'delete' | 'revert'; item: CatalogItemDto } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -52,7 +54,10 @@ export function CatalogManager({
 
   const needle = q.trim().toLocaleLowerCase('de');
   const counts = useMemo(() => Object.fromEntries(CATALOG_CATEGORIES.map((c) => [c, (items ?? []).filter((i) => i.category === c && !i.hidden).length])), [items]);
-  const shown = useMemo(() => (items ?? []).filter((i) => i.category === category && (!needle || `${i.name}\n${i.description}`.toLocaleLowerCase('de').includes(needle))), [items, category, needle]);
+  const shown = useMemo(
+    () => (items ?? []).filter((i) => i.category === category && matchesSource(sourceFilter, i.sourceId) && (!needle || `${i.name}\n${i.description}`.toLocaleLowerCase('de').includes(needle))),
+    [items, category, needle, sourceFilter],
+  );
 
   const act = async (fn: () => Promise<unknown>, msg: string) => {
     try {
@@ -185,6 +190,7 @@ export function CatalogManager({
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-600" />
           <input type="search" className="input !pl-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('catalog.search')} aria-label={t('common.search')} />
         </div>
+        <SourceFilter value={sourceFilter} onChange={setSourceFilter} />
         {!readOnly && (
           <button type="button" className="btn-primary shrink-0" onClick={() => setEditing('new')}>
             <Plus className="h-4 w-4" />

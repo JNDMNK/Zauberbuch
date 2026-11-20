@@ -7,6 +7,7 @@ import { useToast } from '../../context/ToastContext';
 import { Modal } from '../Modal';
 import { Spinner } from '../ui';
 import { DamageInput, checkDamage, type DamageState } from '../DamageInput';
+import { SourceSelect } from '../sources/SourceFields';
 
 /** Formular für Rüstung (RK), Waffe (Schaden) oder Gegenstand (Schaden/Heilung), jeweils mit Gewicht */
 export function CatalogItemDialog({
@@ -28,6 +29,7 @@ export function CatalogItemDialog({
   const [description, setDescription] = useState('');
   const [weight, setWeight] = useState('');
   const [value, setValue] = useState('');
+  const [sourceId, setSourceId] = useState<string | null>(null);
   const [ac, setAc] = useState('');
   const [strength, setStrength] = useState('');
   const [damage, setDamage] = useState<DamageState>({ dice: '', type: '' });
@@ -40,6 +42,7 @@ export function CatalogItemDialog({
     setAc(item?.ac ?? '');
     setStrength(item?.strength ? String(item.strength) : '');
     setValue(item?.value ?? '');
+    setSourceId(item?.sourceId ?? null);
     setDamage({ dice: item?.damage?.dice ?? '', type: item?.damage?.type ?? '' });
   }, [open, item]);
 
@@ -61,6 +64,7 @@ export function CatalogItemDialog({
         description: description.trim(),
         weight: parsedWeight,
         value: value.trim(),
+        sourceId,
         ac: category === 'armor' ? ac.trim() : '',
         strength: category === 'armor' ? parsedStrength : null,
         damageDice: category === 'armor' ? null : dmg.value?.dice ?? null,
@@ -129,6 +133,7 @@ export function CatalogItemDialog({
             <DamageInput value={damage} onChange={setDamage} />
           </div>
         )}
+        <SourceSelect id="cat-source" value={sourceId} onChange={setSourceId} />
         <div>
           <label htmlFor="cat-desc" className="label">
             {t('bestiary.description')}

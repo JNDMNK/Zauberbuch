@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Coins, Dumbbell, Package, Shield, Swords, Weight } from 'lucide-react';
 import type { CatalogCategory, CatalogItemDto } from '@zauberbuch/shared';
 import { DamageValue } from '../DamageValue';
+import { SourceBadge } from '../sources/SourceFields';
 
 export const CATEGORY_ICON: Record<CatalogCategory, typeof Shield> = { armor: Shield, weapon: Swords, gear: Package };
 const CATEGORY_BORDER: Record<CatalogCategory, string> = {
@@ -52,6 +53,7 @@ export function CatalogCard({ item, actions, badge, dimmed = false }: { item: Ca
         </span>
       </div>
       {item.description && <p className="whitespace-pre-wrap break-words text-sm">{item.description}</p>}
+      <SourceBadge sourceId={item.sourceId} className="mt-auto" />
     </article>
   );
 }

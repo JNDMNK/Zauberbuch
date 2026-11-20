@@ -7,6 +7,7 @@ import { badRequest, notFound } from '../lib/errors';
 import { requireAuth, requireEditor } from '../middleware/auth';
 import { CATALOG_SEED } from '../lib/catalogSeed';
 import { logger } from '../lib/logger';
+import { phbSourceId, validSourceId } from './sources';
 
 /**
  * Gegenstands-Katalog (Rüstung, Waffen, Gegenstände).
@@ -31,6 +32,7 @@ function toDto(i: CatalogItem, origin: CatalogOrigin, extra: Partial<CatalogItem
     damage: i.damageDice && i.damageType ? { dice: i.damageDice, type: i.damageType as DamageType } : null,
     origin,
     baseId: i.baseId,
+    sourceId: i.sourceId,
     ...extra,
   };
 }
@@ -66,6 +68,7 @@ function data(input: ReturnType<typeof catalogItemSchema.parse>) {
     strength: input.category === 'armor' ? input.strength : null,
     damageDice: input.category === 'armor' ? null : input.damageDice,
     damageType: input.category === 'armor' ? null : input.damageType,
+    sourceId: input.sourceId,
   };
 }
 
@@ -73,7 +76,8 @@ function data(input: ReturnType<typeof catalogItemSchema.parse>) {
 export async function seedCatalog(force = false) {
   const count = await prisma.catalogItem.count({ where: { storyId: null } });
   if (count > 0 && !force) return 0;
-  await prisma.catalogItem.createMany({ data: CATALOG_SEED.map((i) => ({ ...i, storyId: null })) });
+  const sourceId = await phbSourceId();
+  await prisma.catalogItem.createMany({ data: CATALOG_SEED.map((i) => ({ ...i, storyId: null, sourceId })) });
   logger.info(`${CATALOG_SEED.length} Standard-Gegenstände angelegt.`);
   return CATALOG_SEED.length;
 }
@@ -91,6 +95,7 @@ catalogRouter.get('/', async (req, res) => {
 
 catalogRouter.post('/standard', requireEditor, async (req, res) => {
   const input = validate(catalogItemSchema, req.body);
+  input.sourceId = await validSourceId(input.sourceId);
   const item = await prisma.catalogItem.create({ data: { ...data(input), storyId: null } });
   res.status(201).json({ item: toDto(item, 'standard') });
 });
@@ -106,6 +111,7 @@ catalogRouter.put('/:id', requireEditor, async (req, res) => {
   const row = await loadRow(String(req.params.id));
   if (row.hidden) throw badRequest('catalog_hidden', 'Hidden entries cannot be edited');
   const input = validate(catalogItemSchema, req.body);
+  input.sourceId = await validSourceId(input.sourceId);
   const item = await prisma.catalogItem.update({ where: { id: row.id }, data: data(input) });
   res.json({ item: toDto(item, row.storyId ? (row.baseId ? 'override' : 'story') : 'standard') });
 });
@@ -141,6 +147,7 @@ catalogRouter.get('/stories/:storyId', requireEditor, async (req, res) => {
 catalogRouter.post('/stories/:storyId', requireEditor, async (req, res) => {
   const storyId = await requireStory(req);
   const input = validate(catalogItemSchema, req.body);
+  input.sourceId = await validSourceId(input.sourceId);
   const item = await prisma.catalogItem.create({ data: { ...data(input), storyId } });
   res.status(201).json({ item: toDto(item, 'story') });
 });
@@ -150,6 +157,7 @@ catalogRouter.put('/stories/:storyId/override/:baseId', requireEditor, async (re
   const storyId = await requireStory(req);
   const base = await requireStandard(String(req.params.baseId));
   const input = validate(catalogItemSchema, { ...req.body, category: base.category });
+  input.sourceId = await validSourceId(input.sourceId);
   const where: Prisma.CatalogItemWhereUniqueInput = { storyId_baseId: { storyId, baseId: base.id } };
   const item = await prisma.catalogItem.upsert({ where, create: { ...data(input), storyId, baseId: base.id }, update: { ...data(input), hidden: false } });
   res.json({ item: toDto(item, 'override') });

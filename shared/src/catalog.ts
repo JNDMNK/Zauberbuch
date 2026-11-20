@@ -24,6 +24,8 @@ export const catalogItemSchema = z
     /** Waffen: Schaden; Gegenstände: Schaden oder Heilung (z. B. Heiltrank) */
     damageDice: damageDiceSchema.optional().nullable().default(null),
     damageType: z.enum(DAMAGE_TYPES).optional().nullable().default(null),
+    /** Quelle (Buch) */
+    sourceId: z.string().min(1).max(64).nullable().optional().default(null),
   })
   .superRefine((v, ctx) => {
     if (v.damageDice && !v.damageType) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['damageType'], message: 'damage_type_required' });
@@ -46,6 +48,8 @@ export interface CatalogItemDto {
   /** Rüstung: benötigter Stärkewert */
   strength: number | null;
   damage: { dice: string; type: DamageType } | null;
+  /** Quelle (Buch) */
+  sourceId: string | null;
   origin: CatalogOrigin;
   /** Bei Anpassungen: der Standard-Eintrag, der überdeckt wird */
   baseId: string | null;

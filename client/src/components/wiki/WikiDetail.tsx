@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { WikiEntryDto, WikiLevelFeature, WikiTrait } from '@zauberbuch/shared';
 import { Markdown } from '../Markdown';
+import { SourceBadge } from '../sources/SourceFields';
 
 /** Zeile „Bezeichnung: Wert“ (leere Werte werden ausgelassen) */
 export function Fact({ label, children }: { label: string; children: ReactNode }) {
@@ -55,6 +56,7 @@ export function WikiDetail({ entry }: { entry: WikiEntryDto }) {
   const { t, i18n } = useTranslation();
   return (
     <div className="space-y-5">
+      <SourceBadge sourceId={entry.sourceId} full className="!text-sm" />
       {entry.summary && <p className="text-lg italic">{entry.summary}</p>}
       {entry.description && <Markdown className="break-words">{entry.description}</Markdown>}
 

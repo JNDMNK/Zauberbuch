@@ -12,6 +12,14 @@ export const CSRF = { 'X-Requested-With': 'zauberbuch' };
 export async function resetDb({ seed = false } = {}) {
   await prisma.dmNote.deleteMany();
   await prisma.wikiEntry.deleteMany();
+  await prisma.source.deleteMany();
+  await prisma.source.createMany({
+    data: [
+      { id: 'src_phb', name: 'Spielerhandbuch', abbreviation: 'SHB' },
+      { id: 'src_tce', name: 'Tashas Kessel der Schöpfung', abbreviation: 'TKS' },
+      { id: 'src_xge', name: 'Xanathars Ratgeber für alles', abbreviation: 'XRA' },
+    ],
+  });
   await prisma.catalogItem.deleteMany({ where: { storyId: { not: null } } });
   await prisma.catalogItem.deleteMany();
   await prisma.magicItemHolder.deleteMany();
