@@ -37,10 +37,36 @@ export async function seedWiki() {
   const sourceId = await phbSourceId();
   for (const raw of WIKI_SEED) {
     const e = wikiEntrySchema.parse(raw);
-    await prisma.wikiEntry.create({ data: { kind: e.kind, name: e.name, summary: e.summary, description: e.description, sourceId, data: JSON.stringify(e.data) } });
+    const data = e.kind === 'class' ? { ...e.data, subclasses: e.data.subclasses.map((s) => ({ ...s, sourceId: s.sourceId ?? sourceId })) } : e.data;
+    await prisma.wikiEntry.create({ data: { kind: e.kind, name: e.name, summary: e.summary, description: e.description, sourceId, data: JSON.stringify(data) } });
   }
   logger.info(`${WIKI_SEED.length} Wiki-Einträge (SRD) angelegt.`);
   return WIKI_SEED.length;
+}
+
+/**
+ * Unveränderte SRD-Klassen (nie bearbeitet): Unterklassen ohne Quelle übernehmen die Quelle der Klasse.
+ * Läuft beim Start und ist idempotent.
+ */
+export async function backfillSubclassSources() {
+  const rows = await prisma.wikiEntry.findMany({ where: { kind: 'class', updatedBy: null, sourceId: { not: null } } });
+  let n = 0;
+  for (const r of rows) {
+    const data = classDataSchema.parse(parseData('class', r.data));
+    if (!data.subclasses.some((s) => !s.sourceId)) continue;
+    const next = { ...data, subclasses: data.subclasses.map((s) => ({ ...s, sourceId: s.sourceId ?? r.sourceId })) };
+    await prisma.wikiEntry.update({ where: { id: r.id }, data: { data: JSON.stringify(next) } });
+    n++;
+  }
+  return n;
+}
+
+/** Unbekannte Quellen bei Unterklassen verwerfen */
+async function cleanSubclassSources<T extends { kind: string; data: unknown }>(e: T): Promise<T> {
+  if (e.kind !== 'class') return e;
+  const data = e.data as { subclasses: { sourceId: string | null }[] };
+  const subclasses = await Promise.all(data.subclasses.map(async (s) => ({ ...s, sourceId: await validSourceId(s.sourceId) })));
+  return { ...e, data: { ...data, subclasses } };
 }
 
 wikiRouter.get('/', async (_req, res) => {
@@ -49,7 +75,7 @@ wikiRouter.get('/', async (_req, res) => {
 });
 
 wikiRouter.post('/', requireEditor, async (req, res) => {
-  const e = validate(wikiEntrySchema, req.body);
+  const e = await cleanSubclassSources(validate(wikiEntrySchema, req.body));
   const row = await prisma.wikiEntry.create({
     data: { kind: e.kind, name: e.name, summary: e.summary, description: e.description, sourceId: await validSourceId(e.sourceId), data: JSON.stringify(e.data), updatedBy: req.user!.username },
   });
@@ -59,7 +85,7 @@ wikiRouter.post('/', requireEditor, async (req, res) => {
 wikiRouter.put('/:id', requireEditor, async (req, res) => {
   const existing = await prisma.wikiEntry.findUnique({ where: { id: String(req.params.id) } });
   if (!existing) throw notFound();
-  const e = validate(wikiEntrySchema, req.body);
+  const e = await cleanSubclassSources(validate(wikiEntrySchema, req.body));
   const row = await prisma.wikiEntry.update({
     where: { id: existing.id },
     data: { kind: e.kind, name: e.name, summary: e.summary, description: e.description, sourceId: await validSourceId(e.sourceId), data: JSON.stringify(e.data), updatedBy: req.user!.username },

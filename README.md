@@ -342,7 +342,8 @@ Format:
     Unterrassen (Name, Attributswerterhöhung, Beschreibung, eigene Merkmale).
   - **Klasse:** Trefferwürfel, TP auf der 1. und auf höheren Stufen, primäres Attribut, Übung (Rüstung, Waffen,
     Werkzeuge, Rettungswürfe, Fertigkeiten), Ausrüstung, Zauberwirken, Klassenmerkmale je Stufe sowie Unterklassen
-    (Bezeichnung, z. B. „Arkane Tradition“, mit eigenen Merkmalen je Stufe).
+    (Bezeichnung, z. B. „Arkane Tradition“, mit eigenen Merkmalen je Stufe und **eigener Quelle** – eine Klasse aus
+    dem Spielerhandbuch kann so Unterklassen aus Tashas oder Xanathars enthalten).
   - Dazu Kurzbeschreibung (für die Karte) und Beschreibung; Texte unterstützen Markdown.
 - Beim ersten Start ist das Wiki mit den **9 Völkern und 12 Klassen des SRD 5.1** befüllt (deutsche Zusammenfassung;
   SRD 5.1 von Wizards of the Coast LLC, lizenziert unter CC-BY-4.0).

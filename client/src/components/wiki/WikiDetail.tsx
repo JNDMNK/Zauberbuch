@@ -124,7 +124,10 @@ export function WikiDetail({ entry }: { entry: WikiEntryDto }) {
             <Section title={entry.data.subclassTitle || t('wiki.class.subclasses')}>
               {entry.data.subclasses.map((s, i) => (
                 <div key={i} className="space-y-2 rounded-lg bg-parchment-200/40 p-3 dark:bg-night-900/40">
-                  <h4 className="font-display text-lg font-bold">{s.name}</h4>
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                    <h4 className="font-display text-lg font-bold">{s.name}</h4>
+                    <SourceBadge sourceId={s.sourceId} full />
+                  </div>
                   {s.description && <Markdown className="break-words">{s.description}</Markdown>}
                   {s.features.length > 0 && <LevelFeatures list={s.features} />}
                 </div>

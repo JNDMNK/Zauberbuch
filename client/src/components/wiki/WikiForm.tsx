@@ -202,12 +202,13 @@ function ClassFields({ d, set }: { d: WikiClassData; set: (d: WikiClassData) => 
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
+              <SourceSelect id={`w-sc-src-${i}`} value={s.sourceId} onChange={(v) => upd({ sourceId: v })} />
               <TextArea id={`w-sc-d-${i}`} label={t('wiki.description')} value={s.description} onChange={(v) => upd({ description: v })} max={5000} />
               <FeatureList prefix={`${s.name || t('wiki.class.subclassName')} – ${t('wiki.class.features')}`} list={s.features} onChange={(l) => upd({ features: l })} />
             </div>
           );
         })}
-        <button type="button" className="btn-ghost !px-2 !py-1 text-sm" onClick={() => f('subclasses', [...d.subclasses, { name: '', description: '', features: [] }])}>
+        <button type="button" className="btn-ghost !px-2 !py-1 text-sm" onClick={() => f('subclasses', [...d.subclasses, { name: '', sourceId: null, description: '', features: [] }])}>
           <Plus className="h-4 w-4" />
           {t('wiki.form.addSubclass')}
         </button>

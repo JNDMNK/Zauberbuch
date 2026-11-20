@@ -15,6 +15,7 @@ import { WikiForm } from '../components/wiki/WikiForm';
 import { CatalogManager } from '../components/catalog/CatalogManager';
 import { CATEGORY_ICON } from '../components/catalog/CatalogCard';
 import { SourceBadge, SourceFilter, matchesSource } from '../components/sources/SourceFields';
+import { useSources } from '../hooks/useSources';
 
 /** Reiter des Wikis: Völker, Klassen und die Kategorien der Gegenstands-Datenbank (Rüstung, Waffen, Gegenstände) */
 const TABS = [...WIKI_KINDS, ...CATALOG_CATEGORIES] as const;
@@ -38,6 +39,7 @@ export function WikiPage() {
   const [entries, setEntries] = useState<WikiEntryDto[] | null>(null);
   const [q, setQ] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
+  const { byId } = useSources();
   const [editing, setEditing] = useState<WikiEntryDto | 'new' | null>(null);
   const [toDelete, setToDelete] = useState<WikiEntryDto | null>(null);
   const [busy, setBusy] = useState(false);
@@ -164,7 +166,7 @@ export function WikiPage() {
             <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {shown.map((e) => {
                 const Icon = KIND_ICON[e.kind];
-                const sub = e.kind === 'race' ? e.data.subraces.map((s) => s.name) : e.data.subclasses.map((s) => s.name);
+                const sub = e.kind === 'race' ? e.data.subraces.map((s) => ({ name: s.name, sourceId: null as string | null })) : e.data.subclasses.map((s) => ({ name: s.name, sourceId: s.sourceId }));
                 return (
                   <li key={e.id}>
                     <article className={`parchment relative flex h-full flex-col gap-2 border-t-4 p-4 transition hover:-translate-y-0.5 hover:shadow-cardhover ${KIND_ACCENT[e.kind]}`}>
@@ -211,11 +213,15 @@ export function WikiPage() {
                       </dl>
                       {sub.length > 0 && (
                         <div className="flex flex-wrap gap-1">
-                          {sub.map((s) => (
-                            <span key={s} className="badge bg-parchment-200 text-parchment-900 dark:bg-night-700 dark:text-parchment-200">
-                              {s}
-                            </span>
-                          ))}
+                          {sub.map((s) => {
+                            const src = byId(s.sourceId);
+                            return (
+                              <span key={s.name} className="badge bg-parchment-200 text-parchment-900 dark:bg-night-700 dark:text-parchment-200" title={src ? `${t('sources.source')}: ${src.name}` : undefined}>
+                                {s.name}
+                                {src?.abbreviation && <span className="ml-1 font-normal opacity-70">· {src.abbreviation}</span>}
+                              </span>
+                            );
+                          })}
                         </div>
                       )}
                       <SourceBadge sourceId={e.sourceId} />

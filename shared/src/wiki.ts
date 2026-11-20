@@ -73,7 +73,15 @@ const classObject = z.object({
   subclassTitle: text(80),
   features: levelFeatures,
   subclasses: z
-    .array(z.object({ name: z.string().trim().max(120).default(''), description: md(5000), features: levelFeatures }))
+    .array(
+      z.object({
+        name: z.string().trim().max(120).default(''),
+        /** Quelle der Unterklasse (kann von der Klasse abweichen, z. B. Tashas Kessel) */
+        sourceId: z.string().min(1).max(64).nullable().catch(null).default(null),
+        description: md(5000),
+        features: levelFeatures,
+      }),
+    )
     .max(30)
     .catch([])
     .default([])
