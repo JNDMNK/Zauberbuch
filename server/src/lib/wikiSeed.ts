@@ -796,6 +796,7 @@ export const WIKI_SEED: WikiEntryInput[] = [
     summary: 'Geübt im Nahkampf auf engstem Raum – du hältst Gegner fest und drückst sie zu Boden.',
     description: 'Du hast die Fertigkeiten entwickelt, um dich in engen Handgemengen zu behaupten.',
     data: {
+      category: 'general',
       prerequisite: 'Stärke 13 oder höher',
       abilityIncrease: '',
       benefits: '- Du bist bei Angriffswürfen gegen eine Kreatur, die du gepackt hältst, im Vorteil.\n- Du kannst deine Aktion nutzen, um eine von dir gepackte Kreatur niederzudrücken. Lege dazu einen weiteren Ringkampfwurf ab. Bei Erfolg seid du und die Kreatur festgesetzt, bis der Haltegriff endet.',

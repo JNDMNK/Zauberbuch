@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Save, Trash2 } from 'lucide-react';
 import {
   ABILITIES,
+  FEAT_CATEGORIES,
   HIT_DICE,
   backgroundDataSchema,
   classDataSchema,
@@ -310,6 +311,19 @@ function FeatFields({ d, set }: { d: WikiFeatData; set: (d: WikiFeatData) => voi
   const f = <K extends keyof WikiFeatData>(k: K, v: WikiFeatData[K]) => set({ ...d, [k]: v });
   return (
     <Group title={t('wiki.feat.title')}>
+      <div>
+        <label htmlFor="w-fcat" className="label">
+          {t('wiki.feat.category')}
+        </label>
+        <select id="w-fcat" className="input sm:max-w-xs" value={d.category ?? ''} onChange={(e) => f('category', (e.target.value || null) as WikiFeatData['category'])}>
+          <option value="">—</option>
+          {FEAT_CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {t(`wiki.feat.categories.${c}`)}
+            </option>
+          ))}
+        </select>
+      </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <TextInput id="w-pre" label={t('wiki.feat.prerequisite')} value={d.prerequisite} onChange={(v) => f('prerequisite', v)} placeholder={t('wiki.feat.prerequisitePlaceholder')} />
         <TextInput id="w-fai" label={t('wiki.race.abilityIncrease')} value={d.abilityIncrease} onChange={(v) => f('abilityIncrease', v)} max={200} placeholder={t('wiki.feat.abilityPlaceholder')} />

@@ -141,6 +141,7 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
       ) : entry.kind === 'feat' ? (
         <Section title={t('wiki.feat.title')}>
           <div className="space-y-1">
+            <Fact label={t('wiki.feat.category')}>{entry.data.category ? t(`wiki.feat.categories.${entry.data.category}`) : ''}</Fact>
             <Fact label={t('wiki.feat.prerequisite')}>{entry.data.prerequisite || t('wiki.feat.none')}</Fact>
             <Fact label={t('wiki.race.abilityIncrease')}>{entry.data.abilityIncrease}</Fact>
             {entry.data.repeatable && <Fact label={t('wiki.feat.repeatable')}>{t('wiki.feat.repeatableText')}</Fact>}

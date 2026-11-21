@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Award, Footprints, GraduationCap, Heart, Lock, Pencil, Plus, Repeat, ScrollText, Search, Shield, Sparkles, Star, Trash2, Users2 } from 'lucide-react';
-import { CATALOG_CATEGORIES, WIKI_KINDS, type CatalogCategory, type CatalogItemDto, type WikiEntryDto, type WikiKind } from '@zauberbuch/shared';
+import { Award, Footprints, GraduationCap, Heart, Lock, Pencil, Plus, Repeat, ScrollText, Search, Shield, Sparkles, Star, Tags, Trash2, Users2 } from 'lucide-react';
+import { CATALOG_CATEGORIES, FEAT_CATEGORIES, WIKI_KINDS, type CatalogCategory, type CatalogItemDto, type WikiEntryDto, type WikiKind } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
 import { useAuth } from '../context/AuthContext';
@@ -44,6 +44,7 @@ export function WikiPage() {
   const [entries, setEntries] = useState<WikiEntryDto[] | null>(null);
   const [q, setQ] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
+  const [featCategory, setFeatCategory] = useState('');
   const { byId } = useSources();
   const [editing, setEditing] = useState<WikiEntryDto | 'new' | null>(null);
   const [toDelete, setToDelete] = useState<WikiEntryDto | null>(null);
@@ -86,9 +87,12 @@ export function WikiPage() {
     () =>
       (entries ?? []).filter(
         (e) =>
-          e.kind === kind && matchesSource(sourceFilter, e.sourceId) && (!needle || `${e.name}\n${e.summary}\n${e.description}\n${JSON.stringify(e.data)}`.toLocaleLowerCase('de').includes(needle)),
+          e.kind === kind &&
+          matchesSource(sourceFilter, e.sourceId) &&
+          (kind !== 'feat' || !featCategory || (e.kind === 'feat' && e.data.category === featCategory)) &&
+          (!needle || `${e.name}\n${e.summary}\n${e.description}\n${JSON.stringify(e.data)}`.toLocaleLowerCase('de').includes(needle)),
       ),
-    [entries, kind, needle, sourceFilter],
+    [entries, kind, needle, sourceFilter, featCategory],
   );
   const opened = entries?.find((e) => e.id === openId) ?? null;
 
@@ -121,6 +125,7 @@ export function WikiPage() {
         ];
       case 'feat':
         return [
+          { Icon: Tags, label: t('wiki.feat.category'), value: e.data.category ? t(`wiki.feat.categories.${e.data.category}`) : '' },
           { Icon: Lock, label: t('wiki.feat.prerequisite'), value: e.data.prerequisite || t('wiki.feat.none') },
           { Icon: Shield, label: t('wiki.race.abilityIncreaseShort'), value: e.data.abilityIncrease },
           { Icon: Repeat, label: t('wiki.feat.repeatable'), value: e.data.repeatable ? t('wiki.feat.yes') : '' },
@@ -177,6 +182,18 @@ export function WikiPage() {
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-700 dark:text-parchment-400" />
               <input type="search" className="input !pl-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('wiki.search')} aria-label={t('common.search')} />
             </div>
+            {kind === 'feat' && (
+              <select className="input !w-auto" value={featCategory} onChange={(e) => setFeatCategory(e.target.value)} aria-label={t('wiki.feat.category')}>
+                <option value="">
+                  {t('wiki.feat.category')}: {t('common.any')}
+                </option>
+                {FEAT_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {t(`wiki.feat.categories.${c}`)}
+                  </option>
+                ))}
+              </select>
+            )}
             <SourceFilter value={sourceFilter} onChange={setSourceFilter} />
             {isEditor && (
               <button type="button" className="btn-primary shrink-0" onClick={() => setEditing('new')}>

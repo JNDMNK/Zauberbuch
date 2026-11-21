@@ -87,8 +87,18 @@ async function cleanSubclassSources<T extends { kind: string; data: unknown }>(e
  * Läuft beim Start und ist idempotent.
  */
 export async function backfillBackgroundFields() {
-  const rows = await prisma.wikiEntry.findMany({ where: { kind: 'background', updatedBy: null } });
   let n = 0;
+  // Talente: Kategorie
+  for (const r of await prisma.wikiEntry.findMany({ where: { kind: 'feat', updatedBy: null } })) {
+    const seed = WIKI_SEED.find((e) => e.kind === 'feat' && e.name === r.name);
+    if (!seed || seed.kind !== 'feat') continue;
+    const data = featDataSchema.parse(parseData(r.data));
+    const s = featDataSchema.parse(seed.data);
+    if (data.category || !s.category) continue;
+    await prisma.wikiEntry.update({ where: { id: r.id }, data: { data: JSON.stringify({ ...data, category: s.category }) } });
+    n++;
+  }
+  const rows = await prisma.wikiEntry.findMany({ where: { kind: 'background', updatedBy: null } });
   for (const r of rows) {
     const seed = WIKI_SEED.find((e) => e.kind === 'background' && e.name === r.name);
     if (!seed || seed.kind !== 'background') continue;

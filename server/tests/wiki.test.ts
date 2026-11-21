@@ -15,7 +15,8 @@ describe('Wiki', () => {
     const list = (await frodo.agent.get('/api/wiki')).body.entries;
     expect(list.filter((e: { kind: string }) => e.kind === 'race')).toHaveLength(9);
     expect(list.filter((e: { kind: string }) => e.kind === 'class')).toHaveLength(12);
-    expect(list.find((e: { kind: string }) => e.kind === 'feat')).toMatchObject({ name: 'Ringer', data: { prerequisite: 'Stärke 13 oder höher', repeatable: false } });
+    const ringer = list.find((e: { kind: string }) => e.kind === 'feat');
+    expect(ringer).toMatchObject({ name: 'Ringer', data: { category: 'general', prerequisite: 'Stärke 13 oder höher', repeatable: false } });
     const bg = list.find((e: { kind: string }) => e.kind === 'background');
     expect(bg).toMatchObject({ name: 'Tempeldiener', data: { skills: 'Motiv erkennen, Religion', feature: { name: 'Zuflucht der Gläubigen' } } });
     expect([bg.data.personalityTraits.length, bg.data.ideals.length, bg.data.bonds.length, bg.data.flaws.length]).toEqual([8, 6, 6, 6]);
@@ -25,7 +26,10 @@ describe('Wiki', () => {
     delete rawBg.abilityScores;
     delete rawBg.feat;
     await prisma.wikiEntry.update({ where: { id: bg.id }, data: { data: JSON.stringify(rawBg) } });
-    expect(await backfillBackgroundFields()).toBe(1);
+    const rawFeat = JSON.parse((await prisma.wikiEntry.findUniqueOrThrow({ where: { id: ringer.id } })).data);
+    delete rawFeat.category;
+    await prisma.wikiEntry.update({ where: { id: ringer.id }, data: { data: JSON.stringify(rawFeat) } });
+    expect(await backfillBackgroundFields()).toBe(2); // Hintergrund + Talent
     expect(await backfillBackgroundFields()).toBe(0);
     const zwerg = list.find((e: { name: string }) => e.name === 'Zwerg');
     expect(zwerg.data).toMatchObject({ abilityIncrease: 'Konstitution +2', speed: expect.stringContaining('7,5 m') });
@@ -50,8 +54,8 @@ describe('Wiki', () => {
     // kein erneutes Befüllen, wenn schon Einträge da sind
     expect(await seedWiki()).toBe(0);
     // neue Rubriken (z. B. nach einem Update) werden einzeln nachgetragen, ohne die anderen anzutasten
-    const featNew = await mod.agent.post('/api/wiki').set(CSRF).send({ kind: 'feat', name: 'Kriegszauberer', data: { prerequisite: 'Fähigkeit, Zauber zu wirken', benefits: '- Vorteil auf Konzentration', repeatable: true } });
-    expect(featNew.body.entry.data).toMatchObject({ prerequisite: 'Fähigkeit, Zauber zu wirken', repeatable: true });
+    const featNew = await mod.agent.post('/api/wiki').set(CSRF).send({ kind: 'feat', name: 'Kriegszauberer', data: { category: 'unbekannt', prerequisite: 'Fähigkeit, Zauber zu wirken', benefits: '- Vorteil auf Konzentration', repeatable: true } });
+    expect(featNew.body.entry.data).toMatchObject({ category: null, prerequisite: 'Fähigkeit, Zauber zu wirken', repeatable: true });
     await prisma.wikiEntry.deleteMany({ where: { kind: 'background' } });
     expect(await seedWiki()).toBe(1);
     expect((await frodo.agent.get('/api/wiki')).body.entries.filter((e: { kind: string }) => e.kind === 'feat')).toHaveLength(2);

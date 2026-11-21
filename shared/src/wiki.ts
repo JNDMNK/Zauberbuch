@@ -101,7 +101,13 @@ const lines = (max: number) =>
     .transform((l) => l.filter(Boolean));
 
 /** Talent nach SRD: Voraussetzung, optionale Attributswerterhöhung, Vorteile */
+/** Talent-Kategorien (aktuelle Regeln) */
+export const FEAT_CATEGORIES = ['origin', 'general', 'fightingStyle', 'epicBoon'] as const;
+export type FeatCategory = (typeof FEAT_CATEGORIES)[number];
+
 const featObject = z.object({
+  /** Kategorie: Herkunftstalent, Allgemeines Talent, Kampfstil-Talent, Epische Gabe */
+  category: z.enum(FEAT_CATEGORIES).nullable().catch(null).default(null),
   prerequisite: text(300),
   /** z. B. „Stärke oder Geschicklichkeit +1“ (bei Halbtalenten) */
   abilityIncrease: text(200),

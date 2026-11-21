@@ -353,7 +353,8 @@ Format:
     Werkzeuge, Rettungswürfe, Fertigkeiten), Ausrüstung, Zauberwirken, Klassenmerkmale je Stufe sowie Unterklassen
     (Bezeichnung, z. B. „Arkane Tradition“, mit eigenen Merkmalen je Stufe und **eigener Quelle** – eine Klasse aus
     dem Spielerhandbuch kann so Unterklassen aus Tashas oder Xanathars enthalten).
-  - **Talent:** Voraussetzung, optionale Attributswerterhöhung (Halbtalente), Vorteile, „mehrfach wählbar“.
+  - **Talent:** Kategorie (Herkunftstalent, Allgemeines Talent, Kampfstil-Talent, Epische Gabe – im Reiter auch als
+    Filter), Voraussetzung, optionale Attributswerterhöhung (Halbtalente), Vorteile, „mehrfach wählbar“.
   - **Hintergrund:** Attributswerte (Auswahl aus den sechs Attributen, nach aktuellen Regeln drei), Talent
     (Herkunftstalent; Vorschläge aus den Wiki-Talenten, steht es im Wiki, ist es in der Detailansicht verlinkt), Fertigkeiten, Werkzeuge, Sprachen, Ausrüstung, Merkmal (Name + Text) und vorgeschlagene
     Charakterzüge – Persönlichkeitsmerkmale, Ideale, Bindungen und Makel, angezeigt als Würfeltabellen (W8/W6).

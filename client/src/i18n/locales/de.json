@@ -1255,7 +1255,14 @@
       "benefits": "Vorteile",
       "repeatable": "Mehrfach wählbar",
       "repeatableText": "Kann mehrfach gewählt werden",
-      "yes": "ja"
+      "yes": "ja",
+      "category": "Kategorie",
+      "categories": {
+        "origin": "Herkunftstalent",
+        "general": "Allgemeines Talent",
+        "fightingStyle": "Kampfstil-Talent",
+        "epicBoon": "Epische Gabe"
+      }
     },
     "background": {
       "proficiencies": "Übung & Sprachen",

@@ -1255,7 +1255,14 @@
       "benefits": "Benefits",
       "repeatable": "Repeatable",
       "repeatableText": "Can be taken more than once",
-      "yes": "yes"
+      "yes": "yes",
+      "category": "Category",
+      "categories": {
+        "origin": "Origin feat",
+        "general": "General feat",
+        "fightingStyle": "Fighting style feat",
+        "epicBoon": "Epic boon"
+      }
     },
     "background": {
       "proficiencies": "Proficiencies & languages",
