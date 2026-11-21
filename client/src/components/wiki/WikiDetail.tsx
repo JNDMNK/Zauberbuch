@@ -41,7 +41,10 @@ function LevelFeatures({ list }: { list: WikiLevelFeature[] }) {
     <ol className="space-y-2">
       {list.map((f, i) => (
         <li key={i} className="flex gap-3">
-          <span className="mt-0.5 flex h-7 min-w-[2.75rem] shrink-0 items-center justify-center rounded-full border border-parchment-500 px-2 font-display text-xs font-bold tabular-nums dark:border-night-700" title={t('wiki.level')}>
+          <span
+            className="mt-0.5 flex h-7 min-w-[2.75rem] shrink-0 items-center justify-center rounded-full border border-parchment-500 px-2 font-display text-xs font-bold tabular-nums dark:border-night-700"
+            title={t('wiki.level')}
+          >
             {t('wiki.levelShort', { n: f.level })}
           </span>
           <Markdown className="!space-y-1 min-w-0 flex-1 break-words">{f.name ? `**${f.name.replace(/\*/g, '')}.** ${f.text}` : f.text}</Markdown>
@@ -86,7 +89,7 @@ export function WikiDetail({ entry }: { entry: WikiEntryDto }) {
             </Section>
           )}
         </>
-      ) : (
+      ) : entry.kind === 'class' ? (
         <>
           <Section title={t('wiki.class.hitPoints')}>
             <div className="space-y-1">
@@ -135,11 +138,76 @@ export function WikiDetail({ entry }: { entry: WikiEntryDto }) {
             </Section>
           )}
         </>
+      ) : entry.kind === 'feat' ? (
+        <Section title={t('wiki.feat.title')}>
+          <div className="space-y-1">
+            <Fact label={t('wiki.feat.prerequisite')}>{entry.data.prerequisite || t('wiki.feat.none')}</Fact>
+            <Fact label={t('wiki.race.abilityIncrease')}>{entry.data.abilityIncrease}</Fact>
+            {entry.data.repeatable && <Fact label={t('wiki.feat.repeatable')}>{t('wiki.feat.repeatableText')}</Fact>}
+          </div>
+          {entry.data.benefits && <Markdown className="break-words">{entry.data.benefits}</Markdown>}
+        </Section>
+      ) : (
+        <>
+          <Section title={t('wiki.background.proficiencies')}>
+            <div className="space-y-1">
+              <Fact label={t('wiki.background.skills')}>{entry.data.skills}</Fact>
+              <Fact label={t('wiki.background.tools')}>{entry.data.tools}</Fact>
+              <Fact label={t('wiki.background.languages')}>{entry.data.languages}</Fact>
+            </div>
+          </Section>
+          {entry.data.equipment && (
+            <Section title={t('wiki.class.equipment')}>
+              <Markdown className="break-words">{entry.data.equipment}</Markdown>
+            </Section>
+          )}
+          {(entry.data.feature.name || entry.data.feature.text) && (
+            <Section title={`${t('wiki.background.feature')}: ${entry.data.feature.name}`}>
+              <Markdown className="break-words">{entry.data.feature.text}</Markdown>
+            </Section>
+          )}
+          {(['personalityTraits', 'ideals', 'bonds', 'flaws'] as const).some((k) => entry.data[k].length > 0) && (
+            <Section title={t('wiki.background.characteristics')}>
+              <div className="grid gap-4 md:grid-cols-2">
+                {(
+                  [
+                    ['personalityTraits', 8],
+                    ['ideals', 6],
+                    ['bonds', 6],
+                    ['flaws', 6],
+                  ] as const
+                ).map(([k]) =>
+                  entry.data[k].length === 0 ? null : (
+                    <div key={k}>
+                      <h4 className="font-display font-bold">{t(`wiki.background.${k}`)}</h4>
+                      <table className="mt-1 w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-xs text-parchment-700 dark:text-parchment-400">
+                            <th className="w-10 pb-1 font-semibold">{`W${entry.data[k].length}`}</th>
+                            <th className="pb-1 font-semibold">{t(`wiki.background.${k}One`)}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {entry.data[k].map((line, i) => (
+                            <tr key={i} className="border-t border-parchment-300/70 align-top dark:border-night-700">
+                              <td className="py-1 font-semibold tabular-nums">{i + 1}</td>
+                              <td className="py-1">
+                                <Markdown className="!space-y-0">{line}</Markdown>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ),
+                )}
+              </div>
+            </Section>
+          )}
+        </>
       )}
       <p className="text-xs text-parchment-700 dark:text-parchment-400">
-        {entry.updatedBy
-          ? t('wiki.updated', { date: new Date(entry.updatedAt).toLocaleString(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }), user: entry.updatedBy })
-          : t('wiki.srdNote')}
+        {entry.updatedBy ? t('wiki.updated', { date: new Date(entry.updatedAt).toLocaleString(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }), user: entry.updatedBy }) : t('wiki.srdNote')}
       </p>
     </div>
   );

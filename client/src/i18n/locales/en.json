@@ -1163,17 +1163,21 @@
   },
   "wiki": {
     "title": "Wiki",
-    "hint": "Reference for races, classes and items based on the System Reference Document 5.1. Click a card for all details.",
+    "hint": "Reference for races, classes, feats, backgrounds and items based on the System Reference Document 5.1. Click a card for all details.",
     "search": "Search the wiki …",
     "empty": "No entries yet.",
     "kinds": {
       "race": "Races",
       "class": "Classes",
-      "items": "Items"
+      "items": "Items",
+      "feat": "Feats",
+      "background": "Backgrounds"
     },
     "new": {
       "race": "New race",
-      "class": "New class"
+      "class": "New class",
+      "feat": "New feat",
+      "background": "New background"
     },
     "edit": "Edit “{{name}}”",
     "name": "Name",
@@ -1230,7 +1234,35 @@
       "addSubrace": "Add subrace",
       "addSubclass": "Add subclass"
     },
-    "itemsHint": "Armor, weapons and gear – character sheets use this database for inventory suggestions. Stories can adjust it for themselves."
+    "itemsHint": "Armor, weapons and gear – character sheets use this database for inventory suggestions. Stories can adjust it for themselves.",
+    "feat": {
+      "title": "Feat",
+      "prerequisite": "Prerequisite",
+      "prerequisitePlaceholder": "e.g. Strength 13 or higher",
+      "none": "none",
+      "abilityPlaceholder": "e.g. Strength or Dexterity +1 (optional)",
+      "benefits": "Benefits",
+      "repeatable": "Repeatable",
+      "repeatableText": "Can be taken more than once",
+      "yes": "yes"
+    },
+    "background": {
+      "proficiencies": "Proficiencies & languages",
+      "skills": "Skills",
+      "tools": "Tools",
+      "languages": "Languages",
+      "feature": "Feature",
+      "characteristics": "Suggested characteristics",
+      "personalityTraits": "Personality traits",
+      "personalityTraitsOne": "Personality trait",
+      "ideals": "Ideals",
+      "idealsOne": "Ideal",
+      "bonds": "Bonds",
+      "bondsOne": "Bond",
+      "flaws": "Flaws",
+      "flawsOne": "Flaw",
+      "linesHint": "One line per entry – the die number follows the order."
+    }
   },
   "sources": {
     "title": "Sources",

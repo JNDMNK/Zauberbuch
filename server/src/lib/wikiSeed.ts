@@ -1,5 +1,5 @@
 /**
- * Grundausstattung des Wikis: Völker und Klassen nach dem System Reference Document 5.1 (CC-BY-4.0, Wizards of the
+ * Grundausstattung des Wikis: Völker, Klassen, Talente und Hintergründe nach dem System Reference Document 5.1 (CC-BY-4.0, Wizards of the
  * Coast). Werte nach dem SRD, Texte auf Deutsch zusammengefasst. Wird beim ersten Start angelegt, wenn das Wiki leer ist.
  */
 import type { WikiEntryInput } from '@zauberbuch/shared';
@@ -785,6 +785,73 @@ export const WIKI_SEED: WikiEntryInput[] = [
             [14, 'Überladen', 'Du kannst bei Zaubern bis zum 5. Grad den maximalen Schaden verursachen; wiederholte Nutzung vor einer langen Rast verursacht dir nekrotischen Schaden.'],
           ]),
         },
+      ],
+    },
+  },
+
+  // ---------------------------------------------------------------- Talente
+  {
+    kind: 'feat',
+    name: 'Ringer',
+    summary: 'Geübt im Nahkampf auf engstem Raum – du hältst Gegner fest und drückst sie zu Boden.',
+    description: 'Du hast die Fertigkeiten entwickelt, um dich in engen Handgemengen zu behaupten.',
+    data: {
+      prerequisite: 'Stärke 13 oder höher',
+      abilityIncrease: '',
+      benefits: '- Du bist bei Angriffswürfen gegen eine Kreatur, die du gepackt hältst, im Vorteil.\n- Du kannst deine Aktion nutzen, um eine von dir gepackte Kreatur niederzudrücken. Lege dazu einen weiteren Ringkampfwurf ab. Bei Erfolg seid du und die Kreatur festgesetzt, bis der Haltegriff endet.',
+      repeatable: false,
+    },
+  },
+
+  // ---------------------------------------------------------------- Hintergründe
+  {
+    kind: 'background',
+    name: 'Tempeldiener',
+    summary: 'Du hast dein Leben dem Dienst in einem Tempel gewidmet und vermittelst zwischen Gläubigen und dem Göttlichen.',
+    description:
+      'Du hast im Dienst eines Tempels einer bestimmten Gottheit oder eines Pantheons gestanden. Du führst heilige Riten durch, bringst Opfer dar und leitest Gläubige zu ihrem Glauben. Ob du auch ein Kleriker bist, hängt von deiner Klasse ab.',
+    data: {
+      skills: 'Motiv erkennen, Religion',
+      tools: '',
+      languages: 'Zwei Sprachen deiner Wahl',
+      equipment: '- Ein heiliges Symbol (ein Geschenk bei deiner Weihe)\n- Ein Gebetbuch oder eine Gebetsmühle\n- 5 Räucherstäbchen\n- Gewänder\n- Gewöhnliche Kleidung\n- Ein Beutel mit 15 GM',
+      feature: {
+        name: 'Zuflucht der Gläubigen',
+        text: 'Als Tempeldiener genießt du den Respekt derer, die deinen Glauben teilen, und kannst die religiösen Zeremonien deiner Gottheit durchführen. Du und deine Gefährten könnt in Tempeln und Schreinen deines Glaubens kostenlose Heilung und Pflege erwarten; Materialkomponenten für Zauber musst du selbst stellen. Glaubensgenossen unterstützen dich (aber nur dich) mit einem bescheidenen Lebensstil.\n\nVielleicht bist du mit einem bestimmten Tempel verbunden und hast dort eine Unterkunft. In der Nähe dieses Tempels kannst du die Priester um Hilfe bitten, solange sie nicht gefährlich ist und du dort angesehen bleibst.',
+      },
+      personalityTraits: [
+        'Ich verehre einen bestimmten Helden meines Glaubens und verweise ständig auf seine Taten und sein Vorbild.',
+        'Ich finde selbst zwischen erbitterten Feinden eine gemeinsame Basis, fühle mit ihnen und arbeite stets auf Frieden hin.',
+        'Ich sehe in jedem Ereignis ein Omen. Die Götter sprechen zu uns – wir müssen nur zuhören.',
+        'Nichts kann meinen Optimismus erschüttern.',
+        'Ich zitiere (oder verdrehe) heilige Texte und Sprichwörter in fast jeder Lage.',
+        'Ich bin tolerant (oder intolerant) gegenüber anderen Glaubensrichtungen und respektiere (oder verurteile) die Verehrung anderer Götter.',
+        'Ich habe gutes Essen, Getränke und die feine Gesellschaft der Tempelelite genossen. Ein raues Leben behagt mir nicht.',
+        'Ich habe so lange im Tempel verbracht, dass mir praktische Erfahrung im Umgang mit Menschen draußen fehlt.',
+      ],
+      ideals: [
+        '**Tradition.** Die alten Traditionen von Gottesdienst und Opfer müssen bewahrt und hochgehalten werden. (Rechtschaffen)',
+        '**Nächstenliebe.** Ich versuche immer, Bedürftigen zu helfen – ganz gleich, was es mich kostet. (Gut)',
+        '**Wandel.** Wir müssen helfen, die Veränderungen herbeizuführen, an denen die Götter in der Welt ständig wirken. (Chaotisch)',
+        '**Macht.** Ich hoffe, eines Tages an die Spitze der Hierarchie meines Glaubens aufzusteigen. (Rechtschaffen)',
+        '**Glaube.** Ich vertraue darauf, dass meine Gottheit mein Handeln leitet. Wenn ich hart arbeite, wird alles gut. (Rechtschaffen)',
+        '**Streben.** Ich will mich der Gunst meines Gottes würdig erweisen, indem ich mein Handeln an seinen Lehren messe. (Beliebig)',
+      ],
+      bonds: [
+        'Ich würde sterben, um eine längst verlorene, uralte Reliquie meines Glaubens zurückzubringen.',
+        'Eines Tages werde ich mich an der korrupten Tempelhierarchie rächen, die mich zum Ketzer erklärt hat.',
+        'Ich verdanke mein Leben dem Priester, der mich aufnahm, als meine Eltern starben.',
+        'Alles, was ich tue, tue ich für das einfache Volk.',
+        'Ich tue alles, um den Tempel zu schützen, in dem ich gedient habe.',
+        'Ich will einen heiligen Text bewahren, den meine Feinde für ketzerisch halten und vernichten wollen.',
+      ],
+      flaws: [
+        'Ich urteile streng über andere – und noch strenger über mich selbst.',
+        'Ich vertraue den Mächtigen in der Hierarchie meines Tempels zu sehr.',
+        'Meine Frömmigkeit verleitet mich manchmal dazu, jedem blind zu vertrauen, der sich zu meinem Gott bekennt.',
+        'Ich bin unflexibel in meinem Denken.',
+        'Ich misstraue Fremden und erwarte von ihnen das Schlimmste.',
+        'Habe ich mir ein Ziel gesetzt, werde ich davon besessen – zum Nachteil von allem anderen in meinem Leben.',
       ],
     },
   },

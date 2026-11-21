@@ -16,7 +16,8 @@ export function Modal({ open, title, onClose, children, size = 'max-w-2xl' }: { 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-2 sm:p-6" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div role="dialog" aria-modal="true" aria-labelledby={titleId} className={`parchment relative my-auto w-full ${size}`}>
-        <div className="sticky top-0 z-10 flex items-center gap-2 rounded-t-xl border-b border-parchment-400/60 bg-parchment-50/95 px-5 py-3 dark:border-night-700 dark:bg-night-800/95">
+        {/* Kopfzeile klebt ganz oben (auch über dem Innenabstand), deckend, damit gescrollter Text nicht durchscheint */}
+        <div className="sticky -top-2 z-10 flex items-center gap-2 rounded-t-xl border-b border-parchment-400/60 bg-parchment-50 px-5 py-3 dark:border-night-700 dark:bg-night-800 sm:-top-6">
           <h2 id={titleId} className="flex-1 font-display text-xl font-bold">
             {title}
           </h2>

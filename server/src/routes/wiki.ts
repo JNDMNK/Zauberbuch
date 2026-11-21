@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type { WikiEntry } from '@prisma/client';
-import { classDataSchema, raceDataSchema, WIKI_KINDS, wikiEntrySchema, type WikiEntryDto, type WikiKind } from '@zauberbuch/shared';
+import { backgroundDataSchema, classDataSchema, featDataSchema, raceDataSchema, WIKI_KINDS, wikiEntrySchema, type WikiEntryDto, type WikiKind } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { notFound } from '../lib/errors';
@@ -15,33 +15,46 @@ import { phbSourceId, validSourceId } from './sources';
 export const wikiRouter = Router();
 wikiRouter.use(requireAuth);
 
-function parseData(kind: WikiKind, raw: string) {
+function parseData(raw: string): unknown {
   let json: unknown = {};
   try {
     json = JSON.parse(raw);
   } catch {
     /* leerer Datensatz */
   }
-  return kind === 'race' ? raceDataSchema.parse(json) : classDataSchema.parse(json);
+  return json;
 }
 
 function toDto(e: WikiEntry): WikiEntryDto {
   const kind = (WIKI_KINDS as readonly string[]).includes(e.kind) ? (e.kind as WikiKind) : 'race';
   const base = { id: e.id, name: e.name, summary: e.summary, description: e.description, sourceId: e.sourceId, updatedAt: e.updatedAt.toISOString(), updatedBy: e.updatedBy };
-  return kind === 'race' ? { ...base, kind, data: raceDataSchema.parse(parseData(kind, e.data)) } : { ...base, kind, data: classDataSchema.parse(parseData(kind, e.data)) };
+  const json = parseData(e.data);
+  switch (kind) {
+    case 'class':
+      return { ...base, kind, data: classDataSchema.parse(json) };
+    case 'feat':
+      return { ...base, kind, data: featDataSchema.parse(json) };
+    case 'background':
+      return { ...base, kind, data: backgroundDataSchema.parse(json) };
+    default:
+      return { ...base, kind: 'race', data: raceDataSchema.parse(json) };
+  }
 }
 
-/** Grundausstattung anlegen, wenn das Wiki leer ist */
+/** Grundausstattung je Rubrik anlegen, solange eine Rubrik noch leer ist (z. B. neue Rubriken nach einem Update) */
 export async function seedWiki() {
-  if ((await prisma.wikiEntry.count()) > 0) return 0;
+  const counts = await prisma.wikiEntry.groupBy({ by: ['kind'], _count: { _all: true } });
+  const filled = new Set(counts.filter((c) => c._count._all > 0).map((c) => c.kind));
+  const todo = WIKI_SEED.filter((e) => !filled.has(e.kind));
+  if (todo.length === 0) return 0;
   const sourceId = await phbSourceId();
-  for (const raw of WIKI_SEED) {
+  for (const raw of todo) {
     const e = wikiEntrySchema.parse(raw);
     const data = e.kind === 'class' ? { ...e.data, subclasses: e.data.subclasses.map((s) => ({ ...s, sourceId: s.sourceId ?? sourceId })) } : e.data;
     await prisma.wikiEntry.create({ data: { kind: e.kind, name: e.name, summary: e.summary, description: e.description, sourceId, data: JSON.stringify(data) } });
   }
-  logger.info(`${WIKI_SEED.length} Wiki-Einträge (SRD) angelegt.`);
-  return WIKI_SEED.length;
+  logger.info(`${todo.length} Wiki-Einträge (SRD) angelegt.`);
+  return todo.length;
 }
 
 /**
@@ -52,7 +65,7 @@ export async function backfillSubclassSources() {
   const rows = await prisma.wikiEntry.findMany({ where: { kind: 'class', updatedBy: null, sourceId: { not: null } } });
   let n = 0;
   for (const r of rows) {
-    const data = classDataSchema.parse(parseData('class', r.data));
+    const data = classDataSchema.parse(parseData(r.data));
     if (!data.subclasses.some((s) => !s.sourceId)) continue;
     const next = { ...data, subclasses: data.subclasses.map((s) => ({ ...s, sourceId: s.sourceId ?? r.sourceId })) };
     await prisma.wikiEntry.update({ where: { id: r.id }, data: { data: JSON.stringify(next) } });

@@ -335,7 +335,7 @@ Format:
 ## Wiki
 
 - Hauptmenüpunkt **„Wiki“** (für alle angemeldeten Benutzer) mit den Reitern **Völker**, **Klassen**,
-  **Rüstung**, **Waffen** und **Gegenstände** (Gegenstands-Datenbank, siehe oben) in Kartenansicht; Suche über alle Felder, ein Klick auf die Karte zeigt den vollständigen Eintrag (direkt verlinkbar
+  **Talente**, **Hintergründe**, **Rüstung**, **Waffen** und **Gegenstände** (Gegenstands-Datenbank, siehe oben) in Kartenansicht; Suche über alle Felder, ein Klick auf die Karte zeigt den vollständigen Eintrag (direkt verlinkbar
   über `?tab=class&entry=…`).
 - Felder nach dem **System Reference Document 5.1**:
   - **Volk:** Attributswerterhöhung, Alter, Gesinnung, Größe, Bewegungsrate, Sprachen, Merkmale (Name + Text) und
@@ -344,8 +344,13 @@ Format:
     Werkzeuge, Rettungswürfe, Fertigkeiten), Ausrüstung, Zauberwirken, Klassenmerkmale je Stufe sowie Unterklassen
     (Bezeichnung, z. B. „Arkane Tradition“, mit eigenen Merkmalen je Stufe und **eigener Quelle** – eine Klasse aus
     dem Spielerhandbuch kann so Unterklassen aus Tashas oder Xanathars enthalten).
+  - **Talent:** Voraussetzung, optionale Attributswerterhöhung (Halbtalente), Vorteile, „mehrfach wählbar“.
+  - **Hintergrund:** Fertigkeiten, Werkzeuge, Sprachen, Ausrüstung, Merkmal (Name + Text) und vorgeschlagene
+    Charakterzüge – Persönlichkeitsmerkmale, Ideale, Bindungen und Makel, angezeigt als Würfeltabellen (W8/W6).
   - Dazu Kurzbeschreibung (für die Karte) und Beschreibung; Texte unterstützen Markdown.
-- Beim ersten Start ist das Wiki mit den **9 Völkern und 12 Klassen des SRD 5.1** befüllt (deutsche Zusammenfassung;
+- Beim ersten Start ist das Wiki mit den **9 Völkern, 12 Klassen, dem Talent „Ringer“ und dem Hintergrund
+  „Tempeldiener“ des SRD 5.1** befüllt (mehr enthält das SRD nicht; neue Rubriken werden bei Updates einzeln
+  nachgetragen, solange sie leer sind) (deutsche Zusammenfassung;
   SRD 5.1 von Wizards of the Coast LLC, lizenziert unter CC-BY-4.0).
 - Einträge anlegen, bearbeiten und löschen dürfen nur **Admin und Moderator**.
 
@@ -734,7 +739,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
 | `GET /api/sources` · `POST /api/sources` · `PUT`/`DELETE /api/sources/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Quellen (`{ name, abbreviation? }`) |
-| `GET /api/wiki` · `POST /api/wiki` · `PUT`/`DELETE /api/wiki/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Wiki (`{ kind: 'race' \| 'class', name, summary?, description?, data }`) |
+| `GET /api/wiki` · `POST /api/wiki` · `PUT`/`DELETE /api/wiki/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Wiki (`{ kind: 'race' \| 'class' \| 'feat' \| 'background', name, summary?, description?, data }`) |
 | `GET`/`POST /api/dm-notes/stories/:storyId` · `PUT …/order` · `PUT`/`DELETE /api/dm-notes/:id` | DM der Geschichte | DM-Notizen (`{ title, body? }`; Reihenfolge `{ ids }`) |
 | `GET /api/catalog?storyId=` | angemeldet | Wirksame Gegenstands-Datenbank (Standard bzw. Geschichte) |
 | `POST /api/catalog/standard` · `PUT`/`DELETE /api/catalog/:id` | Moderator/Admin | Standard-Datenbank bzw. eigene Einträge bearbeiten (`{ category, name, description?, weight?, value?, ac?, strength?, damageDice?, damageType? }`) |

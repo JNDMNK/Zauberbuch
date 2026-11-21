@@ -1,7 +1,22 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Save, Trash2 } from 'lucide-react';
-import { HIT_DICE, classDataSchema, raceDataSchema, type WikiClassData, type WikiEntryDto, type WikiEntryInput, type WikiKind, type WikiLevelFeature, type WikiRaceData, type WikiTrait } from '@zauberbuch/shared';
+import {
+  HIT_DICE,
+  backgroundDataSchema,
+  classDataSchema,
+  featDataSchema,
+  raceDataSchema,
+  type WikiBackgroundData,
+  type WikiFeatData,
+  type WikiClassData,
+  type WikiEntryDto,
+  type WikiEntryInput,
+  type WikiKind,
+  type WikiLevelFeature,
+  type WikiRaceData,
+  type WikiTrait,
+} from '@zauberbuch/shared';
 import { errorMessage } from '../../lib/errors';
 import { useToast } from '../../context/ToastContext';
 import { Modal } from '../Modal';
@@ -49,12 +64,33 @@ function TraitList({ prefix, list, onChange }: { prefix: string; list: WikiTrait
       {list.map((f, i) => (
         <div key={i} className="space-y-1.5 rounded-md bg-parchment-200/40 p-2 dark:bg-night-900/40">
           <div className="flex items-center gap-2">
-            <input className="input font-semibold" value={f.name} maxLength={120} onChange={(e) => upd(i, { name: e.target.value })} placeholder={t('wiki.form.traitName')} aria-label={`${prefix} ${i + 1}: ${t('wiki.form.traitName')}`} />
-            <button type="button" className="btn-icon shrink-0 text-red-700 dark:text-red-400" onClick={() => onChange(list.filter((_, j) => j !== i))} title={t('common.delete')} aria-label={`${t('common.delete')}: ${f.name || `${prefix} ${i + 1}`}`}>
+            <input
+              className="input font-semibold"
+              value={f.name}
+              maxLength={120}
+              onChange={(e) => upd(i, { name: e.target.value })}
+              placeholder={t('wiki.form.traitName')}
+              aria-label={`${prefix} ${i + 1}: ${t('wiki.form.traitName')}`}
+            />
+            <button
+              type="button"
+              className="btn-icon shrink-0 text-red-700 dark:text-red-400"
+              onClick={() => onChange(list.filter((_, j) => j !== i))}
+              title={t('common.delete')}
+              aria-label={`${t('common.delete')}: ${f.name || `${prefix} ${i + 1}`}`}
+            >
               <Trash2 className="h-4 w-4" />
             </button>
           </div>
-          <textarea className="input" rows={3} value={f.text} maxLength={5000} onChange={(e) => upd(i, { text: e.target.value })} placeholder={t('wiki.form.traitText')} aria-label={`${prefix} ${i + 1}: ${t('wiki.form.traitText')}`} />
+          <textarea
+            className="input"
+            rows={3}
+            value={f.text}
+            maxLength={5000}
+            onChange={(e) => upd(i, { text: e.target.value })}
+            placeholder={t('wiki.form.traitText')}
+            aria-label={`${prefix} ${i + 1}: ${t('wiki.form.traitText')}`}
+          />
         </div>
       ))}
       <button type="button" className="btn-ghost !px-2 !py-1 text-sm" onClick={() => onChange([...list, { name: '', text: '' }])}>
@@ -83,12 +119,33 @@ function FeatureList({ prefix, list, onChange }: { prefix: string; list: WikiLev
               aria-label={`${prefix} ${i + 1}: ${t('wiki.level')}`}
               title={t('wiki.level')}
             />
-            <input className="input font-semibold" value={f.name} maxLength={120} onChange={(e) => upd(i, { name: e.target.value })} placeholder={t('wiki.form.featureName')} aria-label={`${prefix} ${i + 1}: ${t('wiki.form.featureName')}`} />
-            <button type="button" className="btn-icon shrink-0 text-red-700 dark:text-red-400" onClick={() => onChange(list.filter((_, j) => j !== i))} title={t('common.delete')} aria-label={`${t('common.delete')}: ${f.name || `${prefix} ${i + 1}`}`}>
+            <input
+              className="input font-semibold"
+              value={f.name}
+              maxLength={120}
+              onChange={(e) => upd(i, { name: e.target.value })}
+              placeholder={t('wiki.form.featureName')}
+              aria-label={`${prefix} ${i + 1}: ${t('wiki.form.featureName')}`}
+            />
+            <button
+              type="button"
+              className="btn-icon shrink-0 text-red-700 dark:text-red-400"
+              onClick={() => onChange(list.filter((_, j) => j !== i))}
+              title={t('common.delete')}
+              aria-label={`${t('common.delete')}: ${f.name || `${prefix} ${i + 1}`}`}
+            >
               <Trash2 className="h-4 w-4" />
             </button>
           </div>
-          <textarea className="input" rows={2} value={f.text} maxLength={5000} onChange={(e) => upd(i, { text: e.target.value })} placeholder={t('wiki.form.traitText')} aria-label={`${prefix} ${i + 1}: ${t('wiki.form.traitText')}`} />
+          <textarea
+            className="input"
+            rows={2}
+            value={f.text}
+            maxLength={5000}
+            onChange={(e) => upd(i, { text: e.target.value })}
+            placeholder={t('wiki.form.traitText')}
+            aria-label={`${prefix} ${i + 1}: ${t('wiki.form.traitText')}`}
+          />
         </div>
       ))}
       <button type="button" className="btn-ghost !px-2 !py-1 text-sm" onClick={() => onChange([...list, { level: list.at(-1)?.level ?? 1, name: '', text: '' }])}>
@@ -119,14 +176,29 @@ function RaceFields({ d, set }: { d: WikiRaceData; set: (d: WikiRaceData) => voi
       </Group>
       <Group title={t('wiki.race.subraces')}>
         {d.subraces.map((s, i) => {
-          const upd = (p: Partial<WikiRaceData['subraces'][number]>) => f('subraces', d.subraces.map((x, j) => (j === i ? { ...x, ...p } : x)));
+          const upd = (p: Partial<WikiRaceData['subraces'][number]>) =>
+            f(
+              'subraces',
+              d.subraces.map((x, j) => (j === i ? { ...x, ...p } : x)),
+            );
           return (
             <div key={i} className="space-y-2 rounded-lg border border-parchment-400/60 p-3 dark:border-night-700">
               <div className="flex items-end gap-2">
                 <div className="flex-1">
                   <TextInput id={`w-sr-${i}`} label={t('wiki.race.subraceName')} value={s.name} onChange={(v) => upd({ name: v })} max={120} />
                 </div>
-                <button type="button" className="btn-icon text-red-700 dark:text-red-400" onClick={() => f('subraces', d.subraces.filter((_, j) => j !== i))} title={t('common.delete')} aria-label={`${t('common.delete')}: ${s.name}`}>
+                <button
+                  type="button"
+                  className="btn-icon text-red-700 dark:text-red-400"
+                  onClick={() =>
+                    f(
+                      'subraces',
+                      d.subraces.filter((_, j) => j !== i),
+                    )
+                  }
+                  title={t('common.delete')}
+                  aria-label={`${t('common.delete')}: ${s.name}`}
+                >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
@@ -191,14 +263,29 @@ function ClassFields({ d, set }: { d: WikiClassData; set: (d: WikiClassData) => 
       <Group title={t('wiki.class.subclasses')}>
         <TextInput id="w-sct" label={t('wiki.class.subclassTitle')} value={d.subclassTitle} onChange={(v) => f('subclassTitle', v)} max={80} placeholder={t('wiki.class.subclassTitlePlaceholder')} />
         {d.subclasses.map((s, i) => {
-          const upd = (p: Partial<WikiClassData['subclasses'][number]>) => f('subclasses', d.subclasses.map((x, j) => (j === i ? { ...x, ...p } : x)));
+          const upd = (p: Partial<WikiClassData['subclasses'][number]>) =>
+            f(
+              'subclasses',
+              d.subclasses.map((x, j) => (j === i ? { ...x, ...p } : x)),
+            );
           return (
             <div key={i} className="space-y-2 rounded-lg border border-parchment-400/60 p-3 dark:border-night-700">
               <div className="flex items-end gap-2">
                 <div className="flex-1">
                   <TextInput id={`w-sc-${i}`} label={t('wiki.class.subclassName')} value={s.name} onChange={(v) => upd({ name: v })} max={120} />
                 </div>
-                <button type="button" className="btn-icon text-red-700 dark:text-red-400" onClick={() => f('subclasses', d.subclasses.filter((_, j) => j !== i))} title={t('common.delete')} aria-label={`${t('common.delete')}: ${s.name}`}>
+                <button
+                  type="button"
+                  className="btn-icon text-red-700 dark:text-red-400"
+                  onClick={() =>
+                    f(
+                      'subclasses',
+                      d.subclasses.filter((_, j) => j !== i),
+                    )
+                  }
+                  title={t('common.delete')}
+                  aria-label={`${t('common.delete')}: ${s.name}`}
+                >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
@@ -217,6 +304,72 @@ function ClassFields({ d, set }: { d: WikiClassData; set: (d: WikiClassData) => 
   );
 }
 
+function FeatFields({ d, set }: { d: WikiFeatData; set: (d: WikiFeatData) => void }) {
+  const { t } = useTranslation();
+  const f = <K extends keyof WikiFeatData>(k: K, v: WikiFeatData[K]) => set({ ...d, [k]: v });
+  return (
+    <Group title={t('wiki.feat.title')}>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <TextInput id="w-pre" label={t('wiki.feat.prerequisite')} value={d.prerequisite} onChange={(v) => f('prerequisite', v)} placeholder={t('wiki.feat.prerequisitePlaceholder')} />
+        <TextInput id="w-fai" label={t('wiki.race.abilityIncrease')} value={d.abilityIncrease} onChange={(v) => f('abilityIncrease', v)} max={200} placeholder={t('wiki.feat.abilityPlaceholder')} />
+      </div>
+      <label className="chip-check">
+        <input type="checkbox" checked={d.repeatable} onChange={(e) => f('repeatable', e.target.checked)} />
+        {t('wiki.feat.repeatableText')}
+      </label>
+      <div>
+        <label htmlFor="w-benefits" className="label">
+          {t('wiki.feat.benefits')}
+        </label>
+        <MarkdownEditor id="w-benefits" value={d.benefits} onChange={(v) => f('benefits', v.slice(0, 5000))} rows={6} />
+      </div>
+    </Group>
+  );
+}
+
+/** Mehrzeiliges Feld: eine Zeile = ein Eintrag (z. B. Persönlichkeitsmerkmale) */
+function LinesInput({ id, label, value, onChange, hint }: { id: string; label: string; value: string[]; onChange: (v: string[]) => void; hint: string }) {
+  return (
+    <div>
+      <label htmlFor={id} className="label">
+        {label}
+      </label>
+      <textarea id={id} className="input" rows={Math.max(3, value.length + 1)} value={value.join('\n')} onChange={(e) => onChange(e.target.value.split('\n').slice(0, 20))} />
+      <p className="mt-0.5 text-xs text-parchment-700 dark:text-parchment-400">{hint}</p>
+    </div>
+  );
+}
+
+function BackgroundFields({ d, set }: { d: WikiBackgroundData; set: (d: WikiBackgroundData) => void }) {
+  const { t } = useTranslation();
+  const f = <K extends keyof WikiBackgroundData>(k: K, v: WikiBackgroundData[K]) => set({ ...d, [k]: v });
+  return (
+    <>
+      <Group title={t('wiki.background.proficiencies')}>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <TextInput id="w-bskills" label={t('wiki.background.skills')} value={d.skills} onChange={(v) => f('skills', v)} placeholder="Motiv erkennen, Religion" />
+          <TextInput id="w-btools" label={t('wiki.background.tools')} value={d.tools} onChange={(v) => f('tools', v)} />
+          <TextInput id="w-blang" label={t('wiki.background.languages')} value={d.languages} onChange={(v) => f('languages', v)} />
+        </div>
+      </Group>
+      <Group title={t('wiki.class.equipment')}>
+        <MarkdownEditor id="w-bequip" value={d.equipment} onChange={(v) => f('equipment', v.slice(0, 2000))} rows={4} />
+      </Group>
+      <Group title={t('wiki.background.feature')}>
+        <TextInput id="w-bfname" label={t('wiki.name')} value={d.feature.name} onChange={(v) => f('feature', { ...d.feature, name: v })} max={120} />
+        <TextArea id="w-bftext" label={t('wiki.description')} value={d.feature.text} onChange={(v) => f('feature', { ...d.feature, text: v })} max={5000} rows={5} />
+      </Group>
+      <Group title={t('wiki.background.characteristics')}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {(['personalityTraits', 'ideals', 'bonds', 'flaws'] as const).map((k) => (
+            <LinesInput key={k} id={`w-b-${k}`} label={t(`wiki.background.${k}`)} value={d[k]} onChange={(v) => f(k, v)} hint={t('wiki.background.linesHint')} />
+          ))}
+        </div>
+      </Group>
+    </>
+  );
+}
+
 /** Wiki-Eintrag anlegen oder bearbeiten (Admin/Moderator) */
 export function WikiForm({ open, kind, entry, onClose, onSave }: { open: boolean; kind: WikiKind; entry: WikiEntryDto | null; onClose: () => void; onSave: (input: WikiEntryInput) => Promise<void> }) {
   const { t } = useTranslation();
@@ -228,6 +381,8 @@ export function WikiForm({ open, kind, entry, onClose, onSave }: { open: boolean
   const [sourceId, setSourceId] = useState<string | null>(null);
   const [race, setRace] = useState<WikiRaceData>(() => raceDataSchema.parse({}));
   const [cls, setCls] = useState<WikiClassData>(() => classDataSchema.parse({}));
+  const [feat, setFeat] = useState<WikiFeatData>(() => featDataSchema.parse({}));
+  const [bg, setBg] = useState<WikiBackgroundData>(() => backgroundDataSchema.parse({}));
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (!open) return;
@@ -237,6 +392,8 @@ export function WikiForm({ open, kind, entry, onClose, onSave }: { open: boolean
     setSourceId(entry?.sourceId ?? null);
     setRace(entry?.kind === 'race' ? entry.data : raceDataSchema.parse({}));
     setCls(entry?.kind === 'class' ? entry.data : classDataSchema.parse({}));
+    setFeat(entry?.kind === 'feat' ? entry.data : featDataSchema.parse({}));
+    setBg(entry?.kind === 'background' ? entry.data : backgroundDataSchema.parse({}));
   }, [open, entry]);
 
   const submit = async (e: FormEvent) => {
@@ -245,7 +402,19 @@ export function WikiForm({ open, kind, entry, onClose, onSave }: { open: boolean
     setBusy(true);
     try {
       const base = { name: name.trim(), summary: summary.trim(), description, sourceId };
-      await onSave(k === 'race' ? { kind: 'race', ...base, data: race } : { kind: 'class', ...base, data: cls });
+      await onSave(
+        k === 'race'
+          ? { kind: 'race', ...base, data: race }
+          : k === 'class'
+            ? { kind: 'class', ...base, data: cls }
+            : k === 'feat'
+              ? { kind: 'feat', ...base, data: feat }
+              : {
+                  kind: 'background',
+                  ...base,
+                  data: { ...bg, personalityTraits: bg.personalityTraits.filter(Boolean), ideals: bg.ideals.filter(Boolean), bonds: bg.bonds.filter(Boolean), flaws: bg.flaws.filter(Boolean) },
+                },
+      );
     } catch (err) {
       toast.error(errorMessage(t, err));
     } finally {
@@ -272,7 +441,15 @@ export function WikiForm({ open, kind, entry, onClose, onSave }: { open: boolean
           </label>
           <MarkdownEditor id="w-desc" value={description} onChange={(v) => setDescription(v.slice(0, 10000))} rows={4} />
         </div>
-        {k === 'race' ? <RaceFields d={race} set={setRace} /> : <ClassFields d={cls} set={setCls} />}
+        {k === 'race' ? (
+          <RaceFields d={race} set={setRace} />
+        ) : k === 'class' ? (
+          <ClassFields d={cls} set={setCls} />
+        ) : k === 'feat' ? (
+          <FeatFields d={feat} set={setFeat} />
+        ) : (
+          <BackgroundFields d={bg} set={setBg} />
+        )}
         <div className="flex justify-end gap-2">
           <button type="button" className="btn-secondary" onClick={onClose}>
             {t('common.cancel')}

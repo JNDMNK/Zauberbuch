@@ -5,7 +5,7 @@ import { sourceIdSchema } from './sources';
  * Wiki (für alle angemeldeten Benutzer lesbar, bearbeitbar von Admin und Moderator).
  * Rubriken nach dem SRD 5.1: Völker (Rassen) und Klassen. Die Detailfelder liegen je Rubrik als JSON vor.
  */
-export const WIKI_KINDS = ['race', 'class'] as const;
+export const WIKI_KINDS = ['race', 'class', 'feat', 'background'] as const;
 export type WikiKind = (typeof WIKI_KINDS)[number];
 
 const text = (max: number) => z.string().trim().max(max).catch('').default('');
@@ -90,9 +90,51 @@ const classObject = z.object({
 export const classDataSchema = classObject.catch(() => classObject.parse({})).default({});
 export type WikiClassData = z.output<typeof classDataSchema>;
 
+/** Liste einfacher Texte (z. B. Persönlichkeitsmerkmale); leere Zeilen fallen weg */
+const lines = (max: number) =>
+  z
+    .array(z.string().trim().max(500))
+    .max(max)
+    .catch([])
+    .default([])
+    .transform((l) => l.filter(Boolean));
+
+/** Talent nach SRD: Voraussetzung, optionale Attributswerterhöhung, Vorteile */
+const featObject = z.object({
+  prerequisite: text(300),
+  /** z. B. „Stärke oder Geschicklichkeit +1“ (bei Halbtalenten) */
+  abilityIncrease: text(200),
+  /** Vorteile als Markdown (meist eine Liste) */
+  benefits: md(5000),
+  /** Kann mehrfach gewählt werden */
+  repeatable: z.boolean().catch(false).default(false),
+});
+export const featDataSchema = featObject.catch(() => featObject.parse({})).default({});
+export type WikiFeatData = z.output<typeof featDataSchema>;
+
+/** Hintergrund nach SRD: Übung, Sprachen, Ausrüstung, Merkmal, vorgeschlagene Charakterzüge */
+const backgroundObject = z.object({
+  skills: text(300),
+  tools: text(300),
+  languages: text(300),
+  equipment: md(2000),
+  feature: z
+    .object({ name: z.string().trim().max(120).default(''), text: md(5000) })
+    .catch({ name: '', text: '' })
+    .default({}),
+  personalityTraits: lines(20),
+  ideals: lines(20),
+  bonds: lines(20),
+  flaws: lines(20),
+});
+export const backgroundDataSchema = backgroundObject.catch(() => backgroundObject.parse({})).default({});
+export type WikiBackgroundData = z.output<typeof backgroundDataSchema>;
+
 export const wikiEntrySchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('race'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: raceDataSchema }),
   z.object({ kind: z.literal('class'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: classDataSchema }),
+  z.object({ kind: z.literal('feat'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: featDataSchema }),
+  z.object({ kind: z.literal('background'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: backgroundDataSchema }),
 ]);
 export type WikiEntryInput = z.input<typeof wikiEntrySchema>;
 
@@ -106,4 +148,8 @@ interface WikiBase {
   updatedAt: string;
   updatedBy: string | null;
 }
-export type WikiEntryDto = (WikiBase & { kind: 'race'; data: WikiRaceData }) | (WikiBase & { kind: 'class'; data: WikiClassData });
+export type WikiEntryDto =
+  | (WikiBase & { kind: 'race'; data: WikiRaceData })
+  | (WikiBase & { kind: 'class'; data: WikiClassData })
+  | (WikiBase & { kind: 'feat'; data: WikiFeatData })
+  | (WikiBase & { kind: 'background'; data: WikiBackgroundData });

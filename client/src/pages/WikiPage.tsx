@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Footprints, GraduationCap, Heart, Pencil, Plus, Search, Shield, Trash2, Users2 } from 'lucide-react';
+import { Award, Footprints, GraduationCap, Heart, Lock, Pencil, Plus, Repeat, ScrollText, Search, Shield, Sparkles, Star, Trash2, Users2 } from 'lucide-react';
 import { CATALOG_CATEGORIES, WIKI_KINDS, type CatalogCategory, type CatalogItemDto, type WikiEntryDto, type WikiKind } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
@@ -22,8 +22,13 @@ const TABS = [...WIKI_KINDS, ...CATALOG_CATEGORIES] as const;
 const isCatalog = (t: string): t is CatalogCategory => (CATALOG_CATEGORIES as readonly string[]).includes(t);
 type Tab = (typeof TABS)[number];
 
-const KIND_ICON: Record<WikiKind, typeof Users2> = { race: Users2, class: GraduationCap };
-const KIND_ACCENT: Record<WikiKind, string> = { race: '!border-t-emerald-600 dark:!border-t-emerald-400', class: '!border-t-sky-600 dark:!border-t-sky-400' };
+const KIND_ICON: Record<WikiKind, typeof Users2> = { race: Users2, class: GraduationCap, feat: Award, background: ScrollText };
+const KIND_ACCENT: Record<WikiKind, string> = {
+  race: '!border-t-emerald-600 dark:!border-t-emerald-400',
+  class: '!border-t-sky-600 dark:!border-t-sky-400',
+  feat: '!border-t-amber-500 dark:!border-t-amber-400',
+  background: '!border-t-violet-600 dark:!border-t-violet-400',
+};
 
 /**
  * Wiki (für alle angemeldeten Benutzer): Rubriken Völker und Klassen in Kartenansicht, Klick öffnet den Eintrag.
@@ -35,7 +40,7 @@ export function WikiPage() {
   const { isEditor } = useAuth();
   const [params, setParams] = useSearchParams();
   const tab: Tab = (TABS as readonly string[]).includes(params.get('tab') ?? '') ? (params.get('tab') as Tab) : 'race';
-  const kind: WikiKind = tab === 'class' ? 'class' : 'race';
+  const kind: WikiKind = isCatalog(tab) ? 'race' : tab;
   const [entries, setEntries] = useState<WikiEntryDto[] | null>(null);
   const [q, setQ] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
@@ -78,7 +83,11 @@ export function WikiPage() {
   const needle = q.trim().toLocaleLowerCase('de');
   const counts = useMemo(() => Object.fromEntries(WIKI_KINDS.map((k) => [k, (entries ?? []).filter((e) => e.kind === k).length])) as Record<WikiKind, number>, [entries]);
   const shown = useMemo(
-    () => (entries ?? []).filter((e) => e.kind === kind && matchesSource(sourceFilter, e.sourceId) && (!needle || `${e.name}\n${e.summary}\n${e.description}\n${JSON.stringify(e.data)}`.toLocaleLowerCase('de').includes(needle))),
+    () =>
+      (entries ?? []).filter(
+        (e) =>
+          e.kind === kind && matchesSource(sourceFilter, e.sourceId) && (!needle || `${e.name}\n${e.summary}\n${e.description}\n${JSON.stringify(e.data)}`.toLocaleLowerCase('de').includes(needle)),
+      ),
     [entries, kind, needle, sourceFilter],
   );
   const opened = entries?.find((e) => e.id === openId) ?? null;
@@ -98,16 +107,31 @@ export function WikiPage() {
     }
   };
 
-  const facts = (e: WikiEntryDto) =>
-    e.kind === 'race'
-      ? [
+  const facts = (e: WikiEntryDto) => {
+    switch (e.kind) {
+      case 'race':
+        return [
           { Icon: Shield, label: t('wiki.race.abilityIncreaseShort'), value: e.data.abilityIncrease },
           { Icon: Footprints, label: t('wiki.race.speed'), value: e.data.speed.split(';')[0] },
-        ]
-      : [
+        ];
+      case 'class':
+        return [
           { Icon: Heart, label: t('wiki.class.hitDie'), value: e.data.hitDie ? `1${e.data.hitDie.replace('d', 'W')}` : '' },
           { Icon: Shield, label: t('wiki.class.primaryAbility'), value: e.data.primaryAbility },
         ];
+      case 'feat':
+        return [
+          { Icon: Lock, label: t('wiki.feat.prerequisite'), value: e.data.prerequisite || t('wiki.feat.none') },
+          { Icon: Shield, label: t('wiki.race.abilityIncreaseShort'), value: e.data.abilityIncrease },
+          { Icon: Repeat, label: t('wiki.feat.repeatable'), value: e.data.repeatable ? t('wiki.feat.yes') : '' },
+        ];
+      case 'background':
+        return [
+          { Icon: Sparkles, label: t('wiki.background.skills'), value: e.data.skills },
+          { Icon: Star, label: t('wiki.background.feature'), value: e.data.feature.name },
+        ];
+    }
+  };
 
   if (error) return <Alert>{errorMessage(t, error)}</Alert>;
   if (!entries) return <PageSpinner />;
@@ -166,7 +190,12 @@ export function WikiPage() {
             <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {shown.map((e) => {
                 const Icon = KIND_ICON[e.kind];
-                const sub = e.kind === 'race' ? e.data.subraces.map((s) => ({ name: s.name, sourceId: null as string | null })) : e.data.subclasses.map((s) => ({ name: s.name, sourceId: s.sourceId }));
+                const sub =
+                  e.kind === 'race'
+                    ? e.data.subraces.map((s) => ({ name: s.name, sourceId: null as string | null }))
+                    : e.kind === 'class'
+                      ? e.data.subclasses.map((s) => ({ name: s.name, sourceId: s.sourceId }))
+                      : [];
                 return (
                   <li key={e.id}>
                     <article className={`parchment relative flex h-full flex-col gap-2 border-t-4 p-4 transition hover:-translate-y-0.5 hover:shadow-cardhover ${KIND_ACCENT[e.kind]}`}>
@@ -216,7 +245,11 @@ export function WikiPage() {
                           {sub.map((s) => {
                             const src = byId(s.sourceId);
                             return (
-                              <span key={s.name} className="badge bg-parchment-200 text-parchment-900 dark:bg-night-700 dark:text-parchment-200" title={src ? `${t('sources.source')}: ${src.name}` : undefined}>
+                              <span
+                                key={s.name}
+                                className="badge bg-parchment-200 text-parchment-900 dark:bg-night-700 dark:text-parchment-200"
+                                title={src ? `${t('sources.source')}: ${src.name}` : undefined}
+                              >
                                 {s.name}
                                 {src?.abbreviation && <span className="ml-1 font-normal opacity-70">· {src.abbreviation}</span>}
                               </span>
