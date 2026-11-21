@@ -1,8 +1,13 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash2 } from 'lucide-react';
-import { OptionListField } from './OptionListField';
+import { ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { OptionListField, type OptionGroup } from './OptionListField';
+import { Modal } from '../Modal';
+import { CatalogCard } from '../catalog/CatalogCard';
 import {
   ABILITIES,
+  TOOL_TYPES,
+  type CatalogItemDto,
   MAX_ATTACKS,
   SKILLS,
   abilityModifier,
@@ -333,6 +338,69 @@ function AttackRow({ index, attack }: { index: number; attack: SheetAttack }) {
   );
 }
 
+/**
+ * Werkzeuge & Andere: Auswahl aus der Wiki-Ausrüstung (Gegenstands-Datenbank der Geschichte bzw. Standard), nach Art
+ * gruppiert, mit Link zur Karte. Eine selbst angepasste Werkzeugliste der Geschichte liefert zusätzliche Einträge.
+ */
+const TOOL_ALIASES: Record<string, string> = {
+  Alchemistenlabor: 'Alchemistenausrüstung',
+  Brauereivorräte: 'Brauerausrüstung',
+  Glasbläserwerkzeuge: 'Glasbläserwerkzeug',
+  Holzschnitzwerkzeuge: 'Holzschnitzerwerkzeug',
+  Juwelierwerkzeuge: 'Juwelierswerkzeug',
+  Kalligraphiewerkzeuge: 'Kalligrafieausrüstung',
+  Ledererwerkzeuge: 'Lederverarbeitungswerkzeug',
+  Malutensilien: 'Malerausrüstung',
+  Maurerwerkzeuge: 'Steinmetzwerkzeug',
+  Schmiedewerkzeuge: 'Schmiedewerkzeug',
+  Schreinerwerkzeuge: 'Zimmermannswerkzeug',
+  Schusterwerkzeuge: 'Schusterwerkzeug',
+  Töpferwerkzeuge: 'Töpferwerkzeug',
+  Tüftlerwerkzeuge: 'Kesselflickerwerkzeug',
+  Weberwerkzeuge: 'Weberwerkzeug',
+  'Satz Spielkarten': 'Kartenspiel',
+  'Satz Würfel': 'Würfelspiel',
+  Navigationswerkzeuge: 'Navigationswerkzeug',
+};
+
+function ToolsField({ tools }: { tools: string[] }) {
+  const { t } = useTranslation();
+  const { catalog } = useSheet();
+  const [open, setOpen] = useState<CatalogItemDto | null>(null);
+  const toolItems = catalog.filter((c) => c.category === 'tool');
+  const byName = new Map(toolItems.map((c) => [c.name.toLocaleLowerCase('de'), c]));
+  // Bezeichnungen der früheren Standardliste → Name im Wiki (damit alte Einträge verknüpft sind)
+  const find = (value: string) => byName.get(value.toLocaleLowerCase('de')) ?? byName.get((TOOL_ALIASES[value] ?? '').toLocaleLowerCase('de'));
+  const sorted = (l: string[]) => [...l].sort((a, b) => a.localeCompare(b, 'de'));
+  // Einträge der Werkzeugliste der Geschichte, die es im Wiki nicht gibt, bleiben unter „Weitere“ wählbar
+  const extra = tools.filter((x) => !find(x));
+  const groups: OptionGroup[] = [
+    ...TOOL_TYPES.map((tt) => ({ label: t(`catalog.toolTypes.${tt}`), options: sorted(toolItems.filter((c) => c.toolType === tt).map((c) => c.name)) })),
+    { label: t('sheet.toolsOther'), options: sorted([...toolItems.filter((c) => !c.toolType).map((c) => c.name), ...extra]) },
+  ];
+  return (
+    <>
+      <OptionListField
+        path={['proficiencies', 'tools']}
+        label={t('sheet.tools')}
+        options={[]}
+        groups={groups}
+        renderAction={(value) => {
+          const item = find(value);
+          return item ? (
+            <button type="button" className="btn-icon h-7 w-7 shrink-0 print:hidden" onClick={() => setOpen(item)} title={t('catalog.openCard')} aria-label={`${t('catalog.openCard')}: ${item.name}`}>
+              <ExternalLink className="h-3.5 w-3.5" />
+            </button>
+          ) : null;
+        }}
+      />
+      <Modal open={!!open} title={open ? t('catalog.categoriesOne.tool') : ''} onClose={() => setOpen(null)} size="max-w-md">
+        {open && <CatalogCard item={open} />}
+      </Modal>
+    </>
+  );
+}
+
 function Proficiencies() {
   const { languages, tools } = useSheet();
   const { t } = useTranslation();
@@ -359,7 +427,7 @@ function Proficiencies() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <OptionListField path={['proficiencies', 'languages']} label={t('sheet.languages')} options={languages} />
-          <OptionListField path={['proficiencies', 'tools']} label={t('sheet.tools')} options={tools} />
+          <ToolsField tools={tools} />
         </div>
       </div>
     </Box>

@@ -657,7 +657,8 @@
       "saved": "Settings saved"
     },
     "dailyCostHint": "From the story's lifestyle table (or the defaults)",
-    "addEntry": "Add another"
+    "addEntry": "Add another",
+    "toolsOther": "Other"
   },
   "board": {
     "heading": "Info board",
@@ -1031,7 +1032,7 @@
     "languages": "Languages",
     "tools": "Tools & other",
     "languagesHint": "Choices for “Languages” on the character sheet (proficiencies & languages) for sheets of this story.",
-    "toolsHint": "Choices for “Tools & other” on the character sheet for sheets of this story.",
+    "toolsHint": "Additional entries for “Tools & other” on the character sheet. The tools themselves come from the wiki (tools) or this story’s items; use this list only for entries not listed there. While the default list is active it is not shown in addition.",
     "languagePlaceholder": "New language, e.g. Thorass",
     "toolPlaceholder": "New entry, e.g. airship",
     "addOption": "Add",

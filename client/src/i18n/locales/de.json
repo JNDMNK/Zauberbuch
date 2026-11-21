@@ -657,7 +657,8 @@
       "saved": "Einstellungen gespeichert"
     },
     "dailyCostHint": "Aus der Lebensstil-Tabelle der Geschichte (bzw. den Standardwerten)",
-    "addEntry": "Weitere hinzufügen"
+    "addEntry": "Weitere hinzufügen",
+    "toolsOther": "Weitere"
   },
   "board": {
     "heading": "Infotafel",
@@ -1031,7 +1032,7 @@
     "languages": "Sprachen",
     "tools": "Werkzeuge & andere",
     "languagesHint": "Auswahl für „Sprachen“ im Charakterbogen (Übung und Sprachen) bei Bögen dieser Geschichte.",
-    "toolsHint": "Auswahl für „Werkzeuge & andere“ im Charakterbogen bei Bögen dieser Geschichte.",
+    "toolsHint": "Zusätzliche Einträge für „Werkzeuge & andere“ im Charakterbogen. Die Werkzeuge selbst kommen aus dem Wiki (Ausrüstung) bzw. aus den Gegenständen dieser Geschichte; nutze diese Liste nur für Einträge, die dort nicht stehen. Solange die Standardliste aktiv ist, wird sie nicht zusätzlich angezeigt.",
     "languagePlaceholder": "Neue Sprache, z. B. Thorass",
     "toolPlaceholder": "Neuer Eintrag, z. B. Luftschiff",
     "addOption": "Hinzufügen",

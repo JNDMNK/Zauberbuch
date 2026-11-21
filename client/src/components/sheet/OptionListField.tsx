@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, X } from 'lucide-react';
 import { getIn, useSheet, type Path } from './SheetContext';
@@ -8,7 +8,27 @@ import { getIn, useSheet, type Path } from './SheetContext';
  * Gespeichert wird wie bisher ein Text mit einem Eintrag je Zeile; frühere freie Einträge, die nicht in der
  * Auswahlliste stehen, bleiben erhalten und wählbar.
  */
-export function OptionListField({ path, label, options }: { path: Path; label: string; options: string[] }) {
+/** Optionale Gruppierung der Auswahl (z. B. Werkzeuge nach Art) */
+export interface OptionGroup {
+  label: string;
+  options: string[];
+}
+
+export function OptionListField({
+  path,
+  label,
+  options,
+  groups,
+  renderAction,
+}: {
+  path: Path;
+  label: string;
+  options: string[];
+  /** Statt einer flachen Liste: Auswahl in Gruppen */
+  groups?: OptionGroup[];
+  /** Zusatzknopf je gewähltem Eintrag (z. B. Karte öffnen) */
+  renderAction?: (value: string) => ReactNode;
+}) {
   const { t } = useTranslation();
   const { sheet, set, readOnly } = useSheet();
   const id = useId();
@@ -44,7 +64,13 @@ export function OptionListField({ path, label, options }: { path: Path; label: s
       <ul className="flex-1 space-y-1.5">
         {rows.map((value, i) => {
           const chosen = new Set(values.filter((_, j) => j !== i).map((v) => v.toLocaleLowerCase('de')));
-          const known = value === null || options.some((o) => o.toLocaleLowerCase('de') === value.toLocaleLowerCase('de'));
+          const all = groups ? groups.flatMap((g) => g.options) : options;
+          const known = value === null || all.some((o) => o.toLocaleLowerCase('de') === value.toLocaleLowerCase('de'));
+          const opt = (o: string) => (
+            <option key={o} value={o} disabled={chosen.has(o.toLocaleLowerCase('de'))}>
+              {o}
+            </option>
+          );
           return (
             <li key={i} className="flex items-center gap-1">
               <select
@@ -55,13 +81,18 @@ export function OptionListField({ path, label, options }: { path: Path; label: s
                 aria-label={`${label} ${i + 1}`}
               >
                 <option value="">–</option>
-                {options.map((o) => (
-                  <option key={o} value={o} disabled={chosen.has(o.toLocaleLowerCase('de'))}>
-                    {o}
-                  </option>
-                ))}
+                {groups
+                  ? groups
+                      .filter((g) => g.options.length > 0)
+                      .map((g) => (
+                        <optgroup key={g.label} label={g.label}>
+                          {g.options.map(opt)}
+                        </optgroup>
+                      ))
+                  : options.map(opt)}
                 {!known && value && <option value={value}>{value}</option>}
               </select>
+              {value && renderAction?.(value)}
               {!readOnly && (value !== null || rows.length > 1) && (
                 <button type="button" className="btn-icon h-7 w-7 shrink-0 text-red-700 print:hidden dark:text-red-400" onClick={() => remove(i)} title={t('sheet.remove')} aria-label={`${t('sheet.remove')}: ${value ?? label}`}>
                   <X className="h-3.5 w-3.5" />

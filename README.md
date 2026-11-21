@@ -204,6 +204,12 @@ anderen Zeilen gesperrt.
   lassen sich Einträge ergänzen oder entfernen („Standardwerte“ setzt zurück). Für Bögen der Geschichte gelten
   deren Listen.
 - Gespeichert wird weiterhin ein Eintrag je Zeile; früher frei eingetragene Werte bleiben erhalten und wählbar.
+- **Werkzeuge & andere sind mit dem Wiki verknüpft:** Die Auswahl kommt aus der Wiki-Ausrüstung (Gegenstands-Datenbank
+  der Geschichte des Bogens bzw. Standard), gruppiert nach Art (Handwerkszeug, Spielset, Musikinstrument, sonstiges
+  Werkzeug). Neben jedem Eintrag aus der Datenbank öffnet ein Knopf die Karte. Bezeichnungen der früheren
+  Standardliste (z. B. „Satz Würfel“, „Tüftlerwerkzeuge“) werden automatisch dem passenden Wiki-Eintrag zugeordnet.
+  Einträge der Werkzeugliste einer Geschichte, die es im Wiki nicht gibt (z. B. Drachenschach-Spielsatz), stehen
+  unter „Weitere“.
 
 ### Gegenstände (Rüstung, Waffen, Ausrüstung)
 
