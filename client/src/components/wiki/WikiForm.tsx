@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Save, Trash2 } from 'lucide-react';
 import {
+  ABILITIES,
   HIT_DICE,
   backgroundDataSchema,
   classDataSchema,
@@ -340,11 +341,40 @@ function LinesInput({ id, label, value, onChange, hint }: { id: string; label: s
   );
 }
 
-function BackgroundFields({ d, set }: { d: WikiBackgroundData; set: (d: WikiBackgroundData) => void }) {
+function BackgroundFields({ d, set, featNames }: { d: WikiBackgroundData; set: (d: WikiBackgroundData) => void; featNames: string[] }) {
   const { t } = useTranslation();
   const f = <K extends keyof WikiBackgroundData>(k: K, v: WikiBackgroundData[K]) => set({ ...d, [k]: v });
   return (
     <>
+      <Group title={t('wiki.background.abilityAndFeat')}>
+        <fieldset>
+          <legend className="label">{t('wiki.background.abilityScores')}</legend>
+          <div className="flex flex-wrap gap-2">
+            {ABILITIES.map((a) => (
+              <label key={a} className="chip-check">
+                <input
+                  type="checkbox"
+                  checked={d.abilityScores.includes(a)}
+                  onChange={(e) => f('abilityScores', e.target.checked ? ABILITIES.filter((x) => x === a || d.abilityScores.includes(x)) : d.abilityScores.filter((x) => x !== a))}
+                />
+                {t(`sheet.ability.${a}`)}
+              </label>
+            ))}
+          </div>
+          <p className="mt-1 text-xs text-parchment-700 dark:text-parchment-400">{t('wiki.background.abilityScoresHint')}</p>
+        </fieldset>
+        <div>
+          <label htmlFor="w-bfeat" className="label">
+            {t('wiki.background.feat')}
+          </label>
+          <input id="w-bfeat" className="input" value={d.feat} maxLength={120} list="w-bfeat-list" onChange={(e) => f('feat', e.target.value)} placeholder={t('wiki.background.featPlaceholder')} />
+          <datalist id="w-bfeat-list">
+            {featNames.map((n) => (
+              <option key={n} value={n} />
+            ))}
+          </datalist>
+        </div>
+      </Group>
       <Group title={t('wiki.background.proficiencies')}>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <TextInput id="w-bskills" label={t('wiki.background.skills')} value={d.skills} onChange={(v) => f('skills', v)} placeholder="Motiv erkennen, Religion" />
@@ -371,7 +401,22 @@ function BackgroundFields({ d, set }: { d: WikiBackgroundData; set: (d: WikiBack
 }
 
 /** Wiki-Eintrag anlegen oder bearbeiten (Admin/Moderator) */
-export function WikiForm({ open, kind, entry, onClose, onSave }: { open: boolean; kind: WikiKind; entry: WikiEntryDto | null; onClose: () => void; onSave: (input: WikiEntryInput) => Promise<void> }) {
+export function WikiForm({
+  open,
+  kind,
+  entry,
+  featNames = [],
+  onClose,
+  onSave,
+}: {
+  open: boolean;
+  kind: WikiKind;
+  entry: WikiEntryDto | null;
+  /** Talente aus dem Wiki (Vorschläge beim Hintergrund) */
+  featNames?: string[];
+  onClose: () => void;
+  onSave: (input: WikiEntryInput) => Promise<void>;
+}) {
   const { t } = useTranslation();
   const toast = useToast();
   const k = entry?.kind ?? kind;
@@ -448,7 +493,7 @@ export function WikiForm({ open, kind, entry, onClose, onSave }: { open: boolean
         ) : k === 'feat' ? (
           <FeatFields d={feat} set={setFeat} />
         ) : (
-          <BackgroundFields d={bg} set={setBg} />
+          <BackgroundFields d={bg} set={setBg} featNames={featNames} />
         )}
         <div className="flex justify-end gap-2">
           <button type="button" className="btn-secondary" onClick={onClose}>

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CSRF, createUser, resetDb } from './helpers';
-import { backfillSubclassSources, seedWiki } from '../src/routes/wiki';
+import { backfillBackgroundFields, backfillSubclassSources, seedWiki } from '../src/routes/wiki';
 import { prisma } from '../src/lib/prisma';
 
 describe('Wiki', () => {
@@ -19,6 +19,14 @@ describe('Wiki', () => {
     const bg = list.find((e: { kind: string }) => e.kind === 'background');
     expect(bg).toMatchObject({ name: 'Tempeldiener', data: { skills: 'Motiv erkennen, Religion', feature: { name: 'Zuflucht der Gläubigen' } } });
     expect([bg.data.personalityTraits.length, bg.data.ideals.length, bg.data.bonds.length, bg.data.flaws.length]).toEqual([8, 6, 6, 6]);
+    expect(bg.data).toMatchObject({ abilityScores: ['int', 'wis', 'cha'], feat: 'Eingeweihter der Magie (Kleriker)' });
+    // ältere Installation: Felder fehlen -> werden beim Start nachgetragen (nur unverändert)
+    const rawBg = JSON.parse((await prisma.wikiEntry.findUniqueOrThrow({ where: { id: bg.id } })).data);
+    delete rawBg.abilityScores;
+    delete rawBg.feat;
+    await prisma.wikiEntry.update({ where: { id: bg.id }, data: { data: JSON.stringify(rawBg) } });
+    expect(await backfillBackgroundFields()).toBe(1);
+    expect(await backfillBackgroundFields()).toBe(0);
     const zwerg = list.find((e: { name: string }) => e.name === 'Zwerg');
     expect(zwerg.data).toMatchObject({ abilityIncrease: 'Konstitution +2', speed: expect.stringContaining('7,5 m') });
     expect(zwerg.data.subraces[0]).toMatchObject({ name: 'Hügelzwerg', abilityIncrease: 'Weisheit +1' });
@@ -47,7 +55,8 @@ describe('Wiki', () => {
     await prisma.wikiEntry.deleteMany({ where: { kind: 'background' } });
     expect(await seedWiki()).toBe(1);
     expect((await frodo.agent.get('/api/wiki')).body.entries.filter((e: { kind: string }) => e.kind === 'feat')).toHaveLength(2);
-    const bg2 = await mod.agent.post('/api/wiki').set(CSRF).send({ kind: 'background', name: 'Soldat', data: { skills: 'Athletik, Einschüchtern', personalityTraits: ['Ich bin höflich', '', 'Ich prahle'] } });
+    const bg2 = await mod.agent.post('/api/wiki').set(CSRF).send({ kind: 'background', name: 'Soldat', data: { abilityScores: ['str', 'dex', 'con', 'str', 'xyz'], feat: 'Wilder Angreifer', skills: 'Athletik, Einschüchtern', personalityTraits: ['Ich bin höflich', '', 'Ich prahle'] } });
+    expect(bg2.body.entry.data).toMatchObject({ abilityScores: ['str', 'dex', 'con'], feat: 'Wilder Angreifer' }); // doppelte/ungültige Werte entfallen
     expect(bg2.body.entry.data.personalityTraits).toEqual(['Ich bin höflich', 'Ich prahle']);
 
     // Unterklassen: eigene Quelle (SRD-Unterklassen gehören zum Spielerhandbuch)

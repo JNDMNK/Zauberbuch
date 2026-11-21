@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { sourceIdSchema } from './sources';
+import { ABILITIES, type Ability } from './character';
 
 /**
  * Wiki (für alle angemeldeten Benutzer lesbar, bearbeitbar von Admin und Moderator).
@@ -114,6 +115,15 @@ export type WikiFeatData = z.output<typeof featDataSchema>;
 
 /** Hintergrund nach SRD: Übung, Sprachen, Ausrüstung, Merkmal, vorgeschlagene Charakterzüge */
 const backgroundObject = z.object({
+  /** Attributswerte, aus denen die Erhöhungen verteilt werden (meist drei) */
+  abilityScores: z
+    .array(z.string())
+    .max(12)
+    .catch([])
+    .default([])
+    .transform((l) => [...new Set(l.filter((a): a is Ability => (ABILITIES as readonly string[]).includes(a)))]),
+  /** Herkunftstalent (Name; verlinkt, wenn es im Wiki steht) */
+  feat: text(120),
   skills: text(300),
   tools: text(300),
   languages: text(300),

@@ -127,6 +127,8 @@ export function WikiPage() {
         ];
       case 'background':
         return [
+          { Icon: Shield, label: t('wiki.background.abilityScoresShort'), value: e.data.abilityScores.map((a) => t(`sheet.abilityShort.${a}`)).join(', ') },
+          { Icon: Award, label: t('wiki.background.feat'), value: e.data.feat },
           { Icon: Sparkles, label: t('wiki.background.skills'), value: e.data.skills },
           { Icon: Star, label: t('wiki.background.feature'), value: e.data.feature.name },
         ];
@@ -278,7 +280,11 @@ export function WikiPage() {
                 </button>
               </div>
             )}
-            <WikiDetail entry={opened} />
+            <WikiDetail
+              entry={opened}
+              findEntry={(k, name) => entries.find((x) => x.kind === k && x.name.toLocaleLowerCase('de') === name.toLocaleLowerCase('de'))}
+              onOpen={(id) => setParam({ entry: id, tab: entries.find((x) => x.id === id)?.kind ?? null })}
+            />
           </div>
         )}
       </Modal>
@@ -286,6 +292,7 @@ export function WikiPage() {
         open={editing !== null}
         kind={kind}
         entry={editing === 'new' ? null : editing}
+        featNames={entries.filter((x) => x.kind === 'feat').map((x) => x.name)}
         onClose={() => setEditing(null)}
         onSave={async (input) => {
           const r = editing && editing !== 'new' ? await api.updateWiki(editing.id, input) : await api.createWiki(input);

@@ -811,6 +811,8 @@ export const WIKI_SEED: WikiEntryInput[] = [
     description:
       'Du hast im Dienst eines Tempels einer bestimmten Gottheit oder eines Pantheons gestanden. Du führst heilige Riten durch, bringst Opfer dar und leitest Gläubige zu ihrem Glauben. Ob du auch ein Kleriker bist, hängt von deiner Klasse ab.',
     data: {
+      abilityScores: ['int', 'wis', 'cha'],
+      feat: 'Eingeweihter der Magie (Kleriker)',
       skills: 'Motiv erkennen, Religion',
       tools: '',
       languages: 'Zwei Sprachen deiner Wahl',

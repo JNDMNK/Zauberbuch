@@ -55,7 +55,7 @@ function LevelFeatures({ list }: { list: WikiLevelFeature[] }) {
 }
 
 /** Vollständige Ansicht eines Wiki-Eintrags (Volk oder Klasse) */
-export function WikiDetail({ entry }: { entry: WikiEntryDto }) {
+export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; findEntry?: (kind: WikiEntryDto['kind'], name: string) => WikiEntryDto | undefined; onOpen?: (id: string) => void }) {
   const { t, i18n } = useTranslation();
   return (
     <div className="space-y-5">
@@ -149,6 +149,27 @@ export function WikiDetail({ entry }: { entry: WikiEntryDto }) {
         </Section>
       ) : (
         <>
+          {(entry.data.abilityScores.length > 0 || entry.data.feat) && (
+            <Section title={t('wiki.background.abilityAndFeat')}>
+              <div className="space-y-1">
+                <Fact label={t('wiki.background.abilityScores')}>{entry.data.abilityScores.map((a) => t(`sheet.ability.${a}`)).join(', ')}</Fact>
+                {entry.data.feat && (
+                  <Fact label={t('wiki.background.feat')}>
+                    {(() => {
+                      const feat = findEntry?.('feat', entry.data.feat);
+                      return feat && onOpen ? (
+                        <button type="button" className="font-semibold underline decoration-dotted underline-offset-2 hover:decoration-solid" onClick={() => onOpen(feat.id)}>
+                          {entry.data.feat}
+                        </button>
+                      ) : (
+                        entry.data.feat
+                      );
+                    })()}
+                  </Fact>
+                )}
+              </div>
+            </Section>
+          )}
           <Section title={t('wiki.background.proficiencies')}>
             <div className="space-y-1">
               <Fact label={t('wiki.background.skills')}>{entry.data.skills}</Fact>

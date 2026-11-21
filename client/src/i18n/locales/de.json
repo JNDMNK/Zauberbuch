@@ -1272,7 +1272,13 @@
       "bondsOne": "Bindung",
       "flaws": "Makel",
       "flawsOne": "Makel",
-      "linesHint": "Eine Zeile pro Eintrag – die Nummer zum Würfeln ergibt sich aus der Reihenfolge."
+      "linesHint": "Eine Zeile pro Eintrag – die Nummer zum Würfeln ergibt sich aus der Reihenfolge.",
+      "abilityAndFeat": "Attributswerte & Talent",
+      "abilityScores": "Attributswerte",
+      "abilityScoresShort": "Attribute",
+      "abilityScoresHint": "Attribute, aus denen die Erhöhungen verteilt werden (nach den aktuellen Regeln drei: +2/+1 oder je +1).",
+      "feat": "Talent",
+      "featPlaceholder": "z. B. Eingeweihter der Magie (Kleriker)"
     }
   },
   "sources": {

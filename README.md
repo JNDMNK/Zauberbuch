@@ -354,7 +354,8 @@ Format:
     (Bezeichnung, z. B. „Arkane Tradition“, mit eigenen Merkmalen je Stufe und **eigener Quelle** – eine Klasse aus
     dem Spielerhandbuch kann so Unterklassen aus Tashas oder Xanathars enthalten).
   - **Talent:** Voraussetzung, optionale Attributswerterhöhung (Halbtalente), Vorteile, „mehrfach wählbar“.
-  - **Hintergrund:** Fertigkeiten, Werkzeuge, Sprachen, Ausrüstung, Merkmal (Name + Text) und vorgeschlagene
+  - **Hintergrund:** Attributswerte (Auswahl aus den sechs Attributen, nach aktuellen Regeln drei), Talent
+    (Herkunftstalent; Vorschläge aus den Wiki-Talenten, steht es im Wiki, ist es in der Detailansicht verlinkt), Fertigkeiten, Werkzeuge, Sprachen, Ausrüstung, Merkmal (Name + Text) und vorgeschlagene
     Charakterzüge – Persönlichkeitsmerkmale, Ideale, Bindungen und Makel, angezeigt als Würfeltabellen (W8/W6).
   - Dazu Kurzbeschreibung (für die Karte) und Beschreibung; Texte unterstützen Markdown.
 - Beim ersten Start ist das Wiki mit den **9 Völkern, 12 Klassen, dem Talent „Ringer“ und dem Hintergrund

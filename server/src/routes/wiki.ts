@@ -82,6 +82,26 @@ async function cleanSubclassSources<T extends { kind: string; data: unknown }>(e
   return { ...e, data: { ...data, subclasses } };
 }
 
+/**
+ * Unveränderte SRD-Hintergründe: neue Felder (Attributswerte, Talent) aus der Grundausstattung nachtragen.
+ * Läuft beim Start und ist idempotent.
+ */
+export async function backfillBackgroundFields() {
+  const rows = await prisma.wikiEntry.findMany({ where: { kind: 'background', updatedBy: null } });
+  let n = 0;
+  for (const r of rows) {
+    const seed = WIKI_SEED.find((e) => e.kind === 'background' && e.name === r.name);
+    if (!seed || seed.kind !== 'background') continue;
+    const data = backgroundDataSchema.parse(parseData(r.data));
+    const s = backgroundDataSchema.parse(seed.data);
+    if ((data.abilityScores.length > 0 || s.abilityScores.length === 0) && (data.feat || !s.feat)) continue;
+    const next = { ...data, abilityScores: data.abilityScores.length ? data.abilityScores : s.abilityScores, feat: data.feat || s.feat };
+    await prisma.wikiEntry.update({ where: { id: r.id }, data: { data: JSON.stringify(next) } });
+    n++;
+  }
+  return n;
+}
+
 wikiRouter.get('/', async (_req, res) => {
   const list = await prisma.wikiEntry.findMany({ orderBy: [{ kind: 'asc' }, { name: 'asc' }] });
   res.json({ entries: list.map(toDto) });

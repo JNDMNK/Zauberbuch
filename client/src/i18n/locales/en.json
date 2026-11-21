@@ -1272,7 +1272,13 @@
       "bondsOne": "Bond",
       "flaws": "Flaws",
       "flawsOne": "Flaw",
-      "linesHint": "One line per entry – the die number follows the order."
+      "linesHint": "One line per entry – the die number follows the order.",
+      "abilityAndFeat": "Ability scores & feat",
+      "abilityScores": "Ability scores",
+      "abilityScoresShort": "Abilities",
+      "abilityScoresHint": "Abilities the increases are distributed among (current rules: three, +2/+1 or +1 each).",
+      "feat": "Feat",
+      "featPlaceholder": "e.g. Magic Initiate (Cleric)"
     }
   },
   "sources": {
