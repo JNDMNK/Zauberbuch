@@ -207,12 +207,15 @@ anderen Zeilen gesperrt.
 
 ### Gegenstände (Rüstung, Waffen, Ausrüstung)
 
-- **Wiki → Rüstung / Waffen / Gegenstände** (für alle lesbar, bearbeitbar von Admin und Moderator) ist die **Standard-Datenbank**, aufgeteilt in die Reiter
-  **Rüstung**, **Waffen** und **Gegenstände** in Kartenansicht mit Suche. Sie ist mit einer SRD-Grundausstattung
+- **Wiki → Rüstung / Waffen / Gegenstände / Ausrüstung** (für alle lesbar, bearbeitbar von Admin und Moderator) ist die **Standard-Datenbank**, aufgeteilt in die Reiter
+  **Rüstung**, **Waffen**, **Gegenstände** und **Ausrüstung** in Kartenansicht mit Suche. Sie ist mit einer SRD-Grundausstattung
   vorbefüllt (Waffen, Rüstungen, Abenteurerausrüstung, Heiltränke).
   - Alle Einträge haben einen **Wert** (Freitext, z. B. „5 GM“); die Grundausstattung bringt die SRD-Preise mit.
   - Gegenstände: Name, Beschreibung, Gewicht, optional Heilung oder Schaden (z. B. Heiltrank 2W4+2 Heilung).
   - Waffen: Name, Schadenswürfel + Schadensart (wie bei den Zauberkarten), Gewicht, Beschreibung.
+  - Ausrüstung (Werkzeuge nach SRD, z. B. Diebeswerkzeug): Name, **Art** (Handwerkszeug, Spielset, Musikinstrument,
+    sonstiges Werkzeug), Gewicht, Wert, Beschreibung – vorbefüllt mit den 35 Werkzeugen und Werkzeug-Ausrüstungen des
+    SRD (neue Kategorien werden bei Updates nachgetragen, solange sie leer sind).
   - Rüstung: Name, Rüstungsklasse (Text, z. B. „13 + GES (max. 2)“), benötigte **Stärke** (optional, z. B. 15 beim
     Plattenpanzer), Gewicht, Beschreibung.
 - **Verwaltung → Geschichten → Geschichte bearbeiten → Gegenstände**: Jede Geschichte **erbt** die Standard-Datenbank
@@ -335,7 +338,7 @@ Format:
 ## Wiki
 
 - Hauptmenüpunkt **„Wiki“** (für alle angemeldeten Benutzer) mit den Reitern **Völker**, **Klassen**,
-  **Talente**, **Hintergründe**, **Rüstung**, **Waffen** und **Gegenstände** (Gegenstands-Datenbank, siehe oben) in Kartenansicht; Suche über alle Felder, ein Klick auf die Karte zeigt den vollständigen Eintrag (direkt verlinkbar
+  **Talente**, **Hintergründe**, **Rüstung**, **Waffen**, **Gegenstände** und **Ausrüstung** (Gegenstands-Datenbank, siehe oben) in Kartenansicht; Suche über alle Felder, ein Klick auf die Karte zeigt den vollständigen Eintrag (direkt verlinkbar
   über `?tab=class&entry=…`).
 - Felder nach dem **System Reference Document 5.1**:
   - **Volk:** Attributswerterhöhung, Alter, Gesinnung, Größe, Bewegungsrate, Sprachen, Merkmale (Name + Text) und

@@ -1090,24 +1090,27 @@
   "catalog": {
     "title": "Gegenstände",
     "standardTitle": "Gegenstände – Standard-Datenbank",
-    "standardHint": "Standard-Datenbank für Rüstung, Waffen und Gegenstände – gilt für alle Charakterbögen ohne Geschichte. Geschichten erben sie und können sie unter Verwaltung → Geschichten → Geschichte bearbeiten anpassen. Vorbefüllt mit der 5e-Grundausstattung (SRD).",
+    "standardHint": "Standard-Datenbank für Rüstung, Waffen, Gegenstände und Ausrüstung – gilt für alle Charakterbögen ohne Geschichte. Geschichten erben sie und können sie unter Verwaltung → Geschichten → Geschichte bearbeiten anpassen. Vorbefüllt mit der 5e-Grundausstattung (SRD).",
     "storyTitle": "Gegenstände (Rüstung, Waffen, Gegenstände)",
     "storyHint": "Diese Geschichte nutzt die Standard-Datenbank. Einträge lassen sich hier für diese Geschichte anpassen (✎), ausblenden (Auge) oder zurücksetzen, eigene kommen dazu. Änderungen werden sofort gespeichert; spätere Änderungen am Standard kommen automatisch an, außer ein Eintrag wurde angepasst.",
     "storyAfterCreate": "Nach dem Anlegen der Geschichte können hier die Gegenstände angepasst werden.",
     "categories": {
       "armor": "Rüstung",
       "weapon": "Waffen",
-      "gear": "Gegenstände"
+      "gear": "Gegenstände",
+      "tool": "Ausrüstung"
     },
     "categoriesOne": {
       "armor": "Rüstung",
       "weapon": "Waffe",
-      "gear": "Gegenstand"
+      "gear": "Gegenstand",
+      "tool": "Ausrüstung"
     },
     "new": {
       "armor": "Neue Rüstung",
       "weapon": "Neue Waffe",
-      "gear": "Neuer Gegenstand"
+      "gear": "Neuer Gegenstand",
+      "tool": "Neue Ausrüstung"
     },
     "add": "hinzufügen",
     "search": "Name oder Beschreibung durchsuchen …",
@@ -1138,7 +1141,14 @@
     "suggestions": "Vorschläge aus der Gegenstands-Datenbank",
     "valuePlaceholder": "z. B. 5 GM",
     "strength": "Stärke (benötigt)",
-    "strengthPlaceholder": "keine"
+    "strengthPlaceholder": "keine",
+    "toolType": "Art",
+    "toolTypes": {
+      "artisan": "Handwerkszeug",
+      "gaming": "Spielset",
+      "instrument": "Musikinstrument",
+      "other": "Sonstiges Werkzeug"
+    }
   },
   "dmNotes": {
     "tab": "DM-Notizen",
@@ -1234,7 +1244,7 @@
       "addSubrace": "Unterrasse hinzufügen",
       "addSubclass": "Unterklasse hinzufügen"
     },
-    "itemsHint": "Rüstung, Waffen und Ausrüstung – diese Datenbank nutzen die Charakterbögen für die Vorschläge im Inventar. Geschichten können sie für sich anpassen.",
+    "itemsHint": "Rüstung, Waffen, Gegenstände und Ausrüstung – diese Datenbank nutzen die Charakterbögen für die Vorschläge im Inventar. Geschichten können sie für sich anpassen.",
     "feat": {
       "title": "Talent",
       "prerequisite": "Voraussetzung",

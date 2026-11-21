@@ -6,7 +6,10 @@ import { damageDiceSchema } from './schemas';
  * Gegenstands-Katalog: Rüstung, Waffen und Gegenstände. Standard-Datenbank (Admin/Moderator) und Anpassungen je
  * Geschichte; der Charakterbogen übernimmt Einträge ins Inventar (Text, Gewicht, Verlinkung auf die Karte).
  */
-export const CATALOG_CATEGORIES = ['armor', 'weapon', 'gear'] as const;
+export const CATALOG_CATEGORIES = ['armor', 'weapon', 'gear', 'tool'] as const;
+/** Art einer Ausrüstung (Werkzeug) nach SRD */
+export const TOOL_TYPES = ['artisan', 'gaming', 'instrument', 'other'] as const;
+export type ToolType = (typeof TOOL_TYPES)[number];
 export type CatalogCategory = (typeof CATALOG_CATEGORIES)[number];
 
 export const catalogItemSchema = z
@@ -26,6 +29,8 @@ export const catalogItemSchema = z
     damageType: z.enum(DAMAGE_TYPES).optional().nullable().default(null),
     /** Quelle (Buch) */
     sourceId: z.string().min(1).max(64).nullable().optional().default(null),
+    /** Ausrüstung: Art (Handwerkszeug, Spielset, Musikinstrument, sonstiges Werkzeug) */
+    toolType: z.enum(TOOL_TYPES).nullable().optional().default(null),
   })
   .superRefine((v, ctx) => {
     if (v.damageDice && !v.damageType) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['damageType'], message: 'damage_type_required' });
@@ -50,6 +55,8 @@ export interface CatalogItemDto {
   damage: { dice: string; type: DamageType } | null;
   /** Quelle (Buch) */
   sourceId: string | null;
+  /** Ausrüstung: Art */
+  toolType: ToolType | null;
   origin: CatalogOrigin;
   /** Bei Anpassungen: der Standard-Eintrag, der überdeckt wird */
   baseId: string | null;

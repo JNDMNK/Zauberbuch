@@ -1,15 +1,16 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Coins, Dumbbell, Package, Shield, Swords, Weight } from 'lucide-react';
+import { Coins, Dumbbell, Package, Shield, Swords, Weight, Wrench } from 'lucide-react';
 import type { CatalogCategory, CatalogItemDto } from '@zauberbuch/shared';
 import { DamageValue } from '../DamageValue';
 import { SourceBadge } from '../sources/SourceFields';
 
-export const CATEGORY_ICON: Record<CatalogCategory, typeof Shield> = { armor: Shield, weapon: Swords, gear: Package };
+export const CATEGORY_ICON: Record<CatalogCategory, typeof Shield> = { armor: Shield, weapon: Swords, gear: Package, tool: Wrench };
 const CATEGORY_BORDER: Record<CatalogCategory, string> = {
   armor: '!border-t-sky-600 dark:!border-t-sky-400',
   weapon: '!border-t-red-700 dark:!border-t-red-400',
   gear: '!border-t-amber-600 dark:!border-t-amber-400',
+  tool: '!border-t-stone-500 dark:!border-t-stone-400',
 };
 
 /** Karte eines Eintrags der Gegenstands-Datenbank (Rüstung, Waffe, Gegenstand) */
@@ -28,6 +29,7 @@ export function CatalogCard({ item, actions, badge, dimmed = false }: { item: Ca
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
         {item.damage && <DamageValue damage={item.damage} />}
+        {item.category === 'tool' && item.toolType && <span className="badge bg-parchment-200 text-parchment-900 dark:bg-night-700 dark:text-parchment-200">{t(`catalog.toolTypes.${item.toolType}`)}</span>}
         {item.category === 'armor' && item.ac && (
           <span className="inline-flex items-center gap-1">
             <Shield className="h-4 w-4 text-sky-700 dark:text-sky-300" aria-hidden />

@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Save } from 'lucide-react';
+import { TOOL_TYPES, type ToolType } from '@zauberbuch/shared';
 import type { CatalogCategory, CatalogItemDto, CatalogItemInput } from '@zauberbuch/shared';
 import { errorMessage } from '../../lib/errors';
 import { useToast } from '../../context/ToastContext';
@@ -30,6 +31,9 @@ export function CatalogItemDialog({
   const [weight, setWeight] = useState('');
   const [value, setValue] = useState('');
   const [sourceId, setSourceId] = useState<string | null>(null);
+  const [toolType, setToolType] = useState<ToolType | null>(null);
+  // Schaden/Heilung nur bei Waffen und Gegenständen
+  const hasDamage = category === 'weapon' || category === 'gear';
   const [ac, setAc] = useState('');
   const [strength, setStrength] = useState('');
   const [damage, setDamage] = useState<DamageState>({ dice: '', type: '' });
@@ -43,6 +47,7 @@ export function CatalogItemDialog({
     setStrength(item?.strength ? String(item.strength) : '');
     setValue(item?.value ?? '');
     setSourceId(item?.sourceId ?? null);
+    setToolType(item?.toolType ?? null);
     setDamage({ dice: item?.damage?.dice ?? '', type: item?.damage?.type ?? '' });
   }, [open, item]);
 
@@ -51,7 +56,7 @@ export function CatalogItemDialog({
   const dmg = checkDamage(damage);
   const parsedStrength = strength.trim() === '' ? null : Number(strength);
   const strengthInvalid = parsedStrength !== null && (!Number.isInteger(parsedStrength) || parsedStrength < 1 || parsedStrength > 30);
-  const invalid = !name.trim() || weightInvalid || (category === 'armor' && strengthInvalid) || (category !== 'armor' && dmg.error !== null);
+  const invalid = !name.trim() || weightInvalid || (category === 'armor' && strengthInvalid) || (hasDamage && dmg.error !== null);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -67,8 +72,9 @@ export function CatalogItemDialog({
         sourceId,
         ac: category === 'armor' ? ac.trim() : '',
         strength: category === 'armor' ? parsedStrength : null,
-        damageDice: category === 'armor' ? null : dmg.value?.dice ?? null,
-        damageType: category === 'armor' ? null : dmg.value?.type ?? null,
+        damageDice: hasDamage ? dmg.value?.dice ?? null : null,
+        damageType: hasDamage ? dmg.value?.type ?? null : null,
+        toolType: category === 'tool' ? toolType : null,
       });
     } catch (err) {
       toast.error(errorMessage(t, err));
@@ -127,7 +133,22 @@ export function CatalogItemDialog({
             <input id="cat-value" className="input" value={value} maxLength={40} onChange={(e) => setValue(e.target.value)} placeholder={t('catalog.valuePlaceholder')} />
           </div>
         </div>
-        {category !== 'armor' && (
+        {category === 'tool' && (
+          <div>
+            <label htmlFor="cat-tooltype" className="label">
+              {t('catalog.toolType')}
+            </label>
+            <select id="cat-tooltype" className="input" value={toolType ?? ''} onChange={(e) => setToolType((e.target.value || null) as ToolType | null)}>
+              <option value="">—</option>
+              {TOOL_TYPES.map((tt) => (
+                <option key={tt} value={tt}>
+                  {t(`catalog.toolTypes.${tt}`)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        {hasDamage && (
           <div>
             <p className="label">{category === 'weapon' ? t('catalog.damage') : t('catalog.damageOrHealing')}</p>
             <DamageInput value={damage} onChange={setDamage} />

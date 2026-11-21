@@ -1,6 +1,6 @@
 import { Router, type Request } from 'express';
 import type { CatalogItem, Prisma } from '@prisma/client';
-import { catalogItemSchema, type CatalogCategory, type CatalogItemDto, type CatalogOrigin, type DamageType } from '@zauberbuch/shared';
+import { catalogItemSchema, type CatalogCategory, type CatalogItemDto, type CatalogOrigin, type DamageType, type ToolType } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { badRequest, notFound } from '../lib/errors';
@@ -33,6 +33,7 @@ function toDto(i: CatalogItem, origin: CatalogOrigin, extra: Partial<CatalogItem
     origin,
     baseId: i.baseId,
     sourceId: i.sourceId,
+    toolType: (i.toolType as ToolType | null) ?? null,
     ...extra,
   };
 }
@@ -66,20 +67,24 @@ function data(input: ReturnType<typeof catalogItemSchema.parse>) {
     value: input.value,
     ac: input.category === 'armor' ? input.ac : '',
     strength: input.category === 'armor' ? input.strength : null,
-    damageDice: input.category === 'armor' ? null : input.damageDice,
-    damageType: input.category === 'armor' ? null : input.damageType,
+    damageDice: input.category === 'armor' || input.category === 'tool' ? null : input.damageDice,
+    damageType: input.category === 'armor' || input.category === 'tool' ? null : input.damageType,
     sourceId: input.sourceId,
+    toolType: input.category === 'tool' ? input.toolType : null,
   };
 }
 
-/** Grundausstattung anlegen, wenn die Standard-Datenbank leer ist */
+/** Grundausstattung der Standard-Datenbank anlegen */
 export async function seedCatalog(force = false) {
-  const count = await prisma.catalogItem.count({ where: { storyId: null } });
-  if (count > 0 && !force) return 0;
+  // je Kategorie befüllen, solange sie leer ist (z. B. neue Kategorien nach einem Update)
+  const counts = await prisma.catalogItem.groupBy({ by: ['category'], where: { storyId: null }, _count: { _all: true } });
+  const filled = new Set(counts.filter((c) => c._count._all > 0).map((c) => c.category));
+  const todo = force ? CATALOG_SEED : CATALOG_SEED.filter((i) => !filled.has(i.category));
+  if (todo.length === 0) return 0;
   const sourceId = await phbSourceId();
-  await prisma.catalogItem.createMany({ data: CATALOG_SEED.map((i) => ({ ...i, storyId: null, sourceId })) });
-  logger.info(`${CATALOG_SEED.length} Standard-Gegenstände angelegt.`);
-  return CATALOG_SEED.length;
+  await prisma.catalogItem.createMany({ data: todo.map((i) => ({ ...i, storyId: null, sourceId })) });
+  logger.info(`${todo.length} Standard-Gegenstände angelegt.`);
+  return todo.length;
 }
 
 // ---------------------------------------------------------------- Lesen

@@ -498,6 +498,8 @@ model CatalogItem {
   strength    Int?
   damageDice  String?
   damageType  String?
+  /// Ausrüstung (Werkzeug): artisan | gaming | instrument | other
+  toolType    String?
   sourceId    String?
   source      Source?       @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   createdAt   DateTime      @default(now())

@@ -1097,17 +1097,20 @@
     "categories": {
       "armor": "Armor",
       "weapon": "Weapons",
-      "gear": "Gear"
+      "gear": "Gear",
+      "tool": "Tools"
     },
     "categoriesOne": {
       "armor": "Armor",
       "weapon": "Weapon",
-      "gear": "Item"
+      "gear": "Item",
+      "tool": "Tool"
     },
     "new": {
       "armor": "New armor",
       "weapon": "New weapon",
-      "gear": "New item"
+      "gear": "New item",
+      "tool": "New tool"
     },
     "add": "add",
     "search": "Search name or description …",
@@ -1138,7 +1141,14 @@
     "suggestions": "Suggestions from the item database",
     "valuePlaceholder": "e.g. 5 gp",
     "strength": "Strength (required)",
-    "strengthPlaceholder": "none"
+    "strengthPlaceholder": "none",
+    "toolType": "Type",
+    "toolTypes": {
+      "artisan": "Artisan's tools",
+      "gaming": "Gaming set",
+      "instrument": "Musical instrument",
+      "other": "Other tool"
+    }
   },
   "dmNotes": {
     "tab": "DM notes",
@@ -1234,7 +1244,7 @@
       "addSubrace": "Add subrace",
       "addSubclass": "Add subclass"
     },
-    "itemsHint": "Armor, weapons and gear – character sheets use this database for inventory suggestions. Stories can adjust it for themselves.",
+    "itemsHint": "Armor, weapons, items and tools – character sheets use this database for inventory suggestions. Stories can adjust it for themselves.",
     "feat": {
       "title": "Feat",
       "prerequisite": "Prerequisite",

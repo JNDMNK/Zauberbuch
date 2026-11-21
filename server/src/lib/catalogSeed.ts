@@ -3,7 +3,7 @@
  * Beschreibungen selbst formuliert). Wird beim ersten Start angelegt, wenn die Standard-Datenbank leer ist.
  */
 export interface CatalogSeedItem {
-  category: 'armor' | 'weapon' | 'gear';
+  category: 'armor' | 'weapon' | 'gear' | 'tool';
   name: string;
   description: string;
   weight: number;
@@ -12,6 +12,8 @@ export interface CatalogSeedItem {
   ac: string;
   /** Rüstung: benötigter Stärkewert */
   strength: number | null;
+  /** Ausrüstung: Art (artisan | gaming | instrument | other) */
+  toolType: string | null;
   damageDice: string | null;
   damageType: string | null;
 }
@@ -26,7 +28,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfache Nahkampfwaffe. Leicht.",
     "ac": "",
     "value": "1 SM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -37,7 +40,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfache Nahkampfwaffe. Finesse, leicht, Wurfwaffe (Reichweite 6/18 m).",
     "ac": "",
     "value": "2 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -48,7 +52,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfache Nahkampfwaffe. Zweihändig.",
     "ac": "",
     "value": "2 SM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -59,7 +64,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfache Nahkampfwaffe. Leicht, Wurfwaffe (Reichweite 6/18 m).",
     "ac": "",
     "value": "5 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -70,7 +76,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfache Nahkampfwaffe. Wurfwaffe (Reichweite 9/36 m).",
     "ac": "",
     "value": "5 SM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -81,7 +88,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfache Nahkampfwaffe. Leicht, Wurfwaffe (Reichweite 6/18 m).",
     "ac": "",
     "value": "2 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -92,7 +100,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfache Nahkampfwaffe.",
     "ac": "",
     "value": "5 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -103,7 +112,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfache Nahkampfwaffe. Vielseitig (1W8).",
     "ac": "",
     "value": "2 SM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -114,7 +124,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfache Nahkampfwaffe. Leicht.",
     "ac": "",
     "value": "1 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -125,7 +136,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfache Nahkampfwaffe. Wurfwaffe (Reichweite 6/18 m), vielseitig (1W8).",
     "ac": "",
     "value": "1 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -136,7 +148,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfache Fernkampfwaffe. Munition (Reichweite 24/96 m), Laden, zweihändig.",
     "ac": "",
     "value": "25 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -147,7 +160,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfache Fernkampfwaffe. Finesse, Wurfwaffe (Reichweite 6/18 m).",
     "ac": "",
     "value": "5 KM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -158,7 +172,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfache Fernkampfwaffe. Munition (Reichweite 24/96 m), zweihändig.",
     "ac": "",
     "value": "25 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -169,7 +184,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfache Fernkampfwaffe. Munition (Reichweite 9/36 m).",
     "ac": "",
     "value": "1 SM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -180,7 +196,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Vielseitig (1W10).",
     "ac": "",
     "value": "10 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -191,7 +208,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf).",
     "ac": "",
     "value": "10 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -202,7 +220,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Schwer, Reichweite, zweihändig.",
     "ac": "",
     "value": "20 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -213,7 +232,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Schwer, zweihändig.",
     "ac": "",
     "value": "30 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -224,7 +244,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Schwer, zweihändig.",
     "ac": "",
     "value": "50 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -235,7 +256,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Schwer, Reichweite, zweihändig.",
     "ac": "",
     "value": "20 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -246,7 +268,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Reichweite, besonders (Nachteil auf 1,5 m; beritten einhändig).",
     "ac": "",
     "value": "10 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -257,7 +280,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Vielseitig (1W10).",
     "ac": "",
     "value": "15 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -268,7 +292,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Schwer, zweihändig.",
     "ac": "",
     "value": "10 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -279,7 +304,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf).",
     "ac": "",
     "value": "15 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -290,7 +316,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Schwer, Reichweite, zweihändig.",
     "ac": "",
     "value": "5 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -301,7 +328,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Finesse.",
     "ac": "",
     "value": "25 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -312,7 +340,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Finesse, leicht.",
     "ac": "",
     "value": "25 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -323,7 +352,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Finesse, leicht.",
     "ac": "",
     "value": "10 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -334,7 +364,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Wurfwaffe (Reichweite 6/18 m), vielseitig (1W8).",
     "ac": "",
     "value": "5 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -345,7 +376,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf).",
     "ac": "",
     "value": "5 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -356,7 +388,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Vielseitig (1W10).",
     "ac": "",
     "value": "15 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -367,7 +400,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Nahkampf). Finesse, Reichweite.",
     "ac": "",
     "value": "2 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -378,7 +412,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Fernkampf). Munition (Reichweite 7,5/30 m), Laden.",
     "ac": "",
     "value": "10 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -389,7 +424,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Fernkampf). Munition (Reichweite 9/36 m), leicht, Laden.",
     "ac": "",
     "value": "75 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -400,7 +436,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Fernkampf). Munition (Reichweite 30/120 m), schwer, Laden, zweihändig.",
     "ac": "",
     "value": "50 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -411,7 +448,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Fernkampf). Munition (Reichweite 45/180 m), schwer, zweihändig.",
     "ac": "",
     "value": "50 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "weapon",
@@ -422,7 +460,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kriegswaffe (Fernkampf). Wurfwaffe (Reichweite 1,5/4,5 m). Ein getroffenes Wesen bis Größe groß ist festgesetzt (Befreien: SG-10-Stärkewurf oder 5 Hiebschaden gegen das Netz).",
     "ac": "",
     "value": "1 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "armor",
@@ -433,7 +472,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageDice": null,
     "damageType": null,
     "value": "5 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "armor",
@@ -444,7 +484,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageDice": null,
     "damageType": null,
     "value": "10 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "armor",
@@ -455,7 +496,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageDice": null,
     "damageType": null,
     "value": "45 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "armor",
@@ -466,7 +508,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageDice": null,
     "damageType": null,
     "value": "10 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "armor",
@@ -477,7 +520,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageDice": null,
     "damageType": null,
     "value": "50 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "armor",
@@ -488,7 +532,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageDice": null,
     "damageType": null,
     "value": "50 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "armor",
@@ -499,7 +544,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageDice": null,
     "damageType": null,
     "value": "400 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "armor",
@@ -510,7 +556,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageDice": null,
     "damageType": null,
     "value": "750 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "armor",
@@ -521,7 +568,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageDice": null,
     "damageType": null,
     "value": "30 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "armor",
@@ -532,7 +580,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageDice": null,
     "damageType": null,
     "value": "75 GM",
-    "strength": 13
+    "strength": 13,
+    "toolType": null
   },
   {
     "category": "armor",
@@ -543,7 +592,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageDice": null,
     "damageType": null,
     "value": "200 GM",
-    "strength": 15
+    "strength": 15,
+    "toolType": null
   },
   {
     "category": "armor",
@@ -554,7 +604,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageDice": null,
     "damageType": null,
     "value": "1.500 GM",
-    "strength": 15
+    "strength": 15,
+    "toolType": null
   },
   {
     "category": "armor",
@@ -565,7 +616,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "damageDice": null,
     "damageType": null,
     "value": "10 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -576,7 +628,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Wer den Trank trinkt, erhält Trefferpunkte zurück. Eine Aktion zum Trinken oder Verabreichen.",
     "ac": "",
     "value": "50 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -587,7 +640,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Stärkerer Heiltrank.",
     "ac": "",
     "value": "100 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -598,7 +652,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Vorteil auf Rettungswürfe gegen Gift für 1 Stunde.",
     "ac": "",
     "value": "50 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -609,7 +664,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Als improvisierte Wurfwaffe (Reichweite 6 m); das Ziel brennt, bis es die Flammen löscht (SG 10 Geschicklichkeit).",
     "ac": "",
     "value": "50 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -620,7 +676,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Als improvisierte Wurfwaffe (Reichweite 6 m) gegen ein Wesen oder Objekt.",
     "ac": "",
     "value": "25 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -631,7 +688,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Als improvisierte Wurfwaffe (Reichweite 6 m); wirkt nur gegen Unholde und Untote.",
     "ac": "",
     "value": "25 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -642,7 +700,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kann ausgegossen und angezündet werden; brennt 2 Runden.",
     "ac": "",
     "value": "1 SM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -653,7 +712,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Bedeckt eine Fläche von 1,5 m × 1,5 m; wer sie betritt, macht einen SG-15-Geschicklichkeitsrettungswurf.",
     "ac": "",
     "value": "1 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -664,7 +724,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Bedeckt eine Fläche von 3 m × 3 m; wer sie betritt, kann stürzen (SG 10 Geschicklichkeit).",
     "ac": "",
     "value": "1 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -675,7 +736,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Munition für Bögen.",
     "ac": "",
     "value": "1 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -686,7 +748,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Munition für Armbrüste.",
     "ac": "",
     "value": "1 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -697,7 +760,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Fasst bis zu 20 Pfeile.",
     "ac": "",
     "value": "1 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -708,7 +772,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Fasst etwa 30 Pfund Ausrüstung.",
     "ac": "",
     "value": "2 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -719,7 +784,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Für die Nacht unter freiem Himmel.",
     "ac": "",
     "value": "1 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -730,7 +796,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Wärmende Wolldecke.",
     "ac": "",
     "value": "5 SM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -741,7 +808,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Brennt 1 Stunde; helles Licht im Umkreis von 6 m, dämmriges Licht weitere 6 m.",
     "ac": "",
     "value": "1 KM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -752,7 +820,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Brennt 6 Stunden mit einer Flasche Öl; helles Licht 9 m, dämmriges Licht weitere 9 m.",
     "ac": "",
     "value": "5 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -763,7 +832,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Brennt 1 Stunde; helles Licht 1,5 m.",
     "ac": "",
     "value": "1 KM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -774,7 +844,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Feuerstein, Stahl und Zunder zum Entzünden eines Feuers.",
     "ac": "",
     "value": "5 SM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -785,7 +856,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Haltbare Reiseverpflegung.",
     "ac": "",
     "value": "5 SM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -796,7 +868,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Fasst etwa 2 Liter (voll).",
     "ac": "",
     "value": "2 SM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -807,7 +880,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Hält bis zu 2 Trefferpunkte Schaden aus; zerreißen mit SG 17 Stärke.",
     "ac": "",
     "value": "1 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -818,7 +892,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Leichter als Hanfseil.",
     "ac": "",
     "value": "10 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -829,7 +904,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Zum Sichern beim Klettern.",
     "ac": "",
     "value": "5 KM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -840,7 +916,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Zum Werfen und Festhaken.",
     "ac": "",
     "value": "2 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -851,7 +928,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Vorteil auf Stärkewürfe, bei denen die Hebelwirkung hilft.",
     "ac": "",
     "value": "2 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -862,7 +940,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfacher Werkzeughammer.",
     "ac": "",
     "value": "1 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -873,7 +952,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Zum Graben.",
     "ac": "",
     "value": "2 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -884,7 +964,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Kleiner Handspiegel.",
     "ac": "",
     "value": "5 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -895,7 +976,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "10 Anwendungen: ein Wesen mit 0 TP ohne Weisheitswurf (Heilkunde) stabilisieren.",
     "ac": "",
     "value": "5 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -906,7 +988,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Haken, Stiefelspitzen, Handschuhe und Gurt.",
     "ac": "",
     "value": "25 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -917,7 +1000,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Zum Markieren von Wegen.",
     "ac": "",
     "value": "1 KM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -928,7 +1012,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Tintenfass (30 ml) und Schreibfeder.",
     "ac": "",
     "value": "10 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -939,7 +1024,8 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Zum Schreiben und Zeichnen.",
     "ac": "",
     "value": "1 SM",
-    "strength": null
+    "strength": null,
+    "toolType": null
   },
   {
     "category": "gear",
@@ -950,6 +1036,427 @@ export const CATALOG_SEED: CatalogSeedItem[] = [
     "description": "Einfaches Zelt aus Leinwand.",
     "ac": "",
     "value": "2 GM",
-    "strength": null
+    "strength": null,
+    "toolType": null
+  },
+  {
+    "category": "tool",
+    "name": "Alchemistenausrüstung",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 8,
+    "description": "Ausrüstung zum Herstellen und Untersuchen alchemistischer Stoffe. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "50 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Brauerausrüstung",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 9,
+    "description": "Kessel, Fässer und Zutaten zum Brauen von Bier und Ale. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "20 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Kalligrafieausrüstung",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 5,
+    "description": "Tinten, Federn und Pergament für kunstvolle Schriften. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "10 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Zimmermannswerkzeug",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 6,
+    "description": "Säge, Hammer, Nägel, Beil und Winkel für Holzbauten. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "8 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Kartografenwerkzeug",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 6,
+    "description": "Federn, Tinte, Pergament, Zirkel und Lineal zum Zeichnen von Karten. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "15 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Schusterwerkzeug",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 5,
+    "description": "Hammer, Ahle, Messer, Leisten und Garn zum Herstellen und Ausbessern von Schuhwerk. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "5 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Kochutensilien",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 8,
+    "description": "Kochtopf, Messer, Gabeln, Rührlöffel und Schöpfkelle. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "1 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Glasbläserwerkzeug",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 5,
+    "description": "Blasrohr, Zangen und Formen zum Bearbeiten von Glas. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "30 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Juwelierswerkzeug",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 2,
+    "description": "Feine Sägen, Feilen, Zangen und eine Lupe zum Bearbeiten von Edelsteinen und Schmuck. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "25 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Lederverarbeitungswerkzeug",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 5,
+    "description": "Messer, Ahle, Hammer und Garn zum Bearbeiten von Leder. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "5 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Steinmetzwerkzeug",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 8,
+    "description": "Kelle, Hammer, Meißel, Bürsten und Winkel zur Steinbearbeitung. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "10 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Malerausrüstung",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 5,
+    "description": "Staffelei, Leinwand, Farben und Pinsel. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "10 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Töpferwerkzeug",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 3,
+    "description": "Töpferscheibe-Zubehör, Messer und Schaber zum Formen von Ton. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "10 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Schmiedewerkzeug",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 8,
+    "description": "Hämmer, Zangen, Holzkohle, Lappen und Wetzstein zur Metallbearbeitung. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "20 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Kesselflickerwerkzeug",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 10,
+    "description": "Werkzeuge, Draht, Stoff und Kleber, um Gegenstände zu reparieren oder kleine Geräte zu bauen. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "50 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Weberwerkzeug",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 5,
+    "description": "Garn, Nadeln und Stoffreste zum Weben, Nähen und Flicken. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "1 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Holzschnitzerwerkzeug",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 5,
+    "description": "Messer, Meißel und kleine Sägen zum Schnitzen von Holz. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, die du mit diesem Handwerk ablegst. Jedes Handwerkszeug erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "1 GM",
+    "strength": null,
+    "toolType": "artisan"
+  },
+  {
+    "category": "tool",
+    "name": "Würfelspiel",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 0,
+    "description": "Ein Satz Würfel für verschiedene Glücksspiele. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um mit diesem Spiel zu spielen. Jedes Spielset erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "1 SM",
+    "strength": null,
+    "toolType": "gaming"
+  },
+  {
+    "category": "tool",
+    "name": "Kartenspiel",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 0,
+    "description": "Ein Kartensatz für Spiele wie Drei-Drachen-Ante. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um mit diesem Spiel zu spielen. Jedes Spielset erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "5 SM",
+    "strength": null,
+    "toolType": "gaming"
+  },
+  {
+    "category": "tool",
+    "name": "Dudelsack",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 6,
+    "description": "Blasinstrument mit Luftsack und Pfeifen. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um mit diesem Instrument Musik zu spielen. Jedes Instrument erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "30 GM",
+    "strength": null,
+    "toolType": "instrument"
+  },
+  {
+    "category": "tool",
+    "name": "Trommel",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 3,
+    "description": "Schlaginstrument, oft mit Fell bespannt. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um mit diesem Instrument Musik zu spielen. Jedes Instrument erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "6 GM",
+    "strength": null,
+    "toolType": "instrument"
+  },
+  {
+    "category": "tool",
+    "name": "Hackbrett",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 10,
+    "description": "Saiteninstrument, das mit kleinen Schlägeln gespielt wird. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um mit diesem Instrument Musik zu spielen. Jedes Instrument erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "25 GM",
+    "strength": null,
+    "toolType": "instrument"
+  },
+  {
+    "category": "tool",
+    "name": "Flöte",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 1,
+    "description": "Einfaches Holzblasinstrument. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um mit diesem Instrument Musik zu spielen. Jedes Instrument erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "2 GM",
+    "strength": null,
+    "toolType": "instrument"
+  },
+  {
+    "category": "tool",
+    "name": "Laute",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 2,
+    "description": "Gezupftes Saiteninstrument – das klassische Instrument der Barden. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um mit diesem Instrument Musik zu spielen. Jedes Instrument erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "35 GM",
+    "strength": null,
+    "toolType": "instrument"
+  },
+  {
+    "category": "tool",
+    "name": "Leier",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 2,
+    "description": "Kleines gezupftes Saiteninstrument. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um mit diesem Instrument Musik zu spielen. Jedes Instrument erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "30 GM",
+    "strength": null,
+    "toolType": "instrument"
+  },
+  {
+    "category": "tool",
+    "name": "Horn",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 2,
+    "description": "Blasinstrument aus Tierhorn oder Metall. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um mit diesem Instrument Musik zu spielen. Jedes Instrument erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "3 GM",
+    "strength": null,
+    "toolType": "instrument"
+  },
+  {
+    "category": "tool",
+    "name": "Panflöte",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 2,
+    "description": "Mehrere aneinandergebundene Pfeifen unterschiedlicher Länge. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um mit diesem Instrument Musik zu spielen. Jedes Instrument erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "12 GM",
+    "strength": null,
+    "toolType": "instrument"
+  },
+  {
+    "category": "tool",
+    "name": "Schalmei",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 1,
+    "description": "Doppelrohrblatt-Blasinstrument mit durchdringendem Klang. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um mit diesem Instrument Musik zu spielen. Jedes Instrument erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "2 GM",
+    "strength": null,
+    "toolType": "instrument"
+  },
+  {
+    "category": "tool",
+    "name": "Gambe",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 1,
+    "description": "Gestrichenes Saiteninstrument. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um mit diesem Instrument Musik zu spielen. Jedes Instrument erfordert eine eigene Übung.",
+    "ac": "",
+    "value": "30 GM",
+    "strength": null,
+    "toolType": "instrument"
+  },
+  {
+    "category": "tool",
+    "name": "Navigationswerkzeug",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 2,
+    "description": "Instrumente zur Navigation auf See. Mit Übung kannst du den Kurs eines Schiffs bestimmen und Seekarten folgen; zudem addierst du deinen Übungsbonus zu Attributswürfen, um dich auf See nicht zu verirren.",
+    "ac": "",
+    "value": "25 GM",
+    "strength": null,
+    "toolType": "other"
+  },
+  {
+    "category": "tool",
+    "name": "Diebeswerkzeug",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 1,
+    "description": "Eine kleine Feile, Dietriche, ein kleiner Spiegel an einem Metallgriff, eine schmale Schere und eine Zange. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um Fallen zu entschärfen oder Schlösser zu öffnen.",
+    "ac": "",
+    "value": "25 GM",
+    "strength": null,
+    "toolType": "other"
+  },
+  {
+    "category": "tool",
+    "name": "Verkleidungsausrüstung",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 3,
+    "description": "Schminke, Haarfärbemittel und kleine Requisiten, um dein Aussehen zu verändern. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um eine Verkleidung zu erstellen.",
+    "ac": "",
+    "value": "25 GM",
+    "strength": null,
+    "toolType": "other"
+  },
+  {
+    "category": "tool",
+    "name": "Fälscherausrüstung",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 5,
+    "description": "Papiere, Pergamente, Federn, Tinten, Siegel, Wachs sowie Blattgold und -silber zum Fälschen von Dokumenten. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um eine Fälschung herzustellen.",
+    "ac": "",
+    "value": "15 GM",
+    "strength": null,
+    "toolType": "other"
+  },
+  {
+    "category": "tool",
+    "name": "Kräuterkundeausrüstung",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 3,
+    "description": "Scheren, Mörser und Stößel, Beutel und Phiolen für Heilmittel und Tränke. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um Kräuter zu bestimmen oder anzuwenden; damit stellst du Gegengifte und Heiltränke her.",
+    "ac": "",
+    "value": "5 GM",
+    "strength": null,
+    "toolType": "other"
+  },
+  {
+    "category": "tool",
+    "name": "Giftmischerausrüstung",
+    "damageDice": null,
+    "damageType": null,
+    "weight": 2,
+    "description": "Phiolen, Chemikalien und Werkzeug zum Herstellen von Giften. Mit Übung addierst du deinen Übungsbonus zu Attributswürfen, um Gifte herzustellen oder anzuwenden.",
+    "ac": "",
+    "value": "50 GM",
+    "strength": null,
+    "toolType": "other"
   }
 ];
