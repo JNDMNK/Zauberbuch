@@ -115,6 +115,7 @@ export function CharacterSheetPage() {
   const lifestyles = character?.lifestyles;
   const languages = character?.languages;
   const tools = character?.tools;
+  const gods = character?.gods;
   // Magische Gegenstände des Bogens (Reiter und Einstimmung)
   const [itemData, setItemData] = useState<CharacterItemsDto | null>(null);
   const reloadItems = useCallback(() => {
@@ -141,9 +142,9 @@ export function CharacterSheetPage() {
   const ctx = useMemo<SheetCtx | null>(
     () =>
       sheet
-        ? { sheet, set, readOnly: !canEdit, lifestyles: lifestyles ?? DEFAULT_LIFESTYLES, languages: languages ?? DEFAULT_LANGUAGES, tools: tools ?? DEFAULT_TOOLS, items, catalog }
+        ? { sheet, set, readOnly: !canEdit, lifestyles: lifestyles ?? DEFAULT_LIFESTYLES, languages: languages ?? DEFAULT_LANGUAGES, tools: tools ?? DEFAULT_TOOLS, gods: gods ?? [], items, catalog }
         : null,
-    [sheet, set, canEdit, lifestyles, languages, tools, items, catalog],
+    [sheet, set, canEdit, lifestyles, languages, tools, gods, items, catalog],
   );
 
   useEffect(() => {
@@ -271,7 +272,7 @@ export function CharacterSheetPage() {
               // Lebensstil-Tabelle der (neuen) Geschichte übernehmen
               api
                 .character(character.id)
-                .then((r) => setCharacter((c) => (c ? { ...c, lifestyles: r.character.lifestyles, languages: r.character.languages, tools: r.character.tools } : c)))
+                .then((r) => setCharacter((c) => (c ? { ...c, lifestyles: r.character.lifestyles, languages: r.character.languages, tools: r.character.tools, gods: r.character.gods } : c)))
                 .catch(() => undefined);
             }}
           />

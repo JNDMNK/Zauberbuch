@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Save, Trash2 } from 'lucide-react';
 import {
   ABILITIES,
+  ALIGNMENTS,
   FEAT_CATEGORIES,
+  godDataSchema,
+  type WikiGodData,
   LANGUAGE_TYPES,
   languageDataSchema,
   type WikiLanguageData,
@@ -417,6 +420,43 @@ function BackgroundFields({ d, set, featNames }: { d: WikiBackgroundData; set: (
   );
 }
 
+function GodFields({ d, set, pantheons }: { d: WikiGodData; set: (d: WikiGodData) => void; pantheons: string[] }) {
+  const { t } = useTranslation();
+  const f = <K extends keyof WikiGodData>(k: K, v: WikiGodData[K]) => set({ ...d, [k]: v });
+  return (
+    <Group title={t('wiki.god.title')}>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label htmlFor="w-gpan" className="label">
+            {t('wiki.god.pantheon')}
+          </label>
+          <input id="w-gpan" className="input" value={d.pantheon} maxLength={100} list="w-gpan-list" onChange={(e) => f('pantheon', e.target.value)} placeholder={t('wiki.god.pantheonPlaceholder')} />
+          <datalist id="w-gpan-list">
+            {pantheons.map((p) => (
+              <option key={p} value={p} />
+            ))}
+          </datalist>
+        </div>
+        <div>
+          <label htmlFor="w-galign" className="label">
+            {t('wiki.god.alignment')}
+          </label>
+          <select id="w-galign" className="input" value={d.alignment ?? ''} onChange={(e) => f('alignment', (e.target.value || null) as WikiGodData['alignment'])}>
+            <option value="">—</option>
+            {ALIGNMENTS.map((a) => (
+              <option key={a} value={a}>
+                {t(`wiki.god.alignments.${a}`)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <TextInput id="w-gdom" label={t('wiki.god.domains')} value={d.domains} onChange={(v) => f('domains', v)} max={200} placeholder={t('wiki.god.domainsPlaceholder')} />
+        <TextInput id="w-gsym" label={t('wiki.god.symbol')} value={d.symbol} onChange={(v) => f('symbol', v)} max={200} />
+      </div>
+    </Group>
+  );
+}
+
 function LanguageFields({ d, set }: { d: WikiLanguageData; set: (d: WikiLanguageData) => void }) {
   const { t } = useTranslation();
   const f = <K extends keyof WikiLanguageData>(k: K, v: WikiLanguageData[K]) => set({ ...d, [k]: v });
@@ -449,6 +489,7 @@ export function WikiForm({
   kind,
   entry,
   featNames = [],
+  pantheons = [],
   onClose,
   onSave,
 }: {
@@ -457,6 +498,8 @@ export function WikiForm({
   entry: WikiEntryDto | null;
   /** Talente aus dem Wiki (Vorschläge beim Hintergrund) */
   featNames?: string[];
+  /** Vorhandene Pantheons (Vorschläge bei Göttern) */
+  pantheons?: string[];
   onClose: () => void;
   onSave: (input: WikiEntryInput) => Promise<void>;
 }) {
@@ -472,6 +515,7 @@ export function WikiForm({
   const [feat, setFeat] = useState<WikiFeatData>(() => featDataSchema.parse({}));
   const [bg, setBg] = useState<WikiBackgroundData>(() => backgroundDataSchema.parse({}));
   const [lang, setLang] = useState<WikiLanguageData>(() => languageDataSchema.parse({}));
+  const [god, setGod] = useState<WikiGodData>(() => godDataSchema.parse({}));
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (!open) return;
@@ -484,6 +528,7 @@ export function WikiForm({
     setFeat(entry?.kind === 'feat' ? entry.data : featDataSchema.parse({}));
     setBg(entry?.kind === 'background' ? entry.data : backgroundDataSchema.parse({}));
     setLang(entry?.kind === 'language' ? entry.data : languageDataSchema.parse({}));
+    setGod(entry?.kind === 'god' ? entry.data : godDataSchema.parse({}));
   }, [open, entry]);
 
   const submit = async (e: FormEvent) => {
@@ -501,11 +546,13 @@ export function WikiForm({
               ? { kind: 'feat', ...base, data: feat }
               : k === 'language'
                 ? { kind: 'language', ...base, data: lang }
-                : {
-                    kind: 'background',
-                    ...base,
-                    data: { ...bg, personalityTraits: bg.personalityTraits.filter(Boolean), ideals: bg.ideals.filter(Boolean), bonds: bg.bonds.filter(Boolean), flaws: bg.flaws.filter(Boolean) },
-                  },
+                : k === 'god'
+                  ? { kind: 'god', ...base, data: god }
+                  : {
+                      kind: 'background',
+                      ...base,
+                      data: { ...bg, personalityTraits: bg.personalityTraits.filter(Boolean), ideals: bg.ideals.filter(Boolean), bonds: bg.bonds.filter(Boolean), flaws: bg.flaws.filter(Boolean) },
+                    },
       );
     } catch (err) {
       toast.error(errorMessage(t, err));
@@ -541,6 +588,8 @@ export function WikiForm({
           <FeatFields d={feat} set={setFeat} />
         ) : k === 'language' ? (
           <LanguageFields d={lang} set={setLang} />
+        ) : k === 'god' ? (
+          <GodFields d={god} set={setGod} pantheons={pantheons} />
         ) : (
           <BackgroundFields d={bg} set={setBg} featNames={featNames} />
         )}

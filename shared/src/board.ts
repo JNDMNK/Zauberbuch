@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { lifestylesSchema, optionListSchema, type Lifestyle } from './lifestyle';
+import { lifestylesSchema, optionListSchema, type Lifestyle, godListSchema } from './lifestyle';
 
 /**
  * Infotafel: Pro Geschichte (Story) eine gemeinsame Tafel, auf der Mitspieler wichtige Infos
@@ -37,6 +37,8 @@ export const storyInputSchema = z.object({
   /** Auswahllisten für Sprachen bzw. Werkzeuge & andere; ohne Angabe = Standardwerte */
   languages: optionListSchema.optional(),
   tools: optionListSchema.optional(),
+  /** Götter der Geschichte (Auswahl aus dem Wiki und eigene); ohne Angabe = alle aus dem Wiki */
+  gods: godListSchema.optional(),
 });
 export type StoryInput = z.input<typeof storyInputSchema>;
 
@@ -51,6 +53,7 @@ export const storyUpdateSchema = z
     lifestyles: lifestylesSchema.optional(),
     languages: optionListSchema.optional(),
     tools: optionListSchema.optional(),
+    gods: godListSchema.optional(),
   })
   .refine((v) => Object.values(v).some((x) => x !== undefined), { message: 'Nothing to update' });
 export type StoryUpdate = z.input<typeof storyUpdateSchema>;
@@ -101,6 +104,7 @@ export interface StoryDto {
   /** Auswahllisten für Sprachen und Werkzeuge & andere */
   languages: string[];
   tools: string[];
+  gods: string[];
   postCount: number;
   unread: number;
 }
@@ -184,6 +188,7 @@ export interface BoardExportStory {
   lifestyles?: Lifestyle[];
   languages?: string[];
   tools?: string[];
+  gods?: string[];
   posts: BoardExportPost[];
 }
 
@@ -233,6 +238,7 @@ export const boardImportSchema = z.object({
         lifestyles: lifestylesSchema.optional(),
         languages: optionListSchema.optional(),
         tools: optionListSchema.optional(),
+        gods: godListSchema.optional(),
         posts: z.array(importPost).max(20_000).optional().default([]),
       }),
     )

@@ -6,7 +6,7 @@ import { ABILITIES, type Ability } from './character';
  * Wiki (für alle angemeldeten Benutzer lesbar, bearbeitbar von Admin und Moderator).
  * Rubriken nach dem SRD 5.1: Völker (Rassen) und Klassen. Die Detailfelder liegen je Rubrik als JSON vor.
  */
-export const WIKI_KINDS = ['race', 'class', 'feat', 'background', 'language'] as const;
+export const WIKI_KINDS = ['race', 'class', 'feat', 'background', 'language', 'god'] as const;
 export type WikiKind = (typeof WIKI_KINDS)[number];
 
 const text = (max: number) => z.string().trim().max(max).catch('').default('');
@@ -156,12 +156,25 @@ const languageObject = z.object({
 export const languageDataSchema = languageObject.catch(() => languageObject.parse({})).default({});
 export type WikiLanguageData = z.output<typeof languageDataSchema>;
 
+/** Gesinnungen (Kürzel wie im SRD) */
+export const ALIGNMENTS = ['LG', 'NG', 'CG', 'LN', 'N', 'CN', 'LE', 'NE', 'CE'] as const;
+/** Gottheit nach SRD: Pantheon, Gesinnung, empfohlene Domänen, Symbol */
+const godObject = z.object({
+  pantheon: text(100),
+  alignment: z.enum(ALIGNMENTS).nullable().catch(null).default(null),
+  domains: text(200),
+  symbol: text(200),
+});
+export const godDataSchema = godObject.catch(() => godObject.parse({})).default({});
+export type WikiGodData = z.output<typeof godDataSchema>;
+
 export const wikiEntrySchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('race'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: raceDataSchema }),
   z.object({ kind: z.literal('class'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: classDataSchema }),
   z.object({ kind: z.literal('feat'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: featDataSchema }),
   z.object({ kind: z.literal('background'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: backgroundDataSchema }),
   z.object({ kind: z.literal('language'), name: z.string().trim().min(1).max(60), summary: text(500), description: md(), sourceId: sourceIdSchema, data: languageDataSchema }),
+  z.object({ kind: z.literal('god'), name: z.string().trim().min(1).max(100), summary: text(500), description: md(), sourceId: sourceIdSchema, data: godDataSchema }),
 ]);
 export type WikiEntryInput = z.input<typeof wikiEntrySchema>;
 
@@ -180,4 +193,5 @@ export type WikiEntryDto =
   | (WikiBase & { kind: 'class'; data: WikiClassData })
   | (WikiBase & { kind: 'feat'; data: WikiFeatData })
   | (WikiBase & { kind: 'background'; data: WikiBackgroundData })
-  | (WikiBase & { kind: 'language'; data: WikiLanguageData });
+  | (WikiBase & { kind: 'language'; data: WikiLanguageData })
+  | (WikiBase & { kind: 'god'; data: WikiGodData });

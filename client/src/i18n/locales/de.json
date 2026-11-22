@@ -658,7 +658,8 @@
     },
     "dailyCostHint": "Aus der Lebensstil-Tabelle der Geschichte (bzw. den Standardwerten)",
     "addEntry": "Weitere hinzufügen",
-    "toolsOther": "Weitere"
+    "toolsOther": "Weitere",
+    "openDeity": "Gottheit im Wiki öffnen"
   },
   "board": {
     "heading": "Infotafel",
@@ -1041,7 +1042,14 @@
     "languagesAllWiki": "Alle aus dem Wiki",
     "languagesFromWiki": "Aus dem Wiki",
     "languagesCustom": "Eigene Sprachen dieser Geschichte",
-    "languagesNoCustom": "Keine eigenen Sprachen."
+    "languagesNoCustom": "Keine eigenen Sprachen.",
+    "gods": "Götter",
+    "godsHint": "Diese Götter werden im Charakterbogen bei „Glaube / Gottheit“ vorgeschlagen und verlinkt. Neue Geschichten starten mit allen Göttern aus dem Wiki; wähle aus, welche es in deiner Welt gibt, oder ergänze eigene.",
+    "godsCustom": "Eigene Götter dieser Geschichte",
+    "godsNoCustom": "Keine eigenen Götter.",
+    "godPlaceholder": "Neue Gottheit, z. B. Der Morgenfürst",
+    "pickAll": "alle",
+    "pickNone": "keine"
   },
   "items": {
     "title": "Magische Gegenstände",
@@ -1178,7 +1186,7 @@
   },
   "wiki": {
     "title": "Wiki",
-    "hint": "Nachschlagewerk zu Völkern, Klassen, Talenten, Hintergründen und Gegenständen nach dem System Reference Document 5.1. Karte anklicken für alle Details.",
+    "hint": "Nachschlagewerk zu Völkern, Klassen, Talenten, Hintergründen, Sprachen, Göttern und Gegenständen nach dem System Reference Document 5.1. Karte anklicken für alle Details.",
     "search": "Wiki durchsuchen …",
     "empty": "Noch keine Einträge.",
     "kinds": {
@@ -1187,14 +1195,16 @@
       "items": "Gegenstände",
       "feat": "Talente",
       "background": "Hintergründe",
-      "language": "Sprachen"
+      "language": "Sprachen",
+      "god": "Götter"
     },
     "new": {
       "race": "Neues Volk",
       "class": "Neue Klasse",
       "feat": "Neues Talent",
       "background": "Neuer Hintergrund",
-      "language": "Neue Sprache"
+      "language": "Neue Sprache",
+      "god": "Neue Gottheit"
     },
     "edit": "„{{name}}“ bearbeiten",
     "name": "Name",
@@ -1304,6 +1314,27 @@
       "speakersPlaceholder": "z. B. Zwerge",
       "script": "Schrift",
       "scriptPlaceholder": "z. B. Zwergisch"
+    },
+    "god": {
+      "title": "Gottheit",
+      "pantheon": "Pantheon",
+      "pantheonPlaceholder": "z. B. Nordisches Pantheon",
+      "alignment": "Gesinnung",
+      "domains": "Empfohlene Domänen",
+      "domainsPlaceholder": "z. B. Sturm, Krieg",
+      "symbol": "Symbol",
+      "alignments": {
+        "LG": "rechtschaffen gut",
+        "NG": "neutral gut",
+        "CG": "chaotisch gut",
+        "LN": "rechtschaffen neutral",
+        "N": "neutral",
+        "CN": "chaotisch neutral",
+        "LE": "rechtschaffen böse",
+        "NE": "neutral böse",
+        "CE": "chaotisch böse"
+      },
+      "noPantheon": "ohne Pantheon"
     }
   },
   "sources": {

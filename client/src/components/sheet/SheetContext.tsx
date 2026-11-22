@@ -12,6 +12,8 @@ export interface SheetCtx {
   /** Auswahllisten für Sprachen und Werkzeuge & andere */
   languages: string[];
   tools: string[];
+  /** Götter für „Glaube / Gottheit“ (Geschichte bzw. Wiki) */
+  gods: string[];
   /** Magische Gegenstände des Bogens (null = lädt) */
   items: { data: CharacterItemsDto | null; reload: () => void };
   /** Gegenstands-Datenbank (Geschichte des Bogens bzw. Standard) für Vorschläge im Inventar */

@@ -27,7 +27,7 @@ import {
   storyOptionLists,
 } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
-import { wikiLanguageNames } from './wiki';
+import { wikiGodNames, wikiLanguageNames } from './wiki';
 import { validate } from '../lib/validate';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { logger } from '../lib/logger';
@@ -170,6 +170,7 @@ type StoryWithMembers = Prisma.StoryGetPayload<{ include: typeof storyInclude }>
 export async function buildStoryDtos(user: Pick<User, 'id' | 'role'>, stories: StoryWithMembers[]): Promise<StoryDto[]> {
   const unread = await unreadCounts(user.id, stories.filter((s) => !s.archived).map((s) => s.id));
   const languages = await wikiLanguageNames();
+  const gods = await wikiGodNames();
   return stories.map((s) => ({
     id: s.id,
     name: s.name,
@@ -179,7 +180,7 @@ export async function buildStoryDtos(user: Pick<User, 'id' | 'role'>, stories: S
     updatedAt: s.updatedAt.toISOString(),
     members: s.members.map((m) => ({ ...ref(m.user)!, role: (m.role === 'dm' ? 'dm' : 'player') as StoryRole })),
     myRole: roleFromMembership(user, s.members.find((m) => m.userId === user.id)?.role),
-    ...storyOptionLists(s, { languages }),
+    ...storyOptionLists(s, { languages, gods }),
     postCount: s._count.posts,
     unread: unread[s.id] ?? 0,
   }));
@@ -383,6 +384,7 @@ boardRouter.get('/export', requireAdmin, async (_req, res) => {
     },
   });
   const wikiLangs = await wikiLanguageNames();
+  const wikiGods = await wikiGodNames();
   const file: BoardExportFile = {
     format: BOARD_EXPORT_FORMAT,
     version: 1,
@@ -393,7 +395,7 @@ boardRouter.get('/export', requireAdmin, async (_req, res) => {
       archived: s.archived,
       members: s.members.filter((m) => m.role !== 'dm').map((m) => m.user.username),
       dms: s.members.filter((m) => m.role === 'dm').map((m) => m.user.username),
-      ...storyOptionLists(s, { languages: wikiLangs }),
+      ...storyOptionLists(s, { languages: wikiLangs, gods: wikiGods }),
       posts: s.posts.map((p) => ({
         title: p.title,
         body: p.body,
@@ -435,7 +437,7 @@ boardRouter.post('/import', requireAdmin, async (req, res) => {
         let story = await tx.story.findFirst({ where: { name: s.name } });
         if (story) result.storiesMerged++;
         else {
-          story = await tx.story.create({ data: { name: s.name, description: s.description, archived: s.archived, lifestyles: JSON.stringify(s.lifestyles ?? DEFAULT_LIFESTYLES), languages: JSON.stringify(s.languages ?? importLangs), tools: JSON.stringify(s.tools ?? DEFAULT_TOOLS) } });
+          story = await tx.story.create({ data: { name: s.name, description: s.description, archived: s.archived, lifestyles: JSON.stringify(s.lifestyles ?? DEFAULT_LIFESTYLES), languages: JSON.stringify(s.languages ?? importLangs), tools: JSON.stringify(s.tools ?? DEFAULT_TOOLS), gods: s.gods ? JSON.stringify(s.gods) : '' } });
           result.storiesCreated++;
         }
         for (const [names, role] of [[s.members, 'player'], [s.dms, 'dm']] as const) {

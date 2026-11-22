@@ -39,4 +39,30 @@ describe('Sprachen aus dem Wiki', () => {
     await prisma.story.update({ where: { id: story.id }, data: { languages: '' } });
     expect((await frodo.agent.get(`/api/characters/${ch.id}`)).body.character.languages).toHaveLength(17);
   });
+
+  it('Götter: Wiki ist Standard, Geschichte wählt aus (auch keine), Bogen sieht Geschichte bzw. Wiki', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    const frodo = await createUser('frodo');
+    const gods = (await frodo.agent.get('/api/wiki')).body.entries.filter((e: { kind: string }) => e.kind === 'god');
+    expect(gods).toHaveLength(67);
+    expect(gods.find((e: { name: string }) => e.name === 'Thor')).toMatchObject({ summary: 'Gott der Stürme und des Donners', data: { pantheon: 'Nordisches Pantheon', alignment: 'CG', domains: 'Sturm, Krieg', symbol: 'Hammer' } });
+
+    const story = (await admin.post('/api/stories').set(CSRF).send({ name: 'Strahd', memberIds: [frodo.user.id] })).body.story;
+    expect(story.gods).toHaveLength(67);
+    const free = (await frodo.agent.post('/api/characters').set(CSRF).send({ name: 'Ohne' })).body.character;
+    expect(free.gods).toHaveLength(67);
+
+    // Geschichte wählt aus und ergänzt eigene
+    await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ gods: ['Thor', 'Odin', 'Der Morgenfürst'] });
+    const ch = (await frodo.agent.post('/api/characters').set(CSRF).send({ name: 'Vaelor' })).body.character;
+    await frodo.agent.put(`/api/characters/${ch.id}/settings`).set(CSRF).send({ storyId: story.id, editorIds: [] });
+    expect((await frodo.agent.get(`/api/characters/${ch.id}`)).body.character.gods).toEqual(['Thor', 'Odin', 'Der Morgenfürst']);
+    // eine Welt ohne Götter ist erlaubt
+    await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ gods: [] });
+    expect((await frodo.agent.get(`/api/characters/${ch.id}`)).body.character.gods).toEqual([]);
+    expect((await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ gods: ['Thor', 'thor'] })).status).toBe(400);
+    // ältere Geschichte ohne Liste: alle Götter aus dem Wiki
+    await prisma.story.update({ where: { id: story.id }, data: { gods: '' } });
+    expect((await frodo.agent.get(`/api/characters/${ch.id}`)).body.character.gods).toHaveLength(67);
+  });
 });

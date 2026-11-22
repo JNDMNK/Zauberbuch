@@ -119,22 +119,42 @@ export function parseOptionList(raw: string | null | undefined, defaults: string
   }
 }
 
+/** Götterliste einer Geschichte (darf leer sein – z. B. eine Welt ohne Götter) */
+export const godListSchema = z
+  .array(z.string().trim().min(1).max(100))
+  .max(300)
+  .refine((list) => new Set(list.map((l) => l.toLocaleLowerCase('de'))).size === list.length, 'option_duplicate');
+
+/** Gespeicherte Götterliste lesen; nicht gesetzt = Standard (alle Götter aus dem Wiki) */
+export function parseGodList(raw: string | null | undefined, defaults: string[]): string[] {
+  if (!raw) return defaults;
+  try {
+    const parsed = godListSchema.safeParse(JSON.parse(raw));
+    return parsed.success ? parsed.data : defaults;
+  } catch {
+    return defaults;
+  }
+}
+
 /** Listen einer Geschichte (bzw. Standardwerte), wie sie Bogen und Verwaltung erhalten */
 export interface StoryOptionLists {
   lifestyles: Lifestyle[];
   languages: string[];
   tools: string[];
+  /** Götter (Geschichte bzw. alle aus dem Wiki) */
+  gods: string[];
 }
 
 /** defaults.languages: Standard-Sprachen aus dem Wiki (ohne eigene Liste der Geschichte bzw. ohne Geschichte) */
 export function storyOptionLists(
-  story: { lifestyles?: string | null; languages?: string | null; tools?: string | null } | null | undefined,
-  defaults: { languages?: string[] } = {},
+  story: { lifestyles?: string | null; languages?: string | null; tools?: string | null; gods?: string | null } | null | undefined,
+  defaults: { languages?: string[]; gods?: string[] } = {},
 ): StoryOptionLists {
   const languages = defaults.languages?.length ? defaults.languages : DEFAULT_LANGUAGES;
   return {
     lifestyles: parseLifestyles(story?.lifestyles),
     languages: parseOptionList(story?.languages, languages),
     tools: parseOptionList(story?.tools, DEFAULT_TOOLS),
+    gods: parseGodList(story?.gods, defaults.gods ?? []),
   };
 }

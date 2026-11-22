@@ -2,7 +2,7 @@ import { Router } from 'express';
 import type { Prisma } from '@prisma/client';
 import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, activeStorySchema, storyInputSchema, storyUpdateSchema, type StoryInput, type StoryRole, type StoryUpdate } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
-import { wikiLanguageNames } from './wiki';
+import { wikiGodNames, wikiLanguageNames } from './wiki';
 import { validate } from '../lib/validate';
 import { badRequest, notFound } from '../lib/errors';
 import { notifyUsers } from '../lib/notifications';
@@ -63,9 +63,10 @@ storiesRouter.post('/', requireEditor, async (req, res) => {
   if (req.user!.role !== 'admin' && !members.has(req.user!.id)) members.set(req.user!.id, 'dm');
   // Neue Geschichten starten mit den Sprachen aus dem Wiki (der DM kann sie danach anpassen)
   const wikiLangs = await wikiLanguageNames();
+  const wikiGods = await wikiGodNames();
   const story = await prisma.$transaction(async (tx) => {
     // Neue Geschichten erhalten die Standard-Lebensstile (anpassbar unter Verwaltung → Geschichten)
-    const s = await tx.story.create({ data: { name: input.name, description: input.description, lifestyles: JSON.stringify(input.lifestyles ?? DEFAULT_LIFESTYLES), languages: JSON.stringify(input.languages ?? (wikiLangs.length ? wikiLangs : DEFAULT_LANGUAGES)), tools: JSON.stringify(input.tools ?? DEFAULT_TOOLS) } });
+    const s = await tx.story.create({ data: { name: input.name, description: input.description, lifestyles: JSON.stringify(input.lifestyles ?? DEFAULT_LIFESTYLES), languages: JSON.stringify(input.languages ?? (wikiLangs.length ? wikiLangs : DEFAULT_LANGUAGES)), gods: JSON.stringify(input.gods ?? wikiGods), tools: JSON.stringify(input.tools ?? DEFAULT_TOOLS) } });
     await setMembers(tx, s.id, members);
     return s;
   });
@@ -89,6 +90,7 @@ storiesRouter.patch('/:id', requireEditor, async (req, res) => {
         ...(input.archived !== undefined ? { archived: input.archived } : {}),
         ...(input.lifestyles !== undefined ? { lifestyles: JSON.stringify(input.lifestyles) } : {}),
         ...(input.languages !== undefined ? { languages: JSON.stringify(input.languages) } : {}),
+        ...(input.gods !== undefined ? { gods: JSON.stringify(input.gods) } : {}),
         ...(input.tools !== undefined ? { tools: JSON.stringify(input.tools) } : {}),
       },
     });

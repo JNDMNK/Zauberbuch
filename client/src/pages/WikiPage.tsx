@@ -1,7 +1,29 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Award, Footprints, GraduationCap, Heart, Languages, Lock, PenLine, Pencil, Plus, Repeat, ScrollText, Search, Shield, Sparkles, Star, Tags, Trash2, Users2 } from 'lucide-react';
+import {
+  Award,
+  Footprints,
+  GraduationCap,
+  Heart,
+  Landmark,
+  Languages,
+  Lock,
+  PenLine,
+  Pencil,
+  Plus,
+  Repeat,
+  Scale,
+  ScrollText,
+  Search,
+  Shield,
+  Sparkles,
+  Star,
+  Sun,
+  Tags,
+  Trash2,
+  Users2,
+} from 'lucide-react';
 import { CATALOG_CATEGORIES, FEAT_CATEGORIES, WIKI_KINDS, type CatalogCategory, type CatalogItemDto, type WikiEntryDto, type WikiKind } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
@@ -22,13 +44,14 @@ const TABS = [...WIKI_KINDS, ...CATALOG_CATEGORIES] as const;
 const isCatalog = (t: string): t is CatalogCategory => (CATALOG_CATEGORIES as readonly string[]).includes(t);
 type Tab = (typeof TABS)[number];
 
-const KIND_ICON: Record<WikiKind, typeof Users2> = { race: Users2, class: GraduationCap, feat: Award, background: ScrollText, language: Languages };
+const KIND_ICON: Record<WikiKind, typeof Users2> = { race: Users2, class: GraduationCap, feat: Award, background: ScrollText, language: Languages, god: Sun };
 const KIND_ACCENT: Record<WikiKind, string> = {
   race: '!border-t-emerald-600 dark:!border-t-emerald-400',
   class: '!border-t-sky-600 dark:!border-t-sky-400',
   feat: '!border-t-amber-500 dark:!border-t-amber-400',
   background: '!border-t-violet-600 dark:!border-t-violet-400',
   language: '!border-t-teal-600 dark:!border-t-teal-400',
+  god: '!border-t-yellow-500 dark:!border-t-yellow-300',
 };
 
 /**
@@ -46,6 +69,7 @@ export function WikiPage() {
   const [q, setQ] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
   const [featCategory, setFeatCategory] = useState('');
+  const [pantheon, setPantheon] = useState('');
   const { byId } = useSources();
   const [editing, setEditing] = useState<WikiEntryDto | 'new' | null>(null);
   const [toDelete, setToDelete] = useState<WikiEntryDto | null>(null);
@@ -91,11 +115,13 @@ export function WikiPage() {
           e.kind === kind &&
           matchesSource(sourceFilter, e.sourceId) &&
           (kind !== 'feat' || !featCategory || (e.kind === 'feat' && e.data.category === featCategory)) &&
+          (kind !== 'god' || !pantheon || (e.kind === 'god' && e.data.pantheon === pantheon)) &&
           (!needle || `${e.name}\n${e.summary}\n${e.description}\n${JSON.stringify(e.data)}`.toLocaleLowerCase('de').includes(needle)),
       ),
-    [entries, kind, needle, sourceFilter, featCategory],
+    [entries, kind, needle, sourceFilter, featCategory, pantheon],
   );
   const opened = entries?.find((e) => e.id === openId) ?? null;
+  const pantheons = useMemo(() => [...new Set((entries ?? []).flatMap((e) => (e.kind === 'god' && e.data.pantheon ? [e.data.pantheon] : [])))].sort((a, b) => a.localeCompare(b, 'de')), [entries]);
 
   const remove = async () => {
     if (!toDelete) return;
@@ -130,6 +156,13 @@ export function WikiPage() {
           { Icon: Lock, label: t('wiki.feat.prerequisite'), value: e.data.prerequisite || t('wiki.feat.none') },
           { Icon: Shield, label: t('wiki.race.abilityIncreaseShort'), value: e.data.abilityIncrease },
           { Icon: Repeat, label: t('wiki.feat.repeatable'), value: e.data.repeatable ? t('wiki.feat.yes') : '' },
+        ];
+      case 'god':
+        return [
+          { Icon: Landmark, label: t('wiki.god.pantheon'), value: e.data.pantheon },
+          { Icon: Scale, label: t('wiki.god.alignment'), value: e.data.alignment ? t(`wiki.god.alignments.${e.data.alignment}`) : '' },
+          { Icon: Sparkles, label: t('wiki.god.domains'), value: e.data.domains },
+          { Icon: Star, label: t('wiki.god.symbol'), value: e.data.symbol },
         ];
       case 'language':
         return [
@@ -189,6 +222,18 @@ export function WikiPage() {
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-700 dark:text-parchment-400" />
               <input type="search" className="input !pl-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('wiki.search')} aria-label={t('common.search')} />
             </div>
+            {kind === 'god' && pantheons.length > 0 && (
+              <select className="input !w-auto" value={pantheon} onChange={(e) => setPantheon(e.target.value)} aria-label={t('wiki.god.pantheon')}>
+                <option value="">
+                  {t('wiki.god.pantheon')}: {t('common.any')}
+                </option>
+                {pantheons.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            )}
             {kind === 'feat' && (
               <select className="input !w-auto" value={featCategory} onChange={(e) => setFeatCategory(e.target.value)} aria-label={t('wiki.feat.category')}>
                 <option value="">
@@ -317,6 +362,7 @@ export function WikiPage() {
         kind={kind}
         entry={editing === 'new' ? null : editing}
         featNames={entries.filter((x) => x.kind === 'feat').map((x) => x.name)}
+        pantheons={pantheons}
         onClose={() => setEditing(null)}
         onSave={async (input) => {
           const r = editing && editing !== 'new' ? await api.updateWiki(editing.id, input) : await api.createWiki(input);

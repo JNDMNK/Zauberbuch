@@ -22,7 +22,7 @@ import {
   lifestyleCost,
 } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
-import { wikiLanguageNames } from './wiki';
+import { wikiGodNames, wikiLanguageNames } from './wiki';
 import { validate } from '../lib/validate';
 import { badRequest, forbidden, notFound } from '../lib/errors';
 import { requireAdmin, requireAuth } from '../middleware/auth';
@@ -219,14 +219,14 @@ charactersRouter.post('/', async (req, res) => {
   const c = await prisma.character.create({
     data: { userId: req.user!.id, ...summaryFields(sheet), data: JSON.stringify(sheet) },
   });
-  const body: CharacterDto = { ...toSummary(c), data: sheet, canEdit: true, canManageSettings: true, isOwner: true, ...storyOptionLists(null, { languages: await wikiLanguageNames() }) };
+  const body: CharacterDto = { ...toSummary(c), data: sheet, canEdit: true, canManageSettings: true, isOwner: true, ...storyOptionLists(null, { languages: await wikiLanguageNames(), gods: await wikiGodNames() }) };
   res.status(201).json({ character: body });
 });
 
 async function loadReadable(id: string, user: User) {
   const c = await prisma.character.findUnique({
     where: { id },
-    include: { user: { select: { id: true, username: true } }, story: { select: { id: true, name: true, lifestyles: true, languages: true, tools: true } }, editors: { select: { userId: true } } },
+    include: { user: { select: { id: true, username: true } }, story: { select: { id: true, name: true, lifestyles: true, languages: true, tools: true, gods: true } }, editors: { select: { userId: true } } },
   });
   const isOwner = !!c && c.userId === user.id;
   const isCoEditor = !!c && c.editors.some((e) => e.userId === user.id);
@@ -235,7 +235,7 @@ async function loadReadable(id: string, user: User) {
   const privileged = isEditorRole(user.role) || isStoryDm;
   // Fremde Bögen gibt es für normale Benutzer „nicht“ (404 statt 403, verrät keine IDs)
   if (!c || (!isOwner && !isCoEditor && !privileged)) throw notFound('character_not_found', 'Character not found');
-  return { ...c, isOwner, canEdit: isOwner || isCoEditor, canManageSettings: isOwner || privileged, wikiLanguages: await wikiLanguageNames() };
+  return { ...c, isOwner, canEdit: isOwner || isCoEditor, canManageSettings: isOwner || privileged, wikiLanguages: await wikiLanguageNames(), wikiGods: await wikiGodNames() };
 }
 
 function toDto(c: Awaited<ReturnType<typeof loadReadable>>, data: CharacterSheet, updated?: Character): CharacterDto {
@@ -245,7 +245,7 @@ function toDto(c: Awaited<ReturnType<typeof loadReadable>>, data: CharacterSheet
     canEdit: c.canEdit,
     canManageSettings: c.canManageSettings,
     isOwner: c.isOwner,
-    ...storyOptionLists(c.story, { languages: c.wikiLanguages }),
+    ...storyOptionLists(c.story, { languages: c.wikiLanguages, gods: c.wikiGods }),
   };
 }
 
@@ -284,7 +284,7 @@ charactersRouter.post('/:id/duplicate', async (req, res) => {
   sheet.identity.name = sheet.identity.name ? `${sheet.identity.name} (Kopie)` : '';
   const copy = await prisma.character.create({
     data: { userId: req.user!.id, ...summaryFields(sheet), data: JSON.stringify(sheet), storyId: c.storyId },
-    include: { story: { select: { id: true, name: true, lifestyles: true, languages: true, tools: true } } },
+    include: { story: { select: { id: true, name: true, lifestyles: true, languages: true, tools: true, gods: true } } },
   });
   res.status(201).json({
     character: {
@@ -293,7 +293,7 @@ charactersRouter.post('/:id/duplicate', async (req, res) => {
       canEdit: true,
       canManageSettings: true,
       isOwner: true,
-      ...storyOptionLists(copy.story, { languages: await wikiLanguageNames() }),
+      ...storyOptionLists(copy.story, { languages: await wikiLanguageNames(), gods: await wikiGodNames() }),
     } satisfies CharacterDto,
   });
 });

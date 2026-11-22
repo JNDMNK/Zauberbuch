@@ -138,6 +138,15 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
             </Section>
           )}
         </>
+      ) : entry.kind === 'god' ? (
+        <Section title={t('wiki.god.title')}>
+          <div className="space-y-1">
+            <Fact label={t('wiki.god.pantheon')}>{entry.data.pantheon}</Fact>
+            <Fact label={t('wiki.god.alignment')}>{entry.data.alignment ? t(`wiki.god.alignments.${entry.data.alignment}`) : ''}</Fact>
+            <Fact label={t('wiki.god.domains')}>{entry.data.domains}</Fact>
+            <Fact label={t('wiki.god.symbol')}>{entry.data.symbol}</Fact>
+          </div>
+        </Section>
       ) : entry.kind === 'language' ? (
         <Section title={t('wiki.language.title')}>
           <div className="space-y-1">

@@ -163,6 +163,10 @@ model Story {
    * Auswahllisten für „Übung und Sprachen“ (JSON string[]); leer = Standardwerte
    */
   languages    String          @default("")
+  /**
+   * Götter der Geschichte (JSON string[]); leer = alle Götter aus dem Wiki
+   */
+  gods         String          @default("")
   tools        String          @default("")
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt

@@ -244,6 +244,8 @@ export interface CharacterDto extends CharacterSummaryDto {
   /** Auswahllisten für Sprachen und Werkzeuge & andere (Geschichte bzw. Standardwerte) */
   languages: string[];
   tools: string[];
+  /** Götter für „Glaube / Gottheit“ (Geschichte bzw. alle aus dem Wiki) */
+  gods: string[];
 }
 
 /** Einstellungen eines Bogens: Mitbearbeiter und Geschichte */
