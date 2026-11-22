@@ -4,6 +4,9 @@ import { Plus, Save, Trash2 } from 'lucide-react';
 import {
   ABILITIES,
   FEAT_CATEGORIES,
+  LANGUAGE_TYPES,
+  languageDataSchema,
+  type WikiLanguageData,
   HIT_DICE,
   backgroundDataSchema,
   classDataSchema,
@@ -414,6 +417,32 @@ function BackgroundFields({ d, set, featNames }: { d: WikiBackgroundData; set: (
   );
 }
 
+function LanguageFields({ d, set }: { d: WikiLanguageData; set: (d: WikiLanguageData) => void }) {
+  const { t } = useTranslation();
+  const f = <K extends keyof WikiLanguageData>(k: K, v: WikiLanguageData[K]) => set({ ...d, [k]: v });
+  return (
+    <Group title={t('wiki.language.title')}>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div>
+          <label htmlFor="w-ltype" className="label">
+            {t('wiki.language.type')}
+          </label>
+          <select id="w-ltype" className="input" value={d.type ?? ''} onChange={(e) => f('type', (e.target.value || null) as WikiLanguageData['type'])}>
+            <option value="">—</option>
+            {LANGUAGE_TYPES.map((x) => (
+              <option key={x} value={x}>
+                {t(`wiki.language.types.${x}`)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <TextInput id="w-lspeakers" label={t('wiki.language.speakers')} value={d.speakers} onChange={(v) => f('speakers', v)} placeholder={t('wiki.language.speakersPlaceholder')} />
+        <TextInput id="w-lscript" label={t('wiki.language.script')} value={d.script} onChange={(v) => f('script', v)} max={100} placeholder={t('wiki.language.scriptPlaceholder')} />
+      </div>
+    </Group>
+  );
+}
+
 /** Wiki-Eintrag anlegen oder bearbeiten (Admin/Moderator) */
 export function WikiForm({
   open,
@@ -442,6 +471,7 @@ export function WikiForm({
   const [cls, setCls] = useState<WikiClassData>(() => classDataSchema.parse({}));
   const [feat, setFeat] = useState<WikiFeatData>(() => featDataSchema.parse({}));
   const [bg, setBg] = useState<WikiBackgroundData>(() => backgroundDataSchema.parse({}));
+  const [lang, setLang] = useState<WikiLanguageData>(() => languageDataSchema.parse({}));
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (!open) return;
@@ -453,6 +483,7 @@ export function WikiForm({
     setCls(entry?.kind === 'class' ? entry.data : classDataSchema.parse({}));
     setFeat(entry?.kind === 'feat' ? entry.data : featDataSchema.parse({}));
     setBg(entry?.kind === 'background' ? entry.data : backgroundDataSchema.parse({}));
+    setLang(entry?.kind === 'language' ? entry.data : languageDataSchema.parse({}));
   }, [open, entry]);
 
   const submit = async (e: FormEvent) => {
@@ -468,11 +499,13 @@ export function WikiForm({
             ? { kind: 'class', ...base, data: cls }
             : k === 'feat'
               ? { kind: 'feat', ...base, data: feat }
-              : {
-                  kind: 'background',
-                  ...base,
-                  data: { ...bg, personalityTraits: bg.personalityTraits.filter(Boolean), ideals: bg.ideals.filter(Boolean), bonds: bg.bonds.filter(Boolean), flaws: bg.flaws.filter(Boolean) },
-                },
+              : k === 'language'
+                ? { kind: 'language', ...base, data: lang }
+                : {
+                    kind: 'background',
+                    ...base,
+                    data: { ...bg, personalityTraits: bg.personalityTraits.filter(Boolean), ideals: bg.ideals.filter(Boolean), bonds: bg.bonds.filter(Boolean), flaws: bg.flaws.filter(Boolean) },
+                  },
       );
     } catch (err) {
       toast.error(errorMessage(t, err));
@@ -506,6 +539,8 @@ export function WikiForm({
           <ClassFields d={cls} set={setCls} />
         ) : k === 'feat' ? (
           <FeatFields d={feat} set={setFeat} />
+        ) : k === 'language' ? (
+          <LanguageFields d={lang} set={setLang} />
         ) : (
           <BackgroundFields d={bg} set={setBg} featNames={featNames} />
         )}

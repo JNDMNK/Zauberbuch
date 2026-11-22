@@ -27,6 +27,7 @@ import {
   storyOptionLists,
 } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
+import { wikiLanguageNames } from './wiki';
 import { validate } from '../lib/validate';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { logger } from '../lib/logger';
@@ -168,6 +169,7 @@ type StoryWithMembers = Prisma.StoryGetPayload<{ include: typeof storyInclude }>
 /** Geschichten als DTO inkl. Rollen, eigener Rolle und Ungelesen-Zähler */
 export async function buildStoryDtos(user: Pick<User, 'id' | 'role'>, stories: StoryWithMembers[]): Promise<StoryDto[]> {
   const unread = await unreadCounts(user.id, stories.filter((s) => !s.archived).map((s) => s.id));
+  const languages = await wikiLanguageNames();
   return stories.map((s) => ({
     id: s.id,
     name: s.name,
@@ -177,7 +179,7 @@ export async function buildStoryDtos(user: Pick<User, 'id' | 'role'>, stories: S
     updatedAt: s.updatedAt.toISOString(),
     members: s.members.map((m) => ({ ...ref(m.user)!, role: (m.role === 'dm' ? 'dm' : 'player') as StoryRole })),
     myRole: roleFromMembership(user, s.members.find((m) => m.userId === user.id)?.role),
-    ...storyOptionLists(s),
+    ...storyOptionLists(s, { languages }),
     postCount: s._count.posts,
     unread: unread[s.id] ?? 0,
   }));
@@ -380,6 +382,7 @@ boardRouter.get('/export', requireAdmin, async (_req, res) => {
       },
     },
   });
+  const wikiLangs = await wikiLanguageNames();
   const file: BoardExportFile = {
     format: BOARD_EXPORT_FORMAT,
     version: 1,
@@ -390,7 +393,7 @@ boardRouter.get('/export', requireAdmin, async (_req, res) => {
       archived: s.archived,
       members: s.members.filter((m) => m.role !== 'dm').map((m) => m.user.username),
       dms: s.members.filter((m) => m.role === 'dm').map((m) => m.user.username),
-      ...storyOptionLists(s),
+      ...storyOptionLists(s, { languages: wikiLangs }),
       posts: s.posts.map((p) => ({
         title: p.title,
         body: p.body,
@@ -423,6 +426,7 @@ boardRouter.post('/import', requireAdmin, async (req, res) => {
     if (!id) unknown.add(name);
     return id ?? null;
   };
+  const importLangs = (await wikiLanguageNames()).length ? await wikiLanguageNames() : DEFAULT_LANGUAGES;
   const result: BoardImportResult = { storiesCreated: 0, storiesMerged: 0, postsCreated: 0, postsSkipped: 0, commentsCreated: 0, unknownUsers: [] };
 
   await prisma.$transaction(
@@ -431,7 +435,7 @@ boardRouter.post('/import', requireAdmin, async (req, res) => {
         let story = await tx.story.findFirst({ where: { name: s.name } });
         if (story) result.storiesMerged++;
         else {
-          story = await tx.story.create({ data: { name: s.name, description: s.description, archived: s.archived, lifestyles: JSON.stringify(s.lifestyles ?? DEFAULT_LIFESTYLES), languages: JSON.stringify(s.languages ?? DEFAULT_LANGUAGES), tools: JSON.stringify(s.tools ?? DEFAULT_TOOLS) } });
+          story = await tx.story.create({ data: { name: s.name, description: s.description, archived: s.archived, lifestyles: JSON.stringify(s.lifestyles ?? DEFAULT_LIFESTYLES), languages: JSON.stringify(s.languages ?? importLangs), tools: JSON.stringify(s.tools ?? DEFAULT_TOOLS) } });
           result.storiesCreated++;
         }
         for (const [names, role] of [[s.members, 'player'], [s.dms, 'dm']] as const) {

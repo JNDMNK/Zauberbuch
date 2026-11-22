@@ -198,8 +198,11 @@ Im Kasten **„Übung und Sprachen“** auf Seite 1 werden **Sprachen** und **We
 Liste gewählt; **„+ Weitere hinzufügen“** ergänzt eine Zeile, **×** entfernt sie. Bereits gewählte Einträge sind in den
 anderen Zeilen gesperrt.
 
-- Standardwerte wie im Charakterbogen-PDF: 15 Sprachen (Gemeinsprache bis Gemeinsprache der Unterreiche) und
-  36 Werkzeuge, Instrumente und Spielsätze (Fälscherausrüstung bis Verkleidungsausrüstung).
+- **Sprachen kommen aus dem Wiki** (Reiter „Sprachen“, Standard-Datenbank, vorbefüllt mit den 16 SRD-Sprachen samt Art,
+  typischen Sprechern und Schrift). Neue Geschichten starten mit allen Wiki-Sprachen; unter **Verwaltung →
+  Geschichten → Geschichte bearbeiten → Sprachen** werden Wiki-Sprachen an-/abgewählt und eigene ergänzt („Alle aus dem
+  Wiki“ setzt zurück). Bögen einer Geschichte sehen deren Sprachen, Bögen ohne Geschichte alle Wiki-Sprachen.
+- Werkzeuge: Standardliste wie im Charakterbogen-PDF (36 Werkzeuge, Instrumente und Spielsätze), siehe unten.
 - Jede neue Geschichte startet mit diesen Listen; unter **Verwaltung → Geschichten → Geschichte bearbeiten**
   lassen sich Einträge ergänzen oder entfernen („Standardwerte“ setzt zurück). Für Bögen der Geschichte gelten
   deren Listen.
@@ -344,7 +347,7 @@ Format:
 ## Wiki
 
 - Hauptmenüpunkt **„Wiki“** (für alle angemeldeten Benutzer) mit den Reitern **Völker**, **Klassen**,
-  **Talente**, **Hintergründe**, **Rüstung**, **Waffen**, **Gegenstände** und **Ausrüstung** (Gegenstands-Datenbank, siehe oben) in Kartenansicht; Suche über alle Felder, ein Klick auf die Karte zeigt den vollständigen Eintrag (direkt verlinkbar
+  **Talente**, **Hintergründe**, **Sprachen**, **Rüstung**, **Waffen**, **Gegenstände** und **Ausrüstung** (Gegenstands-Datenbank, siehe oben) in Kartenansicht; Suche über alle Felder, ein Klick auf die Karte zeigt den vollständigen Eintrag (direkt verlinkbar
   über `?tab=class&entry=…`).
 - Felder nach dem **System Reference Document 5.1**:
   - **Volk:** Attributswerterhöhung, Alter, Gesinnung, Größe, Bewegungsrate, Sprachen, Merkmale (Name + Text) und
@@ -353,6 +356,7 @@ Format:
     Werkzeuge, Rettungswürfe, Fertigkeiten), Ausrüstung, Zauberwirken, Klassenmerkmale je Stufe sowie Unterklassen
     (Bezeichnung, z. B. „Arkane Tradition“, mit eigenen Merkmalen je Stufe und **eigener Quelle** – eine Klasse aus
     dem Spielerhandbuch kann so Unterklassen aus Tashas oder Xanathars enthalten).
+  - **Sprache:** Art (Standard/Exotisch), typische Sprecher, Schrift – Standard für Geschichten und Charakterbögen.
   - **Talent:** Kategorie (Herkunftstalent, Allgemeines Talent, Kampfstil-Talent, Epische Gabe – im Reiter auch als
     Filter), Voraussetzung, optionale Attributswerterhöhung (Halbtalente), Vorteile, „mehrfach wählbar“.
   - **Hintergrund:** Attributswerte (Auswahl aus den sechs Attributen, nach aktuellen Regeln drei), Talent
@@ -750,7 +754,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
 | `GET /api/sources` · `POST /api/sources` · `PUT`/`DELETE /api/sources/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Quellen (`{ name, abbreviation? }`) |
-| `GET /api/wiki` · `POST /api/wiki` · `PUT`/`DELETE /api/wiki/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Wiki (`{ kind: 'race' \| 'class' \| 'feat' \| 'background', name, summary?, description?, data }`) |
+| `GET /api/wiki` · `POST /api/wiki` · `PUT`/`DELETE /api/wiki/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Wiki (`{ kind: 'race' \| 'class' \| 'feat' \| 'background' \| 'language', name, summary?, description?, data }`) |
 | `GET`/`POST /api/dm-notes/stories/:storyId` · `PUT …/order` · `PUT`/`DELETE /api/dm-notes/:id` | DM der Geschichte | DM-Notizen (`{ title, body? }`; Reihenfolge `{ ids }`) |
 | `GET /api/catalog?storyId=` | angemeldet | Wirksame Gegenstands-Datenbank (Standard bzw. Geschichte) |
 | `POST /api/catalog/standard` · `PUT`/`DELETE /api/catalog/:id` | Moderator/Admin | Standard-Datenbank bzw. eigene Einträge bearbeiten (`{ category, name, description?, weight?, value?, ac?, strength?, damageDice?, damageType? }`) |

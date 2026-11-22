@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type { WikiEntry } from '@prisma/client';
-import { backgroundDataSchema, classDataSchema, featDataSchema, raceDataSchema, WIKI_KINDS, wikiEntrySchema, type WikiEntryDto, type WikiKind } from '@zauberbuch/shared';
+import { backgroundDataSchema, classDataSchema, featDataSchema, languageDataSchema, raceDataSchema, WIKI_KINDS, wikiEntrySchema, type WikiEntryDto, type WikiKind } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { notFound } from '../lib/errors';
@@ -36,6 +36,8 @@ function toDto(e: WikiEntry): WikiEntryDto {
       return { ...base, kind, data: featDataSchema.parse(json) };
     case 'background':
       return { ...base, kind, data: backgroundDataSchema.parse(json) };
+    case 'language':
+      return { ...base, kind, data: languageDataSchema.parse(json) };
     default:
       return { ...base, kind: 'race', data: raceDataSchema.parse(json) };
   }
@@ -110,6 +112,12 @@ export async function backfillBackgroundFields() {
     n++;
   }
   return n;
+}
+
+/** Standard-Sprachen = Sprachen im Wiki (alphabetisch); ohne Wiki-Sprachen die eingebaute Liste */
+export async function wikiLanguageNames(): Promise<string[]> {
+  const rows = await prisma.wikiEntry.findMany({ where: { kind: 'language' }, select: { name: true } });
+  return rows.map((r) => r.name).sort((a, b) => a.localeCompare(b, 'de'));
 }
 
 wikiRouter.get('/', async (_req, res) => {

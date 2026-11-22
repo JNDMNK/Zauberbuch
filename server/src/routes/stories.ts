@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type { Prisma } from '@prisma/client';
 import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, activeStorySchema, storyInputSchema, storyUpdateSchema, type StoryInput, type StoryRole, type StoryUpdate } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
+import { wikiLanguageNames } from './wiki';
 import { validate } from '../lib/validate';
 import { badRequest, notFound } from '../lib/errors';
 import { notifyUsers } from '../lib/notifications';
@@ -60,9 +61,11 @@ storiesRouter.post('/', requireEditor, async (req, res) => {
   const members = normalizeMembers(input) ?? new Map<string, StoryRole>();
   // Ein Moderator, der eine Geschichte anlegt, wird (sofern nicht anders angegeben) ihr Dungeon Master
   if (req.user!.role !== 'admin' && !members.has(req.user!.id)) members.set(req.user!.id, 'dm');
+  // Neue Geschichten starten mit den Sprachen aus dem Wiki (der DM kann sie danach anpassen)
+  const wikiLangs = await wikiLanguageNames();
   const story = await prisma.$transaction(async (tx) => {
     // Neue Geschichten erhalten die Standard-Lebensstile (anpassbar unter Verwaltung → Geschichten)
-    const s = await tx.story.create({ data: { name: input.name, description: input.description, lifestyles: JSON.stringify(input.lifestyles ?? DEFAULT_LIFESTYLES), languages: JSON.stringify(input.languages ?? DEFAULT_LANGUAGES), tools: JSON.stringify(input.tools ?? DEFAULT_TOOLS) } });
+    const s = await tx.story.create({ data: { name: input.name, description: input.description, lifestyles: JSON.stringify(input.lifestyles ?? DEFAULT_LIFESTYLES), languages: JSON.stringify(input.languages ?? (wikiLangs.length ? wikiLangs : DEFAULT_LANGUAGES)), tools: JSON.stringify(input.tools ?? DEFAULT_TOOLS) } });
     await setMembers(tx, s.id, members);
     return s;
   });

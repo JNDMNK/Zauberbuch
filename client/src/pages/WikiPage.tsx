@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Award, Footprints, GraduationCap, Heart, Lock, Pencil, Plus, Repeat, ScrollText, Search, Shield, Sparkles, Star, Tags, Trash2, Users2 } from 'lucide-react';
+import { Award, Footprints, GraduationCap, Heart, Languages, Lock, PenLine, Pencil, Plus, Repeat, ScrollText, Search, Shield, Sparkles, Star, Tags, Trash2, Users2 } from 'lucide-react';
 import { CATALOG_CATEGORIES, FEAT_CATEGORIES, WIKI_KINDS, type CatalogCategory, type CatalogItemDto, type WikiEntryDto, type WikiKind } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
@@ -22,12 +22,13 @@ const TABS = [...WIKI_KINDS, ...CATALOG_CATEGORIES] as const;
 const isCatalog = (t: string): t is CatalogCategory => (CATALOG_CATEGORIES as readonly string[]).includes(t);
 type Tab = (typeof TABS)[number];
 
-const KIND_ICON: Record<WikiKind, typeof Users2> = { race: Users2, class: GraduationCap, feat: Award, background: ScrollText };
+const KIND_ICON: Record<WikiKind, typeof Users2> = { race: Users2, class: GraduationCap, feat: Award, background: ScrollText, language: Languages };
 const KIND_ACCENT: Record<WikiKind, string> = {
   race: '!border-t-emerald-600 dark:!border-t-emerald-400',
   class: '!border-t-sky-600 dark:!border-t-sky-400',
   feat: '!border-t-amber-500 dark:!border-t-amber-400',
   background: '!border-t-violet-600 dark:!border-t-violet-400',
+  language: '!border-t-teal-600 dark:!border-t-teal-400',
 };
 
 /**
@@ -129,6 +130,12 @@ export function WikiPage() {
           { Icon: Lock, label: t('wiki.feat.prerequisite'), value: e.data.prerequisite || t('wiki.feat.none') },
           { Icon: Shield, label: t('wiki.race.abilityIncreaseShort'), value: e.data.abilityIncrease },
           { Icon: Repeat, label: t('wiki.feat.repeatable'), value: e.data.repeatable ? t('wiki.feat.yes') : '' },
+        ];
+      case 'language':
+        return [
+          { Icon: Tags, label: t('wiki.language.type'), value: e.data.type ? t(`wiki.language.types.${e.data.type}`) : '' },
+          { Icon: Users2, label: t('wiki.language.speakers'), value: e.data.speakers },
+          { Icon: PenLine, label: t('wiki.language.script'), value: e.data.script },
         ];
       case 'background':
         return [

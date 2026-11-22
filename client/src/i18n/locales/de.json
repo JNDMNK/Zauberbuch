@@ -1031,13 +1031,17 @@
     },
     "languages": "Sprachen",
     "tools": "Werkzeuge & andere",
-    "languagesHint": "Auswahl für „Sprachen“ im Charakterbogen (Übung und Sprachen) bei Bögen dieser Geschichte.",
+    "languagesHint": "Diese Sprachen stehen im Charakterbogen bei Bögen dieser Geschichte zur Auswahl. Neue Geschichten starten mit allen Sprachen aus dem Wiki; hier kannst du welche abwählen oder eigene ergänzen.",
     "toolsHint": "Zusätzliche Einträge für „Werkzeuge & andere“ im Charakterbogen. Die Werkzeuge selbst kommen aus dem Wiki (Ausrüstung) bzw. aus den Gegenständen dieser Geschichte; nutze diese Liste nur für Einträge, die dort nicht stehen. Solange die Standardliste aktiv ist, wird sie nicht zusätzlich angezeigt.",
     "languagePlaceholder": "Neue Sprache, z. B. Thorass",
     "toolPlaceholder": "Neuer Eintrag, z. B. Luftschiff",
     "addOption": "Hinzufügen",
     "optionExists": "Dieser Eintrag ist schon vorhanden.",
-    "expand": "Anzeigen"
+    "expand": "Anzeigen",
+    "languagesAllWiki": "Alle aus dem Wiki",
+    "languagesFromWiki": "Aus dem Wiki",
+    "languagesCustom": "Eigene Sprachen dieser Geschichte",
+    "languagesNoCustom": "Keine eigenen Sprachen."
   },
   "items": {
     "title": "Magische Gegenstände",
@@ -1182,13 +1186,15 @@
       "class": "Klassen",
       "items": "Gegenstände",
       "feat": "Talente",
-      "background": "Hintergründe"
+      "background": "Hintergründe",
+      "language": "Sprachen"
     },
     "new": {
       "race": "Neues Volk",
       "class": "Neue Klasse",
       "feat": "Neues Talent",
-      "background": "Neuer Hintergrund"
+      "background": "Neuer Hintergrund",
+      "language": "Neue Sprache"
     },
     "edit": "„{{name}}“ bearbeiten",
     "name": "Name",
@@ -1286,6 +1292,18 @@
       "abilityScoresHint": "Attribute, aus denen die Erhöhungen verteilt werden (nach den aktuellen Regeln drei: +2/+1 oder je +1).",
       "feat": "Talent",
       "featPlaceholder": "z. B. Eingeweihter der Magie (Kleriker)"
+    },
+    "language": {
+      "title": "Sprache",
+      "type": "Art",
+      "types": {
+        "standard": "Standardsprache",
+        "exotic": "Exotische Sprache"
+      },
+      "speakers": "Typische Sprecher",
+      "speakersPlaceholder": "z. B. Zwerge",
+      "script": "Schrift",
+      "scriptPlaceholder": "z. B. Zwergisch"
     }
   },
   "sources": {

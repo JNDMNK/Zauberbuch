@@ -126,10 +126,15 @@ export interface StoryOptionLists {
   tools: string[];
 }
 
-export function storyOptionLists(story: { lifestyles?: string | null; languages?: string | null; tools?: string | null } | null | undefined): StoryOptionLists {
+/** defaults.languages: Standard-Sprachen aus dem Wiki (ohne eigene Liste der Geschichte bzw. ohne Geschichte) */
+export function storyOptionLists(
+  story: { lifestyles?: string | null; languages?: string | null; tools?: string | null } | null | undefined,
+  defaults: { languages?: string[] } = {},
+): StoryOptionLists {
+  const languages = defaults.languages?.length ? defaults.languages : DEFAULT_LANGUAGES;
   return {
     lifestyles: parseLifestyles(story?.lifestyles),
-    languages: parseOptionList(story?.languages, DEFAULT_LANGUAGES),
+    languages: parseOptionList(story?.languages, languages),
     tools: parseOptionList(story?.tools, DEFAULT_TOOLS),
   };
 }

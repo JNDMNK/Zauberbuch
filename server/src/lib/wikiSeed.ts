@@ -1,5 +1,5 @@
 /**
- * Grundausstattung des Wikis: Völker, Klassen, Talente und Hintergründe nach dem System Reference Document 5.1 (CC-BY-4.0, Wizards of the
+ * Grundausstattung des Wikis: Völker, Klassen, Talente, Hintergründe und Sprachen nach dem System Reference Document 5.1 (CC-BY-4.0, Wizards of the
  * Coast). Werte nach dem SRD, Texte auf Deutsch zusammengefasst. Wird beim ersten Start angelegt, wenn das Wiki leer ist.
  */
 import type { WikiEntryInput } from '@zauberbuch/shared';
@@ -858,4 +858,21 @@ export const WIKI_SEED: WikiEntryInput[] = [
       ],
     },
   },
+  // ---------------------------------------------------------------- Sprachen
+  { kind: 'language', name: "Gemeinsprache", summary: "Die Handelssprache der meisten Länder.", description: '', data: { type: 'standard', speakers: "Menschen", script: "Gemeinsprache" } },
+  { kind: 'language', name: "Zwergisch", summary: "Kehlige Sprache voller harter Konsonanten.", description: '', data: { type: 'standard', speakers: "Zwerge", script: "Zwergisch" } },
+  { kind: 'language', name: "Elfisch", summary: "Fließende, melodische Sprache mit feinen Betonungen.", description: '', data: { type: 'standard', speakers: "Elfen", script: "Elfisch" } },
+  { kind: 'language', name: "Riesisch", summary: "Die Sprache der Riesen und ihrer Verwandten.", description: '', data: { type: 'standard', speakers: "Oger, Riesen", script: "Zwergisch" } },
+  { kind: 'language', name: "Gnomisch", summary: "Bekannt für technische Fachbegriffe und lange Namen.", description: '', data: { type: 'standard', speakers: "Gnome", script: "Zwergisch" } },
+  { kind: 'language', name: "Goblinisch", summary: "Sprache der Goblins, Grottenschrate und Hobgoblins.", description: '', data: { type: 'standard', speakers: "Goblinoide", script: "Zwergisch" } },
+  { kind: 'language', name: "Halblingisch", summary: "Selten außerhalb von Halblingsgemeinden zu hören.", description: '', data: { type: 'standard', speakers: "Halblinge", script: "Gemeinsprache" } },
+  { kind: 'language', name: "Orkisch", summary: "Raue, harte Sprache voller Kampfbegriffe.", description: '', data: { type: 'standard', speakers: "Orks", script: "Zwergisch" } },
+  { kind: 'language', name: "Abyssisch", summary: "Die chaotische Sprache des Abyss.", description: '', data: { type: 'exotic', speakers: "Dämonen", script: "Infernalisch" } },
+  { kind: 'language', name: "Celestisch", summary: "Die Sprache der himmlischen Ebenen.", description: '', data: { type: 'exotic', speakers: "Himmlische", script: "Celestisch" } },
+  { kind: 'language', name: "Drakonisch", summary: "Gilt als eine der ältesten Sprachen; oft für Magie genutzt.", description: '', data: { type: 'exotic', speakers: "Drachen, Drachenblütige", script: "Drakonisch" } },
+  { kind: 'language', name: "Tiefensprache", summary: "Fremdartige Sprache der Wesen aus dem Fernen Reich; hat keine eigene Schrift.", description: '', data: { type: 'exotic', speakers: "Abolethen, Mantler", script: "–" } },
+  { kind: 'language', name: "Infernalisch", summary: "Die geordnete, strenge Sprache der Neun Höllen.", description: '', data: { type: 'exotic', speakers: "Teufel", script: "Infernalisch" } },
+  { kind: 'language', name: "Urtümlich", summary: "Sprache der Elementarebenen mit den Dialekten Aqual, Aural, Ignal und Terral.", description: '', data: { type: 'exotic', speakers: "Elementare", script: "Zwergisch" } },
+  { kind: 'language', name: "Sylvanisch", summary: "Sprache der Feenwildnis.", description: '', data: { type: 'exotic', speakers: "Feenwesen", script: "Elfisch" } },
+  { kind: 'language', name: "Gemeinsprache der Unterreiche", summary: "Handelssprache der Völker des Unterreichs.", description: '', data: { type: 'exotic', speakers: "Händler des Unterreichs", script: "Elfisch" } },
 ];

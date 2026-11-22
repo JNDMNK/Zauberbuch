@@ -188,7 +188,22 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
   const [filter, setFilter] = useState('');
   const [busy, setBusy] = useState(false);
   const [lifestyles, setLifestyles] = useState<Lifestyle[]>(story?.lifestyles ?? DEFAULT_LIFESTYLES);
-  const [languages, setLanguages] = useState<string[]>(story?.languages ?? DEFAULT_LANGUAGES);
+  // Neue Geschichte: Sprachen aus dem Wiki (werden geladen); bestehende: Liste der Geschichte
+  const [languages, setLanguages] = useState<string[] | null>(story?.languages ?? null);
+  const [wikiLanguages, setWikiLanguages] = useState<string[]>([]);
+  useEffect(() => {
+    api
+      .wiki()
+      .then((r) => {
+        const names = r.entries
+          .filter((e) => e.kind === 'language')
+          .map((e) => e.name)
+          .sort((a, b) => a.localeCompare(b, 'de'));
+        setWikiLanguages(names);
+        setLanguages((l) => l ?? (names.length ? names : DEFAULT_LANGUAGES));
+      })
+      .catch(() => setLanguages((l) => l ?? DEFAULT_LANGUAGES));
+  }, []);
   const [tools, setTools] = useState<string[]>(story?.tools ?? DEFAULT_TOOLS);
   const [initial] = useState(() => new Set(story?.members.map((m) => m.id) ?? []));
 
@@ -226,7 +241,7 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
           name: l.name.trim(),
           cost: l.cost.trim(),
         })),
-        languages,
+        languages: languages ?? undefined,
         tools,
       };
       if (story) await api.updateStory(story.id, input);
@@ -321,14 +336,7 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
         </section>
 
         <LifestyleEditor value={lifestyles} onChange={setLifestyles} />
-        <OptionListEditor
-          title={t('stories.languages')}
-          hint={t('stories.languagesHint')}
-          value={languages}
-          defaults={DEFAULT_LANGUAGES}
-          onChange={setLanguages}
-          placeholder={t('stories.languagePlaceholder')}
-        />
+        {languages && <LanguageEditor value={languages} wikiNames={wikiLanguages} onChange={setLanguages} />}
         <OptionListEditor title={t('stories.tools')} hint={t('stories.toolsHint')} value={tools} defaults={DEFAULT_TOOLS} onChange={setTools} placeholder={t('stories.toolPlaceholder')} />
 
         <div className="flex flex-wrap justify-end gap-2">
@@ -416,6 +424,106 @@ function LifestyleEditor({ value, onChange }: { value: Lifestyle[]; onChange: (v
 }
 
 /** Einklappbarer Editor für eine Auswahlliste (Sprachen, Werkzeuge & andere) */
+/**
+ * Sprachen einer Geschichte: Sprachen aus dem Wiki an-/abwählen, eigene Sprachen ergänzen.
+ * „Alle aus dem Wiki“ setzt die Auswahl auf die Wiki-Sprachen zurück (eigene bleiben).
+ */
+function LanguageEditor({ value, wikiNames, onChange }: { value: string[]; wikiNames: string[]; onChange: (v: string[]) => void }) {
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState('');
+  const lower = (s: string) => s.toLocaleLowerCase('de');
+  const has = (name: string) => value.some((v) => lower(v) === lower(name.trim()));
+  const wikiSet = new Set(wikiNames.map(lower));
+  const custom = value.filter((v) => !wikiSet.has(lower(v)));
+  const toggle = (name: string, on: boolean) => {
+    if (on) onChange([...value, name]);
+    else if (value.length > 1) onChange(value.filter((v) => lower(v) !== lower(name)));
+  };
+  const add = () => {
+    const name = draft.trim();
+    if (!name || has(name) || value.length >= 150) return;
+    onChange([...value, name]);
+    setDraft('');
+  };
+  return (
+    <details className="parchment group p-5">
+      <summary className="flex cursor-pointer list-none items-center gap-2">
+        <h3 className="flex-1 font-display text-lg font-bold">
+          {t('stories.languages')} <span className="text-sm font-normal text-parchment-700 dark:text-parchment-400">({value.length})</span>
+        </h3>
+        <span className="text-sm text-parchment-700 group-open:hidden dark:text-parchment-400">{t('stories.expand')}</span>
+      </summary>
+      <div className="mt-3 space-y-3">
+        <div className="flex flex-wrap items-start gap-2">
+          <p className="flex-1 text-sm text-parchment-700 dark:text-parchment-400">{t('stories.languagesHint')}</p>
+          <button type="button" className="btn-ghost !py-1 text-sm" onClick={() => onChange([...wikiNames, ...custom])} disabled={wikiNames.length === 0}>
+            <RotateCcw className="h-4 w-4" />
+            {t('stories.languagesAllWiki')}
+          </button>
+        </div>
+        {wikiNames.length > 0 && (
+          <div>
+            <p className="label">{t('stories.languagesFromWiki')}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {wikiNames.map((n) => (
+                <label key={n} className="chip-check">
+                  <input type="checkbox" checked={has(n)} onChange={(e) => toggle(n, e.target.checked)} />
+                  {n}
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+        <div>
+          <p className="label">{t('stories.languagesCustom')}</p>
+          {custom.length > 0 ? (
+            <ul className="mb-2 flex flex-wrap gap-1.5">
+              {custom.map((v) => (
+                <li key={v} className="inline-flex items-center gap-1 rounded-full border border-parchment-400/70 bg-white/50 py-0.5 pl-3 pr-1 text-sm dark:border-night-700 dark:bg-night-950/40">
+                  {v}
+                  <button
+                    type="button"
+                    className="rounded-full p-0.5 text-red-700 hover:bg-red-100 disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-950"
+                    onClick={() => onChange(value.filter((x) => x !== v))}
+                    disabled={value.length <= 1}
+                    aria-label={`${t('common.delete')}: ${v}`}
+                    title={t('common.delete')}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mb-2 text-sm italic text-parchment-700 dark:text-parchment-400">{t('stories.languagesNoCustom')}</p>
+          )}
+          <div className="flex max-w-md gap-2">
+            <input
+              className="input !py-1"
+              value={draft}
+              maxLength={60}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  add();
+                }
+              }}
+              placeholder={t('stories.languagePlaceholder')}
+              aria-label={t('stories.languagePlaceholder')}
+            />
+            <button type="button" className="btn-secondary !py-1" onClick={add} disabled={!draft.trim() || has(draft)}>
+              <Plus className="h-4 w-4" />
+              {t('stories.addOption')}
+            </button>
+          </div>
+          {draft.trim() && has(draft) && <p className="mt-1 text-xs text-red-700 dark:text-red-400">{t('stories.optionExists')}</p>}
+        </div>
+      </div>
+    </details>
+  );
+}
+
 function OptionListEditor({
   title,
   hint,

@@ -138,6 +138,14 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
             </Section>
           )}
         </>
+      ) : entry.kind === 'language' ? (
+        <Section title={t('wiki.language.title')}>
+          <div className="space-y-1">
+            <Fact label={t('wiki.language.type')}>{entry.data.type ? t(`wiki.language.types.${entry.data.type}`) : ''}</Fact>
+            <Fact label={t('wiki.language.speakers')}>{entry.data.speakers}</Fact>
+            <Fact label={t('wiki.language.script')}>{entry.data.script}</Fact>
+          </div>
+        </Section>
       ) : entry.kind === 'feat' ? (
         <Section title={t('wiki.feat.title')}>
           <div className="space-y-1">

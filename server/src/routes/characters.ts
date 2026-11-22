@@ -22,6 +22,7 @@ import {
   lifestyleCost,
 } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
+import { wikiLanguageNames } from './wiki';
 import { validate } from '../lib/validate';
 import { badRequest, forbidden, notFound } from '../lib/errors';
 import { requireAdmin, requireAuth } from '../middleware/auth';
@@ -218,7 +219,7 @@ charactersRouter.post('/', async (req, res) => {
   const c = await prisma.character.create({
     data: { userId: req.user!.id, ...summaryFields(sheet), data: JSON.stringify(sheet) },
   });
-  const body: CharacterDto = { ...toSummary(c), data: sheet, canEdit: true, canManageSettings: true, isOwner: true, ...storyOptionLists(null) };
+  const body: CharacterDto = { ...toSummary(c), data: sheet, canEdit: true, canManageSettings: true, isOwner: true, ...storyOptionLists(null, { languages: await wikiLanguageNames() }) };
   res.status(201).json({ character: body });
 });
 
@@ -234,7 +235,7 @@ async function loadReadable(id: string, user: User) {
   const privileged = isEditorRole(user.role) || isStoryDm;
   // Fremde Bögen gibt es für normale Benutzer „nicht“ (404 statt 403, verrät keine IDs)
   if (!c || (!isOwner && !isCoEditor && !privileged)) throw notFound('character_not_found', 'Character not found');
-  return { ...c, isOwner, canEdit: isOwner || isCoEditor, canManageSettings: isOwner || privileged };
+  return { ...c, isOwner, canEdit: isOwner || isCoEditor, canManageSettings: isOwner || privileged, wikiLanguages: await wikiLanguageNames() };
 }
 
 function toDto(c: Awaited<ReturnType<typeof loadReadable>>, data: CharacterSheet, updated?: Character): CharacterDto {
@@ -244,7 +245,7 @@ function toDto(c: Awaited<ReturnType<typeof loadReadable>>, data: CharacterSheet
     canEdit: c.canEdit,
     canManageSettings: c.canManageSettings,
     isOwner: c.isOwner,
-    ...storyOptionLists(c.story),
+    ...storyOptionLists(c.story, { languages: c.wikiLanguages }),
   };
 }
 
@@ -292,7 +293,7 @@ charactersRouter.post('/:id/duplicate', async (req, res) => {
       canEdit: true,
       canManageSettings: true,
       isOwner: true,
-      ...storyOptionLists(copy.story),
+      ...storyOptionLists(copy.story, { languages: await wikiLanguageNames() }),
     } satisfies CharacterDto,
   });
 });

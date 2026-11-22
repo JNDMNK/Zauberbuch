@@ -19,7 +19,7 @@ describe('Quellen', () => {
     expect(list.map((s: { name: string }) => s.name)).toEqual(['Spielerhandbuch', 'Tashas Kessel der Schöpfung', 'Xanathars Ratgeber für alles']);
     const phb = list[0];
     // SRD-Grundausstattung gehört zum Spielerhandbuch
-    expect(phb.usage.wiki).toBe(23); // 9 Völker, 12 Klassen, 1 Talent, 1 Hintergrund
+    expect(phb.usage.wiki).toBe(39); // 9 Völker, 12 Klassen, 1 Talent, 1 Hintergrund, 16 Sprachen
     expect(phb.usage.catalog).toBeGreaterThan(80);
     expect((await frodo.agent.get('/api/wiki')).body.entries[0].sourceId).toBe(phb.id);
 

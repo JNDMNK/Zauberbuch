@@ -1031,13 +1031,17 @@
     },
     "languages": "Languages",
     "tools": "Tools & other",
-    "languagesHint": "Choices for “Languages” on the character sheet (proficiencies & languages) for sheets of this story.",
+    "languagesHint": "These languages are available on character sheets of this story. New stories start with all languages from the wiki; deselect some here or add your own.",
     "toolsHint": "Additional entries for “Tools & other” on the character sheet. The tools themselves come from the wiki (tools) or this story’s items; use this list only for entries not listed there. While the default list is active it is not shown in addition.",
     "languagePlaceholder": "New language, e.g. Thorass",
     "toolPlaceholder": "New entry, e.g. airship",
     "addOption": "Add",
     "optionExists": "This entry already exists.",
-    "expand": "Show"
+    "expand": "Show",
+    "languagesAllWiki": "All from wiki",
+    "languagesFromWiki": "From the wiki",
+    "languagesCustom": "Custom languages of this story",
+    "languagesNoCustom": "No custom languages."
   },
   "items": {
     "title": "Magic items",
@@ -1182,13 +1186,15 @@
       "class": "Classes",
       "items": "Items",
       "feat": "Feats",
-      "background": "Backgrounds"
+      "background": "Backgrounds",
+      "language": "Languages"
     },
     "new": {
       "race": "New race",
       "class": "New class",
       "feat": "New feat",
-      "background": "New background"
+      "background": "New background",
+      "language": "New language"
     },
     "edit": "Edit “{{name}}”",
     "name": "Name",
@@ -1286,6 +1292,18 @@
       "abilityScoresHint": "Abilities the increases are distributed among (current rules: three, +2/+1 or +1 each).",
       "feat": "Feat",
       "featPlaceholder": "e.g. Magic Initiate (Cleric)"
+    },
+    "language": {
+      "title": "Language",
+      "type": "Type",
+      "types": {
+        "standard": "Standard language",
+        "exotic": "Exotic language"
+      },
+      "speakers": "Typical speakers",
+      "speakersPlaceholder": "e.g. Dwarves",
+      "script": "Script",
+      "scriptPlaceholder": "e.g. Dwarvish"
     }
   },
   "sources": {
