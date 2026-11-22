@@ -1,7 +1,21 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, ChevronLeft, ChevronRight, Dices, Minus, Plus, Wand2 } from 'lucide-react';
-import { ABILITIES, SKILL_KEYS, abilityModifier, formatModifier, type Ability, type CatalogItemDto, type SkillKey, type WikiEntryDto } from '@zauberbuch/shared';
+import {
+  ABILITIES,
+  SKILL_KEYS,
+  abilityModifier,
+  catalogInventoryText,
+  formatModifier,
+  type Ability,
+  type CatalogItemDto,
+  type CharacterSheet,
+  type SheetItem,
+  type SkillKey,
+  type WikiEntryDto,
+} from '@zauberbuch/shared';
+import { useFormatDamage } from '../sheet/InventoryTable';
+import { matchesPlaceholder, parseEquipment } from '../../lib/startingEquipment';
 import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
 import { useAuth } from '../../context/AuthContext';
@@ -29,7 +43,7 @@ import {
   type RaceEntry,
 } from '../../lib/characterWizard';
 
-const STEPS = ['basics', 'race', 'class', 'background', 'abilities', 'skills', 'summary'] as const;
+const STEPS = ['basics', 'race', 'class', 'background', 'abilities', 'skills', 'equipment', 'summary'] as const;
 type Step = (typeof STEPS)[number];
 type Method = 'standard' | 'pointBuy' | 'manual';
 type BonusSource = 'race' | 'background' | 'none';
@@ -98,7 +112,8 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
   const toast = useToast();
   const { user } = useAuth();
   const [wiki, setWiki] = useState<WikiEntryDto[] | null>(null);
-  const [tools, setTools] = useState<CatalogItemDto[]>([]);
+  const [catalog, setCatalog] = useState<CatalogItemDto[]>([]);
+  const tools = useMemo(() => catalog.filter((i) => i.category === 'tool'), [catalog]);
   const [error, setError] = useState<unknown>(null);
   const [step, setStep] = useState<Step>('basics');
   const [busy, setBusy] = useState(false);
@@ -122,13 +137,18 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
   const [extraLanguages, setExtraLanguages] = useState<string[]>([]);
   const [extraTools, setExtraTools] = useState<string[]>([]);
   const [rollPersonality, setRollPersonality] = useState(true);
+  const [takeEquipment, setTakeEquipment] = useState(true);
+  const [unpackPacks, setUnpackPacks] = useState(true);
+  const [equipChoice, setEquipChoice] = useState<Record<string, number>>({});
+  const [equipPick, setEquipPick] = useState<Record<string, string>>({});
+  const formatDamage = useFormatDamage();
 
   useEffect(() => {
     if (!open || wiki) return;
     Promise.all([api.wiki(), api.catalog()])
       .then(([w, c]) => {
         setWiki(w.entries);
-        setTools(c.items.filter((i) => i.category === 'tool' && !i.hidden));
+        setCatalog(c.items.filter((i) => !i.hidden));
       })
       .catch(setError);
   }, [open, wiki]);
@@ -197,6 +217,41 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
   const toolChoices = toolSources.map((s) => ({ count: choiceCount(s), type: toolChoiceType(s), text: s })).filter((c) => c.count > 0);
   const toolSlots = toolChoices.flatMap((c) => Array.from({ length: c.count }, () => c));
 
+  // Startausrüstung von Klasse und Hintergrund
+  const equipLines = useMemo(
+    () => [...(cls?.data.equipment ? parseEquipment(cls.data.equipment, cls.name, catalog) : []), ...(bg?.data.equipment ? parseEquipment(bg.data.equipment, bg.name, catalog) : [])],
+    [cls, bg, catalog],
+  );
+  useEffect(() => (setEquipChoice({}), setEquipPick({})), [classId, bgId]);
+  const startingEquipment = useMemo(() => {
+    const items: SheetItem[] = [];
+    const coins: Partial<CharacterSheet['coins']> = {};
+    const add = (item: CatalogItemDto | null, name: string, qty: number) => {
+      const existing = items.find((x) => (item ? x.ref === item.id : !x.ref && x.name === name));
+      if (existing) existing.qty += qty;
+      else items.push(item ? { name: catalogInventoryText(item, formatDamage), qty, weight: item.weight, ref: item.id } : { name: name.slice(0, 150), qty, weight: 0, ref: null });
+    };
+    equipLines.forEach((line, li) => {
+      const oi = Math.min(equipChoice[`${li}`] ?? 0, line.options.length - 1);
+      line.options[oi]?.parts.forEach((part, pi) => {
+        if (part.coins) for (const [k, v] of Object.entries(part.coins)) coins[k as keyof CharacterSheet['coins']] = (coins[k as keyof CharacterSheet['coins']] ?? 0) + (v ?? 0);
+        else if (part.placeholder)
+          for (let q = 0; q < part.qty; q++) {
+            const picked = catalog.find((c) => c.id === equipPick[`${li}-${oi}-${pi}-${q}`]);
+            add(picked ?? null, picked ? picked.name : part.text.replace(/^(ein|eine|einen|zwei|drei)\s+/i, '').replace(/^./, (c) => c.toUpperCase()), 1);
+          }
+        else if (part.pack && unpackPacks) for (const c of part.pack) add(catalog.find((x) => x.name === c.name) ?? null, c.name, c.qty * part.qty);
+        else add(part.item, part.name, part.qty);
+      });
+    });
+    // Werkzeuge mit Übung auch als Gegenstand
+    for (const name of [...fixedTools, ...extraTools.filter(Boolean)]) {
+      const item = tools.find((x) => x.name === name);
+      if (item && !items.some((x) => x.ref === item.id)) add(item, item.name, 1);
+    }
+    return { items, coins };
+  }, [equipLines, equipChoice, equipPick, catalog, tools, fixedTools, extraTools, formatDamage, unpackPacks]);
+
   // Auswahl zurücksetzen, wenn sich die Grundlage ändert
   useEffect(() => setSubrace(''), [raceId]);
   useEffect(() => (setSubclass(''), setClassSkills([])), [classId]);
@@ -226,6 +281,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
     race: !!race && (race.data.subraces.length === 0 || !!subrace),
     class: !!cls && (!needsSubclass || !!subclass),
     background: true,
+    equipment: true,
     abilities:
       !!baseScores &&
       (method !== 'pointBuy' || pointBuySpent(pointBuy) <= POINT_BUY_BUDGET) &&
@@ -255,6 +311,8 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
         tools: [...fixedTools, ...extraTools],
         rollPersonality,
         abilityNames,
+        inventory: takeEquipment ? startingEquipment.items : null,
+        coins: takeEquipment ? startingEquipment.coins : {},
       });
       const { character } = await api.createCharacter(name.trim());
       await api.saveCharacter(character.id, sheet);
@@ -644,6 +702,97 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
             </div>
           )}
 
+          {step === 'equipment' && (
+            <div className="space-y-4">
+              <label className="chip-check chip-check-block">
+                <input type="checkbox" checked={takeEquipment} onChange={(e) => setTakeEquipment(e.target.checked)} />
+                {t('wizard.takeEquipment')}
+              </label>
+              {takeEquipment && equipLines.some((l) => l.options.some((o) => o.parts.some((x) => x.pack))) && (
+                <label className="chip-check chip-check-block">
+                  <input type="checkbox" checked={unpackPacks} onChange={(e) => setUnpackPacks(e.target.checked)} />
+                  {t('wizard.unpackPacks')}
+                </label>
+              )}
+              {takeEquipment && (
+                <>
+                  {equipLines.length === 0 && <p className="italic">{t('wizard.noEquipment')}</p>}
+                  {equipLines.map((line, li) => {
+                    const oi = Math.min(equipChoice[`${li}`] ?? 0, line.options.length - 1);
+                    return (
+                      <fieldset key={li} className="space-y-1.5 rounded-lg border border-parchment-400/70 p-3 dark:border-night-700">
+                        <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-parchment-700 dark:text-parchment-400">{line.source}</legend>
+                        {line.options.length > 1 ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {line.options.map((o, i) => (
+                              <label key={i} className="chip-check">
+                                <input type="radio" name={`wz-eq-${li}`} checked={oi === i} onChange={() => setEquipChoice((c) => ({ ...c, [li]: i }))} />
+                                {o.label}
+                              </label>
+                            ))}
+                          </div>
+                        ) : (
+                          <p>{line.options[0]?.label}</p>
+                        )}
+                        <div className="flex flex-wrap items-center gap-1.5 text-sm">
+                          {line.options[oi]?.parts.map((part, pi) =>
+                            part.coins ? (
+                              <span key={pi} className="badge bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+                                {Object.entries(part.coins)
+                                  .map(([k, v]) => `${v} ${t(`sheet.coins.${k}`)}`)
+                                  .join(', ')}
+                              </span>
+                            ) : part.placeholder ? (
+                              Array.from({ length: part.qty }, (_, q) => (
+                                <select
+                                  key={`${pi}-${q}`}
+                                  className="input !w-auto !py-1 text-sm"
+                                  value={equipPick[`${li}-${oi}-${pi}-${q}`] ?? ''}
+                                  onChange={(e) => setEquipPick((p) => ({ ...p, [`${li}-${oi}-${pi}-${q}`]: e.target.value }))}
+                                  aria-label={part.text}
+                                >
+                                  <option value="">{t('wizard.pickItem', { what: part.text.replace(/^(ein|eine|einen|zwei|drei)\s+/i, '') })}</option>
+                                  {catalog
+                                    .filter((c) => matchesPlaceholder(c, part.placeholder!))
+                                    .map((c) => (
+                                      <option key={c.id} value={c.id}>
+                                        {c.name}
+                                      </option>
+                                    ))}
+                                </select>
+                              ))
+                            ) : (
+                              <span
+                                key={pi}
+                                className={`badge ${part.item ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200' : 'bg-parchment-200 text-parchment-900 dark:bg-night-700 dark:text-parchment-200'}`}
+                                title={part.item ? t('wizard.linkedItem') : part.pack ? part.pack.map((c) => `${c.qty > 1 ? `${c.qty}× ` : ''}${c.name}`).join(', ') : t('wizard.textItem')}
+                              >
+                                {part.qty > 1 ? `${part.qty}× ` : ''}
+                                {part.name}
+                                {part.item && <Check className="ml-1 h-3 w-3" />}
+                                {part.pack && unpackPacks && <span className="ml-1 font-normal opacity-70">{t('wizard.packParts', { count: part.pack.length })}</span>}
+                              </span>
+                            ),
+                          )}
+                        </div>
+                      </fieldset>
+                    );
+                  })}
+                  {[...fixedTools, ...extraTools.filter(Boolean)].length > 0 && (
+                    <p className="text-sm">{t('wizard.toolsAsItems', { list: [...fixedTools, ...extraTools.filter(Boolean)].join(', ') })}</p>
+                  )}
+                  <p className="text-sm text-parchment-700 dark:text-parchment-400">
+                    {t('wizard.equipmentResult', {
+                      count: startingEquipment.items.length,
+                      weight: startingEquipment.items.reduce((w, i) => w + i.qty * i.weight, 0).toLocaleString('de'),
+                      gp: startingEquipment.coins.gp ?? 0,
+                    })}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+
           {step === 'summary' && finalScores && (
             <div className="space-y-3">
               <div className="grid grid-cols-1 gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
@@ -657,6 +806,10 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
                   [t('wizard.skills'), [...new Set([...bgSkills, ...classSkills])].map((s) => t(`sheet.skill.${s}`)).join(', ') || '–'],
                   [t('wizard.languages'), [...fixedLanguages, ...extraLanguages.filter(Boolean)].join(', ') || '–'],
                   [t('wizard.tools'), [...fixedTools, ...extraTools.filter(Boolean)].join(', ') || '–'],
+                  [
+                    t('wizard.step.equipment'),
+                    takeEquipment ? t('wizard.equipmentSummary', { count: startingEquipment.items.length, gp: startingEquipment.coins.gp ?? 0 }) : t('wizard.equipmentAsText'),
+                  ],
                 ].map(([k, v]) => (
                   <p key={k} className="border-b border-parchment-300/60 py-1 dark:border-night-700">
                     <span className="font-semibold">{k}:</span> {v}

@@ -1446,7 +1446,8 @@
       "background": "Background",
       "abilities": "Ability scores",
       "skills": "Skills & languages",
-      "summary": "Summary"
+      "summary": "Summary",
+      "equipment": "Equipment"
     },
     "intro": "The wizard guides you through creating a level 1 character. Race, class and background come from the wiki; ability scores, saving throws, skills, proficiencies, hit points, languages, tools and features are filled in automatically. You can adjust everything in the sheet afterwards.",
     "name": "Character name",
@@ -1490,11 +1491,24 @@
     "tools": "Tools",
     "knownTools": "Proficient: {{list}}",
     "noTools": "No tool proficiency.",
-    "summaryHint": "Add spells, equipment and appearance afterwards in the sheet. The starting equipment of class and background is listed under “More features”.",
+    "summaryHint": "Add spells and appearance afterwards in the sheet.",
     "back": "Back",
     "next": "Next",
     "skip": "Skip",
-    "create": "Create character"
+    "create": "Create character",
+    "takeEquipment": "Add starting equipment of class and background to the inventory (otherwise only as text under “More features”)",
+    "noEquipment": "Class and background have no starting equipment in the wiki.",
+    "pickItem": "Choose {{what}} …",
+    "linkedItem": "linked to the item database (weight and card)",
+    "textItem": "added as text",
+    "toolsAsItems": "Tools you are proficient with are added to the inventory too: {{list}}",
+    "equipmentResult_one": "Result: {{count}} inventory entry · {{weight}} lb · {{gp}} gp",
+    "equipmentResult_other": "Result: {{count}} inventory entries · {{weight}} lb · {{gp}} gp",
+    "equipmentSummary_one": "{{count}} item, {{gp}} gp",
+    "equipmentSummary_other": "{{count}} items, {{gp}} gp",
+    "equipmentAsText": "text only",
+    "unpackPacks": "Unpack equipment packs (e.g. explorer’s pack) into individual items",
+    "packParts": "· pack, {{count}} parts"
   },
   "levelUp": {
     "open": "Level up",

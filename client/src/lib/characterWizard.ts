@@ -6,6 +6,7 @@ import {
   type Ability,
   type CatalogItemDto,
   type CharacterSheet,
+  type SheetItem,
   type SkillKey,
   type SpellClass,
   type WikiEntryDto,
@@ -127,6 +128,9 @@ export interface WizardResult {
   languages: string[];
   tools: string[];
   rollPersonality: boolean;
+  /** Startausrüstung als Inventar (null = nur als Text unter „Weitere Merkmale“) */
+  inventory: SheetItem[] | null;
+  coins: Partial<CharacterSheet['coins']>;
   /** Namen zum Erkennen in Texten */
   abilityNames: NameMap<Ability>;
 }
@@ -200,7 +204,10 @@ export function buildSheet(r: WizardResult): CharacterSheet {
     }
   }
   const equipment = [cls?.data.equipment ? `${cls.name}:\n${plain(cls.data.equipment)}` : '', bg?.data.equipment ? `${bg.name}:\n${plain(bg.data.equipment)}` : ''].filter(Boolean);
-  if (equipment.length) sheet.features.moreFeatures = [sheet.features.moreFeatures, `Startausrüstung –\n${equipment.join('\n\n')}`].filter(Boolean).join('\n\n');
+  if (r.inventory) {
+    sheet.inventory = r.inventory.slice(0, 300);
+    for (const [k, v] of Object.entries(r.coins)) sheet.coins[k as keyof CharacterSheet['coins']] += v ?? 0;
+  } else if (equipment.length) sheet.features.moreFeatures = [sheet.features.moreFeatures, `Startausrüstung –\n${equipment.join('\n\n')}`].filter(Boolean).join('\n\n');
 
   if (cls && r.spellClass) {
     const sc = SPELLCASTING[r.spellClass];

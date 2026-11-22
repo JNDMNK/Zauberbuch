@@ -89,7 +89,7 @@ export function InventoryTable({ listKey }: { listKey: 'inventory' | 'extraEquip
 }
 
 /** Schaden/Heilung als Text, z. B. „1W8 Hieb“ bzw. „2W4 + 2 Heilung“ */
-function useFormatDamage() {
+export function useFormatDamage() {
   const { t, i18n } = useTranslation();
   return (d: { dice: string; type: DamageType }) => `${formatDice(d.dice, asLocale(i18n.language), t)} ${t(`damageType.${d.type}`)}`;
 }

@@ -159,16 +159,24 @@ kann weder herabgestuft noch gelöscht werden.
 
 Unter **Charakterbogen** legt jeder Benutzer beliebig viele Charaktere an (bis zu 50). 
 **Assistent für neue Charaktere** („Neuer Charakter (Assistent)“, daneben weiterhin „Leerer Bogen“): führt in
-sieben Schritten zu einem fertig ausgefüllten Bogen der Stufe 1 – Name → **Volk** (mit Unterart) → **Klasse** (mit
+acht Schritten zu einem fertig ausgefüllten Bogen der Stufe 1 – Name → **Volk** (mit Unterart) → **Klasse** (mit
 Unterklasse, wenn sie schon auf Stufe 1 gewählt wird, z. B. Klerikerdomäne) → **Hintergrund** (optional) →
 **Attributswerte** (Standardreihe 15/14/13/12/10/8, Punktekauf mit 27 Punkten oder Würfeln 4W6/eigene Werte;
 Erhöhung wahlweise nach Volk – Regeln 2014, inkl. „zwei weitere deiner Wahl“ – oder nach Hintergrund – Regeln
 2024, +2/+1 oder +1/+1/+1) → **Fertigkeiten, Sprachen, Werkzeuge** (Klassenwahl „Zwei aus …“, feste Fertigkeiten des
-Hintergrunds, Sprachen und Werkzeuge „deiner Wahl“ aus Wiki bzw. Gegenstands-Datenbank) → **Zusammenfassung**. Alle
+Hintergrunds, Sprachen und Werkzeuge „deiner Wahl“ aus Wiki bzw. Gegenstands-Datenbank) → **Ausrüstung** →
+**Zusammenfassung**. Im Schritt **Ausrüstung** wird die Startausrüstung von Klasse und Hintergrund aus dem Wiki-Text
+erkannt: Auswahlen „(a) … oder (b) …“ erscheinen als Optionen, Platzhalter wie „eine einfache Waffe“, „zwei
+Kriegswaffen“ oder „ein anderes Musikinstrument“ als Auswahlliste aus der Gegenstands-Datenbank. Gegenstände kommen mit
+Anzahl ins **Inventar** – erkannte Einträge verknüpft mit Gewicht und Karte (auch Plurale und Munition, z. B. „zwei
+Handäxte“ → 2× Beil, „20 Pfeile“ → Pfeile (20)), übrige als Text. Ausrüstungspakete (Entdecker-, Gewölbe-,
+Einbrecher-, Priester-, Diplomaten-, Unterhaltungs-, Gelehrtenausrüstung) werden auf Wunsch nach SRD in ihre Teile
+ausgepackt, Startgold („Ein Beutel mit 15 GM“) geht in die Münzen, und Werkzeuge mit Übung (z. B. Diebeswerkzeug) landen
+zusätzlich als Gegenstand im Inventar. Alle
 Angaben kommen aus dem Wiki; übernommen werden Volk/Klasse/Hintergrund, Größe, Attribute, Rettungswürfe,
 Fertigkeiten, Rüstungs- und Waffenübung, TP-Maximum (Trefferwürfel + KON), Trefferwürfel, RK ohne Rüstung,
 Bewegungsrate, Sprachen, Werkzeuge, Volks- und Klassenmerkmale der Stufe 1, Hintergrundmerkmal und -talent,
-Startausrüstung (als Text), Zauberattribut und Zauberplätze sowie auf Wunsch zufällige Persönlichkeitsmerkmale aus
+Startausrüstung (Inventar und Münzen, wahlweise nur als Text), Zauberattribut und Zauberplätze sowie auf Wunsch zufällige Persönlichkeitsmerkmale aus
 den Tabellen des Hintergrunds.
 
 **Stufenaufstieg** (Knopf „Stufenaufstieg“ unter dem Stufenfeld bzw. im Hinweis „Genug Erfahrung für Stufe …“): erkennt

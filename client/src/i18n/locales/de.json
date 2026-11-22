@@ -1446,7 +1446,8 @@
       "background": "Hintergrund",
       "abilities": "Attributswerte",
       "skills": "Fertigkeiten & Sprachen",
-      "summary": "Zusammenfassung"
+      "summary": "Zusammenfassung",
+      "equipment": "Ausrüstung"
     },
     "intro": "Der Assistent führt dich durch die Erschaffung eines Charakters der Stufe 1. Volk, Klasse und Hintergrund kommen aus dem Wiki; daraus werden Attributswerte, Rettungswürfe, Fertigkeiten, Übung, Trefferpunkte, Sprachen, Werkzeuge und Merkmale automatisch in den Bogen übernommen. Alles lässt sich danach im Bogen anpassen.",
     "name": "Name des Charakters",
@@ -1490,11 +1491,24 @@
     "tools": "Werkzeuge",
     "knownTools": "Übung: {{list}}",
     "noTools": "Keine Werkzeugübung.",
-    "summaryHint": "Zauber, Ausrüstung und Aussehen ergänzt du anschließend im Bogen. Die Startausrüstung von Klasse und Hintergrund steht dort unter „Weitere Merkmale“.",
+    "summaryHint": "Zauber und Aussehen ergänzt du anschließend im Bogen.",
     "back": "Zurück",
     "next": "Weiter",
     "skip": "Überspringen",
-    "create": "Charakter erstellen"
+    "create": "Charakter erstellen",
+    "takeEquipment": "Startausrüstung von Klasse und Hintergrund ins Inventar übernehmen (sonst nur als Text unter „Weitere Merkmale“)",
+    "noEquipment": "Klasse und Hintergrund haben im Wiki keine Startausrüstung.",
+    "pickItem": "{{what}} wählen …",
+    "linkedItem": "mit der Gegenstands-Datenbank verknüpft (Gewicht und Karte)",
+    "textItem": "als Text übernommen",
+    "toolsAsItems": "Werkzeuge mit Übung kommen ebenfalls ins Inventar: {{list}}",
+    "equipmentResult_one": "Ergebnis: {{count}} Eintrag im Inventar · {{weight}} lb · {{gp}} GM",
+    "equipmentResult_other": "Ergebnis: {{count}} Einträge im Inventar · {{weight}} lb · {{gp}} GM",
+    "equipmentSummary_one": "{{count}} Gegenstand, {{gp}} GM",
+    "equipmentSummary_other": "{{count}} Gegenstände, {{gp}} GM",
+    "equipmentAsText": "nur als Text",
+    "unpackPacks": "Ausrüstungspakete (z. B. Entdeckerausrüstung) in einzelne Gegenstände auspacken",
+    "packParts": "· Paket, {{count}} Teile"
   },
   "levelUp": {
     "open": "Stufenaufstieg",
