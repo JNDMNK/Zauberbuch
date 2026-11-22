@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { SourceNameSelect } from '../sources/SourceFields';
 import { Plus, Trash2 } from 'lucide-react';
 import { MONSTER_ABILITIES, MONSTER_SIZES, abilityModifier, challengeInfo, type MonsterFeature, type MonsterStats } from '@zauberbuch/shared';
 
@@ -115,7 +116,12 @@ export function StatBlockForm({ value, onChange, top }: { value: MonsterStats; o
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {text('tags', 200, t('bestiary.stats.tagsPlaceholder'))}
           {text('habitat', 200, t('bestiary.stats.habitatPlaceholder'))}
-          {text('source', 100, t('bestiary.stats.sourcePlaceholder'))}
+          <div>
+            <label htmlFor="st-source" className="label">
+              {t('bestiary.stats.source')}
+            </label>
+            <SourceNameSelect id="st-source" value={value.source} onChange={(v) => set('source', v)} extra={['Homebrew']} />
+          </div>
         </div>
       </Group>
     </div>

@@ -69,7 +69,7 @@ export function SourcesAdminPage() {
                   {s.name}
                   {s.abbreviation && <span className="badge ml-2 bg-parchment-200 align-middle text-parchment-900 dark:bg-night-700 dark:text-parchment-200">{s.abbreviation}</span>}
                 </p>
-                <p className="text-xs text-parchment-700 dark:text-parchment-400">{t('sources.usage', { wiki: s.usage.wiki, catalog: s.usage.catalog, spells: s.usage.spells })}</p>
+                <p className="text-xs text-parchment-700 dark:text-parchment-400">{t('sources.usage', { wiki: s.usage.wiki, catalog: s.usage.catalog, spells: s.usage.spells, monsters: s.usage.monsters, magicItems: s.usage.magicItems })}</p>
               </div>
               <div className="flex shrink-0 gap-1">
                 <button type="button" className="btn-icon" onClick={() => setEditing(s)} title={t('common.edit')} aria-label={`${t('common.edit')}: ${s.name}`}>
@@ -136,7 +136,7 @@ function SourceForm({ source, onCancel, onSaved }: { source?: SourceDto; onCance
           {t('common.save')}
         </button>
       </div>
-      {source && source.usage.spells > 0 && <p className="w-full text-xs text-parchment-700 dark:text-parchment-400">{t('sources.renameHint', { count: source.usage.spells })}</p>}
+      {source && source.usage.spells + source.usage.monsters > 0 && <p className="w-full text-xs text-parchment-700 dark:text-parchment-400">{t('sources.renameHint')}</p>}
     </form>
   );
 }

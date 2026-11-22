@@ -43,6 +43,20 @@ describe('Quellen', () => {
     expect(ren.usage.spells).toBe(spells);
     expect(await prisma.spell.count({ where: { source: 'Tashas Kessel' } })).toBe(spells);
 
+    // Magische Gegenstände: Quelle wählbar; Monster: Quelle im Werteblock (Name) – Umbenennen zieht mit
+    const xge = list.find((s: { name: string }) => s.name.startsWith('Xanathars')).id;
+    const story = (await admin.post('/api/stories').set(CSRF).send({ name: 'S' })).body.story;
+    const ring = (await mod.agent.post('/api/items').set(CSRF).send({ name: 'Ring', sourceId: xge })).body.item;
+    expect(ring.sourceId).toBe(xge);
+    expect((await mod.agent.post('/api/items').set(CSRF).send({ name: 'X', sourceId: 'kaputt' })).body.item.sourceId).toBeNull();
+    const tpl = (await admin.post(`/api/bestiary/dm?storyId=${story.id}`).set(CSRF).send({ name: 'Goblin', hp: 7, stats: { source: 'Xanathars Ratgeber für alles' } })).body.template;
+    let usage = (await frodo.agent.get('/api/sources')).body.sources.find((s: { id: string }) => s.id === xge).usage;
+    expect(usage).toMatchObject({ magicItems: 1, monsters: 1 });
+    await admin.put(`/api/sources/${xge}`).set(CSRF).send({ name: 'Xanathars Ratgeber', abbreviation: 'XR' });
+    expect((await admin.get(`/api/bestiary/dm/${tpl.id}?storyId=${story.id}`)).body.template.stats.source).toBe('Xanathars Ratgeber');
+    usage = (await frodo.agent.get('/api/sources')).body.sources.find((s: { id: string }) => s.id === xge).usage;
+    expect(usage).toMatchObject({ magicItems: 1, monsters: 1 });
+
     // Löschen: Verknüpfungen entfallen, Einträge bleiben
     expect((await mod.agent.delete(`/api/sources/${tce}`).set(CSRF)).status).toBe(204);
     expect((await frodo.agent.get('/api/wiki')).body.entries.find((e: { name: string }) => e.name === 'Artifizient').sourceId).toBeNull();

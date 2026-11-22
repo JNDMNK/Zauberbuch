@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { SourceSelect } from '../../components/sources/SourceFields';
 import { Pencil, Plus, Save, Search, Trash2 } from 'lucide-react';
 import type { ItemCharacterRef, ItemStoryDto, MagicItemDto } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
@@ -275,7 +276,7 @@ function ItemDialog({
   storyId: string;
   storyName: string;
   onClose: () => void;
-  onSave: (input: { name: string; description: string; weight: number; value: string; attunement: boolean; holderIds: string[] }) => Promise<void>;
+  onSave: (input: { name: string; description: string; weight: number; value: string; attunement: boolean; sourceId: string | null; holderIds: string[] }) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const toast = useToast();
@@ -284,6 +285,7 @@ function ItemDialog({
   const [weight, setWeight] = useState('');
   const [value, setValue] = useState('');
   const [attunement, setAttunement] = useState(false);
+  const [sourceId, setSourceId] = useState<string | null>(null);
   const [holders, setHolders] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -293,6 +295,7 @@ function ItemDialog({
     setWeight(item?.weight ? String(item.weight).replace('.', ',') : '');
     setValue(item?.value ?? '');
     setAttunement(item?.attunement ?? false);
+    setSourceId(item?.sourceId ?? null);
     setHolders(new Set(item?.holders.filter((h) => h.storyId === storyId).map((h) => h.id) ?? []));
   }, [open, item, storyId]);
 
@@ -305,7 +308,7 @@ function ItemDialog({
     if (!name.trim() || weightInvalid) return;
     setBusy(true);
     try {
-      await onSave({ name: name.trim(), description: description.trim(), weight: parsedWeight ?? 0, value: value.trim(), attunement, holderIds: [...holders] });
+      await onSave({ name: name.trim(), description: description.trim(), weight: parsedWeight ?? 0, value: value.trim(), attunement, sourceId, holderIds: [...holders] });
     } catch (err) {
       toast.error(errorMessage(t, err));
     } finally {
@@ -353,6 +356,9 @@ function ItemDialog({
             {t('items.requiresAttunement')}
           </label>
           <p className="mt-0.5 text-xs text-parchment-700 dark:text-parchment-400">{t('items.attunementHint')}</p>
+        </div>
+        <div className="sm:max-w-sm">
+          <SourceSelect id="item-source" value={sourceId} onChange={setSourceId} />
         </div>
         <div>
           <label htmlFor="item-desc" className="label">

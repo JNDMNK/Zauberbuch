@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SourceNameBadge } from '../sources/SourceFields';
 import { MONSTER_ABILITIES, abilityModifier, challengeInfo, type DamageType, type MonsterFeature, type MonsterStats } from '@zauberbuch/shared';
 import { Markdown } from '../Markdown';
 import { DamageValue } from '../DamageValue';
@@ -166,7 +167,7 @@ export function StatBlock({ entry }: { entry: StatBlockEntry }) {
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
           {s.tags && <Chips label={t('bestiary.stats.tags')} value={s.tags} />}
           {s.habitat && <Chips label={t('bestiary.stats.habitat')} value={s.habitat} />}
-          {s.source && <span className="ml-auto italic text-parchment-700 dark:text-parchment-400">{s.source}</span>}
+          {s.source && <SourceNameBadge name={s.source} full className="ml-auto !text-sm" />}
         </div>
       )}
     </div>

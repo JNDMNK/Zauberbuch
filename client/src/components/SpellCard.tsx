@@ -1,6 +1,7 @@
 import { memo, type CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { SourceNameBadge } from './sources/SourceFields';
 import { Clock, Crosshair, Hourglass } from 'lucide-react';
 import type { SpellDto } from '@zauberbuch/shared';
 import { asLocale, resolveText } from '../lib/spellText';
@@ -80,6 +81,7 @@ function SpellCardImpl({ spell, onFavoriteChange }: Props) {
       </dl>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-parchment-300/70 px-4 py-3 dark:border-night-700">
         <ComponentIcons components={spell.components} />
+        <SourceNameBadge name={spell.source} />
         <SpellBadges spell={spell} fallbackLocale={isFallback ? locale : null} />
       </div>
     </article>

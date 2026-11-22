@@ -449,6 +449,11 @@ model MagicItem {
    * Einstimmung benötigt – nur dann im Charakterbogen bei „Einstimmung“ wählbar
    */
   attunement  Boolean           @default(false)
+  /**
+   * Quelle (Buch)
+   */
+  sourceId    String?
+  source      Source?           @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   holders     MagicItemHolder[]
@@ -556,4 +561,5 @@ model Source {
   updatedAt    DateTime      @updatedAt
   wikiEntries  WikiEntry[]
   catalogItems CatalogItem[]
+  magicItems   MagicItem[]
 }

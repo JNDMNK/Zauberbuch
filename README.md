@@ -341,14 +341,18 @@ Format:
 
 - **Verwaltung → Quellen** (Admin und Moderator): Liste der Bücher mit Name und Kürzel, die in der ganzen App als
   Quelle auswählbar sind. Vorbefüllt mit **Spielerhandbuch (SHB)**, **Tashas Kessel der Schöpfung (TKS)** und
-  **Xanathars Ratgeber für alles (XRA)**; je Quelle wird angezeigt, wie viele Wiki-Einträge, Gegenstände und Zauber
-  sie verwenden.
-- Im **Wiki** (Völker, Klassen, Rüstung, Waffen, Gegenstände) hat jeder Eintrag das Feld **„Quelle“**; Karten zeigen
+  **Xanathars Ratgeber für alles (XRA)**; je Quelle wird angezeigt, wie viele Wiki-Einträge, Gegenstände, magische
+  Gegenstände, Zauber und Monster sie verwenden.
+- Im **Wiki** (Völker, Klassen, Rüstung, Waffen, Gegenstände …) hat jeder Eintrag das Feld **„Quelle“**; Karten zeigen
   das Kürzel, die Detailansicht den vollen Namen, und die Listen lassen sich nach Quelle filtern. Die mitgelieferte
-  SRD-Grundausstattung ist dem Spielerhandbuch zugeordnet.
-- Beim **Zauber-Formular** schlägt das Feld „Quelle“ die Quellen aus der Liste vor. Zauber speichern die Quelle als
-  Text; benennt man eine Quelle um, werden die Zauber mit dem alten Namen automatisch angepasst. Löscht man eine
-  Quelle, verlieren Wiki-Einträge und Gegenstände die Angabe, Zauber behalten ihren Text.
+  SRD-Grundausstattung (auch die Beispielzauber) ist dem Spielerhandbuch zugeordnet.
+- **Magische Gegenstände** haben ebenfalls ein Quellen-Feld (Kürzel auf der Karte, voller Name in der Detailansicht).
+- **Zauber** und **Monster** (Werteblock) wählen die Quelle aus einer Auswahlliste (Quellen der Liste plus
+  „Homebrew“) und zeigen sie verknüpft an: Kürzel auf Zauberkarte und in der Zauberverwaltung, voller Name in der
+  Detailansicht bzw. im Werteblock, mit Tooltip. Sie speichern die Quelle als Text; benennt man eine Quelle um, werden
+  Zauber und Monster mit dem alten Namen automatisch angepasst. Ein Name, der nicht (mehr) in der Liste steht, bleibt
+  erhalten und wird als „nicht in der Liste“ markiert. Löscht man eine Quelle, verlieren Wiki-Einträge und
+  (magische) Gegenstände die Angabe, Zauber und Monster behalten ihren Text.
 
 ## Wiki
 
@@ -672,7 +676,7 @@ des JSON-Exports – Export und Import sind also verlustfrei austauschbar). Ält
 | `ritual` | bool | ✔ | Als Ritual wirkbar |
 | `duration` | string | ✔ | Sprachunabhängige Dauer, z. B. `instantaneous`, `1 minute` (Anzeige-Fallback) |
 | `classes` | enum[] | ✔ | Beliebig viele aus `bard` (Barde), `druid` (Druide), `warlock` (Hexenmeister), `cleric` (Kleriker), `wizard` (Magier), `paladin` (Paladin), `ranger` (Waldläufer), `sorcerer` (Zauberer), `artificer` (Artificer); darf leer sein |
-| `source` | string | ✔ | Quelle, z. B. `SRD`, `PHB`, `Homebrew` |
+| `source` | string | ✔ | Quelle (Name aus der Quellenliste), z. B. `Spielerhandbuch`, `Homebrew` |
 | `isHomebrew` | bool | ✔ | Homebrew-Badge und -Filter |
 | `damageDice` | string \| null | – | Schaden bzw. Heilung als Würfelausdruck: Würfel (`8d6`, auch `8W6`), ganze Zahlen und `mod` (Zauberattributsmodifikator), verbunden mit `+`/`-`, z. B. `1d4+1`, `2d8+1d6`, `1d4+mod`. Wird normalisiert gespeichert (klein, ohne Leerzeichen) und je Sprache angezeigt (DE „1W4 + Mod.“, EN „1d4 + mod“). |
 | `damageType` | enum \| null | wenn `damageDice` | `acid` (Säure), `bludgeoning` (Wucht), `cold` (Kälte), `fire` (Feuer), `force` (Energie), `lightning` (Blitz), `necrotic` (Nekrotisch), `piercing` (Stich), `poison` (Gift), `psychic` (Psychisch), `radiant` (Gleißend), `slashing` (Hieb), `thunder` (Schall) oder `healing` (Heilung). `damageDice` und `damageType` werden nur gemeinsam angegeben. |

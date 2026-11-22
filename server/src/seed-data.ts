@@ -16,7 +16,7 @@ export const exampleSpells: SpellInput[] = [
     ritual: false,
     duration: 'instantaneous',
     classes: ['sorcerer', 'wizard'],
-    source: 'SRD',
+    source: 'Spielerhandbuch',
     isHomebrew: false,
     damageDice: '8d6',
     damageType: 'fire',
@@ -56,7 +56,7 @@ export const exampleSpells: SpellInput[] = [
     ritual: false,
     duration: 'instantaneous',
     classes: ['sorcerer', 'wizard'],
-    source: 'SRD',
+    source: 'Spielerhandbuch',
     isHomebrew: false,
     damageDice: '1d4+1',
     damageType: 'force',
@@ -94,7 +94,7 @@ export const exampleSpells: SpellInput[] = [
     ritual: false,
     duration: 'instantaneous',
     classes: ['bard', 'cleric', 'druid'],
-    source: 'SRD',
+    source: 'Spielerhandbuch',
     isHomebrew: false,
     damageDice: '1d4+mod',
     damageType: 'healing',
@@ -132,7 +132,7 @@ export const exampleSpells: SpellInput[] = [
     ritual: false,
     duration: '1 round',
     classes: ['sorcerer', 'wizard'],
-    source: 'SRD',
+    source: 'Spielerhandbuch',
     isHomebrew: false,
     translations: {
       de: {
@@ -164,7 +164,7 @@ export const exampleSpells: SpellInput[] = [
     ritual: false,
     duration: '1 hour',
     classes: ['bard', 'cleric', 'sorcerer', 'wizard', 'artificer'],
-    source: 'SRD',
+    source: 'Spielerhandbuch',
     isHomebrew: false,
     translations: {
       de: {

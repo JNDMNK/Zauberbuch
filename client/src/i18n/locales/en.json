@@ -1339,7 +1339,7 @@
   },
   "sources": {
     "title": "Sources",
-    "hint": "Books that can be chosen as a source throughout the app – in the wiki (races, classes, armor, weapons, items) and as suggestions in the spell form. Maintained by the admin and moderators.",
+    "hint": "Books that can be chosen as a source throughout the app – in the wiki (all tabs), for spells, magic items and in the monster databases. Maintained by the admin and moderators.",
     "new": "New source",
     "empty": "No sources yet.",
     "name": "Name",
@@ -1349,11 +1349,12 @@
     "none": "– not specified –",
     "filter": "Filter by source",
     "withoutSource": "without source",
-    "usage": "Used by: {{wiki}} wiki entries · {{catalog}} items · {{spells}} spells",
+    "usage": "Used by: {{wiki}} wiki entries · {{catalog}} items · {{magicItems}} magic items · {{spells}} spells · {{monsters}} monsters",
     "saved": "Source saved",
     "deleted": "Source deleted",
     "deleteTitle": "Delete source?",
     "deleteText": "“{{name}}” will be deleted. Wiki entries and items lose the reference; spells keep their source text.",
-    "renameHint": "Renaming updates {{count}} spells with this source automatically."
+    "renameHint": "Renaming updates spells and monsters with this source automatically.",
+    "notInList": "{{name}} (not in the source list)"
   }
 }

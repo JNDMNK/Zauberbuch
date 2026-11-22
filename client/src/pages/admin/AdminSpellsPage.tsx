@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { SourceNameBadge } from '../../components/sources/SourceFields';
 import { Copy, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import type { SpellDto } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
@@ -105,7 +106,7 @@ export function AdminSpellsPage() {
                       </span>
                     </td>
                     <td className="hidden md:table-cell">
-                      {spell.source}
+                      <SourceNameBadge name={spell.source} />
                       {spell.isHomebrew && <span className="badge ml-2 bg-fuchsia-100 text-fuchsia-900 dark:bg-fuchsia-950 dark:text-fuchsia-200">{t('spell.homebrew')}</span>}
                     </td>
                     <td>

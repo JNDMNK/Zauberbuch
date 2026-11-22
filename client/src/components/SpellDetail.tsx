@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SourceNameBadge } from './sources/SourceFields';
 import { Link2 } from 'lucide-react';
 import type { SpellDto } from '@zauberbuch/shared';
 import { asLocale, resolveText } from '../lib/spellText';
@@ -145,7 +146,7 @@ export function SpellDetail({ spell, headingId, actions }: Props) {
           )}
         </div>
         <span className="text-parchment-700 dark:text-parchment-400">
-          {t('spell.source')}: {spell.source}
+          <SourceNameBadge name={spell.source} full className="!text-sm" />
         </span>
       </footer>
     </article>

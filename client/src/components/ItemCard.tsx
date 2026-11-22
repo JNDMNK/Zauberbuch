@@ -1,6 +1,7 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { SourceBadge } from './sources/SourceFields';
 import { Coins, Gem, Sparkles, UserRound, Weight } from 'lucide-react';
 import type { MagicItemDto } from '@zauberbuch/shared';
 import { Modal } from './Modal';
@@ -46,6 +47,7 @@ export function ItemCard({ item, actions, footer, attuned = false }: { item: Mag
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-parchment-300/70 px-4 py-3 text-sm dark:border-night-700">
           <ItemMeta item={item} />
+          <SourceBadge sourceId={item.sourceId} />
           <Holders item={item} compact />
         </div>
       </article>
@@ -74,6 +76,7 @@ export function ItemCard({ item, actions, footer, attuned = false }: { item: Mag
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
                 <ItemMeta item={item} labels />
+                <SourceBadge sourceId={item.sourceId} full className="!text-sm" />
               </div>
               <div className="divider-ornament text-xs" aria-hidden>
                 ✦

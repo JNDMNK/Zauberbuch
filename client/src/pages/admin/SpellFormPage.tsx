@@ -20,7 +20,7 @@ import {
   type SpellInput,
 } from '@zauberbuch/shared';
 import { api, ApiError } from '../../lib/api';
-import { useSources } from '../../hooks/useSources';
+import { SourceNameSelect } from '../../components/sources/SourceFields';
 import { errorMessage, fieldMessage } from '../../lib/errors';
 import { slugify, toggleInList } from '../../lib/filters';
 import { DamageValue } from '../../components/DamageValue';
@@ -145,7 +145,6 @@ export function SpellFormPage() {
   const { slug } = useParams();
   const isEdit = Boolean(slug);
   const { t } = useTranslation();
-  const { sources } = useSources();
   const toast = useToast();
   const navigate = useNavigate();
   const { canDeleteSpells } = useAuth();
@@ -376,14 +375,8 @@ export function SpellFormPage() {
             {(id) => <TextInput id={id} value={form.duration} onChange={(e) => update({ duration: e.target.value })} invalid={!!errors.duration} />}
           </Field>
           <Field label={t('spell.source')} error={err('source')}>
-            {(id) => <TextInput id={id} value={form.source} onChange={(e) => update({ source: e.target.value })} invalid={!!errors.source} list="source-suggestions" />}
+            {(id) => <SourceNameSelect id={id} value={form.source} onChange={(v) => update({ source: v })} extra={['Homebrew']} allowEmpty={false} invalid={!!errors.source} />}
           </Field>
-          <datalist id="source-suggestions">
-            {sources.map((s) => (
-              <option key={s.id} value={s.name} />
-            ))}
-            <option value="Homebrew" />
-          </datalist>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

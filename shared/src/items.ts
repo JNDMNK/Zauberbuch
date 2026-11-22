@@ -15,6 +15,8 @@ export const magicItemSchema = z.object({
   value: z.string().trim().max(40).optional().default(''),
   /** Einstimmung benötigt (nur dann im Bogen bei „Einstimmung“ wählbar) */
   attunement: z.boolean().optional().default(false),
+  /** Quelle (Buch) */
+  sourceId: z.string().min(1).max(64).nullable().optional().default(null),
   /** Beim Anlegen: Besitzer aus dieser Geschichte (optional) */
   storyId: z.string().min(1).max(64).nullable().optional().default(null),
   holderIds: z.array(z.string().min(1).max(64)).max(50).optional().default([]),
@@ -51,6 +53,8 @@ export interface MagicItemDto {
   value: string;
   /** Einstimmung benötigt */
   attunement: boolean;
+  /** Quelle (Buch) */
+  sourceId: string | null;
   /** Besitzer in den Geschichten, die der Betrachter sieht */
   holders: ItemCharacterRef[];
   /** Anzahl weiterer Besitzer in Geschichten, die der Betrachter nicht verwaltet */

@@ -12,7 +12,7 @@ export interface SourceDto {
   name: string;
   abbreviation: string;
   /** Verwendungen: Wiki-Einträge, Gegenstände und Zauber (über den Namen) */
-  usage: { wiki: number; catalog: number; spells: number };
+  usage: { wiki: number; catalog: number; spells: number; monsters: number; magicItems: number };
 }
 
 /** Feld „Quelle“ in Formularen (Wiki, Gegenstände): id oder null */

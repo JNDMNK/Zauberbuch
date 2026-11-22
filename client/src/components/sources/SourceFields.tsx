@@ -61,3 +61,49 @@ export function SourceBadge({ sourceId, full = false, className = '' }: { source
 
 /** Passt ein Eintrag zum Quellenfilter? */
 export const matchesSource = (filter: string, sourceId: string | null) => !filter || (filter === 'none' ? !sourceId : sourceId === filter);
+
+/** Quelle, die als Name gespeichert ist (Zauber, Monster): verknüpft, wenn sie in der Quellen-Liste steht */
+export function SourceNameBadge({ name, full = false, className = '' }: { name: string; full?: boolean; className?: string }) {
+  const { t } = useTranslation();
+  const { sources } = useSources();
+  if (!name) return null;
+  const s = sources.find((x) => x.name.toLocaleLowerCase('de') === name.trim().toLocaleLowerCase('de'));
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs italic text-parchment-700 dark:text-parchment-400 ${className}`} title={`${t('sources.source')}: ${s?.name ?? name}`}>
+      <BookMarked className="h-3.5 w-3.5 shrink-0" aria-hidden />
+      <span className="sr-only">{t('sources.source')}:</span>
+      {s && !full && s.abbreviation ? s.abbreviation : (s?.name ?? name)}
+    </span>
+  );
+}
+
+/**
+ * Auswahl einer Quelle, die als Name gespeichert wird (Zauber, Monster). Werte außerhalb der Liste (z. B. „Homebrew“
+ * oder ältere Einträge) bleiben wählbar.
+ */
+export function SourceNameSelect({ id, value, onChange, extra = [], allowEmpty = true, invalid = false }: { id: string; value: string; onChange: (v: string) => void; extra?: string[]; allowEmpty?: boolean; invalid?: boolean }) {
+  const { t } = useTranslation();
+  const { sources } = useSources();
+  const names = sources.map((s) => s.name);
+  const all = [...names, ...extra.filter((e) => !names.includes(e))];
+  const known = !value || all.some((n) => n.toLocaleLowerCase('de') === value.toLocaleLowerCase('de'));
+  return (
+    <select id={id} className={`input ${invalid ? 'input-error' : ''}`} value={value} onChange={(e) => onChange(e.target.value)}>
+      {allowEmpty && <option value="">{t('sources.none')}</option>}
+      {sources.map((s) => (
+        <option key={s.id} value={s.name}>
+          {s.name}
+          {s.abbreviation ? ` (${s.abbreviation})` : ''}
+        </option>
+      ))}
+      {extra
+        .filter((e) => !names.includes(e))
+        .map((e) => (
+          <option key={e} value={e}>
+            {e}
+          </option>
+        ))}
+      {!known && <option value={value}>{t('sources.notInList', { name: value })}</option>}
+    </select>
+  );
+}

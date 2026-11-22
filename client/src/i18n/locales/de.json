@@ -1339,7 +1339,7 @@
   },
   "sources": {
     "title": "Quellen",
-    "hint": "Bücher, die in der ganzen App als Quelle wählbar sind – im Wiki (Völker, Klassen, Rüstung, Waffen, Gegenstände) und als Vorschlag beim Zauber-Formular. Admin und Moderator pflegen die Liste.",
+    "hint": "Bücher, die in der ganzen App als Quelle wählbar sind – im Wiki (alle Reiter), bei Zaubern, magischen Gegenständen und in den Monster-Datenbanken. Admin und Moderator pflegen die Liste.",
     "new": "Neue Quelle",
     "empty": "Noch keine Quellen.",
     "name": "Name",
@@ -1349,11 +1349,12 @@
     "none": "– keine Angabe –",
     "filter": "Nach Quelle filtern",
     "withoutSource": "ohne Quelle",
-    "usage": "Verwendet: {{wiki}} Wiki-Einträge · {{catalog}} Gegenstände · {{spells}} Zauber",
+    "usage": "Verwendet: {{wiki}} Wiki-Einträge · {{catalog}} Gegenstände · {{magicItems}} magische Gegenstände · {{spells}} Zauber · {{monsters}} Monster",
     "saved": "Quelle gespeichert",
     "deleted": "Quelle gelöscht",
     "deleteTitle": "Quelle löschen?",
     "deleteText": "„{{name}}“ wird gelöscht. Wiki-Einträge und Gegenstände verlieren die Angabe; Zauber behalten ihren Quellentext.",
-    "renameHint": "Beim Umbenennen werden {{count}} Zauber mit dieser Quelle automatisch angepasst."
+    "renameHint": "Beim Umbenennen werden Zauber und Monster mit dieser Quelle automatisch angepasst.",
+    "notInList": "{{name}} (nicht in der Quellen-Liste)"
   }
 }
