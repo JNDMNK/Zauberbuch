@@ -587,7 +587,18 @@ Alternativ den Container stoppen und den kompletten Ordner `/mnt/user/appdata/za
 (z. B. mit dem Unraid-Plugin „Appdata Backup“). Zusätzlich lässt sich unter
 **Verwaltung → Import / Export** jederzeit ein JSON-Export aller Zauber herunterladen.
 
-**Umzug oder Wiederherstellung per Export:** Unter **Verwaltung → Import / Export** exportiert der Admin
+**Gesamtsicherung (empfohlen für Umzug und Wiederherstellung):** Unter **Verwaltung → Import / Export →
+Gesamtsicherung** lädt der Admin **alle Daten in einer JSON-Datei** herunter (`zauberbuch-gesamt-JJJJ-MM-TT.json`):
+Benutzer (mit Passwort-Hashes – Datei sicher aufbewahren), Zauber und Zauberbücher, Charakterbögen mit Bildern,
+Geschichten, Infotafel, DM-Notizen, Kämpfe, Bestiarium, magische Gegenstände, Gegenstands-Datenbank, Wiki und
+Quellen. Der Import zeigt zuerst eine Vorschau (Anzahl je Bereich) und ersetzt nach Bestätigung **sämtliche** Daten
+in einer Transaktion – schlägt etwas fehl, bleibt alles unverändert. Vorher legt der Server automatisch eine
+Sicherheitskopie als `/data/backups/vor-import-JJJJMMTT-HHMMSS.db` an. Sicherungen älterer App-Versionen lassen sich
+einspielen (neue Felder erhalten Standardwerte, fehlende Wiki-/Katalog-Grundausstattung wird ergänzt); Sicherungen
+einer **neueren** Version werden abgelehnt. Ist danach kein Admin vorhanden, wird er wie beim Start aus
+`ADMIN_USERNAME`/`ADMIN_PASSWORD` angelegt.
+
+**Teil-Export:** Unter **Verwaltung → Import / Export** exportiert der Admin außerdem einzeln
 Zauber, Benutzer und Charakterbögen als JSON-Dateien. Auf dem neuen Server in dieser Reihenfolge importieren:
 **1. Zauber → 2. Benutzer → 3. Charakterbögen** (Benutzer verweisen über „Mein Zauberbuch“ auf Zauber,
 Charakterbögen über den Benutzernamen auf Benutzer).
@@ -788,6 +799,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET`/`POST /api/bestiary/dm?storyId=` · `GET`/`PUT`/`DELETE /api/bestiary/dm/:id?storyId=` | DM der angegebenen Geschichte | DM-Datenbank (Vorlagen) |
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
+| `GET /api/backup/export` · `POST /api/backup/import` | Admin | Gesamtsicherung (`{ backup, confirm: true }`) |
 | `GET /api/sources` · `POST /api/sources` · `PUT`/`DELETE /api/sources/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Quellen (`{ name, abbreviation? }`) |
 | `GET /api/wiki` · `POST /api/wiki` · `PUT`/`DELETE /api/wiki/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Wiki (`{ kind: 'race' \| 'class' \| 'feat' \| 'background' \| 'language' \| 'god', name, summary?, description?, data }`) |
 | `GET`/`POST /api/dm-notes/stories/:storyId` · `PUT …/order` · `PUT`/`DELETE /api/dm-notes/:id` | DM der Geschichte | DM-Notizen (`{ title, body? }`; Reihenfolge `{ ids }`) |

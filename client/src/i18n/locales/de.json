@@ -396,7 +396,12 @@
     "invalid_holder": "Nur Charakterbögen dieser Geschichte können Gegenstände erhalten.",
     "invalid_target": "Weitergeben nur an Charaktere derselben Geschichte.",
     "not_holder": "Dieser Charakter besitzt den Gegenstand nicht (mehr).",
-    "source_exists": "Diese Quelle gibt es schon."
+    "source_exists": "Diese Quelle gibt es schon.",
+    "backup_invalid": "Die Datei ist keine gültige Zauberbuch-Gesamtsicherung.",
+    "backup_newer": "Die Sicherung stammt aus einer neueren Version der App – bitte zuerst die App aktualisieren.",
+    "backup_safety_failed": "Die Sicherheitskopie der aktuellen Datenbank konnte nicht angelegt werden – Import abgebrochen.",
+    "backup_import_failed": "Import fehlgeschlagen, es wurde nichts verändert.",
+    "confirm_required": "Der Import muss bestätigt werden."
   },
   "damageType": {
     "acid": "Säure",
@@ -1392,5 +1397,40 @@
     "deleteText": "„{{name}}“ wird gelöscht. Wiki-Einträge und Gegenstände verlieren die Angabe; Zauber behalten ihren Quellentext.",
     "renameHint": "Beim Umbenennen werden Zauber und Monster mit dieser Quelle automatisch angepasst.",
     "notInList": "{{name}} (nicht in der Quellen-Liste)"
+  },
+  "backup": {
+    "section": "Gesamtsicherung",
+    "sectionHint": "Alle Daten der App in einer Datei – für Sicherungen und den Umzug auf einen anderen Server. Die einzelnen Exporte darunter bleiben für Teil-Übernahmen.",
+    "exportText": "Lädt alle Daten als eine JSON-Datei herunter: Benutzer, Zauber, Zauberbücher, Charakterbögen (mit Bildern), Geschichten, Infotafel, DM-Notizen, Kämpfe, Bestiarium, magische Gegenstände, Gegenstands-Datenbank, Wiki und Quellen.",
+    "sensitive": "Die Datei enthält die Passwort-Hashes aller Benutzer und alle privaten Inhalte – bitte sicher aufbewahren.",
+    "exportButton": "Gesamtsicherung herunterladen",
+    "importText": "Stellt eine Gesamtsicherung wieder her. Alle aktuellen Daten werden dabei vollständig durch den Inhalt der Datei ersetzt.",
+    "chooseFile": "Sicherungsdatei wählen …",
+    "notABackup": "Diese Datei ist keine Zauberbuch-Gesamtsicherung.",
+    "exportedAt": "erstellt am {{date}}",
+    "otherRows": "Weitere Datensätze",
+    "warning": "Vor dem Import legt der Server automatisch eine Sicherheitskopie der aktuellen Datenbank unter /data/backups an. Nach dem Import ist ggf. eine neue Anmeldung nötig.",
+    "importButton": "Alle Daten ersetzen",
+    "confirmTitle": "Alle Daten ersetzen?",
+    "confirmText": "Sämtliche aktuellen Daten werden gelöscht und durch {{count}} Datensätze aus der Sicherung ersetzt. Das betrifft alle Benutzer.",
+    "done_one": "Wiederherstellung abgeschlossen: {{count}} Datensatz übernommen.",
+    "done_other": "Wiederherstellung abgeschlossen: {{count}} Datensätze übernommen.",
+    "safetyCopy": "Die vorherige Datenbank liegt als /data/backups/{{file}}.",
+    "reload": "App neu laden",
+    "tables": {
+      "User": "Benutzer",
+      "Spell": "Zauber",
+      "Character": "Charakterbögen",
+      "Story": "Geschichten",
+      "BoardPost": "Infotafel-Beiträge",
+      "Encounter": "Kämpfe",
+      "MonsterTemplate": "Monster (Datenbank)",
+      "BestiaryEntry": "Bestiarium",
+      "MagicItem": "Magische Gegenstände",
+      "CatalogItem": "Gegenstands-Datenbank",
+      "WikiEntry": "Wiki-Einträge",
+      "Source": "Quellen",
+      "DmNote": "DM-Notizen"
+    }
   }
 }

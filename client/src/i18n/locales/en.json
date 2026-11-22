@@ -396,7 +396,12 @@
     "invalid_holder": "Only character sheets of this story can receive items.",
     "invalid_target": "Items can only be given to characters of the same story.",
     "not_holder": "This character no longer holds the item.",
-    "source_exists": "This source already exists."
+    "source_exists": "This source already exists.",
+    "backup_invalid": "The file is not a valid Zauberbuch full backup.",
+    "backup_newer": "The backup comes from a newer version of the app – please update the app first.",
+    "backup_safety_failed": "Could not create a safety copy of the current database – import cancelled.",
+    "backup_import_failed": "Import failed, nothing was changed.",
+    "confirm_required": "The import must be confirmed."
   },
   "damageType": {
     "acid": "Acid",
@@ -1392,5 +1397,40 @@
     "deleteText": "“{{name}}” will be deleted. Wiki entries and items lose the reference; spells keep their source text.",
     "renameHint": "Renaming updates spells and monsters with this source automatically.",
     "notInList": "{{name}} (not in the source list)"
+  },
+  "backup": {
+    "section": "Full backup",
+    "sectionHint": "All app data in one file – for backups and moving to another server. The individual exports below remain for partial transfers.",
+    "exportText": "Downloads all data as one JSON file: users, spells, spellbooks, character sheets (with images), stories, info board, DM notes, encounters, bestiary, magic items, item database, wiki and sources.",
+    "sensitive": "The file contains the password hashes of all users and all private content – keep it safe.",
+    "exportButton": "Download full backup",
+    "importText": "Restores a full backup. All current data is completely replaced by the content of the file.",
+    "chooseFile": "Choose backup file …",
+    "notABackup": "This file is not a Zauberbuch full backup.",
+    "exportedAt": "created {{date}}",
+    "otherRows": "Other records",
+    "warning": "Before importing, the server automatically stores a safety copy of the current database in /data/backups. You may need to sign in again afterwards.",
+    "importButton": "Replace all data",
+    "confirmTitle": "Replace all data?",
+    "confirmText": "All current data will be deleted and replaced by {{count}} records from the backup. This affects all users.",
+    "done_one": "Restore complete: {{count}} record imported.",
+    "done_other": "Restore complete: {{count}} records imported.",
+    "safetyCopy": "The previous database is stored as /data/backups/{{file}}.",
+    "reload": "Reload app",
+    "tables": {
+      "User": "Users",
+      "Spell": "Spells",
+      "Character": "Character sheets",
+      "Story": "Stories",
+      "BoardPost": "Info board posts",
+      "Encounter": "Encounters",
+      "MonsterTemplate": "Monsters (database)",
+      "BestiaryEntry": "Bestiary",
+      "MagicItem": "Magic items",
+      "CatalogItem": "Item database",
+      "WikiEntry": "Wiki entries",
+      "Source": "Sources",
+      "DmNote": "DM notes"
+    }
   }
 }

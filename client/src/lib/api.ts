@@ -116,41 +116,31 @@ export const api = {
   config: () => request<AppConfigDto>('GET', '/api/config'),
 
   me: () => request<{ user: UserDto | null }>('GET', '/api/auth/me'),
-  login: (identifier: string, password: string) =>
-    request<{ user: UserDto }>('POST', '/api/auth/login', { identifier, password }),
+  login: (identifier: string, password: string) => request<{ user: UserDto }>('POST', '/api/auth/login', { identifier, password }),
   logout: () => request<void>('POST', '/api/auth/logout'),
   updateMe: (language: Locale) => request<{ user: UserDto }>('PATCH', '/api/auth/me', { language }),
-  changePassword: (currentPassword: string, newPassword: string) =>
-    request<{ user: UserDto }>('POST', '/api/auth/password', { currentPassword, newPassword }),
+  changePassword: (currentPassword: string, newPassword: string) => request<{ user: UserDto }>('POST', '/api/auth/password', { currentPassword, newPassword }),
 
-  spells: (params: URLSearchParams, signal?: AbortSignal) =>
-    request<PaginatedSpells>('GET', `/api/spells?${params.toString()}`, undefined, signal),
-  spell: (slug: string, signal?: AbortSignal) =>
-    request<{ spell: SpellDto }>('GET', `/api/spells/${encodeURIComponent(slug)}`, undefined, signal),
+  spells: (params: URLSearchParams, signal?: AbortSignal) => request<PaginatedSpells>('GET', `/api/spells?${params.toString()}`, undefined, signal),
+  spell: (slug: string, signal?: AbortSignal) => request<{ spell: SpellDto }>('GET', `/api/spells/${encodeURIComponent(slug)}`, undefined, signal),
   sources: () => request<{ sources: string[] }>('GET', '/api/spells/sources'),
   createSpell: (input: SpellInput) => request<{ spell: SpellDto }>('POST', '/api/spells', input),
   updateSpell: (id: string, input: SpellInput) => request<{ spell: SpellDto }>('PUT', `/api/spells/${id}`, input),
   duplicateSpell: (id: string) => request<{ spell: SpellDto }>('POST', `/api/spells/${id}/duplicate`),
   deleteSpell: (id: string) => request<void>('DELETE', `/api/spells/${id}`),
-  importPreview: (spells: unknown[]) =>
-    request<ImportPreviewResult>('POST', '/api/spells/import/preview', { spells }),
-  importSpells: (spells: unknown[], mode: 'skip' | 'overwrite') =>
-    request<ImportResult>('POST', '/api/spells/import', { spells, mode }),
+  importPreview: (spells: unknown[]) => request<ImportPreviewResult>('POST', '/api/spells/import/preview', { spells }),
+  importSpells: (spells: unknown[], mode: 'skip' | 'overwrite') => request<ImportResult>('POST', '/api/spells/import', { spells, mode }),
 
   favorites: () => request<{ spellIds: string[] }>('GET', '/api/favorites'),
   addFavorite: (spellId: string) => request<unknown>('POST', '/api/favorites', { spellId }),
   removeFavorite: (spellId: string) => request<void>('DELETE', `/api/favorites/${encodeURIComponent(spellId)}`),
 
   users: () => request<{ users: AdminUserDto[] }>('GET', '/api/users'),
-  createUser: (data: { username: string; email: string; password: string; role: Role; canEditSpells?: boolean }) =>
-    request<{ user: AdminUserDto }>('POST', '/api/users', data),
-  updateUser: (id: string, data: { role?: Role; password?: string; canEditSpells?: boolean }) =>
-    request<{ user: UserDto }>('PATCH', `/api/users/${id}`, data),
+  createUser: (data: { username: string; email: string; password: string; role: Role; canEditSpells?: boolean }) => request<{ user: AdminUserDto }>('POST', '/api/users', data),
+  updateUser: (id: string, data: { role?: Role; password?: string; canEditSpells?: boolean }) => request<{ user: UserDto }>('PATCH', `/api/users/${id}`, data),
   deleteUser: (id: string) => request<void>('DELETE', `/api/users/${id}`),
-  userImportPreview: (users: unknown[], mode: 'skip' | 'update', defaultPassword: string | null) =>
-    request<UserImportPreview>('POST', '/api/users/import/preview', { users, mode, defaultPassword }),
-  importUsers: (users: unknown[], mode: 'skip' | 'update', defaultPassword: string | null) =>
-    request<UserImportResult>('POST', '/api/users/import', { users, mode, defaultPassword }),
+  userImportPreview: (users: unknown[], mode: 'skip' | 'update', defaultPassword: string | null) => request<UserImportPreview>('POST', '/api/users/import/preview', { users, mode, defaultPassword }),
+  importUsers: (users: unknown[], mode: 'skip' | 'update', defaultPassword: string | null) => request<UserImportResult>('POST', '/api/users/import', { users, mode, defaultPassword }),
 
   spellbooks: () => request<{ owners: SpellbookOwnerDto[] }>('GET', '/api/spellbooks'),
 
@@ -165,8 +155,7 @@ export const api = {
   saveCharacter: (id: string, data: CharacterSheet) => request<{ character: CharacterDto }>('PUT', `/api/characters/${id}`, { data }),
   duplicateCharacter: (id: string) => request<{ character: CharacterDto }>('POST', `/api/characters/${id}/duplicate`),
   deleteCharacter: (id: string) => request<void>('DELETE', `/api/characters/${id}`),
-  characterImportPreview: (characters: unknown[], fallbackOwnerId: string | null) =>
-    request<CharacterImportPreview>('POST', '/api/characters/import/preview', { characters, fallbackOwnerId }),
+  characterImportPreview: (characters: unknown[], fallbackOwnerId: string | null) => request<CharacterImportPreview>('POST', '/api/characters/import/preview', { characters, fallbackOwnerId }),
   importCharacters: (characters: unknown[], fallbackOwnerId: string | null, duplicates: 'skip' | 'create') =>
     request<CharacterImportResult>('POST', '/api/characters/import', { characters, fallbackOwnerId, duplicates }),
 
@@ -182,8 +171,7 @@ export const api = {
   setActiveStory: (storyId: string | null) => request<{ user: UserDto }>('PUT', '/api/stories/active', { storyId }),
   markStoryRead: (id: string) => request<void>('POST', `/api/board/stories/${id}/read`),
   boardUnread: () => request<BoardUnreadDto>('GET', '/api/board/unread'),
-  boardPosts: (storyId: string, params: URLSearchParams, signal?: AbortSignal) =>
-    request<BoardPostsPage>('GET', `/api/board/stories/${storyId}/posts?${params.toString()}`, undefined, signal),
+  boardPosts: (storyId: string, params: URLSearchParams, signal?: AbortSignal) => request<BoardPostsPage>('GET', `/api/board/stories/${storyId}/posts?${params.toString()}`, undefined, signal),
   createPost: (storyId: string, input: PostInput) => request<{ post: BoardPostDto }>('POST', `/api/board/stories/${storyId}/posts`, input),
   updatePost: (id: string, input: PostInput) => request<{ post: BoardPostDto }>('PATCH', `/api/board/posts/${id}`, input),
   pinPost: (id: string, pinned: boolean) => request<{ post: BoardPostDto }>('POST', `/api/board/posts/${id}/pin`, { pinned }),
@@ -206,8 +194,7 @@ export const api = {
     request<{ encounter: EncounterDto }>('PATCH', `/api/combat/encounters/${id}`, data),
   deleteEncounter: (id: string) => request<void>('DELETE', `/api/combat/encounters/${id}`),
   encounterTurn: (id: string, direction: 1 | -1) => request<{ encounter: EncounterDto }>('POST', `/api/combat/encounters/${id}/turn`, { direction }),
-  addCombatCharacters: (id: string, characterIds: string[]) =>
-    request<{ encounter: EncounterDto }>('POST', `/api/combat/encounters/${id}/characters`, { characterIds }),
+  addCombatCharacters: (id: string, characterIds: string[]) => request<{ encounter: EncounterDto }>('POST', `/api/combat/encounters/${id}/characters`, { characterIds }),
   addMonster: (id: string, input: AddMonsterInput) => request<{ encounter: EncounterDto }>('POST', `/api/combat/encounters/${id}/monsters`, input),
   updateCombatant: (id: string, data: CombatantUpdate) => request<{ encounter: EncounterDto }>('PATCH', `/api/combat/combatants/${id}`, data),
   combatantHp: (id: string, delta: number) => request<{ encounter: EncounterDto }>('POST', `/api/combat/combatants/${id}/hp`, { delta }),
@@ -217,7 +204,8 @@ export const api = {
   monsterTemplates: (storyId: string) => request<{ templates: MonsterTemplateDto[] }>('GET', `/api/bestiary/dm?storyId=${encodeURIComponent(storyId)}`),
   monsterTemplate: (storyId: string, id: string) => request<{ template: MonsterTemplateDto }>('GET', `/api/bestiary/dm/${id}?storyId=${encodeURIComponent(storyId)}`),
   createMonsterTemplate: (storyId: string, input: MonsterTemplateInput) => request<{ template: MonsterTemplateDto }>('POST', `/api/bestiary/dm?storyId=${encodeURIComponent(storyId)}`, input),
-  updateMonsterTemplate: (storyId: string, id: string, input: MonsterTemplateInput) => request<{ template: MonsterTemplateDto }>('PUT', `/api/bestiary/dm/${id}?storyId=${encodeURIComponent(storyId)}`, input),
+  updateMonsterTemplate: (storyId: string, id: string, input: MonsterTemplateInput) =>
+    request<{ template: MonsterTemplateDto }>('PUT', `/api/bestiary/dm/${id}?storyId=${encodeURIComponent(storyId)}`, input),
   deleteMonsterTemplate: (storyId: string, id: string) => request<void>('DELETE', `/api/bestiary/dm/${id}?storyId=${encodeURIComponent(storyId)}`),
   bestiary: (storyId: string) => request<{ entries: BestiaryEntryDto[]; canWrite: boolean }>('GET', `/api/bestiary/stories/${storyId}`),
   createBestiaryEntry: (storyId: string, input: BestiaryEntryInput) => request<{ entry: BestiaryEntryDto }>('POST', `/api/bestiary/stories/${storyId}`, input),
@@ -234,6 +222,7 @@ export const api = {
   createSource: (input: SourceInput) => request<{ source: SourceDto }>('POST', '/api/sources', input),
   updateSource: (id: string, input: SourceInput) => request<{ source: SourceDto }>('PUT', `/api/sources/${id}`, input),
   deleteSource: (id: string) => request<void>('DELETE', `/api/sources/${id}`),
+  importBackup: (backup: unknown) => request<{ counts: Record<string, number>; ignored: string[]; safetyCopy: string }>('POST', '/api/backup/import', { backup, confirm: true }),
   wiki: () => request<{ entries: WikiEntryDto[] }>('GET', '/api/wiki'),
   createWiki: (input: WikiEntryInput) => request<{ entry: WikiEntryDto }>('POST', '/api/wiki', input),
   updateWiki: (id: string, input: WikiEntryInput) => request<{ entry: WikiEntryDto }>('PUT', `/api/wiki/${id}`, input),

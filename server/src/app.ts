@@ -27,8 +27,9 @@ import { catalogRouter } from './routes/catalog';
 import { dmNotesRouter } from './routes/dmnotes';
 import { wikiRouter } from './routes/wiki';
 import { sourcesRouter } from './routes/sources';
+import { backupRouter } from './routes/backup';
 
-const LARGE_BODY_PATHS = new Set(['/api/characters/import', '/api/characters/import/preview']);
+const LARGE_BODY_PATHS = new Set(['/api/characters/import', '/api/characters/import/preview', '/api/backup/import']);
 
 function parseTrustProxy(value: string): boolean | number | string {
   if (value === 'true') return true;
@@ -111,6 +112,7 @@ export function createApp(options: { accessLog?: boolean } = {}) {
   api.use('/catalog', catalogRouter);
   api.use('/dm-notes', dmNotesRouter);
   api.use('/wiki', wikiRouter);
+  api.use('/backup', backupRouter);
   api.use('/sources', sourcesRouter);
 
   api.use((_req, _res, next) => next(new HttpError(404, 'not_found', 'API route not found')));
