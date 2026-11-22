@@ -5,6 +5,7 @@ import { BookOpen, Eye, EyeOff, Handshake, Heart, Minus, Pencil, Plus, ScrollTex
 import { DamageInput, checkDamage, type DamageState } from '../DamageInput';
 import { DamageValue } from '../DamageValue';
 import { CONDITIONS, type CombatantDto, type CombatantUpdate, type Condition, type HealthStatus } from '@zauberbuch/shared';
+import { useWikiLinks } from '../wiki/WikiLinks';
 
 const BAR_CLS: Record<HealthStatus, string> = {
   unharmed: 'bg-emerald-600',
@@ -125,7 +126,7 @@ export function CombatantCard({ c, active, manage, onUpdate, onHp, onRemove, onO
         <div className="flex flex-wrap items-center gap-1.5">
           {c.conditions.map((cond) => (
             <span key={cond} className="badge bg-violet-100 text-violet-900 dark:bg-violet-950 dark:text-violet-200">
-              {t(`combat.conditions.${cond}`)}
+              <ConditionName cond={cond} />
               {manage && (
                 <button type="button" className="ml-1" onClick={() => onUpdate({ conditions: c.conditions.filter((x) => x !== cond) })} aria-label={`${t('combat.removeCondition')}: ${t(`combat.conditions.${cond}`)}`}>
                   <X className="h-3 w-3" />
@@ -328,6 +329,21 @@ function MonsterEdit({ c, onSave, onCancel }: { c: CombatantDto; onSave: (d: Com
         </button>
       </div>
     </form>
+  );
+}
+
+/** Name eines Zustands; ist im Wiki eine Regel damit verknüpft, öffnet ein Klick die Regel */
+function ConditionName({ cond }: { cond: Condition }) {
+  const { t } = useTranslation();
+  const links = useWikiLinks();
+  const label = t(`combat.conditions.${cond}`);
+  const rule = links?.data.entries.find((e) => e.kind === 'rule' && e.data.condition === cond);
+  const target = rule && links?.data.targets.get(`e-${rule.id}`);
+  if (!target || !links) return <>{label}</>;
+  return (
+    <button type="button" className="underline decoration-dotted underline-offset-2 hover:decoration-solid" onClick={() => links.open(target)} title={t('combat.showRule', { name: rule.name })}>
+      {label}
+    </button>
   );
 }
 

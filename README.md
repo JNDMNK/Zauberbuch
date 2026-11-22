@@ -360,13 +360,22 @@ Format:
   ein Auswahlfeld „Bereich: …“) in drei Gruppen geordnet, jeweils mit Anzahl der Einträge:
   - **Charakter:** Völker, Klassen, Hintergründe, Talente
   - **Ausrüstung:** Rüstung, Waffen, Gegenstände, Ausrüstung (Gegenstands-Datenbank, siehe oben)
-  - **Welt:** Sprachen, Götter
+  - **Welt:** Sprachen, Götter, Regeln
 - **Globale Suche** („Ganzes Wiki durchsuchen …“) über alle Bereiche gleichzeitig (ab 2 Zeichen): Treffer nach
   Bereich gruppiert (Namenstreffer zuerst, sonst mit Textausschnitt und hervorgehobener Fundstelle), Auswahl mit
   Maus oder Pfeiltasten + Enter öffnet den Eintrag im passenden Bereich. Innerhalb eines Bereichs filtert zusätzlich
   das Feld „In … suchen“ die Karten.
 - Kartenansicht; ein Klick auf die Karte zeigt den vollständigen Eintrag (direkt verlinkbar über
   `?tab=class&entry=…`, Einträge der Gegenstands-Datenbank über `?tab=tool&item=…`).
+- **Querverweise:** In Wiki-Einträgen, Zauberbeschreibungen, Monster-Werteblöcken und magischen Gegenständen werden
+  Namen anderer Wiki-Einträge, von Rüstung, Waffen und Werkzeugen sowie von Zaubern automatisch verlinkt (gepunktet
+  unterstrichen; je Textabschnitt das erste Vorkommen, auch mit deutschen Endungen wie „Rapiere“ oder
+  „vergifteten“). Ein Klick öffnet den Eintrag – im Wiki im passenden Bereich, sonst als Dialog; Zauber öffnen als
+  Zauberkarte. Allgemeine Abenteuerausrüstung („Seil“, „Buch“ …) wird bewusst nicht verlinkt; kurze Namen (unter
+  5 Zeichen, z. B. „Tyr“) nur bei exakter Schreibweise.
+- **Zauberliste je Klasse:** Die Detailansicht einer Zauberklasse (Barde, Druide, Hexenmeister, Kleriker, Magier,
+  Paladin, Waldläufer, Zauberer, Artificer – erkannt am deutschen oder englischen Namen) zeigt alle Zauber dieser Klasse
+  aus der Zauberbibliothek, nach Grad gruppiert; ein Klick öffnet den Zauber.
 - Felder nach dem **System Reference Document 5.1**:
   - **Volk:** Attributswerterhöhung, Alter, Gesinnung, Größe, Bewegungsrate, Sprachen, Merkmale (Name + Text) und
     Unterrassen (Name, Attributswerterhöhung, Beschreibung, eigene Merkmale).
@@ -376,6 +385,13 @@ Format:
     dem Spielerhandbuch kann so Unterklassen aus Tashas oder Xanathars enthalten).
   - **Sprache:** Art (Standard/Exotisch), typische Sprecher, Schrift – Standard für Geschichten und Charakterbögen.
   - **Gottheit:** Pantheon, Gesinnung, empfohlene Domänen, Symbol (Reiter mit Pantheon-Filter).
+  - **Regel:** Kategorie (Grundregeln, Zustand, Kampf, Abenteuer, Rasten, Zauberwirken – auch als Filter) und
+    optional ein **Zustand im Kampf**. Vorbefüllt mit 38 Regeln aus dem SRD: alle 15 Zustände (mit
+    Erschöpfungstabelle), Vorteil/Nachteil, Attributs- und Rettungswürfe, Kampfablauf, Überraschung, Aktionen,
+    Gelegenheitsangriff, Deckung, Kampf mit zwei Waffen, Ringen, Stoßen, kritische Treffer, 0 Trefferpunkte und
+    Todesrettungswürfe, Sicht und Licht, Reisetempo, Fallschaden, Ersticken, Springen, kurze und lange Rast,
+    Konzentration, Rituale und Zauberwirken. Im **Kampf** sind die Zustände an den Teilnehmern anklickbar und zeigen die
+    verknüpfte Regel.
   - **Talent:** Kategorie (Herkunftstalent, Allgemeines Talent, Kampfstil-Talent, Epische Gabe – im Reiter auch als
     Filter), Voraussetzung, optionale Attributswerterhöhung (Halbtalente), Vorteile, „mehrfach wählbar“.
   - **Hintergrund:** Attributswerte (Auswahl aus den sechs Attributen, nach aktuellen Regeln drei), Talent

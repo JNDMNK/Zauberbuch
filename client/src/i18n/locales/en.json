@@ -875,7 +875,8 @@
     "showAllCharacters": "Show all sheets",
     "onlyStory": "Only this story's sheets",
     "noneAssigned": "No sheets assigned to “{{story}}” yet (character sheet → Settings) – showing all.",
-    "openStatBlock": "Open stat block"
+    "openStatBlock": "Open stat block",
+    "showRule": "Show rule: {{name}}"
   },
   "notifications": {
     "title": "Notifications",
@@ -1186,7 +1187,7 @@
   },
   "wiki": {
     "title": "Wiki",
-    "hint": "Reference for races, classes, feats, backgrounds, languages, gods and items based on the System Reference Document 5.1. Click a card for all details.",
+    "hint": "Reference for races, classes, feats, backgrounds, languages, gods, rules and items based on the System Reference Document 5.1. Click a card for all details.",
     "search": "Search the wiki …",
     "empty": "No entries yet.",
     "kinds": {
@@ -1196,7 +1197,8 @@
       "feat": "Feats",
       "background": "Backgrounds",
       "language": "Languages",
-      "god": "Gods"
+      "god": "Gods",
+      "rule": "Rules"
     },
     "new": {
       "race": "New race",
@@ -1204,7 +1206,8 @@
       "feat": "New feat",
       "background": "New background",
       "language": "New language",
-      "god": "New deity"
+      "god": "New deity",
+      "rule": "New rule"
     },
     "edit": "Edit “{{name}}”",
     "name": "Name",
@@ -1250,7 +1253,11 @@
       "subclasses": "Subclasses",
       "subclassTitle": "Name for subclasses",
       "subclassTitlePlaceholder": "e.g. Arcane Tradition",
-      "subclassName": "Subclass"
+      "subclassName": "Subclass",
+      "spellList": "Spell list",
+      "spellsCount_one": "{{count}} spell from the spell library – click to open.",
+      "spellsCount_other": "{{count}} spells from the spell library – click to open.",
+      "noSpells": "The spell library has no spells for this class yet."
     },
     "form": {
       "traitName": "Trait name",
@@ -1348,7 +1355,23 @@
       "equipment": "Equipment",
       "world": "World"
     },
-    "noHits": "No matches in the wiki."
+    "noHits": "No matches in the wiki.",
+    "rule": {
+      "title": "Rule",
+      "category": "Category",
+      "categories": {
+        "basics": "Basics",
+        "condition": "Condition",
+        "combat": "Combat",
+        "adventuring": "Adventuring",
+        "resting": "Resting",
+        "spellcasting": "Spellcasting"
+      },
+      "condition": "Combat condition",
+      "noCondition": "– no condition –",
+      "conditionHint": "Links the combat condition to this rule: clicking the condition shows it.",
+      "inCombat": "In combat: {{name}}"
+    }
   },
   "sources": {
     "title": "Sources",

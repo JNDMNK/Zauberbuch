@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type { WikiEntry } from '@prisma/client';
-import { backgroundDataSchema, classDataSchema, featDataSchema, godDataSchema, languageDataSchema, raceDataSchema, WIKI_KINDS, wikiEntrySchema, type WikiEntryDto, type WikiKind } from '@zauberbuch/shared';
+import { backgroundDataSchema, classDataSchema, featDataSchema, godDataSchema, languageDataSchema, raceDataSchema, ruleDataSchema, WIKI_KINDS, wikiEntrySchema, type WikiEntryDto, type WikiKind } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { notFound } from '../lib/errors';
@@ -40,6 +40,8 @@ function toDto(e: WikiEntry): WikiEntryDto {
       return { ...base, kind, data: languageDataSchema.parse(json) };
     case 'god':
       return { ...base, kind, data: godDataSchema.parse(json) };
+    case 'rule':
+      return { ...base, kind, data: ruleDataSchema.parse(json) };
     default:
       return { ...base, kind: 'race', data: raceDataSchema.parse(json) };
   }

@@ -9,6 +9,23 @@ describe('Wiki', () => {
     await seedWiki();
   });
 
+  it('Regeln: SRD-Zustände sind mit allen Zuständen im Kampf verknüpft, Kategorie wird geprüft', async () => {
+    const { CONDITIONS } = await import('@zauberbuch/shared');
+    const frodo = await createUser('frodo');
+    const mod = await createUser('moderator', 'dungeonmaster');
+    const rules = (await frodo.agent.get('/api/wiki')).body.entries.filter((e: { kind: string }) => e.kind === 'rule');
+    expect(rules).toHaveLength(38);
+    const linked = rules.map((r: { data: { condition: string | null } }) => r.data.condition).filter(Boolean);
+    expect([...linked].sort()).toEqual([...CONDITIONS].sort());
+    expect(rules.find((r: { name: string }) => r.name === 'Vergiftet')).toMatchObject({ data: { category: 'condition', condition: 'poisoned' } });
+    const res = await mod.agent
+      .post('/api/wiki')
+      .set(CSRF)
+      .send({ kind: 'rule', name: 'Hausregel', description: 'Heiltrank als Bonusaktion.', data: { category: 'unbekannt', condition: 'prone' } });
+    expect(res.status).toBe(201);
+    expect(res.body.entry).toMatchObject({ kind: 'rule', data: { category: null, condition: 'prone' } });
+  });
+
   it('SRD-Grundausstattung für alle lesbar; nur Admin/Moderator bearbeiten', async () => {
     const frodo = await createUser('frodo');
     const mod = await createUser('moderator', 'dungeonmaster');

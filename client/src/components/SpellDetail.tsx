@@ -120,12 +120,12 @@ export function SpellDetail({ spell, headingId, actions }: Props) {
           ✦
         </div>
 
-        {text.description && <Markdown className="text-[17px]">{text.description}</Markdown>}
+        {text.description && <Markdown links selfKey={`s-${spell.slug}`} className="text-[17px]">{text.description}</Markdown>}
 
         {text.higherLevels && (
           <section className="mt-5">
             <h3 className="accent-text font-display text-base font-bold">{t('spell.higherLevels')}</h3>
-            <Markdown className="mt-1 text-[17px]">{text.higherLevels}</Markdown>
+            <Markdown links selfKey={`s-${spell.slug}`} className="mt-1 text-[17px]">{text.higherLevels}</Markdown>
           </section>
         )}
       </div>

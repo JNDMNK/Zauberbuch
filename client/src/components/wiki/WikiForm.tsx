@@ -6,6 +6,10 @@ import {
   ALIGNMENTS,
   FEAT_CATEGORIES,
   godDataSchema,
+  ruleDataSchema,
+  RULE_CATEGORIES,
+  CONDITIONS,
+  type WikiRuleData,
   type WikiGodData,
   LANGUAGE_TYPES,
   languageDataSchema,
@@ -483,6 +487,43 @@ function LanguageFields({ d, set }: { d: WikiLanguageData; set: (d: WikiLanguage
   );
 }
 
+function RuleFields({ d, set }: { d: WikiRuleData; set: (d: WikiRuleData) => void }) {
+  const { t } = useTranslation();
+  return (
+    <Group title={t('wiki.rule.title')}>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label htmlFor="w-rcat" className="label">
+            {t('wiki.rule.category')}
+          </label>
+          <select id="w-rcat" className="input" value={d.category ?? ''} onChange={(e) => set({ ...d, category: (e.target.value || null) as WikiRuleData['category'] })}>
+            <option value="">—</option>
+            {RULE_CATEGORIES.map((x) => (
+              <option key={x} value={x}>
+                {t(`wiki.rule.categories.${x}`)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="w-rcond" className="label">
+            {t('wiki.rule.condition')}
+          </label>
+          <select id="w-rcond" className="input" value={d.condition ?? ''} onChange={(e) => set({ ...d, condition: (e.target.value || null) as WikiRuleData['condition'] })}>
+            <option value="">{t('wiki.rule.noCondition')}</option>
+            {CONDITIONS.map((x) => (
+              <option key={x} value={x}>
+                {t(`combat.conditions.${x}`)}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-parchment-700 dark:text-parchment-400">{t('wiki.rule.conditionHint')}</p>
+        </div>
+      </div>
+    </Group>
+  );
+}
+
 /** Wiki-Eintrag anlegen oder bearbeiten (Admin/Moderator) */
 export function WikiForm({
   open,
@@ -516,6 +557,7 @@ export function WikiForm({
   const [bg, setBg] = useState<WikiBackgroundData>(() => backgroundDataSchema.parse({}));
   const [lang, setLang] = useState<WikiLanguageData>(() => languageDataSchema.parse({}));
   const [god, setGod] = useState<WikiGodData>(() => godDataSchema.parse({}));
+  const [rule, setRule] = useState<WikiRuleData>(() => ruleDataSchema.parse({}));
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (!open) return;
@@ -529,6 +571,7 @@ export function WikiForm({
     setBg(entry?.kind === 'background' ? entry.data : backgroundDataSchema.parse({}));
     setLang(entry?.kind === 'language' ? entry.data : languageDataSchema.parse({}));
     setGod(entry?.kind === 'god' ? entry.data : godDataSchema.parse({}));
+    setRule(entry?.kind === 'rule' ? entry.data : ruleDataSchema.parse({}));
   }, [open, entry]);
 
   const submit = async (e: FormEvent) => {
@@ -548,11 +591,13 @@ export function WikiForm({
                 ? { kind: 'language', ...base, data: lang }
                 : k === 'god'
                   ? { kind: 'god', ...base, data: god }
-                  : {
-                      kind: 'background',
-                      ...base,
-                      data: { ...bg, personalityTraits: bg.personalityTraits.filter(Boolean), ideals: bg.ideals.filter(Boolean), bonds: bg.bonds.filter(Boolean), flaws: bg.flaws.filter(Boolean) },
-                    },
+                  : k === 'rule'
+                    ? { kind: 'rule', ...base, data: rule }
+                    : {
+                        kind: 'background',
+                        ...base,
+                        data: { ...bg, personalityTraits: bg.personalityTraits.filter(Boolean), ideals: bg.ideals.filter(Boolean), bonds: bg.bonds.filter(Boolean), flaws: bg.flaws.filter(Boolean) },
+                      },
       );
     } catch (err) {
       toast.error(errorMessage(t, err));
@@ -590,6 +635,8 @@ export function WikiForm({
           <LanguageFields d={lang} set={setLang} />
         ) : k === 'god' ? (
           <GodFields d={god} set={setGod} pantheons={pantheons} />
+        ) : k === 'rule' ? (
+          <RuleFields d={rule} set={setRule} />
         ) : (
           <BackgroundFields d={bg} set={setBg} featNames={featNames} />
         )}

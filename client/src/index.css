@@ -320,3 +320,8 @@
     animation: none !important;
   }
 }
+
+/* Automatischer Querverweis (Wiki, Gegenstände, Zauber) */
+.wiki-link {
+  @apply inline cursor-pointer rounded-sm p-0 text-left [font:inherit] text-[#7a200d] underline decoration-dotted decoration-1 underline-offset-2 hover:decoration-solid focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 dark:text-[#f0a08c];
+}

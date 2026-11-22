@@ -47,7 +47,7 @@ function Features({ title, list }: { title: string; list: MonsterFeature[] }) {
       <h4 className="border-b border-[#922610]/60 pb-0.5 font-display text-xl text-[#7a200d] dark:border-[#e0735a]/60 dark:text-[#f0a08c]">{title}</h4>
       <div className="mt-2 space-y-2">
         {list.map((f, i) => (
-          <Markdown key={i} className="!space-y-1 break-words">
+          <Markdown links key={i} className="!space-y-1 break-words">
             {f.name ? `***${f.name.replace(/\*/g, '')}.*** ${f.text}` : f.text}
           </Markdown>
         ))}
@@ -160,7 +160,7 @@ export function StatBlock({ entry }: { entry: StatBlockEntry }) {
       {entry.description && (
         <section>
           <h4 className="font-display text-lg font-bold">{t('bestiary.description')}</h4>
-          <Markdown className="mt-1 break-words">{entry.description}</Markdown>
+          <Markdown links className="mt-1 break-words">{entry.description}</Markdown>
         </section>
       )}
       {(s.tags || s.habitat || s.source) && (

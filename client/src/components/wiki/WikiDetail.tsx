@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import type { WikiEntryDto, WikiLevelFeature, WikiTrait } from '@zauberbuch/shared';
 import { Markdown } from '../Markdown';
 import { SourceBadge } from '../sources/SourceFields';
+import { LinkedText } from './WikiLinks';
+import { ClassSpells, useSpellClass } from './ClassSpells';
 
 /** Zeile „Bezeichnung: Wert“ (leere Werte werden ausgelassen) */
 export function Fact({ label, children }: { label: string; children: ReactNode }) {
@@ -23,11 +25,11 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function Traits({ list }: { list: WikiTrait[] }) {
+function Traits({ list, selfKey }: { list: WikiTrait[]; selfKey: string }) {
   return (
     <div className="space-y-2">
       {list.map((f, i) => (
-        <Markdown key={i} className="!space-y-1 break-words">
+        <Markdown links selfKey={selfKey} key={i} className="!space-y-1 break-words">
           {f.name ? `***${f.name.replace(/\*/g, '')}.*** ${f.text}` : f.text}
         </Markdown>
       ))}
@@ -35,7 +37,7 @@ function Traits({ list }: { list: WikiTrait[] }) {
   );
 }
 
-function LevelFeatures({ list }: { list: WikiLevelFeature[] }) {
+function LevelFeatures({ list, selfKey }: { list: WikiLevelFeature[]; selfKey: string }) {
   const { t } = useTranslation();
   return (
     <ol className="space-y-2">
@@ -47,7 +49,9 @@ function LevelFeatures({ list }: { list: WikiLevelFeature[] }) {
           >
             {t('wiki.levelShort', { n: f.level })}
           </span>
-          <Markdown className="!space-y-1 min-w-0 flex-1 break-words">{f.name ? `**${f.name.replace(/\*/g, '')}.** ${f.text}` : f.text}</Markdown>
+          <Markdown links selfKey={selfKey} className="!space-y-1 min-w-0 flex-1 break-words">
+            {f.name ? `**${f.name.replace(/\*/g, '')}.** ${f.text}` : f.text}
+          </Markdown>
         </li>
       ))}
     </ol>
@@ -57,11 +61,17 @@ function LevelFeatures({ list }: { list: WikiLevelFeature[] }) {
 /** Vollständige Ansicht eines Wiki-Eintrags (Volk oder Klasse) */
 export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; findEntry?: (kind: WikiEntryDto['kind'], name: string) => WikiEntryDto | undefined; onOpen?: (id: string) => void }) {
   const { t, i18n } = useTranslation();
+  const selfKey = `e-${entry.id}`;
+  const spellClass = useSpellClass(entry.kind === 'class' ? entry.name : '');
   return (
     <div className="space-y-5">
       <SourceBadge sourceId={entry.sourceId} full className="!text-sm" />
       {entry.summary && <p className="text-lg italic">{entry.summary}</p>}
-      {entry.description && <Markdown className="break-words">{entry.description}</Markdown>}
+      {entry.description && (
+        <Markdown links selfKey={selfKey} className="break-words">
+          {entry.description}
+        </Markdown>
+      )}
 
       {entry.kind === 'race' ? (
         <>
@@ -72,9 +82,9 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
               <Fact label={t('wiki.race.alignment')}>{entry.data.alignment}</Fact>
               <Fact label={t('wiki.race.size')}>{entry.data.size}</Fact>
               <Fact label={t('wiki.race.speed')}>{entry.data.speed}</Fact>
-              <Fact label={t('wiki.race.languages')}>{entry.data.languages}</Fact>
+              <Fact label={t('wiki.race.languages')}>{entry.data.languages ? <LinkedText text={entry.data.languages} selfKey={selfKey} /> : ''}</Fact>
             </div>
-            {entry.data.traits.length > 0 && <Traits list={entry.data.traits} />}
+            {entry.data.traits.length > 0 && <Traits selfKey={selfKey} list={entry.data.traits} />}
           </Section>
           {entry.data.subraces.length > 0 && (
             <Section title={t('wiki.race.subraces')}>
@@ -82,8 +92,12 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
                 <div key={i} className="space-y-2 rounded-lg bg-parchment-200/40 p-3 dark:bg-night-900/40">
                   <h4 className="font-display text-lg font-bold">{s.name}</h4>
                   <Fact label={t('wiki.race.abilityIncrease')}>{s.abilityIncrease}</Fact>
-                  {s.description && <Markdown className="break-words">{s.description}</Markdown>}
-                  {s.traits.length > 0 && <Traits list={s.traits} />}
+                  {s.description && (
+                    <Markdown links selfKey={selfKey} className="break-words">
+                      {s.description}
+                    </Markdown>
+                  )}
+                  {s.traits.length > 0 && <Traits selfKey={selfKey} list={s.traits} />}
                 </div>
               ))}
             </Section>
@@ -101,26 +115,35 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
           </Section>
           <Section title={t('wiki.class.proficiencies')}>
             <div className="space-y-1">
-              <Fact label={t('wiki.class.armor')}>{entry.data.armor}</Fact>
-              <Fact label={t('wiki.class.weapons')}>{entry.data.weapons}</Fact>
-              <Fact label={t('wiki.class.tools')}>{entry.data.tools}</Fact>
+              <Fact label={t('wiki.class.armor')}>{entry.data.armor ? <LinkedText text={entry.data.armor} selfKey={selfKey} /> : ''}</Fact>
+              <Fact label={t('wiki.class.weapons')}>{entry.data.weapons ? <LinkedText text={entry.data.weapons} selfKey={selfKey} /> : ''}</Fact>
+              <Fact label={t('wiki.class.tools')}>{entry.data.tools ? <LinkedText text={entry.data.tools} selfKey={selfKey} /> : ''}</Fact>
               <Fact label={t('wiki.class.saves')}>{entry.data.saves}</Fact>
               <Fact label={t('wiki.class.skills')}>{entry.data.skills}</Fact>
             </div>
           </Section>
           {entry.data.equipment && (
             <Section title={t('wiki.class.equipment')}>
-              <Markdown className="break-words">{entry.data.equipment}</Markdown>
+              <Markdown links selfKey={selfKey} className="break-words">
+                {entry.data.equipment}
+              </Markdown>
             </Section>
           )}
           {entry.data.spellcasting && (
             <Section title={t('wiki.class.spellcasting')}>
-              <Markdown className="break-words">{entry.data.spellcasting}</Markdown>
+              <Markdown links selfKey={selfKey} className="break-words">
+                {entry.data.spellcasting}
+              </Markdown>
+            </Section>
+          )}
+          {spellClass && (
+            <Section title={t('wiki.class.spellList')}>
+              <ClassSpells spellClass={spellClass} />
             </Section>
           )}
           {entry.data.features.length > 0 && (
             <Section title={t('wiki.class.features')}>
-              <LevelFeatures list={entry.data.features} />
+              <LevelFeatures selfKey={selfKey} list={entry.data.features} />
             </Section>
           )}
           {entry.data.subclasses.length > 0 && (
@@ -131,8 +154,12 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
                     <h4 className="font-display text-lg font-bold">{s.name}</h4>
                     <SourceBadge sourceId={s.sourceId} full />
                   </div>
-                  {s.description && <Markdown className="break-words">{s.description}</Markdown>}
-                  {s.features.length > 0 && <LevelFeatures list={s.features} />}
+                  {s.description && (
+                    <Markdown links selfKey={selfKey} className="break-words">
+                      {s.description}
+                    </Markdown>
+                  )}
+                  {s.features.length > 0 && <LevelFeatures selfKey={selfKey} list={s.features} />}
                 </div>
               ))}
             </Section>
@@ -147,6 +174,15 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
             <Fact label={t('wiki.god.symbol')}>{entry.data.symbol}</Fact>
           </div>
         </Section>
+      ) : entry.kind === 'rule' ? (
+        (entry.data.category || entry.data.condition) && (
+          <div className="flex flex-wrap gap-1.5">
+            {entry.data.category && <span className="badge bg-parchment-200 text-parchment-900 dark:bg-night-700 dark:text-parchment-200">{t(`wiki.rule.categories.${entry.data.category}`)}</span>}
+            {entry.data.condition && (
+              <span className="badge bg-violet-100 text-violet-900 dark:bg-violet-950 dark:text-violet-200">{t('wiki.rule.inCombat', { name: t(`combat.conditions.${entry.data.condition}`) })}</span>
+            )}
+          </div>
+        )
       ) : entry.kind === 'language' ? (
         <Section title={t('wiki.language.title')}>
           <div className="space-y-1">
@@ -159,11 +195,15 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
         <Section title={t('wiki.feat.title')}>
           <div className="space-y-1">
             <Fact label={t('wiki.feat.category')}>{entry.data.category ? t(`wiki.feat.categories.${entry.data.category}`) : ''}</Fact>
-            <Fact label={t('wiki.feat.prerequisite')}>{entry.data.prerequisite || t('wiki.feat.none')}</Fact>
+            <Fact label={t('wiki.feat.prerequisite')}>{entry.data.prerequisite ? <LinkedText text={entry.data.prerequisite} selfKey={selfKey} /> : t('wiki.feat.none')}</Fact>
             <Fact label={t('wiki.race.abilityIncrease')}>{entry.data.abilityIncrease}</Fact>
             {entry.data.repeatable && <Fact label={t('wiki.feat.repeatable')}>{t('wiki.feat.repeatableText')}</Fact>}
           </div>
-          {entry.data.benefits && <Markdown className="break-words">{entry.data.benefits}</Markdown>}
+          {entry.data.benefits && (
+            <Markdown links selfKey={selfKey} className="break-words">
+              {entry.data.benefits}
+            </Markdown>
+          )}
         </Section>
       ) : (
         <>
@@ -191,18 +231,22 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
           <Section title={t('wiki.background.proficiencies')}>
             <div className="space-y-1">
               <Fact label={t('wiki.background.skills')}>{entry.data.skills}</Fact>
-              <Fact label={t('wiki.background.tools')}>{entry.data.tools}</Fact>
-              <Fact label={t('wiki.background.languages')}>{entry.data.languages}</Fact>
+              <Fact label={t('wiki.background.tools')}>{entry.data.tools ? <LinkedText text={entry.data.tools} selfKey={selfKey} /> : ''}</Fact>
+              <Fact label={t('wiki.background.languages')}>{entry.data.languages ? <LinkedText text={entry.data.languages} selfKey={selfKey} /> : ''}</Fact>
             </div>
           </Section>
           {entry.data.equipment && (
             <Section title={t('wiki.class.equipment')}>
-              <Markdown className="break-words">{entry.data.equipment}</Markdown>
+              <Markdown links selfKey={selfKey} className="break-words">
+                {entry.data.equipment}
+              </Markdown>
             </Section>
           )}
           {(entry.data.feature.name || entry.data.feature.text) && (
             <Section title={`${t('wiki.background.feature')}: ${entry.data.feature.name}`}>
-              <Markdown className="break-words">{entry.data.feature.text}</Markdown>
+              <Markdown links selfKey={selfKey} className="break-words">
+                {entry.data.feature.text}
+              </Markdown>
             </Section>
           )}
           {(['personalityTraits', 'ideals', 'bonds', 'flaws'] as const).some((k) => entry.data[k].length > 0) && (
@@ -231,7 +275,9 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
                             <tr key={i} className="border-t border-parchment-300/70 align-top dark:border-night-700">
                               <td className="py-1 font-semibold tabular-nums">{i + 1}</td>
                               <td className="py-1">
-                                <Markdown className="!space-y-0">{line}</Markdown>
+                                <Markdown links selfKey={selfKey} className="!space-y-0">
+                                  {line}
+                                </Markdown>
                               </td>
                             </tr>
                           ))}

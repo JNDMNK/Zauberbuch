@@ -3,6 +3,7 @@
  * Coast). Werte nach dem SRD, Texte auf Deutsch zusammengefasst. Wird beim ersten Start angelegt, wenn das Wiki leer ist.
  */
 import type { WikiEntryInput } from '@zauberbuch/shared';
+import { RULE_SEED } from './ruleSeed';
 
 type T = [string, string];
 const tr = (list: T[]) => list.map(([name, text]) => ({ name, text }));
@@ -943,4 +944,5 @@ export const WIKI_SEED: WikiEntryInput[] = [
   { kind: 'god', name: "Thrym", summary: "Gott der Frostriesen und der Kälte", description: '', data: { pantheon: "Nordisches Pantheon", alignment: 'CE', domains: "Krieg", symbol: "Weiße Doppelaxt" } },
   { kind: 'god', name: "Tyr", summary: "Gott des Mutes und der Strategie", description: '', data: { pantheon: "Nordisches Pantheon", alignment: 'LN', domains: "Wissen, Krieg", symbol: "Schwert" } },
   { kind: 'god', name: "Uller", summary: "Gott der Jagd und des Winters", description: '', data: { pantheon: "Nordisches Pantheon", alignment: 'CN', domains: "Natur", symbol: "Langbogen" } },
+  ...RULE_SEED,
 ];

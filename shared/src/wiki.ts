@@ -1,12 +1,13 @@
 import { z } from 'zod';
 import { sourceIdSchema } from './sources';
 import { ABILITIES, type Ability } from './character';
+import { CONDITIONS } from './combat';
 
 /**
  * Wiki (für alle angemeldeten Benutzer lesbar, bearbeitbar von Admin und Moderator).
  * Rubriken nach dem SRD 5.1: Völker (Rassen) und Klassen. Die Detailfelder liegen je Rubrik als JSON vor.
  */
-export const WIKI_KINDS = ['race', 'class', 'feat', 'background', 'language', 'god'] as const;
+export const WIKI_KINDS = ['race', 'class', 'feat', 'background', 'language', 'god', 'rule'] as const;
 export type WikiKind = (typeof WIKI_KINDS)[number];
 
 const text = (max: number) => z.string().trim().max(max).catch('').default('');
@@ -168,12 +169,22 @@ const godObject = z.object({
 export const godDataSchema = godObject.catch(() => godObject.parse({})).default({});
 export type WikiGodData = z.output<typeof godDataSchema>;
 
+/** Regel nach SRD (Zustände, Kampf, Abenteuer, Rasten, Zauberwirken); `condition` verknüpft einen Zustand im Kampf */
+export const RULE_CATEGORIES = ['basics', 'condition', 'combat', 'adventuring', 'resting', 'spellcasting'] as const;
+const ruleObject = z.object({
+  category: z.enum(RULE_CATEGORIES).nullable().catch(null).default(null),
+  condition: z.enum(CONDITIONS).nullable().catch(null).default(null),
+});
+export const ruleDataSchema = ruleObject.catch(() => ruleObject.parse({})).default({});
+export type WikiRuleData = z.output<typeof ruleDataSchema>;
+
 export const wikiEntrySchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('race'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: raceDataSchema }),
   z.object({ kind: z.literal('class'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: classDataSchema }),
   z.object({ kind: z.literal('feat'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: featDataSchema }),
   z.object({ kind: z.literal('background'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: backgroundDataSchema }),
   z.object({ kind: z.literal('language'), name: z.string().trim().min(1).max(60), summary: text(500), description: md(), sourceId: sourceIdSchema, data: languageDataSchema }),
+  z.object({ kind: z.literal('rule'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: ruleDataSchema }),
   z.object({ kind: z.literal('god'), name: z.string().trim().min(1).max(100), summary: text(500), description: md(), sourceId: sourceIdSchema, data: godDataSchema }),
 ]);
 export type WikiEntryInput = z.input<typeof wikiEntrySchema>;
@@ -194,4 +205,5 @@ export type WikiEntryDto =
   | (WikiBase & { kind: 'feat'; data: WikiFeatData })
   | (WikiBase & { kind: 'background'; data: WikiBackgroundData })
   | (WikiBase & { kind: 'language'; data: WikiLanguageData })
-  | (WikiBase & { kind: 'god'; data: WikiGodData });
+  | (WikiBase & { kind: 'god'; data: WikiGodData })
+  | (WikiBase & { kind: 'rule'; data: WikiRuleData });

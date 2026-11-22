@@ -875,7 +875,8 @@
     "showAllCharacters": "Alle Bögen anzeigen",
     "onlyStory": "Nur Bögen dieser Geschichte",
     "noneAssigned": "Noch keine Bögen „{{story}}“ zugeordnet (Charakterbogen → Einstellungen) – es werden alle angezeigt.",
-    "openStatBlock": "Werteblock öffnen"
+    "openStatBlock": "Werteblock öffnen",
+    "showRule": "Regel anzeigen: {{name}}"
   },
   "notifications": {
     "title": "Benachrichtigungen",
@@ -1186,7 +1187,7 @@
   },
   "wiki": {
     "title": "Wiki",
-    "hint": "Nachschlagewerk zu Völkern, Klassen, Talenten, Hintergründen, Sprachen, Göttern und Gegenständen nach dem System Reference Document 5.1. Karte anklicken für alle Details.",
+    "hint": "Nachschlagewerk zu Völkern, Klassen, Talenten, Hintergründen, Sprachen, Göttern, Regeln und Gegenständen nach dem System Reference Document 5.1. Karte anklicken für alle Details.",
     "search": "Wiki durchsuchen …",
     "empty": "Noch keine Einträge.",
     "kinds": {
@@ -1196,7 +1197,8 @@
       "feat": "Talente",
       "background": "Hintergründe",
       "language": "Sprachen",
-      "god": "Götter"
+      "god": "Götter",
+      "rule": "Regeln"
     },
     "new": {
       "race": "Neues Volk",
@@ -1204,7 +1206,8 @@
       "feat": "Neues Talent",
       "background": "Neuer Hintergrund",
       "language": "Neue Sprache",
-      "god": "Neue Gottheit"
+      "god": "Neue Gottheit",
+      "rule": "Neue Regel"
     },
     "edit": "„{{name}}“ bearbeiten",
     "name": "Name",
@@ -1250,7 +1253,11 @@
       "subclasses": "Unterklassen",
       "subclassTitle": "Bezeichnung der Unterklassen",
       "subclassTitlePlaceholder": "z. B. Arkane Tradition",
-      "subclassName": "Unterklasse"
+      "subclassName": "Unterklasse",
+      "spellList": "Zauberliste",
+      "spellsCount_one": "{{count}} Zauber aus der Zauberbibliothek – Klick öffnet den Zauber.",
+      "spellsCount_other": "{{count}} Zauber aus der Zauberbibliothek – Klick öffnet den Zauber.",
+      "noSpells": "In der Zauberbibliothek sind noch keine Zauber dieser Klasse."
     },
     "form": {
       "traitName": "Name des Merkmals",
@@ -1348,7 +1355,23 @@
       "equipment": "Ausrüstung",
       "world": "Welt"
     },
-    "noHits": "Keine Treffer im Wiki."
+    "noHits": "Keine Treffer im Wiki.",
+    "rule": {
+      "title": "Regel",
+      "category": "Kategorie",
+      "categories": {
+        "basics": "Grundregeln",
+        "condition": "Zustand",
+        "combat": "Kampf",
+        "adventuring": "Abenteuer",
+        "resting": "Rasten",
+        "spellcasting": "Zauberwirken"
+      },
+      "condition": "Zustand im Kampf",
+      "noCondition": "– kein Zustand –",
+      "conditionHint": "Verknüpft den Zustand im Kampf mit dieser Regel: Ein Klick auf den Zustand zeigt sie an.",
+      "inCombat": "Im Kampf: {{name}}"
+    }
   },
   "sources": {
     "title": "Quellen",

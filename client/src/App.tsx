@@ -1,5 +1,6 @@
 import { Navigate, Outlet, Route, Routes, useLocation, useParams, type Location } from 'react-router-dom';
 import { Layout } from './components/Layout';
+import { WikiLinkProvider } from './components/wiki/WikiLinks';
 import { RequireAuth } from './components/RequireAuth';
 import { SpellModal } from './components/SpellModal';
 import { SpellsPage } from './pages/SpellsPage';
@@ -35,7 +36,7 @@ export default function App() {
   const background = (location.state as { background?: Location } | null)?.background;
 
   return (
-    <>
+    <WikiLinkProvider>
       <Routes location={background ?? location}>
         <Route element={<Layout />}>
           {/* Einzige öffentliche Seite: ohne Anmeldung landet man immer hier */}
@@ -165,7 +166,7 @@ export default function App() {
           <Route path="/spells/:slug" element={<SpellModal />} />
         </Routes>
       )}
-    </>
+    </WikiLinkProvider>
   );
 }
 

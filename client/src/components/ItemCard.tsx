@@ -81,7 +81,7 @@ export function ItemCard({ item, actions, footer, attuned = false }: { item: Mag
               <div className="divider-ornament text-xs" aria-hidden>
                 ✦
               </div>
-              {item.description ? <Markdown className="break-words">{item.description}</Markdown> : <p className="italic text-parchment-700 dark:text-parchment-400">{t('items.noDescription')}</p>}
+              {item.description ? <Markdown links className="break-words">{item.description}</Markdown> : <p className="italic text-parchment-700 dark:text-parchment-400">{t('items.noDescription')}</p>}
               <div className="flex flex-wrap items-center gap-1.5 border-t border-parchment-300/70 pt-3 text-sm dark:border-night-700">
                 <span className="sheet-label !inline">{t('items.holders')}:</span>
                 <Holders item={item} />
