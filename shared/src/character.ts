@@ -248,6 +248,10 @@ export interface CharacterDto extends CharacterSummaryDto {
   tools: string[];
   /** Götter für „Glaube / Gottheit“ (Geschichte bzw. alle aus dem Wiki) */
   gods: string[];
+  /** Dungeon Master der Geschichte des Bogens (darf Meilenstein-Aufstiege freigeben) */
+  isStoryDm: boolean;
+  /** Vom DM freigegebene Zielstufe für einen Meilenstein-Aufstieg (null = keine) */
+  milestoneLevel: number | null;
   /** Erlaubte Quellen der Geschichte des Bogens (null = alle) */
   sources: string[] | null;
 }

@@ -7,7 +7,7 @@ import { api, saveCharacterKeepalive } from '../lib/api';
 import { errorMessage } from '../lib/errors';
 import { Alert, PageSpinner, Spinner } from '../components/ui';
 import { SheetContext, setIn, type Path, type SheetCtx } from '../components/sheet/SheetContext';
-import { IdentityHeader, MainTab } from '../components/sheet/MainTab';
+import { IdentityHeader, MainTab, MilestoneControl } from '../components/sheet/MainTab';
 import { FeaturesTab } from '../components/sheet/FeaturesTab';
 import { BackgroundTab, PhysicalHeader } from '../components/sheet/BackgroundTab';
 import { SpellsTab } from '../components/sheet/SpellsTab';
@@ -133,6 +133,20 @@ export function CharacterSheetPage() {
   const catalogStoryId = character?.story?.id ?? null;
   // Erlaubte Quellen der Geschichte des Bogens (null = alle)
   const storySources = character?.sources ?? null;
+  // Meilenstein-Aufstieg (DM gibt frei, Besitzer steigt auf)
+  const characterId = character?.id;
+  const milestone = useMemo(
+    () => ({
+      level: character?.milestoneLevel ?? null,
+      isStoryDm: character?.isStoryDm ?? false,
+      grant: async (level: number | null) => {
+        if (!characterId) return;
+        const r = await api.grantMilestone(characterId, level);
+        setCharacter((c) => (c ? { ...c, milestoneLevel: r.character.milestoneLevel } : c));
+      },
+    }),
+    [character?.milestoneLevel, character?.isStoryDm, characterId],
+  );
   useEffect(() => {
     if (!character) return;
     api
@@ -156,9 +170,10 @@ export function CharacterSheetPage() {
             catalog,
             storyId: catalogStoryId,
             sources: storySources,
+            milestone,
           }
         : null,
-    [sheet, set, canEdit, lifestyles, languages, tools, gods, items, catalog, catalogStoryId, storySources],
+    [sheet, set, canEdit, lifestyles, languages, tools, gods, items, catalog, catalogStoryId, storySources, milestone],
   );
 
   useEffect(() => {
@@ -209,6 +224,7 @@ export function CharacterSheetPage() {
               {t('characters.readOnly', { owner: character.owner?.username ?? '' })}
             </span>
           )}
+          {!canEdit && <MilestoneControl />}
           <button type="button" className="btn-icon" onClick={() => window.print()} title={t('characters.print')} aria-label={t('characters.print')}>
             <Printer className="h-5 w-5" />
           </button>

@@ -164,6 +164,7 @@ export const api = {
   allCharacters: () => request<{ characters: CharacterSummaryDto[] }>('GET', '/api/characters/all'),
   character: (id: string) => request<{ character: CharacterDto }>('GET', `/api/characters/${id}`),
   createCharacter: (name?: string, storyId?: string | null) => request<{ character: CharacterDto }>('POST', '/api/characters', { name, storyId: storyId ?? null }),
+  grantMilestone: (id: string, level: number | null) => request<{ character: CharacterDto }>('PUT', `/api/characters/${id}/milestone`, { level }),
   saveCharacter: (id: string, data: CharacterSheet) => request<{ character: CharacterDto }>('PUT', `/api/characters/${id}`, { data }),
   duplicateCharacter: (id: string) => request<{ character: CharacterDto }>('POST', `/api/characters/${id}/duplicate`),
   deleteCharacter: (id: string) => request<void>('DELETE', `/api/characters/${id}`),

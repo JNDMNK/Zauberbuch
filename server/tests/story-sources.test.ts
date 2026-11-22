@@ -65,3 +65,35 @@ describe('Quellen einer Geschichte', () => {
     expect((await frodo.agent.post('/api/characters').set(CSRF).send({ name: 'Ohne' })).body.character.sources).toBeNull();
   });
 });
+
+describe('Meilenstein-Aufstieg', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('DM der Geschichte gibt frei, Spieler wird benachrichtigt, Freigabe verfällt nach dem Aufstieg', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    const dm = await createUser('gandalf');
+    const frodo = await createUser('frodo');
+    const sam = await createUser('sam');
+    const s = (await admin.post('/api/stories').set(CSRF).send({ name: 'Ringkrieg', members: [{ userId: dm.user.id, role: 'dm' }, { userId: frodo.user.id, role: 'player' }, { userId: sam.user.id, role: 'player' }] })).body.story;
+    const c = (await frodo.agent.post('/api/characters').set(CSRF).send({ name: 'Frodo', storyId: s.id })).body.character;
+    expect(c).toMatchObject({ isStoryDm: false, milestoneLevel: null });
+    expect((await frodo.agent.put(`/api/characters/${c.id}/milestone`).set(CSRF).send({ level: 2 })).status).toBe(403);
+    expect((await sam.agent.put(`/api/characters/${c.id}/milestone`).set(CSRF).send({ level: 2 })).status).toBe(404);
+    expect((await dm.agent.get(`/api/characters/${c.id}`)).body.character.isStoryDm).toBe(true);
+    expect((await dm.agent.put(`/api/characters/${c.id}/milestone`).set(CSRF).send({ level: 1 })).status).toBe(400);
+    const r = await dm.agent.put(`/api/characters/${c.id}/milestone`).set(CSRF).send({ level: 2 });
+    expect(r.status).toBe(200);
+    expect(r.body.character.milestoneLevel).toBe(2);
+    const notes = (await frodo.agent.get('/api/notifications')).body.notifications;
+    expect(notes[0]).toMatchObject({ type: 'milestone_granted', data: { dm: 'gandalf', level: '2' } });
+    // Spieler steigt auf → Freigabe weg
+    const sheet = (await frodo.agent.get(`/api/characters/${c.id}`)).body.character.data;
+    const saved = await frodo.agent.put(`/api/characters/${c.id}`).set(CSRF).send({ data: { ...sheet, identity: { ...sheet.identity, level: 2 } } });
+    expect(saved.body.character.milestoneLevel).toBeNull();
+    // zurücknehmen
+    await dm.agent.put(`/api/characters/${c.id}/milestone`).set(CSRF).send({ level: 3 });
+    expect((await dm.agent.put(`/api/characters/${c.id}/milestone`).set(CSRF).send({ level: null })).body.character.milestoneLevel).toBeNull();
+  });
+});

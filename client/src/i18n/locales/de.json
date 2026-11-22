@@ -401,7 +401,9 @@
     "backup_newer": "Die Sicherung stammt aus einer neueren Version der App – bitte zuerst die App aktualisieren.",
     "backup_safety_failed": "Die Sicherheitskopie der aktuellen Datenbank konnte nicht angelegt werden – Import abgebrochen.",
     "backup_import_failed": "Import fehlgeschlagen, es wurde nichts verändert.",
-    "confirm_required": "Der Import muss bestätigt werden."
+    "confirm_required": "Der Import muss bestätigt werden.",
+    "not_story_dm": "Nur der Dungeon Master der Geschichte kann einen Meilenstein-Aufstieg freigeben.",
+    "milestone_invalid": "Die Stufe muss über der aktuellen Stufe liegen."
   },
   "damageType": {
     "acid": "Säure",
@@ -664,7 +666,18 @@
     "dailyCostHint": "Aus der Lebensstil-Tabelle der Geschichte (bzw. den Standardwerten)",
     "addEntry": "Weitere hinzufügen",
     "toolsOther": "Weitere",
-    "openDeity": "Gottheit im Wiki öffnen"
+    "openDeity": "Gottheit im Wiki öffnen",
+    "levelUpReady": "Genug Erfahrung für Stufe {{level}}!",
+    "levelUpReadyMore": "Genug Erfahrung für Stufe {{level}} – Aufstieg Stufe für Stufe (danach noch {{more}} weitere).",
+    "levelUpMilestone": "Der DM hat den Meilenstein-Aufstieg auf Stufe {{level}} freigegeben.",
+    "levelUpOpen": "Stufenaufstieg auf Stufe {{level}}",
+    "milestoneGrant": "Meilenstein-Aufstieg auf Stufe {{level}} freigeben",
+    "milestoneSelf": "Stufenaufstieg ohne EP (Meilenstein) auf Stufe {{level}}",
+    "milestoneHint": "Nur für den Dungeon Master der Geschichte: Aufstieg ohne genug Erfahrungspunkte",
+    "milestoneRevoke": "Freigabe zurücknehmen",
+    "milestoneGranted": "Meilenstein-Aufstieg auf Stufe {{level}} freigegeben – der Spieler wurde benachrichtigt.",
+    "milestoneRevoked": "Freigabe zurückgenommen.",
+    "milestoneGrantedShort": "Meilenstein-Aufstieg auf Stufe {{level}} freigegeben"
   },
   "board": {
     "heading": "Infotafel",
@@ -894,7 +907,8 @@
       "board_post": "{{author}} hat auf der Infotafel „{{story}}“ geschrieben: {{title}}",
       "admin_story_role_changed": "Admin „{{admin}}“ ist in „{{story}}“ nicht mehr als Spieler eingetragen und sieht dort wieder alle Werte (auch verdeckte Monster).",
       "item_received": "{{from}} hat dir den magischen Gegenstand „{{item}}“ gegeben ({{character}}, {{story}}).",
-      "item_returned": "{{from}} hat „{{item}}“ an den DM zurückgegeben ({{character}}, {{story}})."
+      "item_returned": "{{from}} hat „{{item}}“ an den DM zurückgegeben ({{character}}, {{story}}).",
+      "milestone_granted": "{{dm}} hat für „{{character}}“ den Meilenstein-Aufstieg auf Stufe {{level}} freigegeben."
     },
     "open": "Öffnen"
   },
@@ -1534,7 +1548,7 @@
     "level": "Stufe {{n}}",
     "max": "Der Charakter hat bereits Stufe 20 erreicht.",
     "xpOk": "EP {{xp}} / {{need}} – Stufe erreicht ✓",
-    "xpMissing": "EP {{xp}} / {{need}} – Aufstieg ohne genug EP (z. B. Meilenstein)",
+    "xpMissing": "EP {{xp}} / {{need}} – Meilenstein-Aufstieg",
     "noClass": "Die Klasse in „Klasse & Stufe“ wurde im Wiki nicht gefunden – Trefferpunkte, Trefferwürfel und Übungsbonus werden trotzdem angepasst, neue Merkmale musst du selbst eintragen.",
     "hp": "Trefferpunkte",
     "average": "Durchschnitt: {{avg}} + KON {{con}} = +{{total}}",
@@ -1561,7 +1575,8 @@
     "slots": "Zauberplätze {{grade}}. Grad",
     "nextLevel": "Nächste Stufe bei",
     "hint": "Die neuen Merkmale werden an „Klassenmerkmale“ angehängt, ein Talent an „Weitere Merkmale“. Zauber wählst du wie gewohnt im Reiter „Zauber“; alle Werte lassen sich danach im Bogen anpassen.",
-    "apply": "Stufe {{n}} übernehmen"
+    "apply": "Stufe {{n}} übernehmen",
+    "milestoneOk": "Meilenstein-Aufstieg vom DM freigegeben ✓"
   },
   "storySources": {
     "banner": "{{what}} der Geschichte „{{story}}“: nur aus {{list}}.",

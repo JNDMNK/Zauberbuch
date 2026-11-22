@@ -24,6 +24,8 @@ import {
   type SheetAttack,
 } from '@zauberbuch/shared';
 import { useSheet } from './SheetContext';
+import { useToast } from '../../context/ToastContext';
+import { errorMessage } from '../../lib/errors';
 import { TOOL_ALIASES } from '../../lib/tools';
 import { LevelUpDialog } from './LevelUpDialog';
 import { Box, CheckField, Computed, NF, ProfToggle, TA, TF } from './fields';
@@ -31,11 +33,19 @@ import { Box, CheckField, Computed, NF, ProfToggle, TA, TF } from './fields';
 /** Erfahrungspunkte mit automatisch berechneter Schwelle für die nächste Stufe */
 function ExperienceField({ onLevelUp }: { onLevelUp: () => void }) {
   const { t, i18n } = useTranslation();
-  const { sheet, readOnly } = useSheet();
+  const toast = useToast();
+  const { sheet, readOnly, milestone } = useSheet();
   const { level, xp } = sheet.identity;
   const next = xpForNextLevel(level);
+  const target = Math.min(20, level + 1);
   const reachable = Math.min(20, levelForXp(xp));
-  const canLevelUp = reachable > level;
+  const byXp = reachable > level;
+  const byMilestone = (milestone.level ?? 0) > level;
+  const grant = (lvl: number | null) =>
+    milestone.grant(lvl).then(
+      () => toast.success(lvl ? t('sheet.milestoneGranted', { level: lvl }) : t('sheet.milestoneRevoked')),
+      (err) => toast.error(errorMessage(t, err)),
+    );
   return (
     <div className="col-span-2">
       <div className="flex items-start gap-1">
@@ -48,15 +58,40 @@ function ExperienceField({ onLevelUp }: { onLevelUp: () => void }) {
           <span className="sheet-label">{t('sheet.xpNext')}</span>
         </div>
       </div>
-      {canLevelUp && (
-        <div className="mt-1 flex flex-wrap items-center gap-2 rounded-md bg-amber-100 px-2 py-1 text-sm text-amber-900 print:hidden dark:bg-amber-950 dark:text-amber-200" role="status">
-          <span>{t('sheet.levelUpPossible', { level: reachable })}</span>
+      {/* Ein Hinweis für den Stufenaufstieg: genug EP oder vom DM freigegebener Meilenstein */}
+      {level < 20 && (byXp || byMilestone) && (
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md bg-amber-100 px-2 py-1 text-sm text-amber-900 print:hidden dark:bg-amber-950 dark:text-amber-200" role="status">
+          <span>
+            {byXp
+              ? reachable > target
+                ? t('sheet.levelUpReadyMore', { level: reachable, more: reachable - target })
+                : t('sheet.levelUpReady', { level: target })
+              : t('sheet.levelUpMilestone', { level: target })}
+          </span>
           {!readOnly && (
-            <button type="button" className="font-semibold underline" onClick={onLevelUp}>
-              {t('sheet.levelUpButton', { level: Math.min(20, level + 1) })}
+            <button type="button" className="inline-flex items-center gap-1 font-semibold underline" onClick={onLevelUp}>
+              <ArrowBigUpDash className="h-4 w-4" />
+              {t('sheet.levelUpOpen', { level: target })}
+            </button>
+          )}
+          {milestone.isStoryDm && !readOnly && byMilestone && !byXp && (
+            <button type="button" className="text-xs underline opacity-80" onClick={() => grant(null)}>
+              {t('sheet.milestoneRevoke')}
             </button>
           )}
         </div>
+      )}
+      {/* Dungeon Master der Geschichte mit eigenem Bogen: Aufstieg ohne genug EP (Meilenstein); fremde Bögen: Leiste oben */}
+      {level < 20 && milestone.isStoryDm && !readOnly && !byXp && !byMilestone && (
+        <button
+          type="button"
+          className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-parchment-700 underline decoration-dotted underline-offset-2 hover:decoration-solid print:hidden dark:text-parchment-400"
+          onClick={onLevelUp}
+          title={t('sheet.milestoneHint')}
+        >
+          <ArrowBigUpDash className="h-3.5 w-3.5" />
+          {t('sheet.milestoneSelf', { level: target })}
+        </button>
       )}
     </div>
   );
@@ -64,24 +99,12 @@ function ExperienceField({ onLevelUp }: { onLevelUp: () => void }) {
 
 export function IdentityHeader() {
   const { t } = useTranslation();
-  const { sheet, readOnly } = useSheet();
   const [levelUp, setLevelUp] = useState(false);
   return (
     <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3 lg:grid-cols-6">
       <TF path={['identity', 'classLevel']} label={t('sheet.classLevel')} className="col-span-2" />
       <div>
         <NF path={['identity', 'level']} label={t('sheet.level')} min={1} max={20} />
-        {/* Nur wenn die Erfahrungspunkte für die nächste Stufe reichen */}
-        {!readOnly && sheet.identity.level < 20 && levelForXp(sheet.identity.xp) > sheet.identity.level && (
-          <button
-            type="button"
-            className="mt-0.5 inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 underline decoration-dotted underline-offset-2 hover:decoration-solid print:hidden dark:text-emerald-300"
-            onClick={() => setLevelUp(true)}
-          >
-            <ArrowBigUpDash className="h-3.5 w-3.5" />
-            {t('levelUp.open')}
-          </button>
-        )}
       </div>
       <TF path={['identity', 'playerName']} label={t('sheet.playerName')} />
       <ExperienceField onLevelUp={() => setLevelUp(true)} />
@@ -474,5 +497,38 @@ export function MainTab() {
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Leiste oben am Bogen (außerhalb des schreibgeschützten Bereichs): Der Dungeon Master der Geschichte gibt beim Bogen
+ * eines Spielers einen Meilenstein-Aufstieg frei oder nimmt die Freigabe zurück.
+ */
+export function MilestoneControl() {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const { sheet, milestone } = useSheet();
+  const { level, xp } = sheet.identity;
+  if (!milestone.isStoryDm || level >= 20 || levelForXp(xp) > level) return null;
+  const target = level + 1;
+  const granted = (milestone.level ?? 0) > level;
+  const grant = (lvl: number | null) =>
+    milestone.grant(lvl).then(
+      () => toast.success(lvl ? t('sheet.milestoneGranted', { level: lvl }) : t('sheet.milestoneRevoked')),
+      (err) => toast.error(errorMessage(t, err)),
+    );
+  return granted ? (
+    <span className="inline-flex items-center gap-2 rounded-md bg-amber-100 px-2 py-1 text-sm text-amber-900 print:hidden dark:bg-amber-950 dark:text-amber-200">
+      <ArrowBigUpDash className="h-4 w-4" />
+      {t('sheet.milestoneGrantedShort', { level: milestone.level })}
+      <button type="button" className="underline" onClick={() => grant(null)}>
+        {t('sheet.milestoneRevoke')}
+      </button>
+    </span>
+  ) : (
+    <button type="button" className="btn-secondary !py-1 text-sm print:hidden" onClick={() => grant(target)} title={t('sheet.milestoneHint')}>
+      <ArrowBigUpDash className="h-4 w-4" />
+      {t('sheet.milestoneGrant', { level: target })}
+    </button>
   );
 }

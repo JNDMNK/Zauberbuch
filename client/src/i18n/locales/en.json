@@ -401,7 +401,9 @@
     "backup_newer": "The backup comes from a newer version of the app – please update the app first.",
     "backup_safety_failed": "Could not create a safety copy of the current database – import cancelled.",
     "backup_import_failed": "Import failed, nothing was changed.",
-    "confirm_required": "The import must be confirmed."
+    "confirm_required": "The import must be confirmed.",
+    "not_story_dm": "Only the Dungeon Master of the story can grant a milestone level up.",
+    "milestone_invalid": "The level must be above the current level."
   },
   "damageType": {
     "acid": "Acid",
@@ -664,7 +666,18 @@
     "dailyCostHint": "From the story's lifestyle table (or the defaults)",
     "addEntry": "Add another",
     "toolsOther": "Other",
-    "openDeity": "Open deity in wiki"
+    "openDeity": "Open deity in wiki",
+    "levelUpReady": "Enough experience for level {{level}}!",
+    "levelUpReadyMore": "Enough experience for level {{level}} – level up one at a time ({{more}} more afterwards).",
+    "levelUpMilestone": "The DM granted a milestone level up to level {{level}}.",
+    "levelUpOpen": "Level up to level {{level}}",
+    "milestoneGrant": "Grant milestone level up to level {{level}}",
+    "milestoneSelf": "Level up without XP (milestone) to level {{level}}",
+    "milestoneHint": "Dungeon Master of the story only: level up without enough experience points",
+    "milestoneRevoke": "Revoke",
+    "milestoneGranted": "Milestone level up to level {{level}} granted – the player was notified.",
+    "milestoneRevoked": "Grant revoked.",
+    "milestoneGrantedShort": "Milestone level up to level {{level}} granted"
   },
   "board": {
     "heading": "Info board",
@@ -894,7 +907,8 @@
       "board_post": "{{author}} posted on the info board “{{story}}”: {{title}}",
       "admin_story_role_changed": "Admin “{{admin}}” is no longer a player in “{{story}}” and can see all values there again (including hidden monsters).",
       "item_received": "{{from}} gave you the magic item “{{item}}” ({{character}}, {{story}}).",
-      "item_returned": "{{from}} returned “{{item}}” to the DM ({{character}}, {{story}})."
+      "item_returned": "{{from}} returned “{{item}}” to the DM ({{character}}, {{story}}).",
+      "milestone_granted": "{{dm}} granted “{{character}}” a milestone level up to level {{level}}."
     },
     "open": "Open"
   },
@@ -1534,7 +1548,7 @@
     "level": "Level {{n}}",
     "max": "The character has already reached level 20.",
     "xpOk": "XP {{xp}} / {{need}} – level reached ✓",
-    "xpMissing": "XP {{xp}} / {{need}} – level up without enough XP (e.g. milestone)",
+    "xpMissing": "XP {{xp}} / {{need}} – milestone level up",
     "noClass": "The class in “Class & level” was not found in the wiki – hit points, hit dice and proficiency bonus are still updated; add new features yourself.",
     "hp": "Hit points",
     "average": "Average: {{avg}} + CON {{con}} = +{{total}}",
@@ -1561,7 +1575,8 @@
     "slots": "Spell slots level {{grade}}",
     "nextLevel": "Next level at",
     "hint": "New features are appended to “Class features”, a feat to “More features”. Choose spells as usual in the “Spells” tab; all values can be adjusted in the sheet afterwards.",
-    "apply": "Apply level {{n}}"
+    "apply": "Apply level {{n}}",
+    "milestoneOk": "Milestone level up granted by the DM ✓"
   },
   "storySources": {
     "banner": "{{what}} of the story “{{story}}”: only from {{list}}.",

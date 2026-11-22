@@ -21,6 +21,8 @@ export interface SheetCtx {
   /** Geschichte des Bogens und deren erlaubte Quellen (null = alle) */
   storyId: string | null;
   sources: string[] | null;
+  /** Meilenstein-Aufstieg: vom DM freigegebene Zielstufe, ob man DM der Geschichte ist, Freigabe setzen */
+  milestone: { level: number | null; isStoryDm: boolean; grant: (level: number | null) => Promise<void> };
 }
 
 export const SheetContext = createContext<SheetCtx | null>(null);

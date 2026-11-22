@@ -24,6 +24,10 @@ import {
 import { prisma } from '../lib/prisma';
 import { wikiGodNames, wikiLanguageNames } from './wiki';
 import { validate } from '../lib/validate';
+import { notifyUsers } from '../lib/notifications';
+import { z } from 'zod';
+
+const milestoneSchema = z.object({ level: z.number().int().min(2).max(20).nullable() });
 import { badRequest, forbidden, notFound } from '../lib/errors';
 import { requireAdmin, requireAuth } from '../middleware/auth';
 import { dmStoryIds, storyRole, visibleStoryWhere } from '../lib/stories';
@@ -228,6 +232,8 @@ charactersRouter.post('/', async (req, res) => {
     canEdit: true,
     canManageSettings: true,
     isOwner: true,
+    isStoryDm: story ? (await storyRole(req.user!, story.id)) === 'dm' : false,
+    milestoneLevel: null,
     ...storyOptionLists(story, { languages: await wikiLanguageNames(), gods: await wikiGodNames() }),
   };
   res.status(201).json({ character: body });
@@ -245,7 +251,7 @@ async function loadReadable(id: string, user: User) {
   const privileged = isEditorRole(user.role) || isStoryDm;
   // Fremde Bögen gibt es für normale Benutzer „nicht“ (404 statt 403, verrät keine IDs)
   if (!c || (!isOwner && !isCoEditor && !privileged)) throw notFound('character_not_found', 'Character not found');
-  return { ...c, isOwner, canEdit: isOwner || isCoEditor, canManageSettings: isOwner || privileged, wikiLanguages: await wikiLanguageNames(), wikiGods: await wikiGodNames() };
+  return { ...c, isOwner, isStoryDm, canEdit: isOwner || isCoEditor, canManageSettings: isOwner || privileged, wikiLanguages: await wikiLanguageNames(), wikiGods: await wikiGodNames() };
 }
 
 function toDto(c: Awaited<ReturnType<typeof loadReadable>>, data: CharacterSheet, updated?: Character): CharacterDto {
@@ -255,9 +261,28 @@ function toDto(c: Awaited<ReturnType<typeof loadReadable>>, data: CharacterSheet
     canEdit: c.canEdit,
     canManageSettings: c.canManageSettings,
     isOwner: c.isOwner,
+    isStoryDm: c.isStoryDm,
+    milestoneLevel: (updated ?? c).milestoneLevel,
     ...storyOptionLists(c.story, { languages: c.wikiLanguages, gods: c.wikiGods }),
   };
 }
+
+/**
+ * Meilenstein-Aufstieg freigeben (Dungeon Master der Geschichte des Bogens): { level } = Zielstufe (aktuelle Stufe + 1
+ * bis 20) bzw. null zum Zurücknehmen. Der Besitzer wird benachrichtigt und führt den Aufstieg im Bogen selbst durch.
+ */
+charactersRouter.put('/:id/milestone', async (req, res) => {
+  const c = await loadReadable(String(req.params.id), req.user!);
+  if (!c.isStoryDm) throw forbidden('not_story_dm', 'Only the Dungeon Master of the story can grant a milestone level');
+  const { level } = validate(milestoneSchema, req.body);
+  const current = parseSheet(c.data).identity.level;
+  if (level !== null && (level <= current || level > 20)) throw badRequest('milestone_invalid', 'Level must be above the current level');
+  const updated = await prisma.character.update({ where: { id: c.id }, data: { milestoneLevel: level } });
+  if (level !== null && c.userId !== req.user!.id) {
+    await notifyUsers([c.userId], 'milestone_granted', { dm: req.user!.username, character: c.name || '—', level: String(level), link: `/characters/${c.id}` });
+  }
+  res.json({ character: toDto(c, parseSheet(c.data), updated) });
+});
 
 charactersRouter.get('/:id', async (req, res) => {
   const c = await loadReadable(String(req.params.id), req.user!);
@@ -280,7 +305,8 @@ charactersRouter.put('/:id', async (req, res) => {
   if (cost !== null) data.lifestyle.dailyCost = cost;
   const updated = await prisma.character.update({
     where: { id: c.id },
-    data: { ...summaryFields(data), data: JSON.stringify(data) },
+    // Freigegebener Meilenstein ist erledigt, sobald die Stufe erreicht ist
+    data: { ...summaryFields(data), data: JSON.stringify(data), ...(c.milestoneLevel !== null && data.identity.level >= c.milestoneLevel ? { milestoneLevel: null } : {}) },
   });
   res.json({ character: toDto(c, data, updated) });
 });
@@ -303,6 +329,8 @@ charactersRouter.post('/:id/duplicate', async (req, res) => {
       canEdit: true,
       canManageSettings: true,
       isOwner: true,
+      isStoryDm: copy.storyId ? (await storyRole(req.user!, copy.storyId)) === 'dm' : false,
+      milestoneLevel: null,
       ...storyOptionLists(copy.story, { languages: await wikiLanguageNames(), gods: await wikiGodNames() }),
     } satisfies CharacterDto,
   });

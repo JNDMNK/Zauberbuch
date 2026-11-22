@@ -187,15 +187,19 @@ Bewegungsrate, Sprachen, Werkzeuge, Volks- und Klassenmerkmale der Stufe 1, Hint
 Startausrüstung (Inventar und Münzen, wahlweise nur als Text), Zauberattribut und Zauberplätze sowie auf Wunsch zufällige Persönlichkeitsmerkmale aus
 den Tabellen des Hintergrunds.
 
-**Stufenaufstieg** (Knopf „Stufenaufstieg“ unter dem Stufenfeld bzw. im Hinweis „Genug Erfahrung für Stufe …“ –
-beide erscheinen erst, wenn die Erfahrungspunkte für die nächste Stufe reichen): erkennt
+**Stufenaufstieg** (ein Hinweis unter den Erfahrungspunkten, sobald sie für die nächste Stufe reichen: „Genug
+Erfahrung für Stufe 2! – Stufenaufstieg auf Stufe 2“; reichen sie für mehrere Stufen, wird Stufe für Stufe
+aufgestiegen und angezeigt, wie viele noch folgen). **Meilensteine:** Der Dungeon Master der Geschichte gibt beim
+Bogen eines Spielers über „Meilenstein-Aufstieg auf Stufe … freigeben“ (Leiste oben am Bogen) einen Aufstieg ohne
+genug EP frei; der Spieler wird benachrichtigt, sieht den Hinweis „Der DM hat den Meilenstein-Aufstieg … freigegeben“
+und steigt selbst auf (die Freigabe verfällt danach bzw. lässt sich zurücknehmen). Beim eigenen Bogen öffnet der DM
+den Aufstieg direkt über „Stufenaufstieg ohne EP (Meilenstein)“. Der Dialog erkennt
 Klasse und Unterklasse aus „Klasse & Stufe“ (Wiki) und zeigt Schritt für Schritt, was sich ändert –
 **Trefferpunkte** (Durchschnitt, Würfeln oder eigener Wert, jeweils + KON), Trefferwürfel, die **neuen Klassen- und
 Unterklassenmerkmale** der Stufe aus dem Wiki, die **Wahl der Unterklasse** auf der passenden Stufe (z. B. Magier 2,
 Barbar 3), die **Attributswerterhöhung** (+2 / +1+1, max. 20) oder ein **Talent** auf den Stufen, für die das Wiki
 eine Attributswerterhöhung vorsieht (eine höhere Konstitution erhöht die TP rückwirkend), **Zauberplätze** nach den
-SRD-Tabellen (Voll-, Halbzauberer, Paktmagie), Übungsbonus und EP für die nächste Stufe. Bei Meilenstein-Aufstieg ohne EP trägt man die
-Stufe direkt im Stufenfeld ein. Neue Merkmale werden an „Klassenmerkmale“ angehängt, ein Talent an
+SRD-Tabellen (Voll-, Halbzauberer, Paktmagie), Übungsbonus und EP für die nächste Stufe. Neue Merkmale werden an „Klassenmerkmale“ angehängt, ein Talent an
 „Weitere Merkmale“.
 
 Der Bogen ist wie der D&D-5e-Charakterbogen in vier Reiter gegliedert:
@@ -857,6 +861,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET`/`POST /api/bestiary/dm?storyId=` · `GET`/`PUT`/`DELETE /api/bestiary/dm/:id?storyId=` | DM der angegebenen Geschichte | DM-Datenbank (Vorlagen) |
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
+| `PUT /api/characters/:id/milestone` | DM der Geschichte | Meilenstein-Aufstieg freigeben (`{ level }` bzw. `{ level: null }`) |
 | `GET /api/backup/export` · `POST /api/backup/import` | Admin | Gesamtsicherung (`{ backup, confirm: true }`) |
 | `GET /api/sources` · `POST /api/sources` · `PUT`/`DELETE /api/sources/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Quellen (`{ name, abbreviation? }`) |
 | `GET /api/wiki` · `POST /api/wiki` · `PUT`/`DELETE /api/wiki/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Wiki (`{ kind: 'race' \| 'class' \| 'feat' \| 'background' \| 'language' \| 'god', name, summary?, description?, data }`) |

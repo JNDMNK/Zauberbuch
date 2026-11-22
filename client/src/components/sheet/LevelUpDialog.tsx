@@ -30,7 +30,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
  */
 export function LevelUpDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
-  const { sheet, set, sources } = useSheet();
+  const { sheet, set, sources, milestone } = useSheet();
   const [wiki, setWiki] = useState<WikiEntryDto[] | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [hpMode, setHpMode] = useState<HpMode>('average');
@@ -144,9 +144,11 @@ export function LevelUpDialog({ open, onClose }: { open: boolean; onClose: () =>
             <span className="text-xl">→</span>
             <span className="font-display text-xl font-bold text-emerald-800 dark:text-emerald-300">{cls ? `${cls.name} ${n}` : t('levelUp.level', { n })}</span>
             <span className="ml-auto text-sm text-parchment-700 dark:text-parchment-400">
-              {sheet.identity.xp >= xpNeeded
-                ? t('levelUp.xpOk', { xp: sheet.identity.xp.toLocaleString('de'), need: xpNeeded.toLocaleString('de') })
-                : t('levelUp.xpMissing', { xp: sheet.identity.xp.toLocaleString('de'), need: xpNeeded.toLocaleString('de') })}
+              {sheet.identity.xp < xpNeeded && (milestone.level ?? 0) >= n
+                ? t('levelUp.milestoneOk', { level: n })
+                : sheet.identity.xp >= xpNeeded
+                  ? t('levelUp.xpOk', { xp: sheet.identity.xp.toLocaleString('de'), need: xpNeeded.toLocaleString('de') })
+                  : t('levelUp.xpMissing', { xp: sheet.identity.xp.toLocaleString('de'), need: xpNeeded.toLocaleString('de') })}
             </span>
           </div>
           {!cls && <Alert kind="info">{t('levelUp.noClass')}</Alert>}

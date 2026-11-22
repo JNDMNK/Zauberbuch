@@ -137,6 +137,10 @@ model Character {
   storyId    String?
   story      Story?            @relation(fields: [storyId], references: [id], onDelete: SetNull)
   /**
+   * Vom Dungeon Master freigegebener Meilenstein-Aufstieg: Stufe, auf die ohne genug EP aufgestiegen werden darf
+   */
+  milestoneLevel Int?
+  /**
    * Weitere Benutzer, die den Bogen bearbeiten dürfen
    */
   editors    CharacterEditor[]

@@ -116,7 +116,8 @@ export function applyLevelUp(sheet: CharacterSheet, cls: ClassEntry | null, plan
   // Unterklasse vor der Stufenzahl ergänzen: „Magier 1“ → „Magier (Schule der Hervorrufung) 2“
   const base = cl.replace(/\s*\d+\s*$/, '');
   const withSub = plan.subclassName && cls && !cl.includes(plan.subclassName) ? `${base} (${plan.subclassName})` : base;
-  s.identity.classLevel = `${withSub} ${n}`.trim().slice(0, 100);
+  // Ohne eingetragene Klasse bleibt das Feld leer (nur die Stufe ändert sich)
+  s.identity.classLevel = withSub.trim() ? `${withSub} ${n}`.slice(0, 100) : cl;
 
   for (const [a, v] of Object.entries(plan.abilityIncrease)) s.abilities[a as Ability] = Math.min(20, s.abilities[a as Ability] + (v ?? 0));
   const gain = Math.max(1, plan.hpGain) + plan.conBonus;
