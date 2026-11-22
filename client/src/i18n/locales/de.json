@@ -1061,7 +1061,8 @@
     "sourcesAll": "Alle Quellen (keine Einschränkung)",
     "sourcesSome": "Nur ausgewählte Quellen",
     "sourcesNone": "Keine Quelle gewählt – in dieser Geschichte wären dann keine Inhalte verfügbar.",
-    "dmHint": "Als Dungeon Master bearbeitest du hier die Einstellungen deiner Geschichten (Quellen, Lebensstile, Sprachen, Götter, Werkzeuge). Name und Mitglieder verwalten Admin und Moderatoren."
+    "dmHint": "Als Dungeon Master bearbeitest du hier die Einstellungen deiner Geschichten (Quellen, Lebensstile, Sprachen, Götter, Werkzeuge). Name und Mitglieder verwalten Admin und Moderatoren.",
+    "sourcesAdjusted": "An die Quellen angepasst: {{added}} Sprachen, Götter und Werkzeuge angewählt, {{removed}} abgewählt – unten einzeln änderbar."
   },
   "items": {
     "title": "Magische Gegenstände",

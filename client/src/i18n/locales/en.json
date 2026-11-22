@@ -1061,7 +1061,8 @@
     "sourcesAll": "All sources (no restriction)",
     "sourcesSome": "Only selected sources",
     "sourcesNone": "No source selected – no content would be available in this story.",
-    "dmHint": "As Dungeon Master you edit the settings of your stories here (sources, lifestyles, languages, gods, tools). Name and members are managed by admins and moderators."
+    "dmHint": "As Dungeon Master you edit the settings of your stories here (sources, lifestyles, languages, gods, tools). Name and members are managed by admins and moderators.",
+    "sourcesAdjusted": "Adjusted to the sources: {{added}} languages, gods and tools selected, {{removed}} deselected – adjustable individually below."
   },
   "items": {
     "title": "Magic items",

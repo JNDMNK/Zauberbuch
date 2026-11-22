@@ -456,6 +456,10 @@ Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Grupp
   **„Homebrew / ohne Quelle“** (eigene Zauber und Einträge ohne Quellenangabe). Die Auswahl wirkt in der
   Geschichten-Ansicht (Zauberliste, Zauberbuch, Wiki) sowie im Charakter-Assistenten, im Charakterbogen
   (Zaubervorschläge) und im Stufenaufstieg (Unterklassen, Talente) von Charakteren dieser Geschichte.
+  Beim Ändern der Quellen werden die Einstellungen der Geschichte automatisch angepasst: Sprachen und Götter aus dem
+  Wiki sowie Werkzeuge der Gegenstands-Datenbank eines abgewählten Buchs werden abgewählt, die eines neu gewählten
+  Buchs angewählt (Hinweis mit der Anzahl). Eigene Einträge bleiben erhalten; einzelne Optionen lassen sich danach
+  wie gewohnt an- und abwählen.
 - **Dungeon Master** einer Geschichte (auch ohne Verwaltungsrolle) sehen unter Verwaltung → Geschichten ihre
   Geschichten und bearbeiten deren Einstellungen – Quellen, Beschreibung, Lebensstile, Sprachen, Götter,
   Werkzeuge. Name, Mitglieder, Archivieren und die Gegenstands-Datenbank der Geschichte bleiben Admin und

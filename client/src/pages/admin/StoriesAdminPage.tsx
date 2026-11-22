@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Archive, ArchiveRestore, BookOpen, Coins, Gem, MessagesSquare, Pencil, Plus, RotateCcw, Save, Search, Swords, Trash2, X } from 'lucide-react';
-import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, HOMEBREW_SOURCE, type Lifestyle, type Role, type StoryDto, type StoryRole } from '@zauberbuch/shared';
+import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, HOMEBREW_SOURCE, sourceAllowed, type Lifestyle, type Role, type StoryDto, type StoryRole } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
 import { useAuth } from '../../context/AuthContext';
@@ -12,8 +12,10 @@ import { CatalogManager } from '../../components/catalog/CatalogManager';
 import { Alert, PageSpinner, Spinner } from '../../components/ui';
 import { useSources } from '../../hooks/useSources';
 import { reloadMyStories } from '../../hooks/useActiveStory';
+import { toolKey } from '../../lib/tools';
 
 type StoryUser = { id: string; username: string; role: Role };
+type Option = { name: string; sourceId: string | null };
 
 /**
  * Verwaltung → Geschichten (Admin und Moderatoren): Geschichten anlegen, bearbeiten, archivieren und Mitglieder mit
@@ -199,6 +201,8 @@ function StoryForm({ story, users, limited = false, onCancel, onSaved }: { story
   // Neue Geschichte: Sprachen aus dem Wiki (werden geladen); bestehende: Liste der Geschichte
   const [languages, setLanguages] = useState<string[] | null>(story?.languages ?? null);
   const [wikiLanguages, setWikiLanguages] = useState<string[]>([]);
+  // Quellen der Auswahlmöglichkeiten (Wiki-Sprachen/-Götter, Werkzeuge der Gegenstands-Datenbank)
+  const [optionSources, setOptionSources] = useState<{ languages: Option[]; gods: Option[]; tools: Option[] }>({ languages: [], gods: [], tools: [] });
   // Götter: neue Geschichte = alle aus dem Wiki; gruppiert nach Pantheon
   const [gods, setGods] = useState<string[] | null>(story?.gods ?? null);
   const [godGroups, setGodGroups] = useState<{ label: string; names: string[] }[]>([]);
@@ -212,6 +216,11 @@ function StoryForm({ story, users, limited = false, onCancel, onSaved }: { story
           .map((e) => e.name)
           .sort(byName);
         setWikiLanguages(names);
+        setOptionSources((o) => ({
+          ...o,
+          languages: r.entries.filter((e) => e.kind === 'language').map((e) => ({ name: e.name, sourceId: e.sourceId })),
+          gods: r.entries.filter((e) => e.kind === 'god').map((e) => ({ name: e.name, sourceId: e.sourceId })),
+        }));
         setLanguages((l) => l ?? (names.length ? names : DEFAULT_LANGUAGES));
         const groups = new Map<string, string[]>();
         for (const e of r.entries) {
@@ -231,6 +240,43 @@ function StoryForm({ story, users, limited = false, onCancel, onSaved }: { story
   }, []);
   const [tools, setTools] = useState<string[]>(story?.tools ?? DEFAULT_TOOLS);
   const [sources, setSources] = useState<string[] | null>(story?.sources ?? null);
+  const [sourceNote, setSourceNote] = useState<string | null>(null);
+  useEffect(() => {
+    api
+      .catalog(story?.id ?? null)
+      .then((r) => setOptionSources((o) => ({ ...o, tools: r.items.filter((i) => i.category === 'tool' && !i.hidden).map((i) => ({ name: i.name, sourceId: i.sourceId })) })))
+      .catch(() => undefined);
+  }, [story?.id]);
+
+  /**
+   * Quellen ändern: Sprachen, Götter und Werkzeuge der abgewählten Bücher werden abgewählt, die der neu gewählten
+   * Bücher angewählt. Eigene Einträge (nicht aus Wiki/Datenbank) bleiben unverändert; danach lässt sich alles einzeln anpassen.
+   */
+  const changeSources = (next: string[] | null) => {
+    const counts = { added: 0, removed: 0 };
+    const adjust = (list: string[], options: Option[], key: (n: string) => string = (n) => n.toLocaleLowerCase('de')) => {
+      let out = [...list];
+      for (const o of options) {
+        const was = sourceAllowed(sources, o.sourceId);
+        const now = sourceAllowed(next, o.sourceId);
+        if (was === now) continue;
+        const has = out.some((n) => key(n) === key(o.name));
+        if (was && !now && has) {
+          out = out.filter((n) => key(n) !== key(o.name));
+          counts.removed++;
+        } else if (!was && now && !has) {
+          out.push(o.name);
+          counts.added++;
+        }
+      }
+      return out;
+    };
+    if (languages) setLanguages(adjust(languages, optionSources.languages));
+    if (gods) setGods(adjust(gods, optionSources.gods));
+    setTools(adjust(tools, optionSources.tools, toolKey));
+    setSources(next);
+    setSourceNote(counts.added || counts.removed ? t('stories.sourcesAdjusted', { added: counts.added, removed: counts.removed }) : null);
+  };
   const [initial] = useState(() => new Set(story?.members.map((m) => m.id) ?? []));
 
   const setRole = (uid: string, role: StoryRole | '') =>
@@ -311,7 +357,7 @@ function StoryForm({ story, users, limited = false, onCancel, onSaved }: { story
           </div>
         </section>
 
-        <SourcesEditor value={sources} onChange={setSources} />
+        <SourcesEditor value={sources} onChange={changeSources} note={sourceNote} />
 
         {!limited && (
           <section className="parchment space-y-3 p-5">
@@ -424,7 +470,7 @@ function StoryForm({ story, users, limited = false, onCancel, onSaved }: { story
 }
 
 /** Quellen der Geschichte: alle (keine Einschränkung) oder Auswahl inkl. „Homebrew / ohne Quelle“ */
-function SourcesEditor({ value, onChange }: { value: string[] | null; onChange: (v: string[] | null) => void }) {
+function SourcesEditor({ value, onChange, note }: { value: string[] | null; onChange: (v: string[] | null) => void; note?: string | null }) {
   const { t } = useTranslation();
   const { sources } = useSources();
   const all = [...sources.map((s) => s.id), HOMEBREW_SOURCE];
@@ -458,6 +504,11 @@ function SourcesEditor({ value, onChange }: { value: string[] | null; onChange: 
           </label>
           {value.length === 0 && <p className="w-full text-sm text-red-700 dark:text-red-400">{t('stories.sourcesNone')}</p>}
         </div>
+      )}
+      {note && (
+        <p className="text-sm text-emerald-800 dark:text-emerald-300" role="status">
+          {note}
+        </p>
       )}
     </section>
   );
