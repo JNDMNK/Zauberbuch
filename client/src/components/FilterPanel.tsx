@@ -50,6 +50,9 @@ function TriChip({ value, onChange, children }: { value: Tri; onChange: (v: Tri)
   );
 }
 
+const HOMEBREW = '__homebrew';
+const OFFICIAL = '__official';
+
 export function FilterPanel({ filters, onChange, sources, showFavoritesToggle, favoritesPage }: Props) {
   const { t } = useTranslation();
   const set = <K extends keyof SpellFilters>(key: K, value: SpellFilters[K]) => onChange({ ...filters, [key]: value });
@@ -161,28 +164,29 @@ export function FilterPanel({ filters, onChange, sources, showFavoritesToggle, f
 
       <fieldset className="space-y-2">
         <legend className="label mb-2">{t('filter.source')}</legend>
+        {/* Eine Auswahl für Bücher und Homebrew (früher zwei Listen, Homebrew stand in beiden) */}
         <select
           className="input"
-          value={filters.homebrew === undefined ? '' : String(filters.homebrew)}
-          onChange={(e) => set('homebrew', e.target.value === '' ? undefined : e.target.value === 'true')}
-          aria-label={t('spell.homebrew')}
+          value={filters.homebrew === true ? HOMEBREW : filters.homebrew === false ? OFFICIAL : filters.source}
+          onChange={(e) => {
+            const v = e.target.value;
+            onChange({ ...filters, homebrew: v === HOMEBREW ? true : v === OFFICIAL ? false : undefined, source: v === HOMEBREW || v === OFFICIAL ? '' : v });
+          }}
+          aria-label={t('filter.source')}
         >
-          <option value="">{t('common.any')}</option>
-          <option value="true">{t('filter.homebrewOnly')}</option>
-          <option value="false">{t('filter.officialOnly')}</option>
-        </select>
-        {sources.length > 1 && (
-          <select className="input" value={filters.source} onChange={(e) => set('source', e.target.value)} aria-label={t('filter.source')}>
-            <option value="">
-              {t('filter.source')}: {t('common.any')}
-            </option>
-            {sources.map((s) => (
+          <option value="">
+            {t('filter.source')}: {t('common.any')}
+          </option>
+          <option value={OFFICIAL}>{t('filter.officialOnly')}</option>
+          {sources
+            .filter((s) => s.toLocaleLowerCase('de') !== 'homebrew')
+            .map((s) => (
               <option key={s} value={s}>
                 {s}
               </option>
             ))}
-          </select>
-        )}
+          <option value={HOMEBREW}>{t('filter.homebrewOnly')}</option>
+        </select>
       </fieldset>
     </div>
   );
