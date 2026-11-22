@@ -97,3 +97,19 @@ describe('Meilenstein-Aufstieg', () => {
     expect((await dm.agent.put(`/api/characters/${c.id}/milestone`).set(CSRF).send({ level: null })).body.character.milestoneLevel).toBeNull();
   });
 });
+
+describe('Homebrew folgt der Quelle', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('isHomebrew wird aus der Quelle abgeleitet (kein widersprüchliches Häkchen)', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    const a = await admin.post('/api/spells').set(CSRF).send(makeSpell({ slug: 'buch', source: 'Spielerhandbuch', isHomebrew: true }));
+    expect(a.body.spell.isHomebrew).toBe(false);
+    const b = await admin.post('/api/spells').set(CSRF).send(makeSpell({ slug: 'eigen', source: 'Homebrew', isHomebrew: false }));
+    expect(b.body.spell.isHomebrew).toBe(true);
+    const list = (await admin.get('/api/spells?homebrew=true')).body.items.map((x: { slug: string }) => x.slug);
+    expect(list).toEqual(['eigen']);
+  });
+});

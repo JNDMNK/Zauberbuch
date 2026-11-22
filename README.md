@@ -774,7 +774,7 @@ des JSON-Exports – Export und Import sind also verlustfrei austauschbar). Ält
 | `duration` | string | ✔ | Sprachunabhängige Dauer, z. B. `instantaneous`, `1 minute` (Anzeige-Fallback) |
 | `classes` | enum[] | ✔ | Beliebig viele aus `bard` (Barde), `druid` (Druide), `warlock` (Hexenmeister), `cleric` (Kleriker), `wizard` (Magier), `paladin` (Paladin), `ranger` (Waldläufer), `sorcerer` (Zauberer), `artificer` (Artificer); darf leer sein |
 | `source` | string | ✔ | Quelle (Name aus der Quellenliste), z. B. `Spielerhandbuch`, `Homebrew` |
-| `isHomebrew` | bool | ✔ | Homebrew-Badge und -Filter |
+| `isHomebrew` | bool | ✔ | Homebrew-Badge und -Filter; wird beim Speichern aus `source` abgeleitet (`Homebrew` = true) |
 | `damageDice` | string \| null | – | Schaden bzw. Heilung als Würfelausdruck: Würfel (`8d6`, auch `8W6`), ganze Zahlen und `mod` (Zauberattributsmodifikator), verbunden mit `+`/`-`, z. B. `1d4+1`, `2d8+1d6`, `1d4+mod`. Wird normalisiert gespeichert (klein, ohne Leerzeichen) und je Sprache angezeigt (DE „1W4 + Mod.“, EN „1d4 + mod“). |
 | `damageType` | enum \| null | wenn `damageDice` | `acid` (Säure), `bludgeoning` (Wucht), `cold` (Kälte), `fire` (Feuer), `force` (Energie), `lightning` (Blitz), `necrotic` (Nekrotisch), `piercing` (Stich), `poison` (Gift), `psychic` (Psychisch), `radiant` (Gleißend), `slashing` (Hieb), `thunder` (Schall) oder `healing` (Heilung). `damageDice` und `damageType` werden nur gemeinsam angegeben. |
 | `translations.de` / `translations.en` | object \| null | mind. eine | Texte je Sprache (siehe unten) |

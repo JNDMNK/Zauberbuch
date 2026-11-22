@@ -138,7 +138,8 @@ function toInput(form: FormState): unknown {
           higherLevels: t.higherLevels || null,
         };
   }
-  return { ...form, damageDice: form.damageDice.trim() || null, damageType: form.damageType || null, translations };
+  // Homebrew ergibt sich aus der Quelle
+  return { ...form, isHomebrew: form.source.trim().toLocaleLowerCase('de') === 'homebrew', damageDice: form.damageDice.trim() || null, damageType: form.damageType || null, translations };
 }
 
 export function SpellFormPage() {
@@ -393,7 +394,6 @@ export function SpellFormPage() {
             <div className="flex flex-wrap gap-4">
               <Checkbox label={t('spell.concentration')} checked={form.concentration} onChange={(v) => update({ concentration: v })} />
               <Checkbox label={t('spell.ritual')} checked={form.ritual} onChange={(v) => update({ ritual: v })} />
-              <Checkbox label={t('admin.isHomebrew')} checked={form.isHomebrew} onChange={(v) => update({ isHomebrew: v })} />
             </div>
           </fieldset>
         </div>

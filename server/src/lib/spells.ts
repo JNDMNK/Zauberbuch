@@ -60,7 +60,8 @@ function spellData(input: SpellInput) {
     ritual: input.ritual,
     duration: input.duration,
     source: input.source,
-    isHomebrew: input.isHomebrew,
+    // Homebrew ergibt sich aus der Quelle (früher ein eigenes Häkchen, das der Quelle widersprechen konnte)
+    isHomebrew: input.source.trim().toLocaleLowerCase('de') === 'homebrew',
     damageDice: input.damageDice ?? null,
     damageType: input.damageDice ? (input.damageType ?? null) : null,
     searchText: buildSearchText(input),
