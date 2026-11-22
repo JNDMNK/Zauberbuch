@@ -131,6 +131,8 @@ export function CharacterSheetPage() {
   // Gegenstands-Datenbank der Geschichte (bzw. Standard) für das Inventar
   const [catalog, setCatalog] = useState<CatalogItemDto[]>([]);
   const catalogStoryId = character?.story?.id ?? null;
+  // Erlaubte Quellen der Geschichte des Bogens (null = alle)
+  const storySources = character?.sources ?? null;
   useEffect(() => {
     if (!character) return;
     api
@@ -142,9 +144,21 @@ export function CharacterSheetPage() {
   const ctx = useMemo<SheetCtx | null>(
     () =>
       sheet
-        ? { sheet, set, readOnly: !canEdit, lifestyles: lifestyles ?? DEFAULT_LIFESTYLES, languages: languages ?? DEFAULT_LANGUAGES, tools: tools ?? DEFAULT_TOOLS, gods: gods ?? [], items, catalog }
+        ? {
+            sheet,
+            set,
+            readOnly: !canEdit,
+            lifestyles: lifestyles ?? DEFAULT_LIFESTYLES,
+            languages: languages ?? DEFAULT_LANGUAGES,
+            tools: tools ?? DEFAULT_TOOLS,
+            gods: gods ?? [],
+            items,
+            catalog,
+            storyId: catalogStoryId,
+            sources: storySources,
+          }
         : null,
-    [sheet, set, canEdit, lifestyles, languages, tools, gods, items, catalog],
+    [sheet, set, canEdit, lifestyles, languages, tools, gods, items, catalog, catalogStoryId, storySources],
   );
 
   useEffect(() => {
@@ -237,7 +251,9 @@ export function CharacterSheetPage() {
               aria-selected={tab === k}
               onClick={() => setSearchParams(k === 'main' ? {} : { tab: k }, { replace: true })}
               className={`whitespace-nowrap border-b-2 px-4 py-2 font-display text-sm font-semibold ${
-                tab === k ? 'border-parchment-800 text-ink dark:border-parchment-300 dark:text-parchment-50' : 'border-transparent text-parchment-700 hover:text-ink dark:text-parchment-400 dark:hover:text-parchment-100'
+                tab === k
+                  ? 'border-parchment-800 text-ink dark:border-parchment-300 dark:text-parchment-50'
+                  : 'border-transparent text-parchment-700 hover:text-ink dark:text-parchment-400 dark:hover:text-parchment-100'
               }`}
             >
               {t(`sheet.tabs.${k}`)}
@@ -267,12 +283,29 @@ export function CharacterSheetPage() {
         </fieldset>
         {/* Einstellungen außerhalb des Bogens: auch DM/Admin (nur lesend im Bogen) dürfen sie ändern */}
         {tab === 'settings' && character.canManageSettings && (
-          <SettingsTab characterId={character.id} ownerName={character.owner?.username ?? ''} onStoryChange={(story) => {
+          <SettingsTab
+            characterId={character.id}
+            ownerName={character.owner?.username ?? ''}
+            onStoryChange={(story) => {
               setCharacter((c) => (c ? { ...c, story } : c));
               // Lebensstil-Tabelle der (neuen) Geschichte übernehmen
               api
                 .character(character.id)
-                .then((r) => setCharacter((c) => (c ? { ...c, lifestyles: r.character.lifestyles, languages: r.character.languages, tools: r.character.tools, gods: r.character.gods } : c)))
+                .then((r) =>
+                  setCharacter((c) =>
+                    c
+                      ? {
+                          ...c,
+                          lifestyles: r.character.lifestyles,
+                          languages: r.character.languages,
+                          tools: r.character.tools,
+                          gods: r.character.gods,
+                          sources: r.character.sources,
+                          story: r.character.story,
+                        }
+                      : c,
+                  ),
+                )
                 .catch(() => undefined);
             }}
           />

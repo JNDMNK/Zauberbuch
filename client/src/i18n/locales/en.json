@@ -1055,7 +1055,13 @@
     "godsNoCustom": "No custom gods.",
     "godPlaceholder": "New deity, e.g. The Morninglord",
     "pickAll": "all",
-    "pickNone": "none"
+    "pickNone": "none",
+    "sources": "Sources",
+    "sourcesHint": "Which books apply in this story. With the story active, spell list, spellbook and wiki only show content from these sources, and the character wizard, character sheet and level up only offer these. “Homebrew / no source” covers custom spells and entries without a source.",
+    "sourcesAll": "All sources (no restriction)",
+    "sourcesSome": "Only selected sources",
+    "sourcesNone": "No source selected – no content would be available in this story.",
+    "dmHint": "As Dungeon Master you edit the settings of your stories here (sources, lifestyles, languages, gods, tools). Name and members are managed by admins and moderators."
   },
   "items": {
     "title": "Magic items",
@@ -1448,7 +1454,8 @@
       "abilities": "Ability scores",
       "skills": "Skills & languages",
       "summary": "Summary",
-      "equipment": "Equipment"
+      "equipment": "Equipment",
+      "story": "Story"
     },
     "intro": "The wizard guides you through creating a level 1 character. Race, class and background come from the wiki; ability scores, saving throws, skills, proficiencies, hit points, languages, tools and features are filled in automatically. You can adjust everything in the sheet afterwards.",
     "name": "Character name",
@@ -1509,7 +1516,15 @@
     "equipmentSummary_other": "{{count}} items, {{gp}} gp",
     "equipmentAsText": "text only",
     "unpackPacks": "Unpack equipment packs (e.g. explorer’s pack) into individual items",
-    "packParts": "· pack, {{count}} parts"
+    "packParts": "· pack, {{count}} parts",
+    "storyIntro": "Which story does the character play in? The wizard then only offers races, classes, subclasses, backgrounds and items from the story’s sources and its languages. The character is assigned to the story right away.",
+    "storyRestricted_one": "{{count}} source",
+    "storyRestricted_other": "{{count}} sources",
+    "storyAllSources": "all sources",
+    "noStory": "No story",
+    "noStoryHint": "All content; the story can be assigned later in the sheet settings.",
+    "storySources": "Sources of the story: {{list}}",
+    "excludedLanguages": "Not available in the story “{{story}}” and therefore not added: {{list}}"
   },
   "levelUp": {
     "open": "Level up",
@@ -1546,5 +1561,14 @@
     "nextLevel": "Next level at",
     "hint": "New features are appended to “Class features”, a feat to “More features”. Choose spells as usual in the “Spells” tab; all values can be adjusted in the sheet afterwards.",
     "apply": "Apply level {{n}}"
+  },
+  "storySources": {
+    "banner": "{{what}} of the story “{{story}}”: only from {{list}}.",
+    "showAll": "General view (show everything)",
+    "homebrew": "Homebrew / no source",
+    "spells": "Spells",
+    "wiki": "Wiki entries",
+    "hiddenSubclasses_one": "{{count}} subclass from other sources is hidden in this story.",
+    "hiddenSubclasses_other": "{{count}} subclasses from other sources are hidden in this story."
   }
 }

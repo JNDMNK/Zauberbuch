@@ -159,7 +159,9 @@ kann weder herabgestuft noch gelöscht werden.
 
 Unter **Charakterbogen** legt jeder Benutzer beliebig viele Charaktere an (bis zu 50). 
 **Assistent für neue Charaktere** („Neuer Charakter (Assistent)“, daneben weiterhin „Leerer Bogen“): führt in
-acht Schritten zu einem fertig ausgefüllten Bogen der Stufe 1 – Name → **Volk** (mit Unterart) → **Klasse** (mit
+neun Schritten zu einem fertig ausgefüllten Bogen der Stufe 1 – **Geschichte** (eigene Geschichten oder „Ohne
+Geschichte“; die aktive Geschichte ist vorausgewählt, der Charakter wird ihr direkt zugeordnet, und es gelten ihre
+Quellen und Sprachen – Sprachen des Volks, die es in der Geschichte nicht gibt, werden mit Hinweis weggelassen) → Name → **Volk** (mit Unterart) → **Klasse** (mit
 Unterklasse, wenn sie schon auf Stufe 1 gewählt wird, z. B. Klerikerdomäne) → **Hintergrund** (optional) →
 **Attributswerte** (Standardreihe 15/14/13/12/10/8, Punktekauf mit 27 Punkten oder Würfeln 4W6/eigene Werte;
 Erhöhung wahlweise nach Volk – Regeln 2014, inkl. „zwei weitere deiner Wahl“ – oder nach Hintergrund – Regeln
@@ -448,6 +450,15 @@ Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Grupp
   anlegt, wird automatisch ihr Dungeon Master. Abgeschlossene Geschichten lassen sich **archivieren** (lesbar,
   aber schreibgeschützt; über „Archivierte anzeigen“ einblendbar). Endgültig löschen kann eine Geschichte nur der
   Admin. Spieler werden außerdem automatisch Mitglied, wenn sie ihren Charakterbogen der Geschichte zuordnen.
+- **Quellen einer Geschichte:** Unter Verwaltung → Geschichten → bearbeiten legt man fest, welche Bücher gelten –
+  „Alle Quellen“ (Standard, keine Einschränkung) oder eine Auswahl der Quellen aus Verwaltung → Quellen plus
+  **„Homebrew / ohne Quelle“** (eigene Zauber und Einträge ohne Quellenangabe). Die Auswahl wirkt in der
+  Geschichten-Ansicht (Zauberliste, Zauberbuch, Wiki) sowie im Charakter-Assistenten, im Charakterbogen
+  (Zaubervorschläge) und im Stufenaufstieg (Unterklassen, Talente) von Charakteren dieser Geschichte.
+- **Dungeon Master** einer Geschichte (auch ohne Verwaltungsrolle) sehen unter Verwaltung → Geschichten ihre
+  Geschichten und bearbeiten deren Einstellungen – Quellen, Beschreibung, Lebensstile, Sprachen, Götter,
+  Werkzeuge. Name, Mitglieder, Archivieren und die Gegenstands-Datenbank der Geschichte bleiben Admin und
+  Moderatoren vorbehalten.
 - **Beiträge** haben einen optionalen Titel, eine **Kategorie** und Text mit Markdown. **Ersteller und
   Zeitstempel** setzt der Server automatisch; Änderungen werden mit „bearbeitet am … von …“ gekennzeichnet.
   Ändern und löschen dürfen der Ersteller und die Dungeon Master der Geschichte. Lange Beiträge werden eingeklappt.
@@ -545,6 +556,11 @@ im Konto gespeichert). In der Geschichten-Ansicht:
 - **Infotafel:** öffnet direkt die Tafel der Geschichte.
 - **Kampf:** zeigt nur die Kämpfe der Geschichte; läuft genau einer, führt der Klick im Menü direkt hinein.
 - **Monster-Datenbank:** die Spieler-Datenbank der Geschichte ist vorausgewählt.
+- **Zauber und Zauberbuch:** schränkt die Geschichte ihre Quellen ein, erscheinen nur Zauber aus diesen Quellen
+  (Hinweis oberhalb der Liste mit den Quellen; „Allgemeine Ansicht (alles anzeigen)“ wechselt zurück zu allen
+  Zaubern).
+- **Wiki:** ebenso nur Einträge (Völker, Klassen, Unterklassen, Hintergründe, Talente, Rüstung, Waffen,
+  Gegenstände …) aus den Quellen der Geschichte, auch in der globalen Suche und in der Zauberliste je Klasse.
 
 In der Ansicht **„Allgemein“** bleibt die Menüführung wie gewohnt.
 
@@ -786,7 +802,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET /api/auth/me` | – | Aktueller Benutzer oder `null` |
 | `PATCH /api/auth/me` | User | `{ language: "de" \| "en" }` |
 | `POST /api/auth/password` | User | `{ currentPassword, newPassword }` – meldet andere Sitzungen ab |
-| `GET /api/spells` | User | Suche & Filter, paginiert (siehe unten) |
+| `GET /api/spells` | User | Suche & Filter, paginiert (siehe unten); `story=<id>` = nur Zauber aus den Quellen der Geschichte |
 | `GET /api/spells/sources` | User | Liste aller Quellen |
 | `GET /api/spells/:slug` | User | Zauber mit vollständigen Texten |
 | `POST /api/spells` | DM/Admin | Zauber anlegen (Body = Importformat eines Zaubers) |
@@ -800,7 +816,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `POST /api/favorites` | User | `{ spellId }` – Zauber ins Zauberbuch aufnehmen |
 | `DELETE /api/favorites/:spellId` | User | Zauber aus dem Zauberbuch entfernen |
 | `GET /api/spellbooks` | DM/Admin | Alle Benutzer mit Anzahl der Zauber im Zauberbuch |
-| `GET /api/spells/names` | User | Alle Zaubernamen (slug, Grad, DE/EN) für Vorschläge |
+| `GET /api/spells/names` | User | Alle Zaubernamen (slug, Grad, DE/EN) für Vorschläge; optional `?story=<id>` |
 | `GET /api/characters` | User | Eigene Charaktere (Übersicht) |
 | `POST /api/characters` | User | `{ name? }` – neuen Charakterbogen anlegen |
 | `GET /api/characters/:id` | Besitzer, DM/Admin | Bogen inkl. `data` und `canEdit` |
@@ -814,7 +830,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET /api/stories` · `GET /api/stories/users` | Moderator/Admin | Verwaltung: alle Geschichten mit Rollen bzw. Benutzerliste |
 | `POST /api/stories` · `PATCH /api/stories/:id` | Moderator/Admin | `{ name, description?, archived?, members?: [{ userId, role: "player" \| "dm" }] }` |
 | `DELETE /api/stories/:id` | Admin | Geschichte samt Beiträgen und Kämpfen löschen |
-| `GET /api/stories/mine` · `PUT /api/stories/active` | User | Geschichten zum Umschalten bzw. `{ storyId \| null }` (Geschichten-Ansicht) |
+| `GET /api/stories/mine` · `PUT /api/stories/active` | User | Geschichten zum Umschalten (mit Rolle, Sprachen, Werkzeugen, Göttern, Quellen) bzw. `{ storyId \| null }` (Geschichten-Ansicht) |
 | `GET /api/board/stories?archived=true` | User | Sichtbare Geschichten inkl. Mitglieder mit Rolle, eigene Rolle, Beitragszahl, ungelesen |
 | `GET /api/board/stories/:id/posts?q=&category=&page=` | Mitspieler, DM/Admin | Beiträge (angeheftete zuerst) inkl. Kommentare |
 | `POST /api/board/stories/:id/posts` | Mitspieler, DM/Admin | `{ title?, body, category? }` |

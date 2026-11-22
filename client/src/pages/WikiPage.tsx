@@ -42,6 +42,8 @@ import { WikiSearch, type WikiHit } from '../components/wiki/WikiSearch';
 import { WikiLinkScope, useInvalidateWikiLinks, type LinkTarget } from '../components/wiki/WikiLinks';
 import { SourceBadge, SourceFilter, matchesSource } from '../components/sources/SourceFields';
 import { useSources } from '../hooks/useSources';
+import { useActiveStory } from '../hooks/useActiveStory';
+import { StorySourceBanner } from '../components/StorySourceBanner';
 
 /** Reiter des Wikis: Völker, Klassen und die Kategorien der Gegenstands-Datenbank (Rüstung, Waffen, Gegenstände) */
 const TABS = [...WIKI_KINDS, ...CATALOG_CATEGORIES] as const;
@@ -77,7 +79,10 @@ export function WikiPage() {
   const [params, setParams] = useSearchParams();
   const tab: Tab = (TABS as readonly string[]).includes(params.get('tab') ?? '') ? (params.get('tab') as Tab) : 'race';
   const kind: WikiKind = isCatalog(tab) ? 'race' : tab;
-  const [entries, setEntries] = useState<WikiEntryDto[] | null>(null);
+  const [allEntries, setEntries] = useState<WikiEntryDto[] | null>(null);
+  // Geschichten-Ansicht: nur Einträge aus den Quellen der aktiven Geschichte
+  const activeStory = useActiveStory();
+  const entries = useMemo(() => allEntries?.filter((e) => activeStory.allowed(e.sourceId)) ?? null, [allEntries, activeStory.allowed]);
   const [q, setQ] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
   const [featCategory, setFeatCategory] = useState('');
@@ -91,7 +96,8 @@ export function WikiPage() {
   const [error, setError] = useState<unknown>(null);
   const openId = params.get('entry');
   // Gegenstands-Datenbank: für die Zähler der Navigation und die globale Suche
-  const [catalogItems, setCatalogItems] = useState<CatalogItemDto[] | null>(null);
+  const [allCatalogItems, setCatalogItems] = useState<CatalogItemDto[] | null>(null);
+  const catalogItems = useMemo(() => allCatalogItems?.filter((i) => activeStory.allowed(i.sourceId)) ?? null, [allCatalogItems, activeStory.allowed]);
   const countCatalog = useCallback((items: CatalogItemDto[]) => setCatalogItems(items), []);
   const catalogCounts = useMemo(
     () => (catalogItems ? (Object.fromEntries(CATALOG_CATEGORIES.map((c) => [c, catalogItems.filter((i) => i.category === c).length])) as Record<CatalogCategory, number>) : null),
@@ -241,6 +247,7 @@ export function WikiPage() {
         <div>
           <h1 className="text-3xl font-bold">{t('wiki.title')}</h1>
           <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('wiki.hint')}</p>
+          <StorySourceBanner what={t('storySources.wiki')} />
         </div>
         <WikiSearch
           entries={entries}
@@ -315,7 +322,7 @@ export function WikiPage() {
             {isCatalog(tab) ? (
               <div className="space-y-3">
                 <p className="text-sm text-parchment-700 dark:text-parchment-400">{isEditor ? t('catalog.standardHint') : t('wiki.itemsHint')}</p>
-                <CatalogManager key={tab} category={tab} readOnly={!isEditor} onItems={countCatalog} />
+                <CatalogManager key={tab} category={tab} readOnly={!isEditor} onItems={countCatalog} allowed={activeStory.allowed} />
               </div>
             ) : (
               <>

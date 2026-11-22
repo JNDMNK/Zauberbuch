@@ -21,6 +21,7 @@ export function CatalogManager({
   readOnly = false,
   category: fixedCategory,
   onItems,
+  allowed,
 }: {
   storyId?: string;
   readOnly?: boolean;
@@ -28,6 +29,8 @@ export function CatalogManager({
   category?: CatalogCategory;
   /** Meldet die geladene Liste (z. B. für Zähler außerhalb) */
   onItems?: (items: CatalogItemDto[]) => void;
+  /** Geschichten-Ansicht: nur Einträge aus erlaubten Quellen */
+  allowed?: (sourceId: string | null) => boolean;
 }) {
   const { t } = useTranslation();
   const toast = useToast();
@@ -55,8 +58,15 @@ export function CatalogManager({
   const needle = q.trim().toLocaleLowerCase('de');
   const counts = useMemo(() => Object.fromEntries(CATALOG_CATEGORIES.map((c) => [c, (items ?? []).filter((i) => i.category === c && !i.hidden).length])), [items]);
   const shown = useMemo(
-    () => (items ?? []).filter((i) => i.category === category && matchesSource(sourceFilter, i.sourceId) && (!needle || `${i.name}\n${i.description}`.toLocaleLowerCase('de').includes(needle))),
-    [items, category, needle, sourceFilter],
+    () =>
+      (items ?? []).filter(
+        (i) =>
+          i.category === category &&
+          (!allowed || allowed(i.sourceId)) &&
+          matchesSource(sourceFilter, i.sourceId) &&
+          (!needle || `${i.name}\n${i.description}`.toLocaleLowerCase('de').includes(needle)),
+      ),
+    [items, category, needle, sourceFilter, allowed],
   );
 
   const act = async (fn: () => Promise<unknown>, msg: string) => {

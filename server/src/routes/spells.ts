@@ -22,6 +22,7 @@ import {
   toSpellDto,
   toSpellInput,
   updateSpell,
+  storySpellWhere,
 } from '../lib/spells';
 import { config } from '../config';
 import { isEditorRole } from '@zauberbuch/shared';
@@ -44,7 +45,9 @@ spellsRouter.get('/', async (req, res) => {
   const q = validate(spellQuerySchema, req.query);
   if (q.owner && !isEditorRole(req.user!.role)) throw forbidden();
   const lang: Locale = q.lang ?? (req.user?.language as Locale | undefined) ?? config.defaultLanguage;
-  const where = buildSpellWhere(q, req.user?.id);
+  const storyWhere = await storySpellWhere(q.story);
+  const base = buildSpellWhere(q, req.user?.id);
+  const where = storyWhere ? { AND: [base, storyWhere] } : base;
   const [total, spells] = await prisma.$transaction([
     prisma.spell.count({ where }),
     prisma.spell.findMany({
@@ -67,8 +70,11 @@ spellsRouter.get('/', async (req, res) => {
 });
 
 /** Alle Zaubernamen (für Autovervollständigung im Charakterbogen) */
-spellsRouter.get('/names', async (_req, res) => {
+spellsRouter.get('/names', async (req, res) => {
+  // ?story=… : nur Zauber aus den Quellen dieser Geschichte (Charakterbogen einer Geschichte)
+  const storyWhere = await storySpellWhere(typeof req.query.story === 'string' && req.query.story ? req.query.story.slice(0, 64) : undefined);
   const spells = await prisma.spell.findMany({
+    where: storyWhere ?? {},
     select: { slug: true, level: true, translations: { select: { locale: true, name: true } } },
     orderBy: { sortNameDe: 'asc' },
   });

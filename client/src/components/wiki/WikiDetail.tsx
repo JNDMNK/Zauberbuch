@@ -5,6 +5,7 @@ import { Markdown } from '../Markdown';
 import { SourceBadge } from '../sources/SourceFields';
 import { LinkedText } from './WikiLinks';
 import { ClassSpells, useSpellClass } from './ClassSpells';
+import { useActiveStory } from '../../hooks/useActiveStory';
 
 /** Zeile „Bezeichnung: Wert“ (leere Werte werden ausgelassen) */
 export function Fact({ label, children }: { label: string; children: ReactNode }) {
@@ -62,6 +63,10 @@ function LevelFeatures({ list, selfKey }: { list: WikiLevelFeature[]; selfKey: s
 export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; findEntry?: (kind: WikiEntryDto['kind'], name: string) => WikiEntryDto | undefined; onOpen?: (id: string) => void }) {
   const { t, i18n } = useTranslation();
   const selfKey = `e-${entry.id}`;
+  // Geschichten-Ansicht: Unterklassen aus anderen Quellen ausblenden
+  const { allowed, restricted } = useActiveStory();
+  const subclasses = entry.kind === 'class' ? entry.data.subclasses.filter((s) => allowed(s.sourceId ?? entry.sourceId)) : [];
+  const hiddenSubclasses = entry.kind === 'class' ? entry.data.subclasses.length - subclasses.length : 0;
   const spellClass = useSpellClass(entry.kind === 'class' ? entry.name : '');
   return (
     <div className="space-y-5">
@@ -146,9 +151,10 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
               <LevelFeatures selfKey={selfKey} list={entry.data.features} />
             </Section>
           )}
-          {entry.data.subclasses.length > 0 && (
+          {(subclasses.length > 0 || hiddenSubclasses > 0) && (
             <Section title={entry.data.subclassTitle || t('wiki.class.subclasses')}>
-              {entry.data.subclasses.map((s, i) => (
+              {restricted && hiddenSubclasses > 0 && <p className="text-sm italic text-parchment-700 dark:text-parchment-400">{t('storySources.hiddenSubclasses', { count: hiddenSubclasses })}</p>}
+              {subclasses.map((s, i) => (
                 <div key={i} className="space-y-2 rounded-lg bg-parchment-200/40 p-3 dark:bg-night-900/40">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-3">
                     <h4 className="font-display text-lg font-bold">{s.name}</h4>

@@ -34,6 +34,6 @@ export function useSources() {
       listeners.delete(setList);
     };
   }, []);
-  const byId = (id: string | null | undefined) => (id ? list?.find((s) => s.id === id) ?? null : null);
+  const byId = (id: string | null | undefined) => (id ? (list?.find((s) => s.id === id) ?? null) : null);
   return { sources: list ?? [], loaded: list !== null, byId };
 }

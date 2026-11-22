@@ -132,9 +132,9 @@ export default function App() {
               <Route
                 path="stories"
                 element={
-                  <RequireAuth roles={EDITOR_ROLES}>
+                  <StoriesGuard>
                     <StoriesAdminPage />
-                  </RequireAuth>
+                  </StoriesGuard>
                 }
               />
               <Route path="spellbooks" element={<Navigate to="/spellbooks" replace />} />
@@ -184,6 +184,14 @@ function AdminGuard({ children }: { children: ReactNode }) {
   // Zauber-Bearbeiter dürfen sofort; sonst erst nach der Prüfung „DM einer Geschichte?“ entscheiden
   if (!canAccessAdmin && storyDmLoading) return <PageSpinner />;
   if (!canAccessAdmin) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
+/** Geschichten: Admin/Moderator (alle) und Dungeon Master (ihre Geschichten) */
+function StoriesGuard({ children }: { children: ReactNode }) {
+  const { isEditor, isStoryDm, storyDmLoading } = useAuth();
+  if (!isEditor && storyDmLoading) return <PageSpinner />;
+  if (!isEditor && !isStoryDm) return <Navigate to="/admin" replace />;
   return <>{children}</>;
 }
 

@@ -136,6 +136,27 @@ export function parseGodList(raw: string | null | undefined, defaults: string[])
   }
 }
 
+/** Kennung für „Homebrew / ohne Quelle“ in der Quellenauswahl einer Geschichte */
+export const HOMEBREW_SOURCE = 'homebrew';
+/** Quellen einer Geschichte: IDs der erlaubten Quellen (+ HOMEBREW_SOURCE); null = keine Einschränkung */
+export const storySourcesSchema = z.array(z.string().min(1).max(64)).max(200).nullable();
+
+export function parseStorySources(raw: string | null | undefined): string[] | null {
+  if (!raw) return null;
+  try {
+    const parsed = storySourcesSchema.safeParse(JSON.parse(raw));
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Ob ein Eintrag mit dieser Quelle (null = ohne Quelle) in einer Geschichte mit diesen Quellen erlaubt ist */
+export function sourceAllowed(sources: string[] | null | undefined, sourceId: string | null | undefined): boolean {
+  if (!sources) return true;
+  return sourceId ? sources.includes(sourceId) : sources.includes(HOMEBREW_SOURCE);
+}
+
 /** Listen einer Geschichte (bzw. Standardwerte), wie sie Bogen und Verwaltung erhalten */
 export interface StoryOptionLists {
   lifestyles: Lifestyle[];
@@ -143,11 +164,13 @@ export interface StoryOptionLists {
   tools: string[];
   /** Götter (Geschichte bzw. alle aus dem Wiki) */
   gods: string[];
+  /** Erlaubte Quellen der Geschichte (null = alle) */
+  sources: string[] | null;
 }
 
 /** defaults.languages: Standard-Sprachen aus dem Wiki (ohne eigene Liste der Geschichte bzw. ohne Geschichte) */
 export function storyOptionLists(
-  story: { lifestyles?: string | null; languages?: string | null; tools?: string | null; gods?: string | null } | null | undefined,
+  story: { lifestyles?: string | null; languages?: string | null; tools?: string | null; gods?: string | null; sources?: string | null } | null | undefined,
   defaults: { languages?: string[]; gods?: string[] } = {},
 ): StoryOptionLists {
   const languages = defaults.languages?.length ? defaults.languages : DEFAULT_LANGUAGES;
@@ -156,5 +179,6 @@ export function storyOptionLists(
     languages: parseOptionList(story?.languages, languages),
     tools: parseOptionList(story?.tools, DEFAULT_TOOLS),
     gods: parseGodList(story?.gods, defaults.gods ?? []),
+    sources: parseStorySources(story?.sources),
   };
 }

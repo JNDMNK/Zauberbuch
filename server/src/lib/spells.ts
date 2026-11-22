@@ -1,5 +1,7 @@
 import type { Prisma, Spell, SpellClassLink, SpellTranslation } from '@prisma/client';
 import {
+  HOMEBREW_SOURCE,
+  parseStorySources,
   LOCALES,
   spellInputSchema,
   type Locale,
@@ -234,4 +236,18 @@ export function buildSpellOrderBy(q: SpellQuery, lang: Locale): Prisma.SpellOrde
 
 export function parseSpellInput(raw: unknown) {
   return spellInputSchema.safeParse(raw);
+}
+
+/** Filter für die Quellen einer Geschichte (null = keine Einschränkung). Zauber speichern die Quelle als Namen. */
+export async function storySpellWhere(storyId: string | undefined): Promise<Prisma.SpellWhereInput | null> {
+  if (!storyId) return null;
+  const story = await prisma.story.findUnique({ where: { id: storyId }, select: { sources: true } });
+  const sources = parseStorySources(story?.sources);
+  if (!sources) return null;
+  const all = await prisma.source.findMany({ select: { id: true, name: true } });
+  const names = all.filter((x) => sources.includes(x.id)).map((x) => x.name);
+  const or: Prisma.SpellWhereInput[] = [{ source: { in: names }, isHomebrew: false }];
+  // „Homebrew / ohne Quelle“: eigene Zauber und Zauber, deren Quelle nicht in der Quellenliste steht
+  if (sources.includes(HOMEBREW_SOURCE)) or.push({ isHomebrew: true }, { source: { notIn: all.map((x) => x.name) } });
+  return { OR: or };
 }

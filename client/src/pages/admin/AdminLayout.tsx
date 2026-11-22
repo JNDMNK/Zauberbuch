@@ -20,7 +20,7 @@ export function AdminLayout() {
             {t('admin.spells')}
           </NavLink>
         )}
-        {isEditor && (
+        {(isEditor || isStoryDm) && (
           <NavLink to="/admin/stories" className={cls}>
             <BookOpen className="h-4 w-4" />
             {t('admin.stories')}

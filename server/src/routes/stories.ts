@@ -1,14 +1,15 @@
 import { Router } from 'express';
 import type { Prisma } from '@prisma/client';
-import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, activeStorySchema, storyInputSchema, storyUpdateSchema, type StoryInput, type StoryRole, type StoryUpdate } from '@zauberbuch/shared';
+import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, storyOptionLists, activeStorySchema, storyInputSchema, storyUpdateSchema, type StoryInput, type StoryRole, type StoryUpdate } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { wikiGodNames, wikiLanguageNames } from './wiki';
 import { validate } from '../lib/validate';
-import { badRequest, notFound } from '../lib/errors';
+import { badRequest, forbidden, notFound } from '../lib/errors';
 import { notifyUsers } from '../lib/notifications';
 import { requireAdmin, requireAuth, requireEditor } from '../middleware/auth';
 import { toUserDto } from '../lib/users';
-import { roleFromMembership, visibleStoryWhere } from '../lib/stories';
+import { dmStoryIds, roleFromMembership, visibleStoryWhere } from '../lib/stories';
+import { isEditorRole } from '@zauberbuch/shared';
 import { buildStoryDtos, storyInclude } from './board';
 
 /**
@@ -44,9 +45,12 @@ async function dto(user: Express.Request['user'], id: string) {
   return (await buildStoryDtos(user!, [s]))[0];
 }
 
-/** Verwaltung: alle Geschichten mit Mitgliedern und Rollen */
-storiesRouter.get('/', requireEditor, async (req, res) => {
-  const stories = await prisma.story.findMany({ orderBy: [{ archived: 'asc' }, { name: 'asc' }], include: storyInclude });
+/** Verwaltung: alle Geschichten mit Mitgliedern und Rollen (Dungeon Master ohne Verwaltungsrolle: nur ihre Geschichten) */
+storiesRouter.get('/', async (req, res) => {
+  const me = req.user!;
+  const where = isEditorRole(me.role) ? {} : { id: { in: await dmStoryIds(me) } };
+  if (!isEditorRole(me.role) && (where.id?.in.length ?? 0) === 0) throw forbidden();
+  const stories = await prisma.story.findMany({ where, orderBy: [{ archived: 'asc' }, { name: 'asc' }], include: storyInclude });
   res.json({ stories: await buildStoryDtos(req.user!, stories) });
 });
 
@@ -66,20 +70,24 @@ storiesRouter.post('/', requireEditor, async (req, res) => {
   const wikiGods = await wikiGodNames();
   const story = await prisma.$transaction(async (tx) => {
     // Neue Geschichten erhalten die Standard-Lebensstile (anpassbar unter Verwaltung → Geschichten)
-    const s = await tx.story.create({ data: { name: input.name, description: input.description, lifestyles: JSON.stringify(input.lifestyles ?? DEFAULT_LIFESTYLES), languages: JSON.stringify(input.languages ?? (wikiLangs.length ? wikiLangs : DEFAULT_LANGUAGES)), gods: JSON.stringify(input.gods ?? wikiGods), tools: JSON.stringify(input.tools ?? DEFAULT_TOOLS) } });
+    const s = await tx.story.create({ data: { name: input.name, description: input.description, lifestyles: JSON.stringify(input.lifestyles ?? DEFAULT_LIFESTYLES), languages: JSON.stringify(input.languages ?? (wikiLangs.length ? wikiLangs : DEFAULT_LANGUAGES)), gods: JSON.stringify(input.gods ?? wikiGods), tools: JSON.stringify(input.tools ?? DEFAULT_TOOLS), sources: input.sources ? JSON.stringify(input.sources) : '' } });
     await setMembers(tx, s.id, members);
     return s;
   });
   res.status(201).json({ story: await dto(req.user, story.id) });
 });
 
-storiesRouter.patch('/:id', requireEditor, async (req, res) => {
+storiesRouter.patch('/:id', async (req, res) => {
   const id = String(req.params.id);
   const story = await prisma.story.findUnique({ where: { id }, include: { members: true } });
   if (!story) throw notFound();
-  const input = validate(storyUpdateSchema, req.body);
-  const members = normalizeMembers(input);
   const me = req.user!;
+  // Dungeon Master der Geschichte (ohne Verwaltungsrolle) darf nur die Einstellungen ändern – nicht Name, Mitglieder, Archiv
+  const editor = isEditorRole(me.role);
+  if (!editor && !(await dmStoryIds(me)).includes(id)) throw forbidden();
+  const parsed = validate(storyUpdateSchema, req.body);
+  const input = editor ? parsed : { ...parsed, name: undefined, archived: undefined, members: undefined, memberIds: undefined, dmIds: undefined };
+  const members = normalizeMembers(input);
   const before = story.members.find((m) => m.userId === me.id)?.role ?? null;
   await prisma.$transaction(async (tx) => {
     await tx.story.update({
@@ -92,6 +100,7 @@ storiesRouter.patch('/:id', requireEditor, async (req, res) => {
         ...(input.languages !== undefined ? { languages: JSON.stringify(input.languages) } : {}),
         ...(input.gods !== undefined ? { gods: JSON.stringify(input.gods) } : {}),
         ...(input.tools !== undefined ? { tools: JSON.stringify(input.tools) } : {}),
+        ...(input.sources !== undefined ? { sources: input.sources ? JSON.stringify(input.sources) : '' } : {}),
       },
     });
     if (members) await setMembers(tx, id, members);
@@ -119,9 +128,15 @@ storiesRouter.get('/mine', async (req, res) => {
   const stories = await prisma.story.findMany({
     where: { archived: false, ...visibleStoryWhere(req.user!) },
     orderBy: { name: 'asc' },
-    select: { id: true, name: true, members: { where: { userId: req.user!.id }, select: { role: true } } },
+    select: { id: true, name: true, languages: true, tools: true, gods: true, sources: true, members: { where: { userId: req.user!.id }, select: { role: true } } },
   });
-  res.json({ stories: stories.map((s) => ({ id: s.id, name: s.name, role: roleFromMembership(req.user!, s.members[0]?.role) })) });
+  const [languages, gods] = await Promise.all([wikiLanguageNames(), wikiGodNames()]);
+  res.json({
+    stories: stories.map((s) => {
+      const lists = storyOptionLists(s, { languages, gods });
+      return { id: s.id, name: s.name, role: roleFromMembership(req.user!, s.members[0]?.role), languages: lists.languages, tools: lists.tools, gods: lists.gods, sources: lists.sources };
+    }),
+  });
 });
 
 /** Aktive Geschichte setzen (null = Allgemein) */

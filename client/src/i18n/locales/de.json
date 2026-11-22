@@ -1055,7 +1055,13 @@
     "godsNoCustom": "Keine eigenen Götter.",
     "godPlaceholder": "Neue Gottheit, z. B. Der Morgenfürst",
     "pickAll": "alle",
-    "pickNone": "keine"
+    "pickNone": "keine",
+    "sources": "Quellen",
+    "sourcesHint": "Welche Bücher in dieser Geschichte gelten. Bei aktiver Geschichte zeigen Zauberliste, Zauberbuch und Wiki nur Inhalte aus diesen Quellen, und Charakter-Assistent, Charakterbogen und Stufenaufstieg bieten nur diese an. „Homebrew / ohne Quelle“ umfasst eigene Zauber und Einträge ohne Quellenangabe.",
+    "sourcesAll": "Alle Quellen (keine Einschränkung)",
+    "sourcesSome": "Nur ausgewählte Quellen",
+    "sourcesNone": "Keine Quelle gewählt – in dieser Geschichte wären dann keine Inhalte verfügbar.",
+    "dmHint": "Als Dungeon Master bearbeitest du hier die Einstellungen deiner Geschichten (Quellen, Lebensstile, Sprachen, Götter, Werkzeuge). Name und Mitglieder verwalten Admin und Moderatoren."
   },
   "items": {
     "title": "Magische Gegenstände",
@@ -1448,7 +1454,8 @@
       "abilities": "Attributswerte",
       "skills": "Fertigkeiten & Sprachen",
       "summary": "Zusammenfassung",
-      "equipment": "Ausrüstung"
+      "equipment": "Ausrüstung",
+      "story": "Geschichte"
     },
     "intro": "Der Assistent führt dich durch die Erschaffung eines Charakters der Stufe 1. Volk, Klasse und Hintergrund kommen aus dem Wiki; daraus werden Attributswerte, Rettungswürfe, Fertigkeiten, Übung, Trefferpunkte, Sprachen, Werkzeuge und Merkmale automatisch in den Bogen übernommen. Alles lässt sich danach im Bogen anpassen.",
     "name": "Name des Charakters",
@@ -1509,7 +1516,15 @@
     "equipmentSummary_other": "{{count}} Gegenstände, {{gp}} GM",
     "equipmentAsText": "nur als Text",
     "unpackPacks": "Ausrüstungspakete (z. B. Entdeckerausrüstung) in einzelne Gegenstände auspacken",
-    "packParts": "· Paket, {{count}} Teile"
+    "packParts": "· Paket, {{count}} Teile",
+    "storyIntro": "In welcher Geschichte spielt der Charakter mit? Der Assistent bietet dann nur Völker, Klassen, Unterklassen, Hintergründe und Gegenstände aus den Quellen der Geschichte an sowie deren Sprachen. Der Charakter wird der Geschichte direkt zugeordnet.",
+    "storyRestricted_one": "{{count}} Quelle",
+    "storyRestricted_other": "{{count}} Quellen",
+    "storyAllSources": "alle Quellen",
+    "noStory": "Ohne Geschichte",
+    "noStoryHint": "Alle Inhalte; die Geschichte lässt sich später im Bogen unter Einstellungen zuordnen.",
+    "storySources": "Quellen der Geschichte: {{list}}",
+    "excludedLanguages": "Nicht in der Geschichte „{{story}}“ verfügbar und daher nicht übernommen: {{list}}"
   },
   "levelUp": {
     "open": "Stufenaufstieg",
@@ -1546,5 +1561,14 @@
     "nextLevel": "Nächste Stufe bei",
     "hint": "Die neuen Merkmale werden an „Klassenmerkmale“ angehängt, ein Talent an „Weitere Merkmale“. Zauber wählst du wie gewohnt im Reiter „Zauber“; alle Werte lassen sich danach im Bogen anpassen.",
     "apply": "Stufe {{n}} übernehmen"
+  },
+  "storySources": {
+    "banner": "{{what}} der Geschichte „{{story}}“: nur aus {{list}}.",
+    "showAll": "Allgemeine Ansicht (alles anzeigen)",
+    "homebrew": "Homebrew / ohne Quelle",
+    "spells": "Zauber",
+    "wiki": "Wiki-Einträge",
+    "hiddenSubclasses_one": "{{count}} Unterklasse aus anderen Quellen ist in dieser Geschichte ausgeblendet.",
+    "hiddenSubclasses_other": "{{count}} Unterklassen aus anderen Quellen sind in dieser Geschichte ausgeblendet."
   }
 }

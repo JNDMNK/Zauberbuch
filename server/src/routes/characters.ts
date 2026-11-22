@@ -26,7 +26,7 @@ import { wikiGodNames, wikiLanguageNames } from './wiki';
 import { validate } from '../lib/validate';
 import { badRequest, forbidden, notFound } from '../lib/errors';
 import { requireAdmin, requireAuth } from '../middleware/auth';
-import { dmStoryIds, storyRole } from '../lib/stories';
+import { dmStoryIds, storyRole, visibleStoryWhere } from '../lib/stories';
 
 /**
  * Charakterbögen: Jeder Benutzer verwaltet beliebig viele eigene Charaktere.
@@ -212,21 +212,31 @@ charactersRouter.post('/import', requireAdmin, largeJson, async (req, res) => {
 });
 
 charactersRouter.post('/', async (req, res) => {
-  const { name } = validate(createCharacterSchema, req.body ?? {});
+  const { name, storyId } = validate(createCharacterSchema, req.body ?? {});
   const count = await prisma.character.count({ where: { userId: req.user!.id } });
   if (count >= MAX_PER_USER) throw forbidden('too_many_characters', 'Character limit reached');
+  // Nur Geschichten, die der Benutzer sieht (Mitglied bzw. Admin) und die nicht archiviert sind
+  const story = storyId ? await prisma.story.findFirst({ where: { id: storyId, archived: false, ...visibleStoryWhere(req.user!) } }) : null;
+  if (storyId && !story) throw badRequest('story_not_found', 'Story not found');
   const sheet = characterSheetSchema.parse({ identity: { name: name ?? '', playerName: req.user!.username } });
   const c = await prisma.character.create({
-    data: { userId: req.user!.id, ...summaryFields(sheet), data: JSON.stringify(sheet) },
+    data: { userId: req.user!.id, storyId: story?.id ?? null, ...summaryFields(sheet), data: JSON.stringify(sheet) },
   });
-  const body: CharacterDto = { ...toSummary(c), data: sheet, canEdit: true, canManageSettings: true, isOwner: true, ...storyOptionLists(null, { languages: await wikiLanguageNames(), gods: await wikiGodNames() }) };
+  const body: CharacterDto = {
+    ...toSummary({ ...c, story: story ? { id: story.id, name: story.name } : null }),
+    data: sheet,
+    canEdit: true,
+    canManageSettings: true,
+    isOwner: true,
+    ...storyOptionLists(story, { languages: await wikiLanguageNames(), gods: await wikiGodNames() }),
+  };
   res.status(201).json({ character: body });
 });
 
 async function loadReadable(id: string, user: User) {
   const c = await prisma.character.findUnique({
     where: { id },
-    include: { user: { select: { id: true, username: true } }, story: { select: { id: true, name: true, lifestyles: true, languages: true, tools: true, gods: true } }, editors: { select: { userId: true } } },
+    include: { user: { select: { id: true, username: true } }, story: { select: { id: true, name: true, lifestyles: true, languages: true, tools: true, gods: true, sources: true } }, editors: { select: { userId: true } } },
   });
   const isOwner = !!c && c.userId === user.id;
   const isCoEditor = !!c && c.editors.some((e) => e.userId === user.id);

@@ -17,11 +17,11 @@ interface State {
 /** Serverseitige Suche mit Infinite Scroll (Seiten werden angehängt). */
 export function useSpellSearch(
   filters: SpellFilters,
-  opts: { lang: string; favoritesOnly?: boolean; ownerId?: string; enabled?: boolean },
+  opts: { lang: string; favoritesOnly?: boolean; ownerId?: string; enabled?: boolean; /** nur Zauber aus den Quellen dieser Geschichte */ storyId?: string },
 ) {
   const [state, setState] = useState<State>({ items: [], total: 0, page: 0, totalPages: 1, loading: true, error: null });
   const abortRef = useRef<AbortController | null>(null);
-  const key = JSON.stringify([filters, opts.lang, opts.favoritesOnly, opts.ownerId]);
+  const key = JSON.stringify([filters, opts.lang, opts.favoritesOnly, opts.ownerId, opts.storyId]);
   const enabled = opts.enabled !== false;
 
   const fetchPage = useCallback(
@@ -38,6 +38,7 @@ export function useSpellSearch(
           favoritesOnly: opts.favoritesOnly,
           ownerId: opts.ownerId,
         });
+        if (opts.storyId) params.set('story', opts.storyId);
         const res = await api.spells(params, controller.signal);
         setState((s) => ({
           items: replace ? res.items : [...s.items, ...res.items.filter((i) => !s.items.some((e) => e.id === i.id))],

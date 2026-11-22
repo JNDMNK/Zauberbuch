@@ -233,7 +233,7 @@ describe('Geschichten – Verwaltung und Geschichten-Ansicht', () => {
 
     // Geschichten-Ansicht
     const mine = (await frodo.agent.get('/api/stories/mine')).body.stories;
-    expect(mine).toEqual([{ id: s.id, name: 'Der Fluch von Strahd', role: 'player' }]);
+    expect(mine).toEqual([{ id: s.id, name: 'Der Fluch von Strahd', role: 'player', languages: expect.any(Array), tools: expect.any(Array), gods: expect.any(Array), sources: null }]);
     const r = await frodo.agent.put('/api/stories/active').set(CSRF).send({ storyId: s.id });
     expect(r.body.user.activeStoryId).toBe(s.id);
     expect((await frodo.agent.get('/api/auth/me')).body.user.activeStoryId).toBe(s.id);

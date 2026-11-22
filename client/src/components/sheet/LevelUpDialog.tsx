@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowBigUpDash, Dices } from 'lucide-react';
-import { ABILITIES, abilityModifier, formatModifier, proficiencyBonusForLevel, type Ability, type WikiEntryDto } from '@zauberbuch/shared';
+import { ABILITIES, sourceAllowed, abilityModifier, formatModifier, proficiencyBonusForLevel, type Ability, type WikiEntryDto } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
 import { Modal } from '../Modal';
@@ -30,7 +30,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
  */
 export function LevelUpDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
-  const { sheet, set } = useSheet();
+  const { sheet, set, sources } = useSheet();
   const [wiki, setWiki] = useState<WikiEntryDto[] | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [hpMode, setHpMode] = useState<HpMode>('average');
@@ -56,7 +56,8 @@ export function LevelUpDialog({ open, onClose }: { open: boolean; onClose: () =>
   }, [open, wiki]);
 
   const classes = useMemo(() => (wiki ?? []).filter((e): e is ClassEntry => e.kind === 'class'), [wiki]);
-  const feats = (wiki ?? []).filter((e) => e.kind === 'feat').map((e) => e.name);
+  // Talente und Unterklassen nur aus den Quellen der Geschichte des Bogens
+  const feats = (wiki ?? []).filter((e) => e.kind === 'feat' && sourceAllowed(sources, e.sourceId)).map((e) => e.name);
   const { cls, subclass: currentSub } = detectClass(sheet.identity.classLevel, classes);
   const spellClass = useSpellClass(cls?.name ?? '');
   const level = sheet.identity.level;
@@ -67,7 +68,8 @@ export function LevelUpDialog({ open, onClose }: { open: boolean; onClose: () =>
 
   // Unterklasse: wird auf dieser Stufe gewählt, wenn noch keine im Bogen steht
   const subLevel = cls ? Math.min(...cls.data.subclasses.flatMap((s) => s.features.map((f) => f.level)), 99) : 99;
-  const choosesSubclass = !!cls && !currentSub && cls.data.subclasses.length > 0 && subLevel <= n;
+  const subclassOptions = cls ? cls.data.subclasses.filter((x) => sourceAllowed(sources, x.sourceId ?? cls.sourceId)) : [];
+  const choosesSubclass = !!cls && !currentSub && subclassOptions.length > 0 && subLevel <= n;
   const sub = currentSub ?? cls?.data.subclasses.find((s) => s.name === subclass) ?? null;
   const classFeatures = cls?.data.features.filter((f) => f.level === n) ?? [];
   const asi = classFeatures.some(isAsi);
@@ -190,7 +192,7 @@ export function LevelUpDialog({ open, onClose }: { open: boolean; onClose: () =>
           {choosesSubclass && cls && (
             <Section title={t('levelUp.chooseSubclass', { title: cls.data.subclassTitle || t('wiki.class.subclasses') })}>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {cls.data.subclasses.map((s) => (
+                {subclassOptions.map((s) => (
                   <label key={s.name} className="chip-check chip-check-block">
                     <input type="radio" name="lu-sub" checked={subclass === s.name} onChange={() => setSubclass(s.name)} />
                     <span>

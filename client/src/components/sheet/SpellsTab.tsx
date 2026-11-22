@@ -12,17 +12,20 @@ import { Computed, NF, TF } from './fields';
 
 function useSpellNames() {
   const [names, setNames] = useState<SpellNameDto[]>([]);
+  // Bogen einer Geschichte mit eingeschränkten Quellen: nur deren Zauber vorschlagen
+  const { storyId, sources } = useSheet();
+  const story = sources ? storyId : null;
   useEffect(() => {
     api
-      .spellNames()
+      .spellNames(story)
       .then((r) => setNames(r.spells))
       .catch(() => setNames([]));
-  }, []);
+  }, [story]);
   return names;
 }
 
 function displayName(n: SpellNameDto, lang: 'de' | 'en') {
-  return (lang === 'en' ? n.en ?? n.de : n.de ?? n.en) ?? n.slug;
+  return (lang === 'en' ? (n.en ?? n.de) : (n.de ?? n.en)) ?? n.slug;
 }
 
 function SlotPips({ level }: { level: number }) {
@@ -55,7 +58,10 @@ function SpellRow({ spell, index, names }: { spell: SheetSpell; index: number; n
   const location = useLocation();
   const listId = `spell-names-${spell.level}`;
   const update = (patch: Partial<SheetSpell>) =>
-    set(['spellcasting', 'spells'], sheet.spellcasting.spells.map((s, i) => (i === index ? { ...s, ...patch } : s)));
+    set(
+      ['spellcasting', 'spells'],
+      sheet.spellcasting.spells.map((s, i) => (i === index ? { ...s, ...patch } : s)),
+    );
 
   const onName = (name: string) => {
     const lower = name.trim().toLowerCase();
@@ -95,7 +101,12 @@ function SpellRow({ spell, index, names }: { spell: SheetSpell; index: number; n
         <button
           type="button"
           className="btn-icon h-7 w-7 shrink-0 text-red-700 print:hidden dark:text-red-400"
-          onClick={() => set(['spellcasting', 'spells'], sheet.spellcasting.spells.filter((_, i) => i !== index))}
+          onClick={() =>
+            set(
+              ['spellcasting', 'spells'],
+              sheet.spellcasting.spells.filter((_, i) => i !== index),
+            )
+          }
           title={t('sheet.remove')}
           aria-label={`${t('sheet.remove')}: ${spell.name}`}
         >
@@ -177,9 +188,7 @@ export function SpellsTab() {
     try {
       const favs = await loadFavoriteSpells();
       const have = new Set(sheet.spellcasting.spells.map((s) => s.slug).filter(Boolean));
-      const add = favs
-        .filter((f) => !have.has(f.slug))
-        .map<SheetSpell>((f) => ({ level: f.level, name: resolveText(f, lang).t.name, slug: f.slug, prepared: false }));
+      const add = favs.filter((f) => !have.has(f.slug)).map<SheetSpell>((f) => ({ level: f.level, name: resolveText(f, lang).t.name, slug: f.slug, prepared: false }));
       if (add.length === 0) {
         toast.show(t('sheet.fromSpellbookNone'));
       } else {
@@ -230,7 +239,12 @@ export function SpellsTab() {
           <button
             type="button"
             className="btn-secondary"
-            onClick={() => set(['spellcasting', 'slots'], sheet.spellcasting.slots.map((s) => ({ ...s, used: 0 })))}
+            onClick={() =>
+              set(
+                ['spellcasting', 'slots'],
+                sheet.spellcasting.slots.map((s) => ({ ...s, used: 0 })),
+              )
+            }
           >
             <RotateCcw className="h-4 w-4" />
             {t('sheet.resetSlots')}

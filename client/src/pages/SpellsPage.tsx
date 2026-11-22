@@ -14,6 +14,8 @@ import { useAuth } from '../context/AuthContext';
 import { FilterPanel } from '../components/FilterPanel';
 import { SpellCard } from '../components/SpellCard';
 import { Alert, Spinner } from '../components/ui';
+import { useActiveStory } from '../hooks/useActiveStory';
+import { StorySourceBanner } from '../components/StorySourceBanner';
 
 function SkeletonCard() {
   return (
@@ -51,10 +53,7 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
   const debouncedQuery = useDebounce(query, 300);
   const lastPushedQuery = useRef(filters.q);
 
-  const update = useCallback(
-    (next: SpellFilters, replace = false) => setSearchParams(filtersToParams(next), { replace, preventScrollReset: true }),
-    [setSearchParams],
-  );
+  const update = useCallback((next: SpellFilters, replace = false) => setSearchParams(filtersToParams(next), { replace, preventScrollReset: true }), [setSearchParams]);
 
   useEffect(() => {
     // Externe Änderung (Zurück-Button, Link) -> Eingabefeld synchronisieren
@@ -80,7 +79,10 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
   }, []);
 
   const lang = asLocale(i18n.language);
-  const search = useSpellSearch(filters, { lang, favoritesOnly: favoritesPage, ownerId: owner?.id, enabled: !(filters.favorites && !user) });
+  // Geschichten-Ansicht: nur Zauber aus den Quellen der aktiven Geschichte (nicht beim Zauberbuch eines anderen)
+  const activeStory = useActiveStory();
+  const storyId = !owner && activeStory.restricted ? activeStory.story?.id : undefined;
+  const search = useSpellSearch(filters, { lang, favoritesOnly: favoritesPage, ownerId: owner?.id, storyId, enabled: !(filters.favorites && !user) && !activeStory.loading });
   const sentinelRef = useInfiniteScroll(search.loadMore, search.hasMore && !search.loading && !search.error, search.items.length);
 
   const onFavoriteChange = useCallback(
@@ -96,15 +98,7 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
   const activeCount = countActiveFilters(filters, { ignoreFavorites: favoritesPage });
   const firstLoad = search.loading && search.items.length === 0;
 
-  const panel = (
-    <FilterPanel
-      filters={filters}
-      onChange={(f) => update(f)}
-      sources={sources}
-      showFavoritesToggle={Boolean(user) && !owner}
-      favoritesPage={favoritesPage || Boolean(owner)}
-    />
-  );
+  const panel = <FilterPanel filters={filters} onChange={(f) => update(f)} sources={sources} showFavoritesToggle={Boolean(user) && !owner} favoritesPage={favoritesPage || Boolean(owner)} />;
 
   return (
     <div>
@@ -114,6 +108,7 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
           {favoritesPage || owner ? <BookHeart className="h-7 w-7 text-red-700 dark:text-red-400" /> : <Sparkles className="h-7 w-7 text-parchment-600" />}
           {owner ? t('admin.spellbookOf', { name: owner.username }) : favoritesPage ? t('nav.favorites') : t('nav.spells')}
         </Heading>
+        {!owner && <StorySourceBanner what={t('storySources.spells')} />}
       </div>
 
       <div className="flex gap-6">
@@ -124,35 +119,31 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
         <section className="min-w-0 flex-1" aria-label={t('common.search')}>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start">
             <div className="flex-1">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-parchment-600" aria-hidden />
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={filters.nameOnly ? t('search.placeholderName') : t('search.placeholder')}
-                aria-label={filters.nameOnly ? t('search.placeholderName') : t('search.placeholder')}
-                className="input h-12 !pl-10 !pr-10 text-lg"
-              />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => setQuery('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-parchment-600 hover:bg-parchment-200 dark:hover:bg-night-700"
-                  aria-label={t('common.close')}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-            <label className="chip-check mt-2">
-              <input
-                type="checkbox"
-                checked={filters.nameOnly}
-                onChange={(e) => update({ ...filters, q: query, nameOnly: e.target.checked }, true)}
-              />
-              {t('search.nameOnly')}
-            </label>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-parchment-600" aria-hidden />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={filters.nameOnly ? t('search.placeholderName') : t('search.placeholder')}
+                  aria-label={filters.nameOnly ? t('search.placeholderName') : t('search.placeholder')}
+                  className="input h-12 !pl-10 !pr-10 text-lg"
+                />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-parchment-600 hover:bg-parchment-200 dark:hover:bg-night-700"
+                    aria-label={t('common.close')}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <label className="chip-check mt-2">
+                <input type="checkbox" checked={filters.nameOnly} onChange={(e) => update({ ...filters, q: query, nameOnly: e.target.checked }, true)} />
+                {t('search.nameOnly')}
+              </label>
             </div>
             {/* gleiche Höhe wie das Suchfeld, oben bündig */}
             <div className="flex h-12 items-stretch gap-2">
@@ -164,12 +155,7 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
               <label className="sr-only" htmlFor="sort">
                 {t('filter.sort')}
               </label>
-              <select
-                id="sort"
-                className="input !h-full !w-auto"
-                value={filters.sort}
-                onChange={(e) => update({ ...filters, sort: e.target.value as SortField })}
-              >
+              <select id="sort" className="input !h-full !w-auto" value={filters.sort} onChange={(e) => update({ ...filters, sort: e.target.value as SortField })}>
                 <option value="name">{t('filter.sortName')}</option>
                 <option value="level">{t('filter.sortLevel')}</option>
                 <option value="school">{t('filter.sortSchool')}</option>
@@ -207,11 +193,7 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
           ) : search.items.length === 0 ? (
             <div className="parchment px-6 py-16 text-center">
               <p className="font-display text-xl font-bold">
-                {owner && !filters.q && activeCount === 0
-                  ? t('search.emptySpellbook')
-                  : favoritesPage && !filters.q && activeCount === 0
-                    ? t('search.noFavorites')
-                    : t('search.noResults')}
+                {owner && !filters.q && activeCount === 0 ? t('search.emptySpellbook') : favoritesPage && !filters.q && activeCount === 0 ? t('search.noFavorites') : t('search.noResults')}
               </p>
               <p className="mt-2 text-parchment-700 dark:text-parchment-400">
                 {owner && !filters.q && activeCount === 0 ? '' : favoritesPage && !filters.q && activeCount === 0 ? t('search.noFavoritesHint') : t('search.noResultsHint')}

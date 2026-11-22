@@ -168,6 +168,10 @@ model Story {
    */
   gods         String          @default("")
   tools        String          @default("")
+  /**
+   * Erlaubte Quellen (JSON string[] mit Quellen-IDs und „homebrew“); leer = alle Quellen
+   */
+  sources      String          @default("")
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   members      StoryMember[]

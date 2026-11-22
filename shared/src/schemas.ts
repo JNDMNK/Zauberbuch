@@ -133,6 +133,8 @@ export const spellQuerySchema = z.object({
   material: boolParam,
   homebrew: boolParam,
   source: z.string().trim().max(100).optional(),
+  /** Nur Zauber aus den Quellen dieser Geschichte (Geschichten-Ansicht) */
+  story: z.string().trim().min(1).max(64).optional(),
   favorites: boolParam,
   /** Zauberbuch (Favoriten) eines bestimmten Benutzers – nur für Admin/Dungeon Master */
   owner: z.string().trim().min(1).max(100).optional(),

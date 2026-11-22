@@ -112,6 +112,18 @@ export interface AdminUserDto extends UserDto {
   favoriteCount: number;
 }
 
+/** Geschichte aus Sicht des Benutzers (Umschalter, Assistent): Rolle, Auswahllisten und erlaubte Quellen */
+export interface MyStoryDto {
+  id: string;
+  name: string;
+  role: StoryRole | null;
+  languages: string[];
+  tools: string[];
+  gods: string[];
+  /** null = alle Quellen */
+  sources: string[] | null;
+}
+
 export const api = {
   config: () => request<AppConfigDto>('GET', '/api/config'),
 
@@ -144,14 +156,14 @@ export const api = {
 
   spellbooks: () => request<{ owners: SpellbookOwnerDto[] }>('GET', '/api/spellbooks'),
 
-  spellNames: () => request<{ spells: SpellNameDto[] }>('GET', '/api/spells/names'),
+  spellNames: (storyId?: string | null) => request<{ spells: SpellNameDto[] }>('GET', `/api/spells/names${storyId ? `?story=${encodeURIComponent(storyId)}` : ''}`),
 
   characters: () => request<{ characters: CharacterSummaryDto[]; shared: CharacterSummaryDto[] }>('GET', '/api/characters'),
   characterSettings: (id: string) => request<{ settings: CharacterSettingsDto }>('GET', `/api/characters/${id}/settings`),
   saveCharacterSettings: (id: string, input: CharacterSettingsInput) => request<{ settings: CharacterSettingsDto }>('PUT', `/api/characters/${id}/settings`, input),
   allCharacters: () => request<{ characters: CharacterSummaryDto[] }>('GET', '/api/characters/all'),
   character: (id: string) => request<{ character: CharacterDto }>('GET', `/api/characters/${id}`),
-  createCharacter: (name?: string) => request<{ character: CharacterDto }>('POST', '/api/characters', { name }),
+  createCharacter: (name?: string, storyId?: string | null) => request<{ character: CharacterDto }>('POST', '/api/characters', { name, storyId: storyId ?? null }),
   saveCharacter: (id: string, data: CharacterSheet) => request<{ character: CharacterDto }>('PUT', `/api/characters/${id}`, { data }),
   duplicateCharacter: (id: string) => request<{ character: CharacterDto }>('POST', `/api/characters/${id}/duplicate`),
   deleteCharacter: (id: string) => request<void>('DELETE', `/api/characters/${id}`),
@@ -167,7 +179,7 @@ export const api = {
   createStory: (input: StoryInput) => request<{ story: StoryDto }>('POST', '/api/stories', input),
   updateStory: (id: string, input: StoryUpdate) => request<{ story: StoryDto }>('PATCH', `/api/stories/${id}`, input),
   deleteStory: (id: string) => request<void>('DELETE', `/api/stories/${id}`),
-  myStories: () => request<{ stories: { id: string; name: string; role: StoryRole | null }[] }>('GET', '/api/stories/mine'),
+  myStories: () => request<{ stories: MyStoryDto[] }>('GET', '/api/stories/mine'),
   setActiveStory: (storyId: string | null) => request<{ user: UserDto }>('PUT', '/api/stories/active', { storyId }),
   markStoryRead: (id: string) => request<void>('POST', `/api/board/stories/${id}/read`),
   boardUnread: () => request<BoardUnreadDto>('GET', '/api/board/unread'),

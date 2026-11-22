@@ -5,6 +5,7 @@ import { CLASSES, type SpellClass, type SpellDto } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
 import { asLocale, resolveText } from '../../lib/spellText';
 import { Spinner } from '../ui';
+import { useActiveStory } from '../../hooks/useActiveStory';
 
 const lower = (s: string) => s.trim().toLocaleLowerCase('de');
 
@@ -20,20 +21,26 @@ export function ClassSpells({ spellClass }: { spellClass: SpellClass }) {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const [spells, setSpells] = useState<SpellDto[] | null>(null);
+  // Geschichten-Ansicht: nur Zauber aus den Quellen der aktiven Geschichte
+  const { story, restricted, loading } = useActiveStory();
+  const storyId = restricted ? story?.id : undefined;
 
   useEffect(() => {
+    if (loading) return;
     const ctrl = new AbortController();
     (async () => {
       const all: SpellDto[] = [];
       for (let page = 1; ; page++) {
-        const r = await api.spells(new URLSearchParams({ class: spellClass, sort: 'level', pageSize: '100', page: String(page) }), ctrl.signal);
+        const params = new URLSearchParams({ class: spellClass, sort: 'level', pageSize: '100', page: String(page) });
+        if (storyId) params.set('story', storyId);
+        const r = await api.spells(params, ctrl.signal);
         all.push(...r.items);
         if (page >= r.totalPages) break;
       }
       setSpells(all);
     })().catch(() => setSpells((s) => s ?? []));
     return () => ctrl.abort();
-  }, [spellClass]);
+  }, [spellClass, storyId, loading]);
 
   if (!spells) return <Spinner />;
   if (spells.length === 0) return <p className="text-sm italic text-parchment-700 dark:text-parchment-400">{t('wiki.class.noSpells')}</p>;

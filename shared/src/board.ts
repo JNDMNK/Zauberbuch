@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { lifestylesSchema, optionListSchema, type Lifestyle, godListSchema } from './lifestyle';
+import { lifestylesSchema, optionListSchema, type Lifestyle, godListSchema, storySourcesSchema } from './lifestyle';
 
 /**
  * Infotafel: Pro Geschichte (Story) eine gemeinsame Tafel, auf der Mitspieler wichtige Infos
@@ -39,6 +39,8 @@ export const storyInputSchema = z.object({
   tools: optionListSchema.optional(),
   /** Götter der Geschichte (Auswahl aus dem Wiki und eigene); ohne Angabe = alle aus dem Wiki */
   gods: godListSchema.optional(),
+  /** Erlaubte Quellen (IDs + „homebrew“); null/ohne Angabe = keine Einschränkung */
+  sources: storySourcesSchema.optional(),
 });
 export type StoryInput = z.input<typeof storyInputSchema>;
 
@@ -54,6 +56,7 @@ export const storyUpdateSchema = z
     languages: optionListSchema.optional(),
     tools: optionListSchema.optional(),
     gods: godListSchema.optional(),
+    sources: storySourcesSchema.optional(),
   })
   .refine((v) => Object.values(v).some((x) => x !== undefined), { message: 'Nothing to update' });
 export type StoryUpdate = z.input<typeof storyUpdateSchema>;
@@ -105,6 +108,8 @@ export interface StoryDto {
   languages: string[];
   tools: string[];
   gods: string[];
+  /** Erlaubte Quellen (null = alle) */
+  sources: string[] | null;
   postCount: number;
   unread: number;
 }

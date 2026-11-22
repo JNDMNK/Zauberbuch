@@ -18,6 +18,9 @@ export interface SheetCtx {
   items: { data: CharacterItemsDto | null; reload: () => void };
   /** Gegenstands-Datenbank (Geschichte des Bogens bzw. Standard) für Vorschläge im Inventar */
   catalog: CatalogItemDto[];
+  /** Geschichte des Bogens und deren erlaubte Quellen (null = alle) */
+  storyId: string | null;
+  sources: string[] | null;
 }
 
 export const SheetContext = createContext<SheetCtx | null>(null);

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Archive, ArchiveRestore, BookOpen, Coins, Gem, MessagesSquare, Pencil, Plus, RotateCcw, Save, Search, Swords, Trash2, X } from 'lucide-react';
-import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, type Lifestyle, type Role, type StoryDto, type StoryRole } from '@zauberbuch/shared';
+import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, HOMEBREW_SOURCE, type Lifestyle, type Role, type StoryDto, type StoryRole } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
 import { useAuth } from '../../context/AuthContext';
@@ -10,6 +10,8 @@ import { useToast } from '../../context/ToastContext';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { CatalogManager } from '../../components/catalog/CatalogManager';
 import { Alert, PageSpinner, Spinner } from '../../components/ui';
+import { useSources } from '../../hooks/useSources';
+import { reloadMyStories } from '../../hooks/useActiveStory';
 
 type StoryUser = { id: string; username: string; role: Role };
 
@@ -20,7 +22,7 @@ type StoryUser = { id: string; username: string; role: Role };
 export function StoriesAdminPage() {
   const { t } = useTranslation();
   const toast = useToast();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isEditor } = useAuth();
   const [stories, setStories] = useState<StoryDto[] | null>(null);
   const [users, setUsers] = useState<StoryUser[]>([]);
   const [editing, setEditing] = useState<StoryDto | 'new' | null>(null);
@@ -30,13 +32,14 @@ export function StoriesAdminPage() {
 
   const load = useCallback(
     () =>
-      Promise.all([api.manageStories(), api.storyUsers()])
+      // Dungeon Master ohne Verwaltungsrolle: nur eigene Geschichten, keine Mitgliederverwaltung
+      Promise.all([api.manageStories(), isEditor ? api.storyUsers() : Promise.resolve({ users: [] as StoryUser[] })])
         .then(([s, u]) => {
           setStories(s.stories);
           setUsers(u.users);
         })
         .catch(setError),
-    [],
+    [isEditor],
   );
   useEffect(() => {
     void load();
@@ -75,6 +78,7 @@ export function StoriesAdminPage() {
       <StoryForm
         story={editing === 'new' ? null : editing}
         users={users}
+        limited={!isEditor}
         onCancel={() => setEditing(null)}
         onSaved={async () => {
           setEditing(null);
@@ -89,12 +93,14 @@ export function StoriesAdminPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-xl font-bold">{t('stories.title')}</h2>
-          <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('stories.hint')}</p>
+          <p className="text-sm text-parchment-700 dark:text-parchment-400">{isEditor ? t('stories.hint') : t('stories.dmHint')}</p>
         </div>
-        <button type="button" className="btn-primary" onClick={() => setEditing('new')}>
-          <Plus className="h-4 w-4" />
-          {t('board.newStory')}
-        </button>
+        {isEditor && (
+          <button type="button" className="btn-primary" onClick={() => setEditing('new')}>
+            <Plus className="h-4 w-4" />
+            {t('board.newStory')}
+          </button>
+        )}
       </div>
       {stories.length === 0 ? (
         <div className="parchment px-6 py-12 text-center italic">{t('board.noStoriesYet')}</div>
@@ -117,15 +123,17 @@ export function StoriesAdminPage() {
                     <button type="button" className="btn-icon" onClick={() => setEditing(s)} title={t('stories.edit')} aria-label={`${t('stories.edit')}: ${s.name}`}>
                       <Pencil className="h-4 w-4" />
                     </button>
-                    <button
-                      type="button"
-                      className="btn-icon"
-                      onClick={() => toggleArchive(s)}
-                      title={s.archived ? t('board.unarchive') : t('board.archive')}
-                      aria-label={`${s.archived ? t('board.unarchive') : t('board.archive')}: ${s.name}`}
-                    >
-                      {s.archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
-                    </button>
+                    {isEditor && (
+                      <button
+                        type="button"
+                        className="btn-icon"
+                        onClick={() => toggleArchive(s)}
+                        title={s.archived ? t('board.unarchive') : t('board.archive')}
+                        aria-label={`${s.archived ? t('board.unarchive') : t('board.archive')}: ${s.name}`}
+                      >
+                        {s.archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                      </button>
+                    )}
                     {isAdmin && (
                       <button
                         type="button"
@@ -179,7 +187,7 @@ export function StoriesAdminPage() {
   );
 }
 
-function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null; users: StoryUser[]; onCancel: () => void; onSaved: () => void }) {
+function StoryForm({ story, users, limited = false, onCancel, onSaved }: { story: StoryDto | null; users: StoryUser[]; limited?: boolean; onCancel: () => void; onSaved: () => void }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [name, setName] = useState(story?.name ?? '');
@@ -222,6 +230,7 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [tools, setTools] = useState<string[]>(story?.tools ?? DEFAULT_TOOLS);
+  const [sources, setSources] = useState<string[] | null>(story?.sources ?? null);
   const [initial] = useState(() => new Set(story?.members.map((m) => m.id) ?? []));
 
   const setRole = (uid: string, role: StoryRole | '') =>
@@ -261,9 +270,12 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
         languages: languages ?? undefined,
         gods: gods ?? undefined,
         tools,
+        sources,
       };
-      if (story) await api.updateStory(story.id, input);
+      // Dungeon Master: nur die Einstellungen (Name, Mitglieder bleiben unverändert)
+      if (story) await api.updateStory(story.id, limited ? { description: input.description, lifestyles: input.lifestyles, languages: input.languages, gods: input.gods, tools, sources } : input);
       else await api.createStory(input);
+      reloadMyStories();
       toast.success(story ? t('board.storySaved') : t('board.storyCreated'));
       onSaved();
     } catch (err) {
@@ -289,7 +301,7 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
             <label htmlFor="story-name" className="label">
               {t('board.storyName')}
             </label>
-            <input id="story-name" className="input" value={name} maxLength={100} required autoFocus onChange={(e) => setName(e.target.value)} />
+            <input id="story-name" className="input" value={name} maxLength={100} required autoFocus={!limited} readOnly={limited} onChange={(e) => setName(e.target.value)} />
           </div>
           <div>
             <label htmlFor="story-desc" className="label">
@@ -299,59 +311,63 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
           </div>
         </section>
 
-        <section className="parchment space-y-3 p-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="flex-1 font-display text-lg font-bold">{t('stories.members')}</h3>
-            <span className="text-sm text-parchment-700 dark:text-parchment-400">
-              {t('storyRole.dmPlural')}: {count('dm')} · {t('storyRole.playerPlural')}: {count('player')}
-            </span>
-          </div>
-          <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('stories.membersHint')}</p>
-          {users.length > 8 && (
-            <div className="relative sm:w-72">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-600" />
-              <input type="search" className="input !py-1.5 !pl-9" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={t('auth.username')} aria-label={t('auth.username')} />
+        <SourcesEditor value={sources} onChange={setSources} />
+
+        {!limited && (
+          <section className="parchment space-y-3 p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="flex-1 font-display text-lg font-bold">{t('stories.members')}</h3>
+              <span className="text-sm text-parchment-700 dark:text-parchment-400">
+                {t('storyRole.dmPlural')}: {count('dm')} · {t('storyRole.playerPlural')}: {count('player')}
+              </span>
             </div>
-          )}
-          <ul className="divide-y divide-parchment-300/70 dark:divide-night-700">
-            {shown.map((u) => {
-              const role = members.get(u.id) ?? '';
-              return (
-                <li key={u.id} className="flex flex-wrap items-center gap-3 py-2">
-                  <span className="min-w-0 flex-1">
-                    <span className="font-semibold">{u.username}</span> <span className="text-xs text-parchment-700 dark:text-parchment-400">({t(`role.${u.role}`)})</span>
-                  </span>
-                  <div
-                    role="radiogroup"
-                    aria-label={`${t('stories.roleFor')} ${u.username}`}
-                    className="flex overflow-hidden rounded-full border border-parchment-500/60 text-sm dark:border-night-700"
-                  >
-                    {(['', 'player', 'dm'] as const).map((r) => (
-                      <button
-                        key={r || 'none'}
-                        type="button"
-                        role="radio"
-                        aria-checked={role === r}
-                        onClick={() => setRole(u.id, r)}
-                        className={`px-3 py-1 transition ${
-                          role === r
-                            ? r === 'dm'
-                              ? 'bg-red-800 text-white dark:bg-red-700'
-                              : r === 'player'
-                                ? 'bg-emerald-700 text-white dark:bg-emerald-600'
-                                : 'bg-parchment-300 text-ink dark:bg-night-700 dark:text-parchment-100'
-                            : 'hover:bg-parchment-200 dark:hover:bg-night-700'
-                        }`}
-                      >
-                        {r ? t(`storyRole.${r}`) : t('stories.notMember')}
-                      </button>
-                    ))}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+            <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('stories.membersHint')}</p>
+            {users.length > 8 && (
+              <div className="relative sm:w-72">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-600" />
+                <input type="search" className="input !py-1.5 !pl-9" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={t('auth.username')} aria-label={t('auth.username')} />
+              </div>
+            )}
+            <ul className="divide-y divide-parchment-300/70 dark:divide-night-700">
+              {shown.map((u) => {
+                const role = members.get(u.id) ?? '';
+                return (
+                  <li key={u.id} className="flex flex-wrap items-center gap-3 py-2">
+                    <span className="min-w-0 flex-1">
+                      <span className="font-semibold">{u.username}</span> <span className="text-xs text-parchment-700 dark:text-parchment-400">({t(`role.${u.role}`)})</span>
+                    </span>
+                    <div
+                      role="radiogroup"
+                      aria-label={`${t('stories.roleFor')} ${u.username}`}
+                      className="flex overflow-hidden rounded-full border border-parchment-500/60 text-sm dark:border-night-700"
+                    >
+                      {(['', 'player', 'dm'] as const).map((r) => (
+                        <button
+                          key={r || 'none'}
+                          type="button"
+                          role="radio"
+                          aria-checked={role === r}
+                          onClick={() => setRole(u.id, r)}
+                          className={`px-3 py-1 transition ${
+                            role === r
+                              ? r === 'dm'
+                                ? 'bg-red-800 text-white dark:bg-red-700'
+                                : r === 'player'
+                                  ? 'bg-emerald-700 text-white dark:bg-emerald-600'
+                                  : 'bg-parchment-300 text-ink dark:bg-night-700 dark:text-parchment-100'
+                              : 'hover:bg-parchment-200 dark:hover:bg-night-700'
+                          }`}
+                        >
+                          {r ? t(`storyRole.${r}`) : t('stories.notMember')}
+                        </button>
+                      ))}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
 
         <LifestyleEditor value={lifestyles} onChange={setLifestyles} />
         {languages && (
@@ -391,17 +407,59 @@ function StoryForm({ story, users, onCancel, onSaved }: { story: StoryDto | null
           </button>
         </div>
       </form>
-      <details className="parchment group mt-5 p-5">
-        <summary className="flex cursor-pointer list-none items-center gap-2">
-          <h3 className="flex-1 font-display text-lg font-bold">{t('catalog.storyTitle')}</h3>
-          <span className="text-sm text-parchment-700 group-open:hidden dark:text-parchment-400">{t('stories.expand')}</span>
-        </summary>
-        <div className="mt-3 space-y-3">
-          <p className="text-sm text-parchment-700 dark:text-parchment-400">{story ? t('catalog.storyHint') : t('catalog.storyAfterCreate')}</p>
-          {story && <CatalogManager storyId={story.id} />}
-        </div>
-      </details>
+      {!limited && (
+        <details className="parchment group mt-5 p-5">
+          <summary className="flex cursor-pointer list-none items-center gap-2">
+            <h3 className="flex-1 font-display text-lg font-bold">{t('catalog.storyTitle')}</h3>
+            <span className="text-sm text-parchment-700 group-open:hidden dark:text-parchment-400">{t('stories.expand')}</span>
+          </summary>
+          <div className="mt-3 space-y-3">
+            <p className="text-sm text-parchment-700 dark:text-parchment-400">{story ? t('catalog.storyHint') : t('catalog.storyAfterCreate')}</p>
+            {story && <CatalogManager storyId={story.id} />}
+          </div>
+        </details>
+      )}
     </>
+  );
+}
+
+/** Quellen der Geschichte: alle (keine Einschränkung) oder Auswahl inkl. „Homebrew / ohne Quelle“ */
+function SourcesEditor({ value, onChange }: { value: string[] | null; onChange: (v: string[] | null) => void }) {
+  const { t } = useTranslation();
+  const { sources } = useSources();
+  const all = [...sources.map((s) => s.id), HOMEBREW_SOURCE];
+  const toggle = (id: string, on: boolean) => onChange(on ? [...(value ?? []), id] : (value ?? []).filter((x) => x !== id));
+  return (
+    <section className="parchment space-y-3 p-5">
+      <h3 className="font-display text-lg font-bold">{t('stories.sources')}</h3>
+      <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('stories.sourcesHint')}</p>
+      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t('stories.sources')}>
+        <label className="chip-check">
+          <input type="radio" name="story-sources" checked={value === null} onChange={() => onChange(null)} />
+          {t('stories.sourcesAll')}
+        </label>
+        <label className="chip-check">
+          <input type="radio" name="story-sources" checked={value !== null} onChange={() => onChange(value ?? all)} />
+          {t('stories.sourcesSome')}
+        </label>
+      </div>
+      {value !== null && (
+        <div className="flex flex-wrap gap-1.5 border-t border-parchment-300/70 pt-3 dark:border-night-700">
+          {sources.map((s) => (
+            <label key={s.id} className="chip-check">
+              <input type="checkbox" checked={value.includes(s.id)} onChange={(e) => toggle(s.id, e.target.checked)} />
+              {s.name}
+              {s.abbreviation && <span className="opacity-70">({s.abbreviation})</span>}
+            </label>
+          ))}
+          <label className="chip-check">
+            <input type="checkbox" checked={value.includes(HOMEBREW_SOURCE)} onChange={(e) => toggle(HOMEBREW_SOURCE, e.target.checked)} />
+            {t('storySources.homebrew')}
+          </label>
+          {value.length === 0 && <p className="w-full text-sm text-red-700 dark:text-red-400">{t('stories.sourcesNone')}</p>}
+        </div>
+      )}
+    </section>
   );
 }
 

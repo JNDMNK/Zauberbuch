@@ -213,6 +213,8 @@ export const emptyCharacterSheet = (): CharacterSheet => characterSheetSchema.pa
 
 export const createCharacterSchema = z.object({
   name: z.string().trim().max(100).optional(),
+  /** Geschichte, in der der Charakter mitspielt (Assistent) */
+  storyId: z.string().min(1).max(64).nullable().optional(),
 });
 
 /** Strenge Prüfung für PUT: Objekt muss parsebar sein; unbekannte Felder werden verworfen. */
@@ -246,6 +248,8 @@ export interface CharacterDto extends CharacterSummaryDto {
   tools: string[];
   /** Götter für „Glaube / Gottheit“ (Geschichte bzw. alle aus dem Wiki) */
   gods: string[];
+  /** Erlaubte Quellen der Geschichte des Bogens (null = alle) */
+  sources: string[] | null;
 }
 
 /** Einstellungen eines Bogens: Mitbearbeiter und Geschichte */

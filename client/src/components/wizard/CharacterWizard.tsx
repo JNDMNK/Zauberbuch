@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useActiveStory } from '../../hooks/useActiveStory';
+import { useSources } from '../../hooks/useSources';
 import { Check, ChevronLeft, ChevronRight, Dices, Minus, Plus, Wand2 } from 'lucide-react';
 import {
   ABILITIES,
+  HOMEBREW_SOURCE,
   SKILL_KEYS,
+  sourceAllowed,
   abilityModifier,
   catalogInventoryText,
   formatModifier,
@@ -43,11 +47,22 @@ import {
   type RaceEntry,
 } from '../../lib/characterWizard';
 
-const STEPS = ['basics', 'race', 'class', 'background', 'abilities', 'skills', 'equipment', 'summary'] as const;
+const STEPS = ['story', 'basics', 'race', 'class', 'background', 'abilities', 'skills', 'equipment', 'summary'] as const;
 type Step = (typeof STEPS)[number];
 type Method = 'standard' | 'pointBuy' | 'manual';
 type BonusSource = 'race' | 'background' | 'none';
 const base8 = () => Object.fromEntries(ABILITIES.map((a) => [a, 8])) as Record<Ability, number>;
+
+/** Quellen einer Geschichte als Liste (Name) */
+function StorySourceList({ sources }: { sources: string[] }) {
+  const { t } = useTranslation();
+  const { byId } = useSources();
+  return (
+    <p className="text-sm text-parchment-700 dark:text-parchment-400">
+      {t('wizard.storySources', { list: sources.map((id) => (id === HOMEBREW_SOURCE ? t('storySources.homebrew') : (byId(id)?.name ?? id))).join(', ') })}
+    </p>
+  );
+}
 
 /** Auswahlkarte (Volk, Klasse, Hintergrund) */
 function ChoiceCard({ selected, onClick, title, children }: { selected: boolean; onClick: () => void; title: string; children?: ReactNode }) {
@@ -115,7 +130,17 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
   const [catalog, setCatalog] = useState<CatalogItemDto[]>([]);
   const tools = useMemo(() => catalog.filter((i) => i.category === 'tool'), [catalog]);
   const [error, setError] = useState<unknown>(null);
-  const [step, setStep] = useState<Step>('basics');
+  const [step, setStep] = useState<Step>('story');
+  // Geschichte, in der der Charakter mitspielt ('' = ohne Geschichte); vorausgewählt: aktive Geschichte
+  const activeStory = useActiveStory();
+  const myStories = activeStory.stories ?? [];
+  const [storyId, setStoryId] = useState('');
+  useEffect(() => {
+    if (open) setStoryId(activeStory.story?.id ?? '');
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  const chosenStory = myStories.find((x) => x.id === storyId) ?? null;
+  const storySources = chosenStory?.sources ?? null;
+  const allowed = (sourceId: string | null | undefined) => sourceAllowed(storySources, sourceId);
   const [busy, setBusy] = useState(false);
 
   const [name, setName] = useState('');
@@ -157,16 +182,19 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
   const abilityNames = useMemo(() => Object.fromEntries(ABILITIES.map((a) => [a, [t(`sheet.ability.${a}`, { lng: 'de' }), t(`sheet.ability.${a}`, { lng: 'en' })]])) as NameMap<Ability>, [t]);
   const skillNames = useMemo(() => Object.fromEntries(SKILL_KEYS.map((s) => [s, [t(`sheet.skill.${s}`, { lng: 'de' }), t(`sheet.skill.${s}`, { lng: 'en' })]])) as NameMap<SkillKey>, [t]);
 
-  const races = (wiki ?? []).filter((e): e is RaceEntry => e.kind === 'race');
-  const classes = (wiki ?? []).filter((e): e is ClassEntry => e.kind === 'class');
-  const backgrounds = (wiki ?? []).filter((e): e is BackgroundEntry => e.kind === 'background');
-  const languageNames = (wiki ?? []).filter((e) => e.kind === 'language').map((e) => e.name);
+  // Nur Inhalte aus den Quellen der gewählten Geschichte; Sprachen aus der Liste der Geschichte
+  const races = (wiki ?? []).filter((e): e is RaceEntry => e.kind === 'race' && allowed(e.sourceId));
+  const classes = (wiki ?? []).filter((e): e is ClassEntry => e.kind === 'class' && allowed(e.sourceId));
+  const backgrounds = (wiki ?? []).filter((e): e is BackgroundEntry => e.kind === 'background' && allowed(e.sourceId));
+  const wikiLanguageNames = (wiki ?? []).filter((e) => e.kind === 'language').map((e) => e.name);
+  const languageNames = chosenStory ? chosenStory.languages : wikiLanguageNames;
   const race = races.find((r) => r.id === raceId) ?? null;
   const cls = classes.find((c) => c.id === classId) ?? null;
   const bg = backgrounds.find((b) => b.id === bgId) ?? null;
   const spellClass = useSpellClass(cls?.name ?? '');
   const subLevel = cls ? subclassLevel(cls) : null;
-  const needsSubclass = !!cls && subLevel === 1 && cls.data.subclasses.length > 0;
+  const subclassOptions = cls ? cls.data.subclasses.filter((x) => allowed(x.sourceId ?? cls.sourceId)) : [];
+  const needsSubclass = !!cls && subLevel === 1 && subclassOptions.length > 0;
 
   // Attributswerte
   const baseScores: Record<Ability, number> | null = useMemo(() => {
@@ -210,6 +238,10 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
   const fixedLanguages = [...new Set(langSources.flatMap((s) => findNames(s, langMap)))];
   // „Halbling“ im Volkstext → Wiki-Sprache „Halblingisch“ (Endung fehlt im Text)
   for (const s of langSources) for (const n of languageNames) if (!fixedLanguages.includes(n) && new RegExp(`(?<![\\p{L}])${n.replace(/isch$/, '')}(?![\\p{L}])`, 'iu').test(s)) fixedLanguages.push(n);
+  // Sprachen des Volks/Hintergrunds, die es in der Geschichte nicht gibt
+  const excludedLanguages = chosenStory
+    ? wikiLanguageNames.filter((n) => !languageNames.includes(n) && langSources.some((s) => new RegExp(`(?<![\\p{L}])${n.replace(/isch$/, '')}`, 'iu').test(s)))
+    : [];
   const languageChoices = langSources.reduce((n, s) => n + choiceCount(s), 0);
   const toolSources = [cls?.data.tools ?? '', bg?.data.tools ?? ''].filter((s) => s && !/^keine$|^none$/i.test(s.trim()));
   const toolMap = useMemo(() => Object.fromEntries(tools.map((i) => [i.name, [i.name]])) as NameMap<string>, [tools]);
@@ -260,7 +292,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
   useEffect(() => setBonusSource(hasRaceBonus ? 'race' : bgAbilities.length ? 'background' : 'none'), [hasRaceBonus, bgAbilities.length]);
 
   const reset = () => {
-    setStep('basics');
+    setStep('story');
     setName('');
     setRaceId('');
     setClassId('');
@@ -277,6 +309,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
   };
 
   const stepOk: Record<Step, boolean> = {
+    story: true,
     basics: name.trim().length > 0,
     race: !!race && (race.data.subraces.length === 0 || !!subrace),
     class: !!cls && (!needsSubclass || !!subclass),
@@ -314,7 +347,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
         inventory: takeEquipment ? startingEquipment.items : null,
         coins: takeEquipment ? startingEquipment.coins : {},
       });
-      const { character } = await api.createCharacter(name.trim());
+      const { character } = await api.createCharacter(name.trim(), storyId || null);
       await api.saveCharacter(character.id, sheet);
       toast.success(t('wizard.created', { name: name.trim() }));
       reset();
@@ -368,6 +401,23 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
               </li>
             ))}
           </ol>
+
+          {step === 'story' && (
+            <div className="space-y-3">
+              <p>{t('wizard.storyIntro')}</p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {myStories.map((st) => (
+                  <ChoiceCard key={st.id} selected={storyId === st.id} onClick={() => setStoryId(st.id)} title={st.name}>
+                    {[st.role ? t(`storyRole.${st.role}`) : '', st.sources ? t('wizard.storyRestricted', { count: st.sources.length }) : t('wizard.storyAllSources')].filter(Boolean).join(' · ')}
+                  </ChoiceCard>
+                ))}
+                <ChoiceCard selected={storyId === ''} onClick={() => setStoryId('')} title={t('wizard.noStory')}>
+                  {t('wizard.noStoryHint')}
+                </ChoiceCard>
+              </div>
+              {chosenStory?.sources && <StorySourceList sources={chosenStory.sources} />}
+            </div>
+          )}
 
           {step === 'basics' && (
             <div className="space-y-3">
@@ -430,7 +480,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
                     label={cls.data.subclassTitle || t('wiki.class.subclasses')}
                     value={subclass}
                     onChange={setSubclass}
-                    options={cls.data.subclasses.map((s) => ({ value: s.name, label: s.name }))}
+                    options={subclassOptions.map((s) => ({ value: s.name, label: s.name }))}
                     placeholder={t('wizard.choose')}
                   />
                 </div>
@@ -659,6 +709,9 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
               <section className="space-y-2">
                 <h3 className="font-display text-lg font-bold">{t('wizard.languages')}</h3>
                 <p className="text-sm">{fixedLanguages.length ? t('wizard.knownLanguages', { list: fixedLanguages.join(', ') }) : t('wizard.noFixedLanguages')}</p>
+                {excludedLanguages.length > 0 && (
+                  <p className="text-sm text-amber-800 dark:text-amber-300">{t('wizard.excludedLanguages', { list: excludedLanguages.join(', '), story: chosenStory?.name ?? '' })}</p>
+                )}
                 {languageChoices > 0 && (
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                     {Array.from({ length: languageChoices }, (_, i) => (
@@ -690,7 +743,9 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
                         options={tools
                           .filter(
                             (x) =>
-                              (!slot.type || x.toolType === slot.type || (/oder|or/i.test(slot.text) && (x.toolType === 'artisan' || x.toolType === 'instrument'))) && !fixedTools.includes(x.name),
+                              allowed(x.sourceId) &&
+                              (!slot.type || x.toolType === slot.type || (/oder|or/i.test(slot.text) && (x.toolType === 'artisan' || x.toolType === 'instrument'))) &&
+                              !fixedTools.includes(x.name),
                           )
                           .filter((x) => extraTools[i] === x.name || !extraTools.includes(x.name))
                           .map((x) => ({ value: x.name, label: x.name }))}
@@ -753,7 +808,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
                                 >
                                   <option value="">{t('wizard.pickItem', { what: part.text.replace(/^(ein|eine|einen|zwei|drei)\s+/i, '') })}</option>
                                   {catalog
-                                    .filter((c) => matchesPlaceholder(c, part.placeholder!))
+                                    .filter((c) => allowed(c.sourceId) && matchesPlaceholder(c, part.placeholder!))
                                     .map((c) => (
                                       <option key={c.id} value={c.id}>
                                         {c.name}
