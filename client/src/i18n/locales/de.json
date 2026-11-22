@@ -1335,7 +1335,20 @@
         "CE": "chaotisch böse"
       },
       "noPantheon": "ohne Pantheon"
-    }
+    },
+    "globalSearch": "Ganzes Wiki durchsuchen …",
+    "searchIn": "In {{area}} suchen …",
+    "navigation": "Wiki-Bereiche",
+    "area": "Bereich",
+    "areaOption": "Bereich: {{area}}",
+    "moreHits_one": "+{{count}} weiterer",
+    "moreHits_other": "+{{count}} weitere",
+    "groups": {
+      "character": "Charakter",
+      "equipment": "Ausrüstung",
+      "world": "Welt"
+    },
+    "noHits": "Keine Treffer im Wiki."
   },
   "sources": {
     "title": "Quellen",

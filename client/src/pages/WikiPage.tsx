@@ -35,7 +35,8 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { WikiDetail } from '../components/wiki/WikiDetail';
 import { WikiForm } from '../components/wiki/WikiForm';
 import { CatalogManager } from '../components/catalog/CatalogManager';
-import { CATEGORY_ICON } from '../components/catalog/CatalogCard';
+import { CATEGORY_ICON, CatalogCard } from '../components/catalog/CatalogCard';
+import { WikiSearch, type WikiHit } from '../components/wiki/WikiSearch';
 import { SourceBadge, SourceFilter, matchesSource } from '../components/sources/SourceFields';
 import { useSources } from '../hooks/useSources';
 
@@ -43,6 +44,13 @@ import { useSources } from '../hooks/useSources';
 const TABS = [...WIKI_KINDS, ...CATALOG_CATEGORIES] as const;
 const isCatalog = (t: string): t is CatalogCategory => (CATALOG_CATEGORIES as readonly string[]).includes(t);
 type Tab = (typeof TABS)[number];
+/** Gruppen der Wiki-Navigation (Seitenleiste bzw. Auswahlfeld am Handy) */
+const NAV_GROUPS: [string, Tab[]][] = [
+  ['character', ['race', 'class', 'background', 'feat']],
+  ['equipment', ['armor', 'weapon', 'gear', 'tool']],
+  ['world', ['language', 'god']],
+];
+const NAV_ORDER = NAV_GROUPS.flatMap(([, tabs]) => tabs);
 
 const KIND_ICON: Record<WikiKind, typeof Users2> = { race: Users2, class: GraduationCap, feat: Award, background: ScrollText, language: Languages, god: Sun };
 const KIND_ACCENT: Record<WikiKind, string> = {
@@ -76,12 +84,14 @@ export function WikiPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const openId = params.get('entry');
-  // Zähler der Gegenstands-Datenbank für die Reiter
-  const [catalogCounts, setCatalogCounts] = useState<Record<CatalogCategory, number> | null>(null);
-  const countCatalog = useCallback(
-    (items: CatalogItemDto[]) => setCatalogCounts(Object.fromEntries(CATALOG_CATEGORIES.map((c) => [c, items.filter((i) => i.category === c).length])) as Record<CatalogCategory, number>),
-    [],
+  // Gegenstands-Datenbank: für die Zähler der Navigation und die globale Suche
+  const [catalogItems, setCatalogItems] = useState<CatalogItemDto[] | null>(null);
+  const countCatalog = useCallback((items: CatalogItemDto[]) => setCatalogItems(items), []);
+  const catalogCounts = useMemo(
+    () => (catalogItems ? (Object.fromEntries(CATALOG_CATEGORIES.map((c) => [c, catalogItems.filter((i) => i.category === c).length])) as Record<CatalogCategory, number>) : null),
+    [catalogItems],
   );
+  const openItem = catalogItems?.find((i) => i.id === params.get('item')) ?? null;
   useEffect(() => {
     api
       .catalog()
@@ -180,6 +190,18 @@ export function WikiPage() {
     }
   };
 
+  const tabIcon = (k: Tab) => (isCatalog(k) ? CATEGORY_ICON[k] : KIND_ICON[k]);
+  const tabLabel = (k: Tab) => (isCatalog(k) ? t(`catalog.categories.${k}`) : t(`wiki.kinds.${k}`));
+  const tabCount = (k: Tab) => (isCatalog(k) ? (catalogCounts?.[k] ?? null) : counts[k]);
+  const selectTab = (k: Tab) => {
+    setQ('');
+    setParam({ tab: k === 'race' ? null : k, entry: null, item: null });
+  };
+  const pickHit = (h: WikiHit) => {
+    setQ('');
+    setParam(h.type === 'entry' ? { tab: h.area === 'race' ? null : h.area, entry: h.id, item: null } : { tab: h.area, item: h.id, entry: null });
+  };
+
   if (error) return <Alert>{errorMessage(t, error)}</Alert>;
   if (!entries) return <PageSpinner />;
 
@@ -189,155 +211,214 @@ export function WikiPage() {
         <h1 className="text-3xl font-bold">{t('wiki.title')}</h1>
         <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('wiki.hint')}</p>
       </div>
-      <nav className="flex gap-1 overflow-x-auto border-b border-parchment-400/60 dark:border-night-700" aria-label={t('wiki.title')}>
-        {TABS.map((k) => {
-          const Icon = isCatalog(k) ? CATEGORY_ICON[k] : KIND_ICON[k];
-          return (
-            <button
-              key={k}
-              type="button"
-              onClick={() => setParam({ tab: k === 'race' ? null : k, entry: null })}
-              aria-pressed={tab === k}
-              className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-2 font-display text-sm font-semibold ${
-                tab === k
-                  ? 'border-parchment-800 text-ink dark:border-parchment-300 dark:text-parchment-50'
-                  : 'border-transparent text-parchment-700 hover:text-ink dark:text-parchment-400 dark:hover:text-parchment-100'
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              {isCatalog(k) ? `${t(`catalog.categories.${k}`)}${catalogCounts ? ` (${catalogCounts[k]})` : ''}` : `${t(`wiki.kinds.${k}`)} (${counts[k]})`}
-            </button>
-          );
-        })}
-      </nav>
-      {isCatalog(tab) ? (
-        <div className="space-y-3">
-          <p className="text-sm text-parchment-700 dark:text-parchment-400">{isEditor ? t('catalog.standardHint') : t('wiki.itemsHint')}</p>
-          <CatalogManager key={tab} category={tab} readOnly={!isEditor} onItems={countCatalog} />
-        </div>
-      ) : (
-        <>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative min-w-[14rem] flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-700 dark:text-parchment-400" />
-              <input type="search" className="input !pl-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('wiki.search')} aria-label={t('common.search')} />
+      <WikiSearch
+        entries={entries}
+        items={catalogItems ?? []}
+        areas={NAV_ORDER}
+        areaLabel={(a) => tabLabel(a as Tab)}
+        areaIcon={(a) => {
+          const Icon = tabIcon(a as Tab);
+          return <Icon className="h-3.5 w-3.5" aria-hidden />;
+        }}
+        onPick={pickHit}
+      />
+      <div className="grid gap-5 md:grid-cols-[14rem_minmax(0,1fr)] md:items-start">
+        <nav
+          className="sticky top-20 hidden max-h-[calc(100vh-6rem)] overflow-y-auto rounded-lg border border-parchment-400/70 bg-parchment-50/70 p-2 dark:border-night-700 dark:bg-night-800/60 md:block print:hidden"
+          aria-label={t('wiki.navigation')}
+        >
+          {NAV_GROUPS.map(([group, tabs]) => (
+            <div key={group} className="mb-2 last:mb-0">
+              <p className="px-2.5 pb-1 pt-2 font-display text-xs font-bold uppercase tracking-wider text-parchment-600 dark:text-parchment-400">{t(`wiki.groups.${group}`)}</p>
+              <ul className="space-y-0.5">
+                {tabs.map((k) => {
+                  const Icon = tabIcon(k);
+                  const n = tabCount(k);
+                  return (
+                    <li key={k}>
+                      <button
+                        type="button"
+                        onClick={() => selectTab(k)}
+                        aria-current={tab === k ? 'page' : undefined}
+                        className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left ${
+                          tab === k ? 'bg-parchment-800 text-parchment-50 dark:bg-parchment-300 dark:text-night-900' : 'text-ink hover:bg-parchment-200 dark:text-parchment-100 dark:hover:bg-night-700'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" aria-hidden />
+                        <span className="min-w-0 flex-1 truncate">{tabLabel(k)}</span>
+                        {n !== null && <span className="text-xs tabular-nums opacity-70">{n}</span>}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
-            {kind === 'god' && pantheons.length > 0 && (
-              <select className="input !w-auto" value={pantheon} onChange={(e) => setPantheon(e.target.value)} aria-label={t('wiki.god.pantheon')}>
-                <option value="">
-                  {t('wiki.god.pantheon')}: {t('common.any')}
-                </option>
-                {pantheons.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
+          ))}
+        </nav>
+        <div className="min-w-0 space-y-5">
+          <div className="md:hidden">
+            <label htmlFor="wiki-area" className="sr-only">
+              {t('wiki.area')}
+            </label>
+            <div className="relative">
+              {(() => {
+                const Icon = tabIcon(tab);
+                return <Icon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-800 dark:text-parchment-200" aria-hidden />;
+              })()}
+              <select id="wiki-area" className="input !pl-9 font-display font-bold" value={tab} onChange={(e) => selectTab(e.target.value as Tab)}>
+                {NAV_GROUPS.map(([group, tabs]) => (
+                  <optgroup key={group} label={t(`wiki.groups.${group}`)}>
+                    {tabs.map((k) => (
+                      <option key={k} value={k}>
+                        {t('wiki.areaOption', { area: tabLabel(k) })}
+                        {tabCount(k) !== null ? ` (${tabCount(k)})` : ''}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
-            )}
-            {kind === 'feat' && (
-              <select className="input !w-auto" value={featCategory} onChange={(e) => setFeatCategory(e.target.value)} aria-label={t('wiki.feat.category')}>
-                <option value="">
-                  {t('wiki.feat.category')}: {t('common.any')}
-                </option>
-                {FEAT_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {t(`wiki.feat.categories.${c}`)}
-                  </option>
-                ))}
-              </select>
-            )}
-            <SourceFilter value={sourceFilter} onChange={setSourceFilter} />
-            {isEditor && (
-              <button type="button" className="btn-primary shrink-0" onClick={() => setEditing('new')}>
-                <Plus className="h-4 w-4" />
-                {t(`wiki.new.${kind}`)}
-              </button>
-            )}
+            </div>
           </div>
-
-          {shown.length === 0 ? (
-            <div className="parchment px-6 py-12 text-center italic">{needle ? t('search.noResults') : t('wiki.empty')}</div>
+          {isCatalog(tab) ? (
+            <div className="space-y-3">
+              <p className="text-sm text-parchment-700 dark:text-parchment-400">{isEditor ? t('catalog.standardHint') : t('wiki.itemsHint')}</p>
+              <CatalogManager key={tab} category={tab} readOnly={!isEditor} onItems={countCatalog} />
+            </div>
           ) : (
-            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {shown.map((e) => {
-                const Icon = KIND_ICON[e.kind];
-                const sub =
-                  e.kind === 'race'
-                    ? e.data.subraces.map((s) => ({ name: s.name, sourceId: null as string | null }))
-                    : e.kind === 'class'
-                      ? e.data.subclasses.map((s) => ({ name: s.name, sourceId: s.sourceId }))
-                      : [];
-                return (
-                  <li key={e.id}>
-                    <article className={`parchment relative flex h-full flex-col gap-2 border-t-4 p-4 transition hover:-translate-y-0.5 hover:shadow-cardhover ${KIND_ACCENT[e.kind]}`}>
-                      <div className="flex items-start gap-2">
-                        <Icon className="mt-1 h-5 w-5 shrink-0 text-parchment-700 dark:text-parchment-300" aria-hidden />
-                        <h2 className="min-w-0 flex-1 break-words font-display text-xl font-bold leading-tight">
-                          <button
-                            type="button"
-                            onClick={() => setParam({ entry: e.id })}
-                            className="text-left outline-none after:absolute after:inset-0 after:z-[5] after:content-[''] focus-visible:underline"
-                            aria-haspopup="dialog"
-                          >
-                            {e.name}
-                          </button>
-                        </h2>
-                        {isEditor && (
-                          <div className="relative z-10 flex shrink-0 gap-1">
-                            <button type="button" className="btn-icon" onClick={() => setEditing(e)} title={t('common.edit')} aria-label={`${t('common.edit')}: ${e.name}`}>
-                              <Pencil className="h-4 w-4" />
-                            </button>
-                            <button
-                              type="button"
-                              className="btn-icon text-red-700 dark:text-red-400"
-                              onClick={() => setToDelete(e)}
-                              title={t('common.delete')}
-                              aria-label={`${t('common.delete')}: ${e.name}`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                      {e.summary && <p className="line-clamp-3 text-sm italic">{e.summary}</p>}
-                      <dl className="space-y-1 pt-1 text-sm">
-                        {facts(e)
-                          .filter((f) => f.value)
-                          .map(({ Icon: FIcon, label, value }) => (
-                            <div key={label} className="flex items-start gap-1.5">
-                              <FIcon className="mt-0.5 h-4 w-4 shrink-0 text-parchment-700 dark:text-parchment-400" aria-hidden />
-                              <dt className="sheet-label !inline shrink-0">{label}:</dt>
-                              <dd className="min-w-0">{value}</dd>
-                            </div>
-                          ))}
-                      </dl>
-                      {sub.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {sub.map((s) => {
-                            const src = byId(s.sourceId);
-                            return (
-                              <span
-                                key={s.name}
-                                className="badge bg-parchment-200 text-parchment-900 dark:bg-night-700 dark:text-parchment-200"
-                                title={src ? `${t('sources.source')}: ${src.name}` : undefined}
-                              >
-                                {s.name}
-                                {src?.abbreviation && <span className="ml-1 font-normal opacity-70">· {src.abbreviation}</span>}
-                              </span>
-                            );
-                          })}
-                        </div>
-                      )}
-                      <SourceBadge sourceId={e.sourceId} className="mt-auto pt-1" />
-                    </article>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </>
-      )}
+            <>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative min-w-[14rem] flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-700 dark:text-parchment-400" />
+                  <input
+                    type="search"
+                    className="input !pl-9"
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    placeholder={t('wiki.searchIn', { area: tabLabel(tab) })}
+                    aria-label={t('common.search')}
+                  />
+                </div>
+                {kind === 'god' && pantheons.length > 0 && (
+                  <select className="input !w-auto" value={pantheon} onChange={(e) => setPantheon(e.target.value)} aria-label={t('wiki.god.pantheon')}>
+                    <option value="">
+                      {t('wiki.god.pantheon')}: {t('common.any')}
+                    </option>
+                    {pantheons.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {kind === 'feat' && (
+                  <select className="input !w-auto" value={featCategory} onChange={(e) => setFeatCategory(e.target.value)} aria-label={t('wiki.feat.category')}>
+                    <option value="">
+                      {t('wiki.feat.category')}: {t('common.any')}
+                    </option>
+                    {FEAT_CATEGORIES.map((c) => (
+                      <option key={c} value={c}>
+                        {t(`wiki.feat.categories.${c}`)}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <SourceFilter value={sourceFilter} onChange={setSourceFilter} />
+                {isEditor && (
+                  <button type="button" className="btn-primary shrink-0" onClick={() => setEditing('new')}>
+                    <Plus className="h-4 w-4" />
+                    {t(`wiki.new.${kind}`)}
+                  </button>
+                )}
+              </div>
 
+              {shown.length === 0 ? (
+                <div className="parchment px-6 py-12 text-center italic">{needle ? t('wiki.noHits') : t('wiki.empty')}</div>
+              ) : (
+                <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {shown.map((e) => {
+                    const Icon = KIND_ICON[e.kind];
+                    const sub =
+                      e.kind === 'race'
+                        ? e.data.subraces.map((s) => ({ name: s.name, sourceId: null as string | null }))
+                        : e.kind === 'class'
+                          ? e.data.subclasses.map((s) => ({ name: s.name, sourceId: s.sourceId }))
+                          : [];
+                    return (
+                      <li key={e.id}>
+                        <article className={`parchment relative flex h-full flex-col gap-2 border-t-4 p-4 transition hover:-translate-y-0.5 hover:shadow-cardhover ${KIND_ACCENT[e.kind]}`}>
+                          <div className="flex items-start gap-2">
+                            <Icon className="mt-1 h-5 w-5 shrink-0 text-parchment-700 dark:text-parchment-300" aria-hidden />
+                            <h2 className="min-w-0 flex-1 break-words font-display text-xl font-bold leading-tight">
+                              <button
+                                type="button"
+                                onClick={() => setParam({ entry: e.id })}
+                                className="text-left outline-none after:absolute after:inset-0 after:z-[5] after:content-[''] focus-visible:underline"
+                                aria-haspopup="dialog"
+                              >
+                                {e.name}
+                              </button>
+                            </h2>
+                            {isEditor && (
+                              <div className="relative z-10 flex shrink-0 gap-1">
+                                <button type="button" className="btn-icon" onClick={() => setEditing(e)} title={t('common.edit')} aria-label={`${t('common.edit')}: ${e.name}`}>
+                                  <Pencil className="h-4 w-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn-icon text-red-700 dark:text-red-400"
+                                  onClick={() => setToDelete(e)}
+                                  title={t('common.delete')}
+                                  aria-label={`${t('common.delete')}: ${e.name}`}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          {e.summary && <p className="line-clamp-3 text-sm italic">{e.summary}</p>}
+                          <dl className="space-y-1 pt-1 text-sm">
+                            {facts(e)
+                              .filter((f) => f.value)
+                              .map(({ Icon: FIcon, label, value }) => (
+                                <div key={label} className="flex items-start gap-1.5">
+                                  <FIcon className="mt-0.5 h-4 w-4 shrink-0 text-parchment-700 dark:text-parchment-400" aria-hidden />
+                                  <dt className="sheet-label !inline shrink-0">{label}:</dt>
+                                  <dd className="min-w-0">{value}</dd>
+                                </div>
+                              ))}
+                          </dl>
+                          {sub.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {sub.map((s) => {
+                                const src = byId(s.sourceId);
+                                return (
+                                  <span
+                                    key={s.name}
+                                    className="badge bg-parchment-200 text-parchment-900 dark:bg-night-700 dark:text-parchment-200"
+                                    title={src ? `${t('sources.source')}: ${src.name}` : undefined}
+                                  >
+                                    {s.name}
+                                    {src?.abbreviation && <span className="ml-1 font-normal opacity-70">· {src.abbreviation}</span>}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
+                          <SourceBadge sourceId={e.sourceId} className="mt-auto pt-1" />
+                        </article>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      <Modal open={!!openItem} title={openItem?.name ?? ''} onClose={() => setParam({ item: null })} size="max-w-2xl">
+        {openItem && <CatalogCard item={openItem} />}
+      </Modal>
       <Modal open={!!opened} title={opened?.name ?? ''} onClose={() => setParam({ entry: null })} size="max-w-3xl">
         {opened && (
           <div className="space-y-3">

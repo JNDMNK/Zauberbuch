@@ -356,9 +356,17 @@ Format:
 
 ## Wiki
 
-- Hauptmenüpunkt **„Wiki“** (für alle angemeldeten Benutzer) mit den Reitern **Völker**, **Klassen**,
-  **Talente**, **Hintergründe**, **Sprachen**, **Götter**, **Rüstung**, **Waffen**, **Gegenstände** und **Ausrüstung** (Gegenstands-Datenbank, siehe oben) in Kartenansicht; Suche über alle Felder, ein Klick auf die Karte zeigt den vollständigen Eintrag (direkt verlinkbar
-  über `?tab=class&entry=…`).
+- Hauptmenüpunkt **„Wiki“** (für alle angemeldeten Benutzer). Die Bereiche sind in einer **Seitenleiste** (am Handy
+  ein Auswahlfeld „Bereich: …“) in drei Gruppen geordnet, jeweils mit Anzahl der Einträge:
+  - **Charakter:** Völker, Klassen, Hintergründe, Talente
+  - **Ausrüstung:** Rüstung, Waffen, Gegenstände, Ausrüstung (Gegenstands-Datenbank, siehe oben)
+  - **Welt:** Sprachen, Götter
+- **Globale Suche** („Ganzes Wiki durchsuchen …“) über alle Bereiche gleichzeitig (ab 2 Zeichen): Treffer nach
+  Bereich gruppiert (Namenstreffer zuerst, sonst mit Textausschnitt und hervorgehobener Fundstelle), Auswahl mit
+  Maus oder Pfeiltasten + Enter öffnet den Eintrag im passenden Bereich. Innerhalb eines Bereichs filtert zusätzlich
+  das Feld „In … suchen“ die Karten.
+- Kartenansicht; ein Klick auf die Karte zeigt den vollständigen Eintrag (direkt verlinkbar über
+  `?tab=class&entry=…`, Einträge der Gegenstands-Datenbank über `?tab=tool&item=…`).
 - Felder nach dem **System Reference Document 5.1**:
   - **Volk:** Attributswerterhöhung, Alter, Gesinnung, Größe, Bewegungsrate, Sprachen, Merkmale (Name + Text) und
     Unterrassen (Name, Attributswerterhöhung, Beschreibung, eigene Merkmale).

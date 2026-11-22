@@ -1335,7 +1335,20 @@
         "CE": "chaotic evil"
       },
       "noPantheon": "no pantheon"
-    }
+    },
+    "globalSearch": "Search the whole wiki …",
+    "searchIn": "Search {{area}} …",
+    "navigation": "Wiki sections",
+    "area": "Section",
+    "areaOption": "Section: {{area}}",
+    "moreHits_one": "+{{count}} more",
+    "moreHits_other": "+{{count}} more",
+    "groups": {
+      "character": "Character",
+      "equipment": "Equipment",
+      "world": "World"
+    },
+    "noHits": "No matches in the wiki."
   },
   "sources": {
     "title": "Sources",
