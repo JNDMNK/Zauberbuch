@@ -21,6 +21,10 @@ Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutze
   Charakterbögen (RK, LP mit Lebensbalken), Monster mit verdeckbaren Werten, Zustände (siehe [Kampfhilfe](#kampfhilfe))
 - 👥 Server-Rollen **Benutzer**, **Moderator** und **Admin**, dazu **Rollen pro Geschichte** (Spieler / Dungeon Master)
   für Infotafel und Kampf (siehe [Rollen & Benutzer](#rollen--benutzer))
+- 🎲 **Würfel**: Würfel-Symbol in der Kopfzeile öffnet den Würfelbecher – W4, W6, W8, W10, W12, W20 und W100 in
+  beliebiger Anzahl, Modifikator, Vorteil/Nachteil für den W20 (verworfener Wurf durchgestrichen), Einzelwerte und
+  Summe, Hinweis bei natürlicher 20 bzw. 1 und ein Verlauf der letzten 20 Würfe (Klick würfelt erneut; nur in diesem
+  Browser gespeichert). Gewürfelt wird mit kryptografisch sicherem Zufall.
 - 🧭 **Geschichten-Ansicht**: per Umschalter in der Kopfzeile führen Charakterbogen, Infotafel und Kampf direkt
   zur gewählten Geschichte
 - 🔒 Ohne Anmeldung keine Daten – die Startseite ist der Login, es gibt keine Selbstregistrierung

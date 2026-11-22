@@ -10,6 +10,7 @@ import { useBoardUnread } from '../hooks/useBoardUnread';
 import { useCombatActive } from '../hooks/useCombatActive';
 import { StorySwitcher } from './StorySwitcher';
 import { NotificationBell } from './NotificationBell';
+import { DiceRoller } from './DiceRoller';
 
 function LanguageSwitch() {
   const { t } = useTranslation();
@@ -24,9 +25,7 @@ function LanguageSwitch() {
           aria-pressed={language === l}
           title={t(`langName.${l}`)}
           className={`px-2.5 py-1 font-display text-xs font-bold transition ${
-            language === l
-              ? 'bg-parchment-800 text-parchment-50 dark:bg-parchment-300 dark:text-ink'
-              : 'text-parchment-800 hover:bg-parchment-200 dark:text-parchment-300 dark:hover:bg-night-700'
+            language === l ? 'bg-parchment-800 text-parchment-50 dark:bg-parchment-300 dark:text-ink' : 'text-parchment-800 hover:bg-parchment-200 dark:text-parchment-300 dark:hover:bg-night-700'
           }`}
         >
           {l.toUpperCase()}
@@ -176,9 +175,7 @@ export function Header() {
 
   const navCls = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-2 rounded-lg px-3 py-2 font-display text-sm font-semibold tracking-wide transition ${
-      isActive
-        ? 'bg-parchment-800/90 text-parchment-50 dark:bg-parchment-300 dark:text-ink'
-        : 'text-ink hover:bg-parchment-200/80 dark:text-parchment-100 dark:hover:bg-night-700'
+      isActive ? 'bg-parchment-800/90 text-parchment-50 dark:bg-parchment-300 dark:text-ink' : 'text-ink hover:bg-parchment-200/80 dark:text-parchment-100 dark:hover:bg-night-700'
     }`;
 
   const unreadBadge = unread > 0 && (
@@ -186,7 +183,9 @@ export function Header() {
       {unread > 99 ? '99+' : unread}
     </span>
   );
-  const combatDot = combats > 0 && <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-600" aria-label={t('combat.running', { count: combats })} title={t('combat.running', { count: combats })} />;
+  const combatDot = combats > 0 && (
+    <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-600" aria-label={t('combat.running', { count: combats })} title={t('combat.running', { count: combats })} />
+  );
 
   // Ohne Anmeldung gibt es keine Navigation – die Startseite ist der Login
   const sharedLinks = (
@@ -259,22 +258,19 @@ export function Header() {
         <div className="ml-auto flex items-center gap-1.5">
           {user && <StorySwitcher />}
           <LanguageSwitch />
+          {user && <DiceRoller />}
           <ThemeToggle />
           {user && <NotificationBell />}
           <UserMenu />
           {user && (
-          <button type="button" className="btn-icon relative lg:hidden" onClick={() => setMobileOpen((o) => !o)} aria-expanded={mobileOpen} aria-label={t('nav.menu')}>
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            {!mobileOpen && (unread > 0 || combats > 0) && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-red-700" aria-hidden />}
-          </button>
+            <button type="button" className="btn-icon relative lg:hidden" onClick={() => setMobileOpen((o) => !o)} aria-expanded={mobileOpen} aria-label={t('nav.menu')}>
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {!mobileOpen && (unread > 0 || combats > 0) && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-red-700" aria-hidden />}
+            </button>
           )}
         </div>
       </div>
-      {mobileOpen && user && (
-        <nav className="flex flex-col gap-1 border-t border-parchment-400/60 px-4 py-3 lg:hidden dark:border-night-700">
-          {mobileLinks}
-        </nav>
-      )}
+      {mobileOpen && user && <nav className="flex flex-col gap-1 border-t border-parchment-400/60 px-4 py-3 lg:hidden dark:border-night-700">{mobileLinks}</nav>}
     </header>
   );
 }

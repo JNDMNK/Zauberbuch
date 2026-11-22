@@ -1571,5 +1571,26 @@
     "wiki": "Wiki-Einträge",
     "hiddenSubclasses_one": "{{count}} Unterklasse aus anderen Quellen ist in dieser Geschichte ausgeblendet.",
     "hiddenSubclasses_other": "{{count}} Unterklassen aus anderen Quellen sind in dieser Geschichte ausgeblendet."
+  },
+  "dice": {
+    "open": "Würfeln",
+    "title": "Würfel",
+    "prefix": "W",
+    "add": "{{die}} hinzufügen",
+    "remove": "{{die}} entfernen",
+    "modifier": "Modifikator",
+    "modifierMinus": "Modifikator −1",
+    "modifierPlus": "Modifikator +1",
+    "mode": "W20-Modus",
+    "normal": "Normal",
+    "advantage": "Vorteil",
+    "disadvantage": "Nachteil",
+    "clear": "Zurücksetzen",
+    "roll": "Würfeln",
+    "natural20": "Natürliche 20 – kritischer Treffer!",
+    "natural1": "Natürliche 1 – Patzer!",
+    "history": "Letzte Würfe",
+    "clearHistory": "Verlauf löschen",
+    "repeat": "Erneut würfeln"
   }
 }

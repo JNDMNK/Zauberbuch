@@ -1571,5 +1571,26 @@
     "wiki": "Wiki entries",
     "hiddenSubclasses_one": "{{count}} subclass from other sources is hidden in this story.",
     "hiddenSubclasses_other": "{{count}} subclasses from other sources are hidden in this story."
+  },
+  "dice": {
+    "open": "Roll dice",
+    "title": "Dice",
+    "prefix": "d",
+    "add": "Add {{die}}",
+    "remove": "Remove {{die}}",
+    "modifier": "Modifier",
+    "modifierMinus": "Modifier −1",
+    "modifierPlus": "Modifier +1",
+    "mode": "d20 mode",
+    "normal": "Normal",
+    "advantage": "Advantage",
+    "disadvantage": "Disadvantage",
+    "clear": "Reset",
+    "roll": "Roll",
+    "natural20": "Natural 20 – critical hit!",
+    "natural1": "Natural 1 – fumble!",
+    "history": "Recent rolls",
+    "clearHistory": "Clear history",
+    "repeat": "Roll again"
   }
 }
