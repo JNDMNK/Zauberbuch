@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { ArrowBigUpDash, ExternalLink, Plus, Trash2 } from 'lucide-react';
 import { OptionListField, type OptionGroup } from './OptionListField';
 import { Modal } from '../Modal';
 import { CatalogCard } from '../catalog/CatalogCard';
@@ -24,12 +24,13 @@ import {
   type SheetAttack,
 } from '@zauberbuch/shared';
 import { useSheet } from './SheetContext';
+import { LevelUpDialog } from './LevelUpDialog';
 import { Box, CheckField, Computed, NF, ProfToggle, TA, TF } from './fields';
 
 /** Erfahrungspunkte mit automatisch berechneter Schwelle für die nächste Stufe */
-function ExperienceField() {
+function ExperienceField({ onLevelUp }: { onLevelUp: () => void }) {
   const { t, i18n } = useTranslation();
-  const { sheet, set, readOnly } = useSheet();
+  const { sheet, readOnly } = useSheet();
   const { level, xp } = sheet.identity;
   const next = xpForNextLevel(level);
   const reachable = Math.min(20, levelForXp(xp));
@@ -40,10 +41,7 @@ function ExperienceField() {
         <NF path={['identity', 'xp']} label={t('sheet.xp')} min={0} className="flex-1" />
         <span className="pt-2 text-parchment-600">/</span>
         <div className="flex-1">
-          <output
-            className="sheet-input block !border-dashed text-center tabular-nums text-parchment-800 dark:text-parchment-300"
-            title={t('sheet.computed')}
-          >
+          <output className="sheet-input block !border-dashed text-center tabular-nums text-parchment-800 dark:text-parchment-300" title={t('sheet.computed')}>
             {next === null ? t('sheet.xpMaxLevel') : next.toLocaleString(i18n.language)}
           </output>
           <span className="sheet-label">{t('sheet.xpNext')}</span>
@@ -53,8 +51,8 @@ function ExperienceField() {
         <div className="mt-1 flex flex-wrap items-center gap-2 rounded-md bg-amber-100 px-2 py-1 text-sm text-amber-900 print:hidden dark:bg-amber-950 dark:text-amber-200" role="status">
           <span>{t('sheet.levelUpPossible', { level: reachable })}</span>
           {!readOnly && (
-            <button type="button" className="font-semibold underline" onClick={() => set(['identity', 'level'], reachable)}>
-              {t('sheet.levelUpButton', { level: reachable })}
+            <button type="button" className="font-semibold underline" onClick={onLevelUp}>
+              {t('sheet.levelUpButton', { level: Math.min(20, level + 1) })}
             </button>
           )}
         </div>
@@ -65,12 +63,27 @@ function ExperienceField() {
 
 export function IdentityHeader() {
   const { t } = useTranslation();
+  const { sheet, readOnly } = useSheet();
+  const [levelUp, setLevelUp] = useState(false);
   return (
     <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3 lg:grid-cols-6">
       <TF path={['identity', 'classLevel']} label={t('sheet.classLevel')} className="col-span-2" />
-      <NF path={['identity', 'level']} label={t('sheet.level')} min={1} max={20} />
+      <div>
+        <NF path={['identity', 'level']} label={t('sheet.level')} min={1} max={20} />
+        {!readOnly && sheet.identity.level < 20 && (
+          <button
+            type="button"
+            className="mt-0.5 inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 underline decoration-dotted underline-offset-2 hover:decoration-solid print:hidden dark:text-emerald-300"
+            onClick={() => setLevelUp(true)}
+          >
+            <ArrowBigUpDash className="h-3.5 w-3.5" />
+            {t('levelUp.open')}
+          </button>
+        )}
+      </div>
       <TF path={['identity', 'playerName']} label={t('sheet.playerName')} />
-      <ExperienceField />
+      <ExperienceField onLevelUp={() => setLevelUp(true)} />
+      <LevelUpDialog open={levelUp} onClose={() => setLevelUp(false)} />
       <TF path={['identity', 'background']} label={t('sheet.background')} className="col-span-2 sm:col-span-1 lg:col-span-3" />
       <TF path={['identity', 'race']} label={t('sheet.race')} className="col-span-2 lg:col-span-3" />
     </div>
@@ -84,7 +97,9 @@ function AbilityColumn() {
     <div className="flex flex-col gap-3">
       {ABILITIES.map((a) => (
         <div key={a} className="sheet-box flex flex-col items-center !px-2 !py-2">
-          <span className="sheet-label w-full break-words text-center !text-[0.5625rem] hyphens-auto" lang={i18n.language}>{t(`sheet.ability.${a}`)}</span>
+          <span className="sheet-label w-full break-words text-center !text-[0.5625rem] hyphens-auto" lang={i18n.language}>
+            {t(`sheet.ability.${a}`)}
+          </span>
           <Computed value={formatModifier(abilityModifier(sheet.abilities[a]))} className="font-display text-3xl font-bold" />
           <NF path={['abilities', a]} min={1} max={30} className="w-16" inputClassName="!rounded-full !py-0.5 text-sm" />
         </div>
@@ -103,7 +118,10 @@ function SavesAndSkills() {
         <CheckField path={['inspiration']} label={<span className="sheet-label !text-xs">{t('sheet.inspiration')}</span>} />
       </div>
       <div className="sheet-box flex items-center gap-3 !py-2">
-        <Computed value={formatModifier(pb)} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-parchment-700 font-display text-xl font-bold dark:border-parchment-400" />
+        <Computed
+          value={formatModifier(pb)}
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-parchment-700 font-display text-xl font-bold dark:border-parchment-400"
+        />
         <div className="min-w-0 flex-1">
           <span className="sheet-label !text-xs">{t('sheet.proficiencyBonus')}</span>
           <ProficiencyOverride />
@@ -320,7 +338,12 @@ function AttackRow({ index, attack }: { index: number; attack: SheetAttack }) {
             <button
               type="button"
               className="btn-icon h-8 w-8 text-red-700 dark:text-red-400"
-              onClick={() => set(['attacks'], sheet.attacks.filter((_, j) => j !== index))}
+              onClick={() =>
+                set(
+                  ['attacks'],
+                  sheet.attacks.filter((_, j) => j !== index),
+                )
+              }
               aria-label={`${t('sheet.remove')}: ${attack.name}`}
               title={t('sheet.remove')}
             >
@@ -443,7 +466,10 @@ export function MainTab() {
         <AbilityColumn />
         <SavesAndSkills />
         <div className="sheet-box col-span-2 flex items-center gap-3 !py-2">
-          <Computed value={passivePerception(sheet)} className="flex h-10 w-12 items-center justify-center rounded-full border-2 border-parchment-700 font-display text-lg font-bold dark:border-parchment-400" />
+          <Computed
+            value={passivePerception(sheet)}
+            className="flex h-10 w-12 items-center justify-center rounded-full border-2 border-parchment-700 font-display text-lg font-bold dark:border-parchment-400"
+          />
           <div>
             <p className="sheet-label !text-xs">{t('sheet.passivePerception')}</p>
             <p className="text-xs text-parchment-700 dark:text-parchment-400">[{t('sheet.passiveHint')}]</p>

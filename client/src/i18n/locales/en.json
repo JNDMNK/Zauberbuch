@@ -1495,5 +1495,41 @@
     "next": "Next",
     "skip": "Skip",
     "create": "Create character"
+  },
+  "levelUp": {
+    "open": "Level up",
+    "title": "Level up – {{name}}",
+    "character": "Character",
+    "level": "Level {{n}}",
+    "max": "The character has already reached level 20.",
+    "xpOk": "XP {{xp}} / {{need}} – level reached ✓",
+    "xpMissing": "XP {{xp}} / {{need}} – level up without enough XP (e.g. milestone)",
+    "noClass": "The class in “Class & level” was not found in the wiki – hit points, hit dice and proficiency bonus are still updated; add new features yourself.",
+    "hp": "Hit points",
+    "average": "Average: {{avg}} + CON {{con}} = +{{total}}",
+    "roll": "Roll: 1d{{die}} + CON {{con}}",
+    "manual": "Custom value",
+    "rollButton": "Roll 1d{{die}}",
+    "rollAgain": "Rolled: {{value}} – roll again",
+    "hpResult": "Max HP {{from}} → {{to}} · Hit dice {{dice}}",
+    "conBonus": "(including +{{n}} retroactively from higher Constitution)",
+    "chooseSubclass": "Choose {{title}}",
+    "asi": "Ability score improvement or feat",
+    "asiModes": {
+      "two": "+1 / +1 to two abilities",
+      "one": "+2 to one ability",
+      "feat": "Feat instead"
+    },
+    "featPlaceholder": "Feat (suggestions from the wiki)",
+    "features": "New features (from the wiki)",
+    "featureFrom": "{{from}} · level {{level}}",
+    "noFeatures": "According to the wiki there are no new features at this level.",
+    "chooseFirst": "Choose the subclass first.",
+    "noClassFeatures": "No features (class not in the wiki).",
+    "other": "Other changes",
+    "slots": "Spell slots level {{grade}}",
+    "nextLevel": "Next level at",
+    "hint": "New features are appended to “Class features”, a feat to “More features”. Choose spells as usual in the “Spells” tab; all values can be adjusted in the sheet afterwards.",
+    "apply": "Apply level {{n}}"
   }
 }

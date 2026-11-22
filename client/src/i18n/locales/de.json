@@ -1495,5 +1495,41 @@
     "next": "Weiter",
     "skip": "Überspringen",
     "create": "Charakter erstellen"
+  },
+  "levelUp": {
+    "open": "Stufenaufstieg",
+    "title": "Stufenaufstieg – {{name}}",
+    "character": "Charakter",
+    "level": "Stufe {{n}}",
+    "max": "Der Charakter hat bereits Stufe 20 erreicht.",
+    "xpOk": "EP {{xp}} / {{need}} – Stufe erreicht ✓",
+    "xpMissing": "EP {{xp}} / {{need}} – Aufstieg ohne genug EP (z. B. Meilenstein)",
+    "noClass": "Die Klasse in „Klasse & Stufe“ wurde im Wiki nicht gefunden – Trefferpunkte, Trefferwürfel und Übungsbonus werden trotzdem angepasst, neue Merkmale musst du selbst eintragen.",
+    "hp": "Trefferpunkte",
+    "average": "Durchschnitt: {{avg}} + KON {{con}} = +{{total}}",
+    "roll": "Würfeln: 1W{{die}} + KON {{con}}",
+    "manual": "Eigener Wert",
+    "rollButton": "1W{{die}} würfeln",
+    "rollAgain": "Gewürfelt: {{value}} – neu würfeln",
+    "hpResult": "TP-Maximum {{from}} → {{to}} · Trefferwürfel {{dice}}",
+    "conBonus": "(davon +{{n}} rückwirkend durch höhere Konstitution)",
+    "chooseSubclass": "{{title}} wählen",
+    "asi": "Attributswerterhöhung oder Talent",
+    "asiModes": {
+      "two": "+1 / +1 auf zwei Attribute",
+      "one": "+2 auf ein Attribut",
+      "feat": "Talent statt Erhöhung"
+    },
+    "featPlaceholder": "Talent (Vorschläge aus dem Wiki)",
+    "features": "Neue Merkmale (aus dem Wiki)",
+    "featureFrom": "{{from}} · Stufe {{level}}",
+    "noFeatures": "Auf dieser Stufe gibt es laut Wiki keine neuen Merkmale.",
+    "chooseFirst": "Wähle zuerst die Unterklasse.",
+    "noClassFeatures": "Keine Merkmale (Klasse nicht im Wiki).",
+    "other": "Weitere Änderungen",
+    "slots": "Zauberplätze {{grade}}. Grad",
+    "nextLevel": "Nächste Stufe bei",
+    "hint": "Die neuen Merkmale werden an „Klassenmerkmale“ angehängt, ein Talent an „Weitere Merkmale“. Zauber wählst du wie gewohnt im Reiter „Zauber“; alle Werte lassen sich danach im Bogen anpassen.",
+    "apply": "Stufe {{n}} übernehmen"
   }
 }
