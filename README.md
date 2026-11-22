@@ -157,8 +157,21 @@ kann weder herabgestuft noch gelöscht werden.
 
 ## Charakterbogen
 
-Unter **Charakterbogen** legt jeder Benutzer beliebig viele Charaktere an (bis zu 50). Der Bogen ist wie der
-D&D-5e-Charakterbogen in vier Reiter gegliedert:
+Unter **Charakterbogen** legt jeder Benutzer beliebig viele Charaktere an (bis zu 50). 
+**Assistent für neue Charaktere** („Neuer Charakter (Assistent)“, daneben weiterhin „Leerer Bogen“): führt in
+sieben Schritten zu einem fertig ausgefüllten Bogen der Stufe 1 – Name → **Volk** (mit Unterart) → **Klasse** (mit
+Unterklasse, wenn sie schon auf Stufe 1 gewählt wird, z. B. Klerikerdomäne) → **Hintergrund** (optional) →
+**Attributswerte** (Standardreihe 15/14/13/12/10/8, Punktekauf mit 27 Punkten oder Würfeln 4W6/eigene Werte;
+Erhöhung wahlweise nach Volk – Regeln 2014, inkl. „zwei weitere deiner Wahl“ – oder nach Hintergrund – Regeln
+2024, +2/+1 oder +1/+1/+1) → **Fertigkeiten, Sprachen, Werkzeuge** (Klassenwahl „Zwei aus …“, feste Fertigkeiten des
+Hintergrunds, Sprachen und Werkzeuge „deiner Wahl“ aus Wiki bzw. Gegenstands-Datenbank) → **Zusammenfassung**. Alle
+Angaben kommen aus dem Wiki; übernommen werden Volk/Klasse/Hintergrund, Größe, Attribute, Rettungswürfe,
+Fertigkeiten, Rüstungs- und Waffenübung, TP-Maximum (Trefferwürfel + KON), Trefferwürfel, RK ohne Rüstung,
+Bewegungsrate, Sprachen, Werkzeuge, Volks- und Klassenmerkmale der Stufe 1, Hintergrundmerkmal und -talent,
+Startausrüstung (als Text), Zauberattribut und Zauberplätze sowie auf Wunsch zufällige Persönlichkeitsmerkmale aus
+den Tabellen des Hintergrunds.
+
+Der Bogen ist wie der D&D-5e-Charakterbogen in vier Reiter gegliedert:
 
 | Reiter | Inhalt |
 |---|---|

@@ -1432,5 +1432,68 @@
       "Source": "Quellen",
       "DmNote": "DM-Notizen"
     }
+  },
+  "wizard": {
+    "open": "Neuer Charakter (Assistent)",
+    "empty": "Leerer Bogen",
+    "title": "Neuer Charakter",
+    "steps": "Schritte",
+    "created": "„{{name}}“ wurde angelegt.",
+    "step": {
+      "basics": "Name",
+      "race": "Volk",
+      "class": "Klasse",
+      "background": "Hintergrund",
+      "abilities": "Attributswerte",
+      "skills": "Fertigkeiten & Sprachen",
+      "summary": "Zusammenfassung"
+    },
+    "intro": "Der Assistent führt dich durch die Erschaffung eines Charakters der Stufe 1. Volk, Klasse und Hintergrund kommen aus dem Wiki; daraus werden Attributswerte, Rettungswürfe, Fertigkeiten, Übung, Trefferpunkte, Sprachen, Werkzeuge und Merkmale automatisch in den Bogen übernommen. Alles lässt sich danach im Bogen anpassen.",
+    "name": "Name des Charakters",
+    "subrace": "Unterart",
+    "choose": "– bitte wählen –",
+    "hitDie": "Trefferwürfel {{die}}",
+    "subclassLater": "{{title}} wird auf Stufe {{level}} gewählt.",
+    "spellsLater": "Diese Klasse wirkt erst ab Stufe 2 Zauber.",
+    "noBackgrounds": "Im Wiki sind noch keine Hintergründe angelegt – du kannst diesen Schritt überspringen.",
+    "rollPersonality": "Persönlichkeitsmerkmal, Ideal, Bindung und Makel zufällig aus den Tabellen des Hintergrunds übernehmen",
+    "method": "Methode",
+    "methods": {
+      "standard": "Standardreihe",
+      "pointBuy": "Punktekauf",
+      "manual": "Würfeln / eigene Werte"
+    },
+    "methodHint": {
+      "standard": "Verteile die Werte 15, 14, 13, 12, 10 und 8 auf die sechs Attribute – jeder Wert genau einmal.",
+      "pointBuy": "Alle Attribute beginnen bei 8; du hast {{budget}} Punkte. Werte bis 13 kosten je 1 Punkt, 14 und 15 je 2 Punkte.",
+      "manual": "Trage eigene Werte ein oder würfle (4W6, der niedrigste Würfel wird gestrichen)."
+    },
+    "pointsLeft": "Verbleibende Punkte: {{n}}",
+    "roll": "Würfeln (4W6)",
+    "ability": "Attribut",
+    "base": "Grundwert",
+    "bonus": "Erhöhung",
+    "total": "Gesamt",
+    "bonusSource": "Attributswerterhöhung",
+    "bonusRace": "Volk (Regeln 2014): {{text}}",
+    "bonusBackground": "Hintergrund (Regeln 2024): {{list}}",
+    "bonusNone": "Keine Erhöhung",
+    "chooseAbility": "Attribut {{n}} (+{{amount}})",
+    "skills": "Fertigkeiten",
+    "fromBackground": "Vom Hintergrund: {{list}}",
+    "chooseSkills": "Wähle {{count}} Fertigkeiten der Klasse {{cls}} ({{done}} gewählt):",
+    "noSkillChoice": "Die Klasse hat keine wählbaren Fertigkeiten.",
+    "languages": "Sprachen",
+    "knownLanguages": "Bekannt: {{list}}",
+    "noFixedLanguages": "Keine festen Sprachen.",
+    "extraLanguage": "Weitere Sprache {{n}}",
+    "tools": "Werkzeuge",
+    "knownTools": "Übung: {{list}}",
+    "noTools": "Keine Werkzeugübung.",
+    "summaryHint": "Zauber, Ausrüstung und Aussehen ergänzt du anschließend im Bogen. Die Startausrüstung von Klasse und Hintergrund steht dort unter „Weitere Merkmale“.",
+    "back": "Zurück",
+    "next": "Weiter",
+    "skip": "Überspringen",
+    "create": "Charakter erstellen"
   }
 }

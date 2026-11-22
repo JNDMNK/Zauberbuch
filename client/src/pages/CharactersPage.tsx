@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Copy, Plus, ScrollText, Search, Trash2, Users } from 'lucide-react';
+import { Copy, Plus, ScrollText, Search, Trash2, Users, Wand2 } from 'lucide-react';
+import { CharacterWizard } from '../components/wizard/CharacterWizard';
 import type { CharacterSummaryDto } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
@@ -21,9 +22,7 @@ export function CharacterCard({ c, to, actions }: { c: CharacterSummaryDto; to: 
             {c.name || t('characters.unnamed')}
           </Link>
         </h2>
-        <p className="truncate text-sm">
-          {[c.classLevel, c.race].filter(Boolean).join(' · ') || t('characters.level', { level: c.level })}
-        </p>
+        <p className="truncate text-sm">{[c.classLevel, c.race].filter(Boolean).join(' · ') || t('characters.level', { level: c.level })}</p>
         {c.story && (
           <p className="mt-1">
             <span className="badge bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200">{c.story.name}</span>
@@ -84,6 +83,7 @@ export function CharactersPage() {
     if (own.length === 1 && sharedHere.length === 0 && othersHere.length === 0) navigate(`/characters/${own[0].id}`, { replace: true });
   }, [fromNav, storyMode, allOwn, allShared, allOthers, activeStoryId, navigate]);
 
+  const [wizard, setWizard] = useState(false);
   const create = async () => {
     setBusy(true);
     try {
@@ -129,11 +129,18 @@ export function CharactersPage() {
           <ScrollText className="h-7 w-7 text-parchment-600" />
           {isEditor || others.length > 0 ? t('characters.titleAll') : t('characters.title')}
         </h1>
-        <button type="button" className="btn-primary" onClick={create} disabled={busy}>
-          {busy ? <Spinner className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {t('characters.new')}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="btn-primary" onClick={() => setWizard(true)}>
+            <Wand2 className="h-4 w-4" />
+            {t('wizard.open')}
+          </button>
+          <button type="button" className="btn-secondary" onClick={create} disabled={busy}>
+            {busy ? <Spinner className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {t('wizard.empty')}
+          </button>
+        </div>
       </div>
+      <CharacterWizard open={wizard} onClose={() => setWizard(false)} onCreated={(id) => navigate(`/characters/${id}`)} />
       {activeStoryId && (
         <p className="mb-4 flex flex-wrap items-center gap-2 text-sm">
           {showAll || !storyName ? t('storyView.showingAll') : t('storyView.filteredCharacters', { name: storyName })}
@@ -227,7 +234,14 @@ function OtherCharacters({ list }: { list: CharacterSummaryDto[] | null }) {
         {list && list.length > 0 && (
           <div className="relative sm:w-72">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-parchment-600" />
-            <input type="search" className="input !pl-9" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('characters.othersSearch')} aria-label={t('characters.othersSearch')} />
+            <input
+              type="search"
+              className="input !pl-9"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('characters.othersSearch')}
+              aria-label={t('characters.othersSearch')}
+            />
           </div>
         )}
       </div>

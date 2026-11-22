@@ -1432,5 +1432,68 @@
       "Source": "Sources",
       "DmNote": "DM notes"
     }
+  },
+  "wizard": {
+    "open": "New character (wizard)",
+    "empty": "Empty sheet",
+    "title": "New character",
+    "steps": "Steps",
+    "created": "“{{name}}” was created.",
+    "step": {
+      "basics": "Name",
+      "race": "Race",
+      "class": "Class",
+      "background": "Background",
+      "abilities": "Ability scores",
+      "skills": "Skills & languages",
+      "summary": "Summary"
+    },
+    "intro": "The wizard guides you through creating a level 1 character. Race, class and background come from the wiki; ability scores, saving throws, skills, proficiencies, hit points, languages, tools and features are filled in automatically. You can adjust everything in the sheet afterwards.",
+    "name": "Character name",
+    "subrace": "Subrace",
+    "choose": "– please choose –",
+    "hitDie": "Hit die {{die}}",
+    "subclassLater": "{{title}} is chosen at level {{level}}.",
+    "spellsLater": "This class casts spells from level 2.",
+    "noBackgrounds": "The wiki has no backgrounds yet – you can skip this step.",
+    "rollPersonality": "Roll personality trait, ideal, bond and flaw from the background tables",
+    "method": "Method",
+    "methods": {
+      "standard": "Standard array",
+      "pointBuy": "Point buy",
+      "manual": "Roll / own values"
+    },
+    "methodHint": {
+      "standard": "Assign 15, 14, 13, 12, 10 and 8 to the six abilities – each value exactly once.",
+      "pointBuy": "All abilities start at 8; you have {{budget}} points. Scores up to 13 cost 1 point each, 14 and 15 cost 2 each.",
+      "manual": "Enter your own values or roll (4d6, drop the lowest)."
+    },
+    "pointsLeft": "Points left: {{n}}",
+    "roll": "Roll (4d6)",
+    "ability": "Ability",
+    "base": "Base",
+    "bonus": "Increase",
+    "total": "Total",
+    "bonusSource": "Ability score increase",
+    "bonusRace": "Race (2014 rules): {{text}}",
+    "bonusBackground": "Background (2024 rules): {{list}}",
+    "bonusNone": "No increase",
+    "chooseAbility": "Ability {{n}} (+{{amount}})",
+    "skills": "Skills",
+    "fromBackground": "From background: {{list}}",
+    "chooseSkills": "Choose {{count}} skills of the {{cls}} class ({{done}} chosen):",
+    "noSkillChoice": "The class has no skill choices.",
+    "languages": "Languages",
+    "knownLanguages": "Known: {{list}}",
+    "noFixedLanguages": "No fixed languages.",
+    "extraLanguage": "Additional language {{n}}",
+    "tools": "Tools",
+    "knownTools": "Proficient: {{list}}",
+    "noTools": "No tool proficiency.",
+    "summaryHint": "Add spells, equipment and appearance afterwards in the sheet. The starting equipment of class and background is listed under “More features”.",
+    "back": "Back",
+    "next": "Next",
+    "skip": "Skip",
+    "create": "Create character"
   }
 }

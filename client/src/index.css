@@ -53,16 +53,20 @@
     @apply cursor-not-allowed opacity-60;
   }
   .chip-check input[type='checkbox'],
+  .chip-check input[type='radio'],
   .chip-dot {
     @apply grid h-4 w-4 shrink-0 cursor-pointer appearance-none place-items-center rounded-full border-[1.5px] border-parchment-600 bg-transparent outline-none dark:border-parchment-400;
   }
-  .chip-check-block input[type='checkbox'] {
+  .chip-check-block input[type='checkbox'],
+  .chip-check-block input[type='radio'] {
     @apply mt-1;
   }
-  .chip-check input[type='checkbox']:checked {
+  .chip-check input[type='checkbox']:checked,
+  .chip-check input[type='radio']:checked {
     border-color: currentColor;
   }
-  .chip-check input[type='checkbox']:checked::after {
+  .chip-check input[type='checkbox']:checked::after,
+  .chip-check input[type='radio']:checked::after {
     content: '';
     @apply h-2 w-2 rounded-full bg-current;
   }
