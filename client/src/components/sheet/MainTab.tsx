@@ -70,7 +70,8 @@ export function IdentityHeader() {
       <TF path={['identity', 'classLevel']} label={t('sheet.classLevel')} className="col-span-2" />
       <div>
         <NF path={['identity', 'level']} label={t('sheet.level')} min={1} max={20} />
-        {!readOnly && sheet.identity.level < 20 && (
+        {/* Nur wenn die Erfahrungspunkte für die nächste Stufe reichen */}
+        {!readOnly && sheet.identity.level < 20 && levelForXp(sheet.identity.xp) > sheet.identity.level && (
           <button
             type="button"
             className="mt-0.5 inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 underline decoration-dotted underline-offset-2 hover:decoration-solid print:hidden dark:text-emerald-300"

@@ -183,14 +183,15 @@ Bewegungsrate, Sprachen, Werkzeuge, Volks- und Klassenmerkmale der Stufe 1, Hint
 Startausrüstung (Inventar und Münzen, wahlweise nur als Text), Zauberattribut und Zauberplätze sowie auf Wunsch zufällige Persönlichkeitsmerkmale aus
 den Tabellen des Hintergrunds.
 
-**Stufenaufstieg** (Knopf „Stufenaufstieg“ unter dem Stufenfeld bzw. im Hinweis „Genug Erfahrung für Stufe …“): erkennt
+**Stufenaufstieg** (Knopf „Stufenaufstieg“ unter dem Stufenfeld bzw. im Hinweis „Genug Erfahrung für Stufe …“ –
+beide erscheinen erst, wenn die Erfahrungspunkte für die nächste Stufe reichen): erkennt
 Klasse und Unterklasse aus „Klasse & Stufe“ (Wiki) und zeigt Schritt für Schritt, was sich ändert –
 **Trefferpunkte** (Durchschnitt, Würfeln oder eigener Wert, jeweils + KON), Trefferwürfel, die **neuen Klassen- und
 Unterklassenmerkmale** der Stufe aus dem Wiki, die **Wahl der Unterklasse** auf der passenden Stufe (z. B. Magier 2,
 Barbar 3), die **Attributswerterhöhung** (+2 / +1+1, max. 20) oder ein **Talent** auf den Stufen, für die das Wiki
 eine Attributswerterhöhung vorsieht (eine höhere Konstitution erhöht die TP rückwirkend), **Zauberplätze** nach den
-SRD-Tabellen (Voll-, Halbzauberer, Paktmagie), Übungsbonus und EP für die nächste Stufe. Ein Aufstieg ohne genug EP
-(Meilenstein) ist möglich und wird angezeigt. Neue Merkmale werden an „Klassenmerkmale“ angehängt, ein Talent an
+SRD-Tabellen (Voll-, Halbzauberer, Paktmagie), Übungsbonus und EP für die nächste Stufe. Bei Meilenstein-Aufstieg ohne EP trägt man die
+Stufe direkt im Stufenfeld ein. Neue Merkmale werden an „Klassenmerkmale“ angehängt, ein Talent an
 „Weitere Merkmale“.
 
 Der Bogen ist wie der D&D-5e-Charakterbogen in vier Reiter gegliedert:
