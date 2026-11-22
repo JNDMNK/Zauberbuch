@@ -265,6 +265,7 @@ function ClassFields({ d, set }: { d: WikiClassData; set: (d: WikiClassData) => 
       </Group>
       <Group title={t('wiki.class.equipment')}>
         <MarkdownEditor id="w-equip" value={d.equipment} onChange={(v) => f('equipment', v.slice(0, 3000))} rows={4} />
+        <p className="text-xs text-parchment-700 dark:text-parchment-400">{t('wiki.equipmentHint')}</p>
       </Group>
       <Group title={t('wiki.class.spellcasting')}>
         <MarkdownEditor id="w-spell" value={d.spellcasting} onChange={(v) => f('spellcasting', v.slice(0, 5000))} rows={4} />
@@ -408,6 +409,7 @@ function BackgroundFields({ d, set, featNames }: { d: WikiBackgroundData; set: (
       </Group>
       <Group title={t('wiki.class.equipment')}>
         <MarkdownEditor id="w-bequip" value={d.equipment} onChange={(v) => f('equipment', v.slice(0, 2000))} rows={4} />
+        <p className="text-xs text-parchment-700 dark:text-parchment-400">{t('wiki.equipmentHint')}</p>
       </Group>
       <Group title={t('wiki.background.feature')}>
         <TextInput id="w-bfname" label={t('wiki.name')} value={d.feature.name} onChange={(v) => f('feature', { ...d.feature, name: v })} max={120} />

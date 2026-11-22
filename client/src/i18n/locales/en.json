@@ -1376,7 +1376,8 @@
       "noCondition": "– no condition –",
       "conditionHint": "Links the combat condition to this rule: clicking the condition shows it.",
       "inCombat": "In combat: {{name}}"
-    }
+    },
+    "equipmentHint": "For the character wizard: one item or choice per line, e.g. “- (a) a rapier or (b) a shortsword” or options below each other (“A) Rapier” / “B) Shortsword”); put the quantity first (“two daggers”, “20 arrows”), gold as “15 gp”. Names from the item database are linked."
   },
   "sources": {
     "title": "Sources",

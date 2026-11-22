@@ -166,7 +166,9 @@ Erhöhung wahlweise nach Volk – Regeln 2014, inkl. „zwei weitere deiner Wahl
 2024, +2/+1 oder +1/+1/+1) → **Fertigkeiten, Sprachen, Werkzeuge** (Klassenwahl „Zwei aus …“, feste Fertigkeiten des
 Hintergrunds, Sprachen und Werkzeuge „deiner Wahl“ aus Wiki bzw. Gegenstands-Datenbank) → **Ausrüstung** →
 **Zusammenfassung**. Im Schritt **Ausrüstung** wird die Startausrüstung von Klasse und Hintergrund aus dem Wiki-Text
-erkannt: Auswahlen „(a) … oder (b) …“ erscheinen als Optionen, Platzhalter wie „eine einfache Waffe“, „zwei
+erkannt: Auswahlen erscheinen als Optionen – in einer Zeile („(a) … oder (b) …“, „a) … oder b) …“, „A: … B: …“,
+„Rapier oder Kurzschwert“) oder untereinander („A) Rapier“ / „B) Kurzschwert“, auch als verschachtelte bzw.
+nummerierte Liste; Einleitungen wie „Wähle eins:“ werden übersprungen), Platzhalter wie „eine einfache Waffe“, „zwei
 Kriegswaffen“ oder „ein anderes Musikinstrument“ als Auswahlliste aus der Gegenstands-Datenbank. Gegenstände kommen mit
 Anzahl ins **Inventar** – erkannte Einträge verknüpft mit Gewicht und Karte (auch Plurale und Munition, z. B. „zwei
 Handäxte“ → 2× Beil, „20 Pfeile“ → Pfeile (20)), übrige als Text. Ausrüstungspakete (Entdecker-, Gewölbe-,

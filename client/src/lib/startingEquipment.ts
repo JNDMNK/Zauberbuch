@@ -249,30 +249,66 @@ function parseOption(text: string, catalog: CatalogItemDto[]): EquipmentOption {
   return { label, parts: pieces.map((p) => parsePart(p, catalog)) };
 }
 
+/** Kennbuchstabe am Zeilenanfang: „(a) …“, „a) …“, „A: …“, „a. …“ */
+const LINE_MARK = /^\(?([a-e])\s*[).:]\s+/i;
+/** Kennbuchstaben innerhalb einer Zeile: „(a) X oder (b) Y“, „a) X oder b) Y“, „A: X B: Y“ */
+const INLINE_MARK = /(?:^|[\s,;])\(?[a-e]\s*[):]\s+/gi;
+const OR = /\s+(?:oder|or)\s+/i;
+
+/** Optionen einer einzelnen Zeile */
+function splitOptions(line: string): string[] {
+  const marks = line.match(INLINE_MARK) ?? [];
+  if (marks.length >= 2) return line.split(INLINE_MARK).map((s) => s.replace(/(,|;|\s+oder|\s+or)\s*$/i, '').trim()).filter(Boolean);
+  const text = line.replace(/^(?:entweder|either)\s+/i, '');
+  // „oder“ in Klammern (Erläuterungen) trennt keine Optionen
+  if (OR.test(text.replace(/\([^)]*\)/g, ''))) return text.split(OR).map((s) => s.trim()).filter(Boolean);
+  return [text];
+}
+
 /** Zerlegt einen Ausrüstungstext in Zeilen mit Optionen */
 export function parseEquipment(text: string, source: string, catalog: CatalogItemDto[]): EquipmentLine[] {
   const lines = text
     .split('\n')
     .map((l) =>
       l
-        .replace(/^\s*[-*•]\s*/, '')
-        .replace(/\*\*?/g, '')
+        .replace(/^\s*(?:[-*•+]|\d+[.)])\s*/, '')
+        .replace(/^\s*(?:[-*•+])\s*/, '')
+        .replace(/\*\*?|__/g, '')
         .trim(),
     )
-    .filter(Boolean);
-  return lines.map((line) => {
-    let options: string[];
-    if (/\([a-e]\)/i.test(line)) {
-      options = line
-        .split(/\s*\([a-e]\)\s*/i)
-        .map((s) => s.replace(/(,|\s+oder|\s+or)\s*$/i, '').trim())
-        .filter(Boolean);
+    .filter(Boolean)
+    // Einleitungen wie „Wähle eins:“ enthalten keine Gegenstände
+    .filter((l) => !/:\s*$/.test(l));
+
+  // Optionen in eigenen Zeilen („A) Rapier“ / „B) Kurzschwert“ bzw. „oder …“) zu einer Auswahl zusammenfassen
+  const groups: { text: string; options: string[] }[] = [];
+  let open = false;
+  for (const line of lines) {
+    const mark = LINE_MARK.exec(line);
+    const orLine = /^(?:oder|or)\s+/i.exec(line);
+    const rest = mark ? line.slice(mark[0].length) : orLine ? line.slice(orLine[0].length) : line;
+    const prev = groups[groups.length - 1];
+    if (mark && splitOptions(line).length < 2) {
+      if (open && prev && mark[1].toLowerCase() !== 'a') {
+        prev.options.push(rest.replace(/(,|;|\s+oder|\s+or)\s*$/i, '').trim());
+        prev.text += ` ${line}`;
+      } else {
+        groups.push({ text: line, options: [rest.replace(/(,|;|\s+oder|\s+or)\s*$/i, '').trim()] });
+        open = true;
+      }
+    } else if (orLine && prev) {
+      prev.options.push(rest.trim());
+      prev.text += ` ${line}`;
     } else {
-      options = /\s+oder\s+|\s+or\s+/i.test(line) && !/\(/.test(line) ? line.split(/\s+oder\s+|\s+or\s+/i) : [line];
+      groups.push({ text: line, options: splitOptions(line) });
+      open = false;
     }
+  }
+
+  return groups.map((g) => {
     // „eine Diplomaten- oder (b) eine Unterhaltungsausrüstung“ → Diplomatenausrüstung
-    const tail = /(ausrüstung|werkzeug|pack)$/i.exec(options[options.length - 1] ?? '')?.[1] ?? '';
-    options = options.map((o) => (o.endsWith('-') && tail ? o.slice(0, -1) + tail : o));
-    return { source, text: line, options: options.map((o) => parseOption(o, catalog)) };
+    const tail = /(ausrüstung|werkzeug|pack)$/i.exec(g.options[g.options.length - 1] ?? '')?.[1] ?? '';
+    const options = g.options.map((o) => (o.endsWith('-') && tail ? o.slice(0, -1) + tail : o));
+    return { source, text: g.text, options: options.map((o) => parseOption(o, catalog)) };
   });
 }

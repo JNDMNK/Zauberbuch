@@ -1376,7 +1376,8 @@
       "noCondition": "– kein Zustand –",
       "conditionHint": "Verknüpft den Zustand im Kampf mit dieser Regel: Ein Klick auf den Zustand zeigt sie an.",
       "inCombat": "Im Kampf: {{name}}"
-    }
+    },
+    "equipmentHint": "Für den Charakter-Assistenten: ein Gegenstand bzw. eine Auswahl pro Zeile, z. B. „- (a) ein Rapier oder (b) ein Kurzschwert“ oder Optionen untereinander („A) Rapier“ / „B) Kurzschwert“); Anzahl voranstellen („zwei Dolche“, „20 Pfeile“), Gold als „15 GM“. Namen aus der Gegenstands-Datenbank werden verknüpft."
   },
   "sources": {
     "title": "Quellen",
