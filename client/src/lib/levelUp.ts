@@ -104,6 +104,8 @@ export interface LevelUpPlan {
   abilityIncrease: Partial<Record<Ability, number>>;
   feat: string | null;
   slots: number[] | null;
+  /** Zauberwirken ergänzen, falls im Bogen noch leer (Klasse, Zauberattribut) */
+  caster?: { className: string; ability: Ability } | null;
   die: number;
 }
 
@@ -132,6 +134,10 @@ export function applyLevelUp(sheet: CharacterSheet, cls: ClassEntry | null, plan
   }
   if (plan.feat) s.features.moreFeatures = [s.features.moreFeatures.trim(), `Talent (Stufe ${n}): ${plan.feat}`].filter(Boolean).join('\n\n').slice(0, 20000);
   if (plan.slots) s.spellcasting.slots = s.spellcasting.slots.map((slot, i) => ({ total: plan.slots![i], used: Math.min(slot.used, plan.slots![i]) }));
+  if (plan.caster) {
+    if (!s.spellcasting.className.trim()) s.spellcasting.className = plan.caster.className.slice(0, 100);
+    if (s.spellcasting.ability === 'none') s.spellcasting.ability = plan.caster.ability;
+  }
   return s;
 }
 

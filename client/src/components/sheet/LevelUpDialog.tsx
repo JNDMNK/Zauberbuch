@@ -8,7 +8,7 @@ import { Modal } from '../Modal';
 import { Alert, PageSpinner } from '../ui';
 import { Markdown } from '../Markdown';
 import { useSpellClass } from '../wiki/ClassSpells';
-import type { ClassEntry } from '../../lib/characterWizard';
+import { SPELLCASTING, type ClassEntry } from '../../lib/characterWizard';
 import { applyLevelUp, averageHp, conBonusFor, detectClass, hitDie, isAsi, spellSlots, xpForLevel } from '../../lib/levelUp';
 import { useSheet } from './SheetContext';
 
@@ -59,7 +59,10 @@ export function LevelUpDialog({ open, onClose }: { open: boolean; onClose: () =>
   // Talente und Unterklassen nur aus den Quellen der Geschichte des Bogens
   const feats = (wiki ?? []).filter((e) => e.kind === 'feat' && sourceAllowed(sources, e.sourceId)).map((e) => e.name);
   const { cls, subclass: currentSub } = detectClass(sheet.identity.classLevel, classes);
-  const spellClass = useSpellClass(cls?.name ?? '');
+  // Zauberklasse aus „Klasse & Stufe“, sonst aus „Klasse (Zauberwirken)“ im Reiter Zauber
+  const spellClassFromClass = useSpellClass(cls?.name ?? '');
+  const spellClassFromSheet = useSpellClass(sheet.spellcasting.className);
+  const spellClass = spellClassFromClass ?? spellClassFromSheet;
   const level = sheet.identity.level;
   const n = Math.min(20, level + 1);
   const die = hitDie(sheet, cls);
@@ -85,8 +88,13 @@ export function LevelUpDialog({ open, onClose }: { open: boolean; onClose: () =>
   const hpGain = hpMode === 'average' ? avg : hpMode === 'roll' ? (rolled ?? 0) + con : Number.parseInt(manualHp, 10) || 0;
   const conBonus = conBonusFor(sheet, increase, n);
   const slotsBefore = sheet.spellcasting.slots.map((s) => s.total);
-  const slotsAfter = spellClass ? spellSlots(spellClass, n) : null;
+  // Tabelle nach SRD; zusätzliche, selbst eingetragene Plätze bleiben erhalten (nur Paktmagie ersetzt, da sich ihr Grad verschiebt)
+  const table = spellClass ? spellSlots(spellClass, n) : null;
+  const slotsAfter = table ? (spellClass === 'warlock' ? table : table.map((v, i) => Math.max(v, slotsBefore[i] ?? 0))) : null;
   const slotChanges = slotsAfter ? slotsAfter.map((v, i) => ({ grade: i + 1, from: slotsBefore[i], to: v })).filter((x) => x.from !== x.to) : [];
+  // Zauberwirken im Bogen ergänzen, wenn es noch fehlt (z. B. Paladin/Waldläufer, die erst ab Stufe 2 zaubern)
+  const caster = spellClass && slotsAfter?.some((v) => v > 0) ? { className: sheet.spellcasting.className || cls?.name || '', ability: SPELLCASTING[spellClass].ability } : null;
+  const casterAbilityNew = caster && sheet.spellcasting.ability === 'none' ? caster.ability : null;
   const xpNeeded = xpForLevel(n);
 
   const ok =
@@ -106,6 +114,7 @@ export function LevelUpDialog({ open, onClose }: { open: boolean; onClose: () =>
       abilityIncrease: increase,
       feat: asi && asiMode === 'feat' ? feat.trim() : null,
       slots: slotsAfter && slotChanges.length ? slotsAfter : null,
+      caster,
       die,
     });
     for (const key of ['identity', 'abilities', 'combat', 'features', 'spellcasting'] as const) set([key], next[key]);
@@ -278,6 +287,7 @@ export function LevelUpDialog({ open, onClose }: { open: boolean; onClose: () =>
               <tbody>
                 {[
                   ...slotChanges.map((s) => [t('levelUp.slots', { grade: s.grade }), String(s.from), String(s.to)]),
+                  ...(casterAbilityNew ? [[t('sheet.spellAbility'), '–', t(`sheet.ability.${casterAbilityNew}`)]] : []),
                   [t('sheet.proficiencyBonus'), `+${proficiencyBonusForLevel(level)}`, `+${proficiencyBonusForLevel(n)}`],
                   ...Object.entries(increase).map(([a, v]) => [t(`sheet.ability.${a}`), String(sheet.abilities[a as Ability]), String(Math.min(20, sheet.abilities[a as Ability] + (v ?? 0)))]),
                   [t('levelUp.nextLevel'), n < 20 ? `${xpForLevel(n).toLocaleString('de')} EP` : '–', n < 20 ? `${xpForLevel(n + 1).toLocaleString('de')} EP` : t('sheet.xpMaxLevel')],
