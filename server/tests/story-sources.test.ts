@@ -136,3 +136,24 @@ describe('Zauber eigener Wiki-Klassen', () => {
     expect(exp.wikiClasses).toEqual(['klasse_runen']);
   });
 });
+
+describe('Klassentabelle', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it('speichert bekannte Zaubertricks und bis zu zwei benannte Spalten', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    const values = Array.from({ length: 20 }, (_, i) => (i >= 1 ? String(4 + 2 * Math.floor((i - 1) / 4)) : ''));
+    const res = await admin
+      .post('/api/wiki')
+      .set(CSRF)
+      .send({ kind: 'class', name: 'Runenschmied', data: { casterType: 'halfEarly', cantripsKnown: [2, 2, 2], extraColumns: [{ name: 'Bekannte Infusionen', values }, { name: 'Durchdrungene Gegenstände', values: ['', '2'] }, { name: 'Zu viel', values: [] }] } });
+    expect(res.status).toBe(201);
+    expect(res.body.entry.data.cantripsKnown).toEqual([2, 2, 2]);
+    // mehr als zwei Spalten → ungültig, Feld fällt auf leer zurück
+    expect(res.body.entry.data.extraColumns).toEqual([]);
+    const ok = await admin.post('/api/wiki').set(CSRF).send({ kind: 'class', name: 'Artificer', data: { extraColumns: [{ name: 'Bekannte Infusionen', values }] } });
+    expect(ok.body.entry.data.extraColumns[0]).toMatchObject({ name: 'Bekannte Infusionen', values: expect.arrayContaining(['4', '6']) });
+  });
+});

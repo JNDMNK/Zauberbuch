@@ -87,6 +87,22 @@ export function spellSlots(spellClass: SpellClass, level: number): number[] {
   return slotsFor(AUTO_CASTER[spellClass], level);
 }
 
+/** Bekannte Zaubertricks der SRD-Klassen: [ab Stufe, Anzahl] */
+const AUTO_CANTRIPS: Partial<Record<SpellClass, [number, number][]>> = {
+  bard: [[1, 2], [4, 3], [10, 4]],
+  cleric: [[1, 3], [4, 4], [10, 5]],
+  druid: [[1, 2], [4, 3], [10, 4]],
+  sorcerer: [[1, 4], [4, 5], [10, 6]],
+  warlock: [[1, 2], [4, 3], [10, 4]],
+  wizard: [[1, 3], [4, 4], [10, 5]],
+  artificer: [[1, 2], [10, 3], [14, 4]],
+};
+export function autoCantrips(spellClass: SpellClass, level: number): number | null {
+  const steps = AUTO_CANTRIPS[spellClass];
+  if (!steps) return null;
+  return steps.reduce((n, [from, count]) => (level >= from ? count : n), 0);
+}
+
 /**
  * Zauberwirken einer Klasse: eigene Angaben im Wiki (Typ, Attribut, Zauberlisten) gehen vor, sonst automatisch nach
  * der am Namen erkannten SRD-Klasse. type null = zaubert nicht.
@@ -96,7 +112,12 @@ export function resolveCaster(cls: ClassEntry | null, auto: SpellClass | null) {
   const ability: Ability | null = cls?.data.castingAbility ?? (auto ? SPELLCASTING[auto].ability : null);
   const lists: SpellClass[] = cls?.data.spellLists.length ? cls.data.spellLists : auto ? [auto] : [];
   const active = type && type !== 'none' ? type : null;
-  return { type: active, ability, lists, slots: (level: number) => (active ? slotsFor(active, level, cls?.data.slotTable) : null) };
+  const ownCantrips = cls?.data.cantripsKnown ?? [];
+  const cantrips = (level: number): number | null =>
+    ownCantrips.length ? (ownCantrips[Math.max(1, Math.min(20, level)) - 1] ?? 0) : auto && (!cls?.data.casterType || cls.data.casterType === AUTO_CASTER[auto]) ? autoCantrips(auto, level) : null;
+  // Frei benannte Spalten (nur mit Namen)
+  const extras = (cls?.data.extraColumns ?? []).filter((c) => c.name.trim());
+  return { type: active, ability, lists, slots: (level: number) => (active ? slotsFor(active, level, cls?.data.slotTable) : null), cantrips, extras };
 }
 
 const lower = (s: string) => s.toLocaleLowerCase('de');

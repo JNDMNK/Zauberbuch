@@ -98,6 +98,16 @@ export function LevelUpDialog({ open, onClose }: { open: boolean; onClose: () =>
   const caster = casterInfo.ability && slotsAfter?.some((v) => v > 0) ? { className: sheet.spellcasting.className || cls?.name || '', ability: casterInfo.ability } : null;
   const casterAbilityNew = caster && sheet.spellcasting.ability === 'none' ? caster.ability : null;
   const xpNeeded = xpForLevel(n);
+  // Klassentabelle: bekannte Zaubertricks und eigene Spalten (nur Hinweis, z. B. „Bekannte Infusionen 4 → 6“)
+  const tableChanges: [string, string, string][] = [];
+  const cBefore = casterInfo.cantrips(level);
+  const cAfter = casterInfo.cantrips(n);
+  if (cAfter !== null && cAfter !== cBefore) tableChanges.push([t('levelUp.cantripsKnown'), String(cBefore ?? 0), String(cAfter)]);
+  for (const col of casterInfo.extras) {
+    const before = col.values[level - 1] || '–';
+    const after = col.values[n - 1] || '–';
+    if (before !== after) tableChanges.push([col.name, before, after]);
+  }
 
   const ok =
     level < 20 &&
@@ -290,6 +300,7 @@ export function LevelUpDialog({ open, onClose }: { open: boolean; onClose: () =>
                 {[
                   ...slotChanges.map((s) => [t('levelUp.slots', { grade: s.grade }), String(s.from), String(s.to)]),
                   ...(casterAbilityNew ? [[t('sheet.spellAbility'), '–', t(`sheet.ability.${casterAbilityNew}`)]] : []),
+                  ...tableChanges,
                   [t('sheet.proficiencyBonus'), `+${proficiencyBonusForLevel(level)}`, `+${proficiencyBonusForLevel(n)}`],
                   ...Object.entries(increase).map(([a, v]) => [t(`sheet.ability.${a}`), String(sheet.abilities[a as Ability]), String(Math.min(20, sheet.abilities[a as Ability] + (v ?? 0)))]),
                   [t('levelUp.nextLevel'), n < 20 ? `${xpForLevel(n).toLocaleString('de')} EP` : '–', n < 20 ? `${xpForLevel(n + 1).toLocaleString('de')} EP` : t('sheet.xpMaxLevel')],

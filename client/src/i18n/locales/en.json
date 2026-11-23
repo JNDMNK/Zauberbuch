@@ -1305,7 +1305,14 @@
       "castingGroup": "Spell slots & spell lists (for wizard and level up)",
       "slotTable": "Spell slots per level",
       "fillFrom": "Use template:",
-      "castingHint": "“Automatic” uses the matching table for SRD classes (e.g. paladin = half caster)."
+      "castingHint": "“Automatic” uses the matching table for SRD classes (e.g. paladin = half caster).",
+      "classTable": "Class table",
+      "extraTable": "Class table: cantrips known and custom columns",
+      "extraTableHint": "Cantrips known per level (empty = automatic for SRD classes) and up to two freely named columns, e.g. “Infusions known” and “Infused items” for the artificer. Shown in the class view and on level up.",
+      "addColumn": "Add column",
+      "columnName": "Column name",
+      "cantripsAuto": "Cantrips automatic again",
+      "auto": "auto"
     },
     "form": {
       "traitName": "Trait name",
@@ -1598,7 +1605,8 @@
     "nextLevel": "Next level at",
     "hint": "New features are appended to “Class features”, a feat to “More features”. Choose spells as usual in the “Spells” tab; all values can be adjusted in the sheet afterwards.",
     "apply": "Apply level {{n}}",
-    "milestoneOk": "Milestone level up granted by the DM ✓"
+    "milestoneOk": "Milestone level up granted by the DM ✓",
+    "cantripsKnown": "Cantrips known"
   },
   "storySources": {
     "banner": "{{what}} of the story “{{story}}”: only from {{list}}.",

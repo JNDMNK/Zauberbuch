@@ -87,6 +87,14 @@ const classObject = z.object({
   spellLists: z.array(z.enum(CLASSES)).max(CLASSES.length).catch([]).default([]),
   /** Eigene Zauberplatz-Tabelle (bei casterType „custom“): 20 Stufen × bis zu 9 Grade */
   slotTable: z.array(z.array(z.coerce.number().int().min(0).max(9)).max(9)).max(20).catch([]).default([]),
+  /** Bekannte Zaubertricks je Stufe (leer = automatisch bei SRD-Klassen) */
+  cantripsKnown: z.array(z.coerce.number().int().min(0).max(30)).max(20).catch([]).default([]),
+  /** Bis zu zwei frei benannte Spalten je Stufe, z. B. „Bekannte Infusionen“ beim Artificer */
+  extraColumns: z
+    .array(z.object({ name: z.string().trim().max(40).catch('').default(''), values: z.array(z.string().trim().max(12).catch('')).max(20).catch([]).default([]) }))
+    .max(2)
+    .catch([])
+    .default([]),
   /** Bezeichnung der Unterklassen, z. B. „Arkane Tradition“ */
   subclassTitle: text(80),
   features: levelFeatures,

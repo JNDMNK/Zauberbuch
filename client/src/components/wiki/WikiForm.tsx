@@ -300,6 +300,7 @@ function CastingFields({ d, set }: { d: WikiClassData; set: (d: WikiClassData) =
         </div>
         <p className="mt-1 text-xs text-parchment-700 dark:text-parchment-400">{t('wiki.class.spellListsHint')}</p>
       </div>
+      <ExtraColumnsEditor d={d} set={set} />
       {d.casterType === 'custom' && (
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-1.5 text-sm">
@@ -347,6 +348,105 @@ function CastingFields({ d, set }: { d: WikiClassData; set: (d: WikiClassData) =
         </div>
       )}
     </Group>
+  );
+}
+
+/** Klassentabelle: bekannte Zaubertricks und bis zu zwei frei benannte Spalten je Stufe */
+function ExtraColumnsEditor({ d, set }: { d: WikiClassData; set: (d: WikiClassData) => void }) {
+  const { t } = useTranslation();
+  const cantrips = d.cantripsKnown;
+  const setCantrip = (i: number, v: number | null) => {
+    const base = cantrips.length ? [...cantrips] : Array.from({ length: 20 }, () => 0);
+    base[i] = v ?? 0;
+    set({ ...d, cantripsKnown: base });
+  };
+  const setColumn = (k: number, patch: Partial<WikiClassData['extraColumns'][number]>) => set({ ...d, extraColumns: d.extraColumns.map((c, j) => (j === k ? { ...c, ...patch } : c)) });
+  const setValue = (k: number, i: number, v: string) => {
+    const values = Array.from({ length: 20 }, (_, j) => d.extraColumns[k].values[j] ?? '');
+    values[i] = v.slice(0, 12);
+    setColumn(k, { values });
+  };
+  const open = cantrips.length > 0 || d.extraColumns.length > 0;
+  return (
+    <details className="rounded-lg border border-parchment-400/60 p-3 dark:border-night-700" open={open}>
+      <summary className="cursor-pointer font-display text-sm font-bold">{t('wiki.class.extraTable')}</summary>
+      <p className="mt-1 text-xs text-parchment-700 dark:text-parchment-400">{t('wiki.class.extraTableHint')}</p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {d.extraColumns.length < 2 && (
+          <button type="button" className="btn-ghost !px-2 !py-1 text-sm" onClick={() => set({ ...d, extraColumns: [...d.extraColumns, { name: '', values: [] }] })}>
+            <Plus className="h-4 w-4" />
+            {t('wiki.class.addColumn')}
+          </button>
+        )}
+        {cantrips.length > 0 && (
+          <button type="button" className="btn-ghost !px-2 !py-1 text-sm" onClick={() => set({ ...d, cantripsKnown: [] })}>
+            {t('wiki.class.cantripsAuto')}
+          </button>
+        )}
+      </div>
+      <div className="mt-2 overflow-x-auto">
+        <table className="text-center text-sm">
+          <thead>
+            <tr className="text-xs text-parchment-700 dark:text-parchment-400">
+              <th className="px-1 py-1 text-left">{t('wiki.level')}</th>
+              <th className="px-1 py-1">{t('sheet.cantrips')}</th>
+              {d.extraColumns.map((c, k) => (
+                <th key={k} className="px-1 py-1">
+                  <span className="flex items-center gap-1">
+                    <input
+                      className="input !w-36 !px-1.5 !py-0.5 text-xs"
+                      value={c.name}
+                      maxLength={40}
+                      placeholder={t('wiki.class.columnName')}
+                      aria-label={`${t('wiki.class.columnName')} ${k + 1}`}
+                      onChange={(e) => setColumn(k, { name: e.target.value })}
+                    />
+                    <button
+                      type="button"
+                      className="btn-icon !p-1 text-red-700 dark:text-red-400"
+                      onClick={() => set({ ...d, extraColumns: d.extraColumns.filter((_, j) => j !== k) })}
+                      aria-label={`${t('common.delete')}: ${c.name || k + 1}`}
+                      title={t('common.delete')}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: 20 }, (_, i) => (
+              <tr key={i}>
+                <td className="px-1 text-left font-semibold tabular-nums">{i + 1}</td>
+                <td className="px-1 py-0.5">
+                  <input
+                    className="input !w-14 !px-1 !py-0.5 text-center tabular-nums"
+                    inputMode="numeric"
+                    value={cantrips.length ? cantrips[i] || '' : ''}
+                    placeholder={cantrips.length ? '0' : t('wiki.class.auto')}
+                    aria-label={`${t('wiki.level')} ${i + 1}, ${t('sheet.cantrips')}`}
+                    onChange={(e) => setCantrip(i, Number(e.target.value.replace(/\D/g, '')) || 0)}
+                  />
+                </td>
+                {d.extraColumns.map((c, k) => (
+                  <td key={k} className="px-1 py-0.5">
+                    <input
+                      className="input !w-36 !px-1.5 !py-0.5 text-center"
+                      value={c.values[i] ?? ''}
+                      maxLength={12}
+                      placeholder="–"
+                      aria-label={`${t('wiki.level')} ${i + 1}, ${c.name || t('wiki.class.columnName')}`}
+                      onChange={(e) => setValue(k, i, e.target.value)}
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
   );
 }
 

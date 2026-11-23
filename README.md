@@ -429,6 +429,10 @@ Format:
   Drittelzauberer ab Stufe 3, Paktmagie) oder eine **eigene Tabelle** (Plätze je Stufe 1–20 und Grad 1–9, mit
   Vorlagen zum Übernehmen) sowie das Zauberattribut. Die Klassenansicht zeigt die Tabelle; Charakter-Assistent und
   Stufenaufstieg verwenden sie (auch für eigene Klassen).
+- **Klassentabelle:** Zusätzlich zu den Zauberplätzen je Klasse die **bekannten Zaubertricks** je Stufe (bei den
+  SRD-Klassen automatisch, sonst frei eintragbar) und bis zu **zwei frei benannte Spalten**, z. B. „Bekannte
+  Infusionen“ und „Durchdrungene Gegenstände“ beim Artificer. Die Klassenansicht zeigt sie in der Tabelle, der
+  Stufenaufstieg nennt die Änderung (z. B. „Bekannte Infusionen 4 → 6“).
 - Felder nach dem **System Reference Document 5.1**:
   - **Volk:** Attributswerterhöhung, Alter, Gesinnung, Größe, Bewegungsrate, Sprachen, Merkmale (Name + Text) und
     Unterrassen (Name, Attributswerterhöhung, Beschreibung, eigene Merkmale).

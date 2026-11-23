@@ -1305,7 +1305,14 @@
       "castingGroup": "Zauberplätze & Zauberlisten (für Assistent und Stufenaufstieg)",
       "slotTable": "Zauberplätze je Stufe",
       "fillFrom": "Vorlage übernehmen:",
-      "castingHint": "„Automatisch“ nutzt bei den SRD-Klassen die passende Tabelle (z. B. Paladin = Halbzauberer)."
+      "castingHint": "„Automatisch“ nutzt bei den SRD-Klassen die passende Tabelle (z. B. Paladin = Halbzauberer).",
+      "classTable": "Klassentabelle",
+      "extraTable": "Klassentabelle: bekannte Zaubertricks und eigene Spalten",
+      "extraTableHint": "Bekannte Zaubertricks je Stufe (leer = automatisch bei den SRD-Klassen) und bis zu zwei frei benannte Spalten, z. B. „Bekannte Infusionen“ und „Durchdrungene Gegenstände“ beim Artificer. Erscheint in der Klassenansicht und im Stufenaufstieg.",
+      "addColumn": "Spalte hinzufügen",
+      "columnName": "Name der Spalte",
+      "cantripsAuto": "Zaubertricks wieder automatisch",
+      "auto": "auto"
     },
     "form": {
       "traitName": "Name des Merkmals",
@@ -1598,7 +1605,8 @@
     "nextLevel": "Nächste Stufe bei",
     "hint": "Die neuen Merkmale werden an „Klassenmerkmale“ angehängt, ein Talent an „Weitere Merkmale“. Zauber wählst du wie gewohnt im Reiter „Zauber“; alle Werte lassen sich danach im Bogen anpassen.",
     "apply": "Stufe {{n}} übernehmen",
-    "milestoneOk": "Meilenstein-Aufstieg vom DM freigegeben ✓"
+    "milestoneOk": "Meilenstein-Aufstieg vom DM freigegeben ✓",
+    "cantripsKnown": "Bekannte Zaubertricks"
   },
   "storySources": {
     "banner": "{{what}} der Geschichte „{{story}}“: nur aus {{list}}.",

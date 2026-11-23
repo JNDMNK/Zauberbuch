@@ -64,23 +64,33 @@ function LevelFeatures({ list, selfKey }: { list: WikiLevelFeature[]; selfKey: s
 function SlotTable({ caster }: { caster: ReturnType<typeof resolveCaster> }) {
   const { t } = useTranslation();
   const rows = Array.from({ length: 20 }, (_, i) => caster.slots(i + 1) ?? []);
-  const maxGrade = Math.max(1, ...rows.map((r) => r.reduce((m, v, i) => (v > 0 ? i + 1 : m), 0)));
+  const maxGrade = caster.type ? Math.max(1, ...rows.map((r) => r.reduce((m, v, i) => (v > 0 ? i + 1 : m), 0))) : 0;
+  const cantrips = Array.from({ length: 20 }, (_, i) => caster.cantrips(i + 1));
+  const showCantrips = cantrips.some((v) => (v ?? 0) > 0);
   return (
     <div className="space-y-2">
-      <p className="text-sm">
-        <span className="font-semibold">{t('wiki.class.casterType')}:</span> {t(`wiki.class.casterTypes.${caster.type}`)}
-        {caster.ability && (
-          <>
-            {' · '}
-            <span className="font-semibold">{t('sheet.spellAbility')}:</span> {t(`sheet.ability.${caster.ability}`)}
-          </>
-        )}
-      </p>
+      {caster.type && (
+        <p className="text-sm">
+          <span className="font-semibold">{t('wiki.class.casterType')}:</span> {t(`wiki.class.casterTypes.${caster.type}`)}
+          {caster.ability && (
+            <>
+              {' · '}
+              <span className="font-semibold">{t('sheet.spellAbility')}:</span> {t(`sheet.ability.${caster.ability}`)}
+            </>
+          )}
+        </p>
+      )}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[22rem] text-center text-sm tabular-nums">
           <thead>
             <tr className="text-xs text-parchment-700 dark:text-parchment-400">
               <th className="py-1 text-left font-semibold">{t('wiki.level')}</th>
+              {showCantrips && <th className="py-1 font-semibold">{t('sheet.cantrips')}</th>}
+              {caster.extras.map((c, k) => (
+                <th key={`x${k}`} className="py-1 font-semibold">
+                  {c.name}
+                </th>
+              ))}
               {Array.from({ length: maxGrade }, (_, g) => (
                 <th key={g} className="py-1 font-semibold">
                   {t('spell.levelOrdinal', { level: g + 1 })}
@@ -92,6 +102,10 @@ function SlotTable({ caster }: { caster: ReturnType<typeof resolveCaster> }) {
             {rows.map((r, i) => (
               <tr key={i} className="border-t border-parchment-300/70 dark:border-night-700">
                 <td className="py-0.5 text-left font-semibold">{i + 1}</td>
+                {showCantrips && <td>{cantrips[i] || '–'}</td>}
+                {caster.extras.map((c, k) => (
+                  <td key={`x${k}`}>{c.values[i] || '–'}</td>
+                ))}
                 {Array.from({ length: maxGrade }, (_, g) => (
                   <td key={g} className={r[g] ? '' : 'text-parchment-400 dark:text-night-700'}>
                     {r[g] || '–'}
@@ -189,8 +203,8 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
               </Markdown>
             </Section>
           )}
-          {caster?.type && (
-            <Section title={t('wiki.class.casting')}>
+          {caster && (caster.type || caster.extras.length > 0 || Array.from({ length: 20 }, (_, i) => caster.cantrips(i + 1) ?? 0).some((v) => v > 0)) && (
+            <Section title={caster.type ? t('wiki.class.casting') : t('wiki.class.classTable')}>
               <SlotTable caster={caster} />
             </Section>
           )}
