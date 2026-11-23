@@ -59,6 +59,10 @@ model Spell {
   concentration Boolean            @default(false)
   ritual        Boolean            @default(false)
   duration      String
+  /**
+   * Zusätzliche Zuordnung zu eigenen Wiki-Klassen (JSON-Liste von Wiki-Eintrags-IDs)
+   */
+  wikiClasses   String             @default("")
   source        String             @default("Homebrew")
   isHomebrew    Boolean            @default(false)
   damageDice    String? // Würfelausdruck, z. B. "8d6", "1d4+mod"

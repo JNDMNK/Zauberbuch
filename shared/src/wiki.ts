@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { sourceIdSchema } from './sources';
 import { ABILITIES, type Ability } from './character';
 import { CONDITIONS } from './combat';
+import { CLASSES } from './enums';
 
 /**
  * Wiki (für alle angemeldeten Benutzer lesbar, bearbeitbar von Admin und Moderator).
@@ -59,6 +60,13 @@ export type WikiRaceData = z.output<typeof raceDataSchema>;
 export const HIT_DICE = ['d6', 'd8', 'd10', 'd12'] as const;
 
 /** Klasse nach SRD: Trefferpunkte, Übung, Ausrüstung, Zauberwirken, Klassenmerkmale je Stufe, Unterklassen */
+/**
+ * Zauberwirken einer Klasse: Voll-/Halb-/Drittelzauberer und Paktmagie nach SRD, „custom“ = eigene Tabelle,
+ * null = automatisch (SRD-Klasse am Namen erkannt).
+ */
+export const CASTER_TYPES = ['none', 'full', 'half', 'halfEarly', 'third', 'pact', 'custom'] as const;
+export type CasterType = (typeof CASTER_TYPES)[number];
+
 const classObject = z.object({
   hitDie: z.enum(HIT_DICE).nullable().catch(null).default(null),
   primaryAbility: text(100),
@@ -71,6 +79,14 @@ const classObject = z.object({
   skills: text(500),
   equipment: md(3000),
   spellcasting: md(5000),
+  /** Art des Zauberwirkens (null = automatisch nach Klassenname) */
+  casterType: z.enum(CASTER_TYPES).nullable().catch(null).default(null),
+  /** Zauberattribut (null = automatisch) */
+  castingAbility: z.enum(ABILITIES).nullable().catch(null).default(null),
+  /** Genutzte Zauberlisten der Zauberbibliothek (leer = automatisch nach Klassenname) */
+  spellLists: z.array(z.enum(CLASSES)).max(CLASSES.length).catch([]).default([]),
+  /** Eigene Zauberplatz-Tabelle (bei casterType „custom“): 20 Stufen × bis zu 9 Grade */
+  slotTable: z.array(z.array(z.coerce.number().int().min(0).max(9)).max(9)).max(20).catch([]).default([]),
   /** Bezeichnung der Unterklassen, z. B. „Arkane Tradition“ */
   subclassTitle: text(80),
   features: levelFeatures,

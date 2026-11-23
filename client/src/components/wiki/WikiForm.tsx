@@ -1,11 +1,15 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Save, Trash2 } from 'lucide-react';
+import { slotsFor } from '../../lib/levelUp';
 import {
   ABILITIES,
   ALIGNMENTS,
   FEAT_CATEGORIES,
   godDataSchema,
+  CASTER_TYPES,
+  CLASSES,
+  type CasterType,
   ruleDataSchema,
   RULE_CATEGORIES,
   CONDITIONS,
@@ -229,6 +233,123 @@ function RaceFields({ d, set }: { d: WikiRaceData; set: (d: WikiRaceData) => voi
   );
 }
 
+/** Zauberwirken einer Klasse: Art (oder eigene Tabelle), Zauberattribut, genutzte Zauberlisten */
+function CastingFields({ d, set }: { d: WikiClassData; set: (d: WikiClassData) => void }) {
+  const { t } = useTranslation();
+  const f = <K extends keyof WikiClassData>(k: K, v: WikiClassData[K]) => set({ ...d, [k]: v });
+  const table = Array.from({ length: 20 }, (_, i) => Array.from({ length: 9 }, (_, g) => d.slotTable[i]?.[g] ?? 0));
+  const fill = (type: Exclude<CasterType, 'custom' | 'none'>) =>
+    f(
+      'slotTable',
+      Array.from({ length: 20 }, (_, i) => slotsFor(type, i + 1)),
+    );
+  const setCell = (lvl: number, grade: number, v: number) =>
+    f(
+      'slotTable',
+      table.map((r, i) => (i === lvl ? r.map((x, g) => (g === grade ? v : x)) : r)),
+    );
+  return (
+    <Group title={t('wiki.class.castingGroup')}>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label htmlFor="w-caster" className="label">
+            {t('wiki.class.casterType')}
+          </label>
+          <select
+            id="w-caster"
+            className="input"
+            value={d.casterType ?? ''}
+            onChange={(e) => {
+              const v = (e.target.value || null) as WikiClassData['casterType'];
+              // Eigene Tabelle: mit einer Vorlage beginnen, wenn noch leer
+              set({ ...d, casterType: v, slotTable: v === 'custom' && d.slotTable.length === 0 ? Array.from({ length: 20 }, (_, i) => slotsFor('full', i + 1)) : d.slotTable });
+            }}
+          >
+            <option value="">{t('wiki.class.casterTypes.auto')}</option>
+            {CASTER_TYPES.map((c) => (
+              <option key={c} value={c}>
+                {t(`wiki.class.casterTypes.${c}`)}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-parchment-700 dark:text-parchment-400">{t('wiki.class.castingHint')}</p>
+        </div>
+        <div>
+          <label htmlFor="w-cability" className="label">
+            {t('wiki.class.castingAbility')}
+          </label>
+          <select id="w-cability" className="input" value={d.castingAbility ?? ''} onChange={(e) => f('castingAbility', (e.target.value || null) as WikiClassData['castingAbility'])}>
+            <option value="">{t('wiki.class.castingAuto')}</option>
+            {ABILITIES.map((a) => (
+              <option key={a} value={a}>
+                {t(`sheet.ability.${a}`)}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div>
+        <span className="label">{t('wiki.class.spellLists')}</span>
+        <div className="flex flex-wrap gap-1.5">
+          {CLASSES.map((c) => (
+            <label key={c} className="chip-check">
+              <input type="checkbox" checked={d.spellLists.includes(c)} onChange={(e) => f('spellLists', e.target.checked ? [...d.spellLists, c] : d.spellLists.filter((x) => x !== c))} />
+              {t(`class.${c}`)}
+            </label>
+          ))}
+        </div>
+        <p className="mt-1 text-xs text-parchment-700 dark:text-parchment-400">{t('wiki.class.spellListsHint')}</p>
+      </div>
+      {d.casterType === 'custom' && (
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-1.5 text-sm">
+            <span className="label !mb-0">{t('wiki.class.slotTable')}</span>
+            <span className="ml-2 text-xs text-parchment-700 dark:text-parchment-400">{t('wiki.class.fillFrom')}</span>
+            {(['full', 'half', 'halfEarly', 'third', 'pact'] as const).map((type) => (
+              <button key={type} type="button" className="btn-ghost !px-2 !py-0.5 text-xs" onClick={() => fill(type)}>
+                {t(`wiki.class.casterTypes.${type}`)}
+              </button>
+            ))}
+          </div>
+          <div className="overflow-x-auto">
+            <table className="text-center text-sm">
+              <thead>
+                <tr className="text-xs text-parchment-700 dark:text-parchment-400">
+                  <th className="px-1 py-1 text-left">{t('wiki.level')}</th>
+                  {Array.from({ length: 9 }, (_, g) => (
+                    <th key={g} className="px-0.5 py-1">
+                      {g + 1}.
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {table.map((r, i) => (
+                  <tr key={i}>
+                    <td className="px-1 text-left font-semibold tabular-nums">{i + 1}</td>
+                    {r.map((v, g) => (
+                      <td key={g} className="px-0.5 py-0.5">
+                        <input
+                          className="input !w-10 !px-1 !py-0.5 text-center tabular-nums"
+                          inputMode="numeric"
+                          value={v || ''}
+                          placeholder="0"
+                          aria-label={`${t('wiki.level')} ${i + 1}, ${t('spell.levelOrdinal', { level: g + 1 })}`}
+                          onChange={(e) => setCell(i, g, Math.min(9, Number(e.target.value.replace(/\D/g, '')) || 0))}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </Group>
+  );
+}
+
 function ClassFields({ d, set }: { d: WikiClassData; set: (d: WikiClassData) => void }) {
   const { t } = useTranslation();
   const f = <K extends keyof WikiClassData>(k: K, v: WikiClassData[K]) => set({ ...d, [k]: v });
@@ -270,6 +391,7 @@ function ClassFields({ d, set }: { d: WikiClassData; set: (d: WikiClassData) => 
       <Group title={t('wiki.class.spellcasting')}>
         <MarkdownEditor id="w-spell" value={d.spellcasting} onChange={(v) => f('spellcasting', v.slice(0, 5000))} rows={4} />
       </Group>
+      <CastingFields d={d} set={set} />
       <Group title={t('wiki.class.features')}>
         <FeatureList prefix={t('wiki.class.features')} list={d.features} onChange={(l) => f('features', l)} />
       </Group>

@@ -1,5 +1,5 @@
-import { XP_THRESHOLDS, abilityModifier, type Ability, type CharacterSheet, type SpellClass, type WikiLevelFeature } from '@zauberbuch/shared';
-import type { ClassEntry } from './characterWizard';
+import { XP_THRESHOLDS, abilityModifier, type Ability, type CasterType, type CharacterSheet, type SpellClass, type WikiLevelFeature } from '@zauberbuch/shared';
+import { SPELLCASTING, type ClassEntry } from './characterWizard';
 
 /** Zauberplätze eines Vollzauberers je Stufe (Index = Stufe − 1, Werte = Plätze des 1. bis 9. Grades) nach SRD */
 const FULL_CASTER: number[][] = [
@@ -49,18 +49,54 @@ const PACT: [number, number][] = [
 ];
 
 /** Gesamtzahl der Zauberplätze je Grad (9 Einträge) für eine Klasse auf einer Stufe */
-export function spellSlots(spellClass: SpellClass, level: number): number[] {
+/** Zauberplätze je Grad (9 Einträge) für eine Art des Zauberwirkens auf einer Stufe; `table` bei „custom“ */
+export function slotsFor(type: CasterType, level: number, table: number[][] = []): number[] {
   const out = Array.from({ length: 9 }, () => 0);
   const l = Math.max(1, Math.min(20, level));
-  if (spellClass === 'warlock') {
+  if (type === 'none') return out;
+  if (type === 'custom') {
+    (table[l - 1] ?? []).forEach((n, i) => (out[i] = Math.max(0, n || 0)));
+    return out;
+  }
+  if (type === 'pact') {
     const [n, grade] = PACT[l - 1];
     out[grade - 1] = n;
     return out;
   }
-  // Halbzauberer: Paladin/Waldläufer ab Stufe 2 (aufgerundet), Artificer schon ab Stufe 1
-  const casterLevel = spellClass === 'paladin' || spellClass === 'ranger' ? (l < 2 ? 0 : Math.ceil(l / 2)) : spellClass === 'artificer' ? Math.ceil(l / 2) : l;
+  // Halbzauberer ab Stufe 2 (aufgerundet), Halbzauberer ab Stufe 1 (Artificer), Drittelzauberer ab Stufe 3
+  const casterLevel = type === 'half' ? (l < 2 ? 0 : Math.ceil(l / 2)) : type === 'halfEarly' ? Math.ceil(l / 2) : type === 'third' ? (l < 3 ? 0 : Math.ceil(l / 3)) : l;
   if (casterLevel > 0) FULL_CASTER[casterLevel - 1].forEach((n, i) => (out[i] = n));
   return out;
+}
+
+/** Art des Zauberwirkens der SRD-Klassen */
+export const AUTO_CASTER: Record<SpellClass, CasterType> = {
+  bard: 'full',
+  cleric: 'full',
+  druid: 'full',
+  sorcerer: 'full',
+  wizard: 'full',
+  warlock: 'pact',
+  paladin: 'half',
+  ranger: 'half',
+  artificer: 'halfEarly',
+};
+
+/** Gesamtzahl der Zauberplätze je Grad für eine SRD-Zauberklasse */
+export function spellSlots(spellClass: SpellClass, level: number): number[] {
+  return slotsFor(AUTO_CASTER[spellClass], level);
+}
+
+/**
+ * Zauberwirken einer Klasse: eigene Angaben im Wiki (Typ, Attribut, Zauberlisten) gehen vor, sonst automatisch nach
+ * der am Namen erkannten SRD-Klasse. type null = zaubert nicht.
+ */
+export function resolveCaster(cls: ClassEntry | null, auto: SpellClass | null) {
+  const type = cls?.data.casterType ?? (auto ? AUTO_CASTER[auto] : null);
+  const ability: Ability | null = cls?.data.castingAbility ?? (auto ? SPELLCASTING[auto].ability : null);
+  const lists: SpellClass[] = cls?.data.spellLists.length ? cls.data.spellLists : auto ? [auto] : [];
+  const active = type && type !== 'none' ? type : null;
+  return { type: active, ability, lists, slots: (level: number) => (active ? slotsFor(active, level, cls?.data.slotTable) : null) };
 }
 
 const lower = (s: string) => s.toLocaleLowerCase('de');

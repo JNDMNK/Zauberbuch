@@ -8,8 +8,8 @@ import { Modal } from '../Modal';
 import { Alert, PageSpinner } from '../ui';
 import { Markdown } from '../Markdown';
 import { useSpellClass } from '../wiki/ClassSpells';
-import { SPELLCASTING, type ClassEntry } from '../../lib/characterWizard';
-import { applyLevelUp, averageHp, conBonusFor, detectClass, hitDie, isAsi, spellSlots, xpForLevel } from '../../lib/levelUp';
+import type { ClassEntry } from '../../lib/characterWizard';
+import { applyLevelUp, averageHp, conBonusFor, detectClass, hitDie, isAsi, resolveCaster, xpForLevel } from '../../lib/levelUp';
 import { useSheet } from './SheetContext';
 
 type HpMode = 'average' | 'roll' | 'manual';
@@ -89,11 +89,13 @@ export function LevelUpDialog({ open, onClose }: { open: boolean; onClose: () =>
   const conBonus = conBonusFor(sheet, increase, n);
   const slotsBefore = sheet.spellcasting.slots.map((s) => s.total);
   // Tabelle nach SRD; zusätzliche, selbst eingetragene Plätze bleiben erhalten (nur Paktmagie ersetzt, da sich ihr Grad verschiebt)
-  const table = spellClass ? spellSlots(spellClass, n) : null;
-  const slotsAfter = table ? (spellClass === 'warlock' ? table : table.map((v, i) => Math.max(v, slotsBefore[i] ?? 0))) : null;
+  // Zauberwirken der Klasse (eigene Angaben im Wiki oder automatisch nach SRD-Klasse)
+  const casterInfo = resolveCaster(cls, spellClass);
+  const table = casterInfo.slots(n);
+  const slotsAfter = table ? (casterInfo.type === 'pact' ? table : table.map((v, i) => Math.max(v, slotsBefore[i] ?? 0))) : null;
   const slotChanges = slotsAfter ? slotsAfter.map((v, i) => ({ grade: i + 1, from: slotsBefore[i], to: v })).filter((x) => x.from !== x.to) : [];
   // Zauberwirken im Bogen ergänzen, wenn es noch fehlt (z. B. Paladin/Waldläufer, die erst ab Stufe 2 zaubern)
-  const caster = spellClass && slotsAfter?.some((v) => v > 0) ? { className: sheet.spellcasting.className || cls?.name || '', ability: SPELLCASTING[spellClass].ability } : null;
+  const caster = casterInfo.ability && slotsAfter?.some((v) => v > 0) ? { className: sheet.spellcasting.className || cls?.name || '', ability: casterInfo.ability } : null;
   const casterAbilityNew = caster && sheet.spellcasting.ability === 'none' ? caster.ability : null;
   const xpNeeded = xpForLevel(n);
 

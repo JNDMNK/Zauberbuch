@@ -6,6 +6,7 @@ import { SourceBadge } from '../sources/SourceFields';
 import { LinkedText } from './WikiLinks';
 import { ClassSpells, useSpellClass } from './ClassSpells';
 import { useActiveStory } from '../../hooks/useActiveStory';
+import { resolveCaster } from '../../lib/levelUp';
 
 /** Zeile „Bezeichnung: Wert“ (leere Werte werden ausgelassen) */
 export function Fact({ label, children }: { label: string; children: ReactNode }) {
@@ -59,6 +60,52 @@ function LevelFeatures({ list, selfKey }: { list: WikiLevelFeature[]; selfKey: s
   );
 }
 
+/** Zauberwirken einer Klasse: Art, Attribut und Zauberplätze je Stufe */
+function SlotTable({ caster }: { caster: ReturnType<typeof resolveCaster> }) {
+  const { t } = useTranslation();
+  const rows = Array.from({ length: 20 }, (_, i) => caster.slots(i + 1) ?? []);
+  const maxGrade = Math.max(1, ...rows.map((r) => r.reduce((m, v, i) => (v > 0 ? i + 1 : m), 0)));
+  return (
+    <div className="space-y-2">
+      <p className="text-sm">
+        <span className="font-semibold">{t('wiki.class.casterType')}:</span> {t(`wiki.class.casterTypes.${caster.type}`)}
+        {caster.ability && (
+          <>
+            {' · '}
+            <span className="font-semibold">{t('sheet.spellAbility')}:</span> {t(`sheet.ability.${caster.ability}`)}
+          </>
+        )}
+      </p>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[22rem] text-center text-sm tabular-nums">
+          <thead>
+            <tr className="text-xs text-parchment-700 dark:text-parchment-400">
+              <th className="py-1 text-left font-semibold">{t('wiki.level')}</th>
+              {Array.from({ length: maxGrade }, (_, g) => (
+                <th key={g} className="py-1 font-semibold">
+                  {t('spell.levelOrdinal', { level: g + 1 })}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i} className="border-t border-parchment-300/70 dark:border-night-700">
+                <td className="py-0.5 text-left font-semibold">{i + 1}</td>
+                {Array.from({ length: maxGrade }, (_, g) => (
+                  <td key={g} className={r[g] ? '' : 'text-parchment-400 dark:text-night-700'}>
+                    {r[g] || '–'}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 /** Vollständige Ansicht eines Wiki-Eintrags (Volk oder Klasse) */
 export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; findEntry?: (kind: WikiEntryDto['kind'], name: string) => WikiEntryDto | undefined; onOpen?: (id: string) => void }) {
   const { t, i18n } = useTranslation();
@@ -68,6 +115,7 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
   const subclasses = entry.kind === 'class' ? entry.data.subclasses.filter((s) => allowed(s.sourceId ?? entry.sourceId)) : [];
   const hiddenSubclasses = entry.kind === 'class' ? entry.data.subclasses.length - subclasses.length : 0;
   const spellClass = useSpellClass(entry.kind === 'class' ? entry.name : '');
+  const caster = entry.kind === 'class' ? resolveCaster(entry, spellClass) : null;
   return (
     <div className="space-y-5">
       <SourceBadge sourceId={entry.sourceId} full className="!text-sm" />
@@ -141,11 +189,12 @@ export function WikiDetail({ entry, findEntry, onOpen }: { entry: WikiEntryDto; 
               </Markdown>
             </Section>
           )}
-          {spellClass && (
-            <Section title={t('wiki.class.spellList')}>
-              <ClassSpells spellClass={spellClass} />
+          {caster?.type && (
+            <Section title={t('wiki.class.casting')}>
+              <SlotTable caster={caster} />
             </Section>
           )}
+          <ClassSpells lists={caster?.lists ?? []} wikiClassId={entry.id} wrap={(content) => <Section title={t('wiki.class.spellList')}>{content}</Section>} />
           {entry.data.features.length > 0 && (
             <Section title={t('wiki.class.features')}>
               <LevelFeatures selfKey={selfKey} list={entry.data.features} />

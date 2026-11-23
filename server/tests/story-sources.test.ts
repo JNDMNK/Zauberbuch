@@ -113,3 +113,26 @@ describe('Homebrew folgt der Quelle', () => {
     expect(list).toEqual(['eigen']);
   });
 });
+
+describe('Zauber eigener Wiki-Klassen', () => {
+  beforeEach(async () => {
+    await resetDb({ seed: true });
+  });
+
+  it('wikiClasses speichern und mit Klassenlisten kombiniert filtern', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    const res = await admin.post('/api/spells').set(CSRF).send(makeSpell({ slug: 'runenblitz', classes: [], wikiClasses: ['klasse_runen', 'klasse_runen'] }));
+    expect(res.status).toBe(201);
+    expect(res.body.spell.wikiClasses).toEqual(['klasse_runen']);
+    const slugs = async (q: string) => (await admin.get(`/api/spells?pageSize=100&${q}`)).body.items.map((x: { slug: string }) => x.slug).sort();
+    expect(await slugs('wikiClass=klasse_runen')).toEqual(['runenblitz']);
+    const wizard = await slugs('class=wizard');
+    expect(wizard).not.toContain('runenblitz');
+    // Liste „Magier“ ODER direkt zugeordnet
+    expect(await slugs('class=wizard&wikiClass=klasse_runen')).toEqual([...wizard, 'runenblitz'].sort());
+    expect(await slugs('wikiClass=andere')).toEqual([]);
+    // Export enthält die Zuordnung
+    const exp = (await admin.get('/api/spells/export')).body.spells.find((x: { slug: string }) => x.slug === 'runenblitz');
+    expect(exp.wikiClasses).toEqual(['klasse_runen']);
+  });
+});

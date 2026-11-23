@@ -51,6 +51,8 @@ interface FormState {
   ritual: boolean;
   duration: string;
   classes: SpellClass[];
+  /** Eigene Wiki-Klassen (IDs) */
+  wikiClasses: string[];
   source: string;
   isHomebrew: boolean;
   damageDice: string;
@@ -79,6 +81,7 @@ const emptyForm = (): FormState => ({
   ritual: false,
   duration: 'instantaneous',
   classes: [],
+  wikiClasses: [],
   source: 'Homebrew',
   isHomebrew: true,
   damageDice: '',
@@ -112,6 +115,7 @@ function fromSpell(spell: SpellDto): FormState {
     ritual: spell.ritual,
     duration: spell.duration,
     classes: [...spell.classes],
+    wikiClasses: [...(spell.wikiClasses ?? [])],
     source: spell.source,
     isHomebrew: spell.isHomebrew,
     damageDice: spell.damage?.dice ?? '',
@@ -149,6 +153,15 @@ export function SpellFormPage() {
   const toast = useToast();
   const navigate = useNavigate();
   const { canDeleteSpells } = useAuth();
+  // Eigene Wiki-Klassen zum Zuordnen (Klassen, deren Name keiner der neun Zauberklassen entspricht)
+  const [customClasses, setCustomClasses] = useState<{ id: string; name: string }[]>([]);
+  useEffect(() => {
+    const known = new Set(CLASSES.flatMap((c) => [t(`class.${c}`, { lng: 'de' }), t(`class.${c}`, { lng: 'en' }), c].map((x) => x.toLocaleLowerCase('de'))));
+    api
+      .wiki()
+      .then((r) => setCustomClasses(r.entries.filter((e) => e.kind === 'class' && !known.has(e.name.trim().toLocaleLowerCase('de'))).map((e) => ({ id: e.id, name: e.name }))))
+      .catch(() => setCustomClasses([]));
+  }, [t]);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [spellId, setSpellId] = useState<string | null>(null);
   const [slugTouched, setSlugTouched] = useState(isEdit);
@@ -281,8 +294,7 @@ export function SpellFormPage() {
   const tr = form.translations[tab];
   // Live-Vorschau des Schadenswerts, sobald Würfel und Art gültig sind
   const dicePreview = damageDiceSchema.safeParse(form.damageDice);
-  const damagePreview =
-    dicePreview.success && dicePreview.data && form.damageType ? { dice: dicePreview.data, type: form.damageType } : null;
+  const damagePreview = dicePreview.success && dicePreview.data && form.damageType ? { dice: dicePreview.data, type: form.damageType } : null;
 
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-6">
@@ -416,12 +428,7 @@ export function SpellFormPage() {
             </Field>
             <Field label={t('admin.damageType')} error={err('damageType')}>
               {(id) => (
-                <select
-                  id={id}
-                  className={`input ${errors.damageType ? 'input-error' : ''}`}
-                  value={form.damageType}
-                  onChange={(e) => update({ damageType: e.target.value as DamageType | '' })}
-                >
+                <select id={id} className={`input ${errors.damageType ? 'input-error' : ''}`} value={form.damageType} onChange={(e) => update({ damageType: e.target.value as DamageType | '' })}>
                   <option value="">{t('admin.noDamage')}</option>
                   {[...DAMAGE_TYPES]
                     .sort((a, b) => (a === 'healing' ? 1 : b === 'healing' ? -1 : t(`damageType.${a}`).localeCompare(t(`damageType.${b}`))))
@@ -445,11 +452,31 @@ export function SpellFormPage() {
           <legend className="label">{t('spell.classes')}</legend>
           <div className="flex flex-wrap gap-1.5">
             {CLASSES.map((c) => (
-              <button key={c} type="button" aria-pressed={form.classes.includes(c)} className={form.classes.includes(c) ? 'chip-on' : 'chip-off'} onClick={() => update({ classes: toggleInList(form.classes, c) })}>
+              <button
+                key={c}
+                type="button"
+                aria-pressed={form.classes.includes(c)}
+                className={form.classes.includes(c) ? 'chip-on' : 'chip-off'}
+                onClick={() => update({ classes: toggleInList(form.classes, c) })}
+              >
                 {t(`class.${c}`)}
               </button>
             ))}
+            {/* Eigene Klassen aus dem Wiki (alle, die keiner der neun Zauberklassen entsprechen) */}
+            {customClasses.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                aria-pressed={form.wikiClasses.includes(c.id)}
+                className={form.wikiClasses.includes(c.id) ? 'chip-on' : 'chip-off'}
+                onClick={() => update({ wikiClasses: toggleInList(form.wikiClasses, c.id) })}
+                title={t('admin.wikiClassHint')}
+              >
+                {c.name}
+              </button>
+            ))}
           </div>
+          {customClasses.length > 0 && <p className="mt-1 text-xs text-parchment-700 dark:text-parchment-400">{t('admin.wikiClassesHint')}</p>}
         </fieldset>
       </section>
 
@@ -482,13 +509,17 @@ export function SpellFormPage() {
             {(id) => <TextInput id={id} value={tr.name} onChange={(e) => updateText(tab, 'name', e.target.value)} invalid={!!errors[`translations.${tab}.name`]} lang={tab} />}
           </Field>
           <Field label={t('admin.castingTimeText')} error={err(`translations.${tab}.castingTimeText`)}>
-            {(id) => <TextInput id={id} value={tr.castingTimeText} onChange={(e) => updateText(tab, 'castingTimeText', e.target.value)} lang={tab} placeholder={tab === 'de' ? '1 Aktion' : '1 action'} />}
+            {(id) => (
+              <TextInput id={id} value={tr.castingTimeText} onChange={(e) => updateText(tab, 'castingTimeText', e.target.value)} lang={tab} placeholder={tab === 'de' ? '1 Aktion' : '1 action'} />
+            )}
           </Field>
           <Field label={t('admin.rangeText')} error={err(`translations.${tab}.rangeText`)}>
             {(id) => <TextInput id={id} value={tr.rangeText} onChange={(e) => updateText(tab, 'rangeText', e.target.value)} lang={tab} placeholder={tab === 'de' ? '45 m' : '150 feet'} />}
           </Field>
           <Field label={t('admin.durationText')} error={err(`translations.${tab}.durationText`)}>
-            {(id) => <TextInput id={id} value={tr.durationText} onChange={(e) => updateText(tab, 'durationText', e.target.value)} lang={tab} placeholder={tab === 'de' ? 'Unmittelbar' : 'Instantaneous'} />}
+            {(id) => (
+              <TextInput id={id} value={tr.durationText} onChange={(e) => updateText(tab, 'durationText', e.target.value)} lang={tab} placeholder={tab === 'de' ? 'Unmittelbar' : 'Instantaneous'} />
+            )}
           </Field>
           <Field label={t('admin.materialDescription')} error={err(`translations.${tab}.materialDescription`)}>
             {(id) => <TextInput id={id} value={tr.materialDescription} onChange={(e) => updateText(tab, 'materialDescription', e.target.value)} lang={tab} disabled={!form.components.material} />}

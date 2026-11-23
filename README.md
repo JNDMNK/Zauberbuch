@@ -417,9 +417,16 @@ Format:
   „vergifteten“). Ein Klick öffnet den Eintrag – im Wiki im passenden Bereich, sonst als Dialog; Zauber öffnen als
   Zauberkarte. Allgemeine Abenteuerausrüstung („Seil“, „Buch“ …) wird bewusst nicht verlinkt; kurze Namen (unter
   5 Zeichen, z. B. „Tyr“) nur bei exakter Schreibweise.
-- **Zauberliste je Klasse:** Die Detailansicht einer Zauberklasse (Barde, Druide, Hexenmeister, Kleriker, Magier,
-  Paladin, Waldläufer, Zauberer, Artificer – erkannt am deutschen oder englischen Namen) zeigt alle Zauber dieser Klasse
-  aus der Zauberbibliothek, nach Grad gruppiert; ein Klick öffnet den Zauber.
+- **Zauberliste je Klasse:** Die Detailansicht einer Klasse zeigt alle Zauber ihrer Zauberlisten aus der
+  Zauberbibliothek, nach Grad gruppiert; ein Klick öffnet den Zauber. Die neun SRD-Zauberklassen werden am Namen
+  erkannt; im Klassenformular lassen sich die genutzten Listen auch frei wählen (z. B. eine eigene Klasse nutzt die
+  Artificer-Liste). Eigene Wiki-Klassen erscheinen außerdem im **Zauberformular** neben den neun Klassen – so lassen
+  sich einzelne Zauber direkt einer eigenen Klasse zuordnen.
+- **Zauberplätze je Klasse:** Im Klassenformular unter „Zauberplätze & Zauberlisten“: Art des Zauberwirkens
+  (automatisch nach Klassenname, kein Zauberwirken, Vollzauberer, Halbzauberer ab Stufe 2 bzw. ab Stufe 1,
+  Drittelzauberer ab Stufe 3, Paktmagie) oder eine **eigene Tabelle** (Plätze je Stufe 1–20 und Grad 1–9, mit
+  Vorlagen zum Übernehmen) sowie das Zauberattribut. Die Klassenansicht zeigt die Tabelle; Charakter-Assistent und
+  Stufenaufstieg verwenden sie (auch für eigene Klassen).
 - Felder nach dem **System Reference Document 5.1**:
   - **Volk:** Attributswerterhöhung, Alter, Gesinnung, Größe, Bewegungsrate, Sprachen, Merkmale (Name + Text) und
     Unterrassen (Name, Attributswerterhöhung, Beschreibung, eigene Merkmale).
@@ -772,6 +779,7 @@ des JSON-Exports – Export und Import sind also verlustfrei austauschbar). Ält
 | `concentration` | bool | ✔ | Konzentration erforderlich |
 | `ritual` | bool | ✔ | Als Ritual wirkbar |
 | `duration` | string | ✔ | Sprachunabhängige Dauer, z. B. `instantaneous`, `1 minute` (Anzeige-Fallback) |
+| `wikiClasses` | string[] | – | Zusätzliche Zuordnung zu eigenen Wiki-Klassen (IDs) |
 | `classes` | enum[] | ✔ | Beliebig viele aus `bard` (Barde), `druid` (Druide), `warlock` (Hexenmeister), `cleric` (Kleriker), `wizard` (Magier), `paladin` (Paladin), `ranger` (Waldläufer), `sorcerer` (Zauberer), `artificer` (Artificer); darf leer sein |
 | `source` | string | ✔ | Quelle (Name aus der Quellenliste), z. B. `Spielerhandbuch`, `Homebrew` |
 | `isHomebrew` | bool | ✔ | Homebrew-Badge und -Filter; wird beim Speichern aus `source` abgeleitet (`Homebrew` = true) |

@@ -340,7 +340,9 @@
     "stories": "Geschichten",
     "items": "Magische Gegenstände",
     "catalog": "Gegenstände",
-    "sources": "Quellen"
+    "sources": "Quellen",
+    "wikiClassHint": "Eigene Klasse aus dem Wiki",
+    "wikiClassesHint": "Weitere Namen sind eigene Klassen aus dem Wiki – der Zauber erscheint dann in deren Zauberliste."
   },
   "errors": {
     "unknown": "Unbekannter Fehler.",
@@ -1283,7 +1285,27 @@
       "spellList": "Zauberliste",
       "spellsCount_one": "{{count}} Zauber aus der Zauberbibliothek – Klick öffnet den Zauber.",
       "spellsCount_other": "{{count}} Zauber aus der Zauberbibliothek – Klick öffnet den Zauber.",
-      "noSpells": "In der Zauberbibliothek sind noch keine Zauber dieser Klasse."
+      "noSpells": "In der Zauberbibliothek sind noch keine Zauber dieser Klasse.",
+      "casting": "Zauberplätze",
+      "casterType": "Zauberwirken",
+      "casterTypes": {
+        "auto": "Automatisch (nach Klassenname)",
+        "none": "Kein Zauberwirken",
+        "full": "Vollzauberer (ab Stufe 1)",
+        "half": "Halbzauberer (ab Stufe 2)",
+        "halfEarly": "Halbzauberer (ab Stufe 1)",
+        "third": "Drittelzauberer (ab Stufe 3)",
+        "pact": "Paktmagie (wie Hexenmeister)",
+        "custom": "Eigene Tabelle"
+      },
+      "castingAbility": "Zauberattribut",
+      "castingAuto": "– automatisch –",
+      "spellLists": "Genutzte Zauberlisten",
+      "spellListsHint": "Zauber dieser Listen erscheinen in der Zauberliste der Klasse. Ohne Auswahl wird die Liste am Klassennamen erkannt (z. B. „Magier“). Einzelne Zauber lassen sich außerdem im Zauberformular direkt dieser Klasse zuordnen.",
+      "castingGroup": "Zauberplätze & Zauberlisten (für Assistent und Stufenaufstieg)",
+      "slotTable": "Zauberplätze je Stufe",
+      "fillFrom": "Vorlage übernehmen:",
+      "castingHint": "„Automatisch“ nutzt bei den SRD-Klassen die passende Tabelle (z. B. Paladin = Halbzauberer)."
     },
     "form": {
       "traitName": "Name des Merkmals",

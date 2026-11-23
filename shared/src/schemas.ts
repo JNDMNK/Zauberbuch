@@ -56,6 +56,8 @@ export const spellInputSchema = z
     ritual: z.boolean(),
     duration: trimmed(100).min(1, 'duration_required'),
     classes: z.array(z.enum(CLASSES)).max(CLASSES.length),
+    /** Eigene Wiki-Klassen (IDs), denen der Zauber zusätzlich zugeordnet ist */
+    wikiClasses: z.array(z.string().min(1).max(64)).max(50).optional(),
     source: trimmed(100).min(1, 'source_required'),
     isHomebrew: z.boolean(),
     /** Schaden/Heilung (optional): Würfelausdruck + Art – beide oder keins */
@@ -133,6 +135,8 @@ export const spellQuerySchema = z.object({
   material: boolParam,
   homebrew: boolParam,
   source: z.string().trim().max(100).optional(),
+  /** Zauber einer eigenen Wiki-Klasse (ID); zusammen mit class = Zauber der Listen ODER der Klasse */
+  wikiClass: z.string().trim().min(1).max(64).optional(),
   /** Nur Zauber aus den Quellen dieser Geschichte (Geschichten-Ansicht) */
   story: z.string().trim().min(1).max(64).optional(),
   favorites: boolParam,

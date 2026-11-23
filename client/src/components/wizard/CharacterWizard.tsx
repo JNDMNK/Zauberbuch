@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { resolveCaster } from '../../lib/levelUp';
 import { useActiveStory } from '../../hooks/useActiveStory';
 import { useSources } from '../../hooks/useSources';
 import { Check, ChevronLeft, ChevronRight, Dices, Minus, Plus, Wand2 } from 'lucide-react';
@@ -31,7 +32,6 @@ import {
   POINT_BUY_BUDGET,
   POINT_BUY_COST,
   STANDARD_ARRAY,
-  SPELLCASTING,
   buildSheet,
   choiceCount,
   findNames,
@@ -192,6 +192,8 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
   const cls = classes.find((c) => c.id === classId) ?? null;
   const bg = backgrounds.find((b) => b.id === bgId) ?? null;
   const spellClass = useSpellClass(cls?.name ?? '');
+  const casterInfo = resolveCaster(cls, spellClass);
+  const level1Slots = casterInfo.slots(1);
   const subLevel = cls ? subclassLevel(cls) : null;
   const subclassOptions = cls ? cls.data.subclasses.filter((x) => allowed(x.sourceId ?? cls.sourceId)) : [];
   const needsSubclass = !!cls && subLevel === 1 && subclassOptions.length > 0;
@@ -337,6 +339,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
         cls,
         subclass,
         spellClass,
+        caster: casterInfo.type ? { ability: casterInfo.ability, slots: level1Slots } : null,
         background: bg,
         abilities: finalScores,
         skills: [...new Set([...bgSkills, ...classSkills])],
@@ -488,7 +491,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
               {cls && !needsSubclass && subLevel && (
                 <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('wizard.subclassLater', { title: cls.data.subclassTitle || t('wiki.class.subclasses'), level: subLevel })}</p>
               )}
-              {cls && spellClass && SPELLCASTING[spellClass].slots === 0 && <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('wizard.spellsLater')}</p>}
+              {cls && level1Slots && level1Slots.every((v) => v === 0) && <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('wizard.spellsLater')}</p>}
             </div>
           )}
 

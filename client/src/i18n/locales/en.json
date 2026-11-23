@@ -340,7 +340,9 @@
     "stories": "Stories",
     "items": "Magic items",
     "catalog": "Items",
-    "sources": "Sources"
+    "sources": "Sources",
+    "wikiClassHint": "Custom class from the wiki",
+    "wikiClassesHint": "Further names are custom classes from the wiki – the spell then appears in their spell list."
   },
   "errors": {
     "unknown": "Unknown error.",
@@ -1283,7 +1285,27 @@
       "spellList": "Spell list",
       "spellsCount_one": "{{count}} spell from the spell library – click to open.",
       "spellsCount_other": "{{count}} spells from the spell library – click to open.",
-      "noSpells": "The spell library has no spells for this class yet."
+      "noSpells": "The spell library has no spells for this class yet.",
+      "casting": "Spell slots",
+      "casterType": "Spellcasting",
+      "casterTypes": {
+        "auto": "Automatic (by class name)",
+        "none": "No spellcasting",
+        "full": "Full caster (from level 1)",
+        "half": "Half caster (from level 2)",
+        "halfEarly": "Half caster (from level 1)",
+        "third": "Third caster (from level 3)",
+        "pact": "Pact magic (like warlock)",
+        "custom": "Custom table"
+      },
+      "castingAbility": "Spellcasting ability",
+      "castingAuto": "– automatic –",
+      "spellLists": "Spell lists used",
+      "spellListsHint": "Spells of these lists appear in the class spell list. Without selection the list is detected by class name (e.g. “Wizard”). Individual spells can also be assigned to this class in the spell form.",
+      "castingGroup": "Spell slots & spell lists (for wizard and level up)",
+      "slotTable": "Spell slots per level",
+      "fillFrom": "Use template:",
+      "castingHint": "“Automatic” uses the matching table for SRD classes (e.g. paladin = half caster)."
     },
     "form": {
       "traitName": "Trait name",

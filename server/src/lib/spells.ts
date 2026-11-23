@@ -40,6 +40,15 @@ export function buildSearchText(input: SpellInput): string {
   return normalize(parts.join('\n'));
 }
 
+function parseWikiClasses(raw: string): string[] {
+  try {
+    const v = JSON.parse(raw || '[]');
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
 function sortNames(input: SpellInput) {
   const de = input.translations.de?.name ?? input.translations.en?.name ?? input.slug;
   const en = input.translations.en?.name ?? input.translations.de?.name ?? input.slug;
@@ -59,6 +68,7 @@ function spellData(input: SpellInput) {
     concentration: input.concentration,
     ritual: input.ritual,
     duration: input.duration,
+    wikiClasses: JSON.stringify([...new Set(input.wikiClasses ?? [])]),
     source: input.source,
     // Homebrew ergibt sich aus der Quelle (früher ein eigenes Häkchen, das der Quelle widersprechen konnte)
     isHomebrew: input.source.trim().toLocaleLowerCase('de') === 'homebrew',
@@ -153,6 +163,7 @@ export function toSpellDto(spell: SpellWithRelations, opts: { full?: boolean; is
     ritual: spell.ritual,
     duration: spell.duration,
     classes: spell.classes.map((c) => c.className as SpellClass).sort(),
+    wikiClasses: parseWikiClasses(spell.wikiClasses),
     source: spell.source,
     isHomebrew: spell.isHomebrew,
     damage: spell.damageDice && spell.damageType ? { dice: spell.damageDice, type: spell.damageType as DamageType } : null,
@@ -189,6 +200,7 @@ export function toSpellInput(spell: SpellWithRelations): SpellInput {
     ritual: spell.ritual,
     duration: spell.duration,
     classes: spell.classes.map((c) => c.className as SpellClass).sort(),
+    wikiClasses: parseWikiClasses(spell.wikiClasses),
     source: spell.source,
     isHomebrew: spell.isHomebrew,
     damageDice: spell.damageDice,
@@ -206,7 +218,11 @@ export function buildSpellWhere(q: SpellQuery, userId?: string): Prisma.SpellWhe
   }
   if (q.level.length) and.push({ level: { in: q.level } });
   if (q.school.length) and.push({ school: { in: q.school } });
-  if (q.class.length) and.push({ classes: { some: { className: { in: q.class } } } });
+  // Klassenlisten und eigene Wiki-Klasse: Treffer in einer davon genügt
+  const classOr: Prisma.SpellWhereInput[] = [];
+  if (q.class.length) classOr.push({ classes: { some: { className: { in: q.class } } } });
+  if (q.wikiClass) classOr.push({ wikiClasses: { contains: JSON.stringify(q.wikiClass) } });
+  if (classOr.length) and.push(classOr.length === 1 ? classOr[0] : { OR: classOr });
   if (q.castingTime.length) and.push({ castingTime: { in: q.castingTime } });
   if (q.damageType.length) and.push({ damageType: { in: q.damageType } });
   if (q.concentration !== undefined) and.push({ concentration: q.concentration });

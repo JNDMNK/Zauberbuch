@@ -22,6 +22,8 @@ export interface SpellDto {
   ritual: boolean;
   duration: string;
   classes: SpellClass[];
+  /** Eigene Wiki-Klassen (IDs) */
+  wikiClasses: string[];
   source: string;
   isHomebrew: boolean;
   /** Schaden/Heilung, z. B. { dice: "8d6", type: "fire" } – null, wenn nicht vorhanden */

@@ -121,6 +121,8 @@ export interface WizardResult {
   cls: ClassEntry | null;
   subclass: string;
   spellClass: SpellClass | null;
+  /** Zauberwirken der Klasse auf Stufe 1 (null = zaubert nicht) */
+  caster: { ability: Ability | null; slots: number[] | null } | null;
   background: BackgroundEntry | null;
   /** Endgültige Attributswerte (inkl. Erhöhungen) */
   abilities: Record<Ability, number>;
@@ -209,11 +211,11 @@ export function buildSheet(r: WizardResult): CharacterSheet {
     for (const [k, v] of Object.entries(r.coins)) sheet.coins[k as keyof CharacterSheet['coins']] += v ?? 0;
   } else if (equipment.length) sheet.features.moreFeatures = [sheet.features.moreFeatures, `Startausrüstung –\n${equipment.join('\n\n')}`].filter(Boolean).join('\n\n');
 
-  if (cls && r.spellClass) {
-    const sc = SPELLCASTING[r.spellClass];
+  // Zauberwirken (Klasse im Wiki bzw. automatisch nach SRD-Klasse): Klasse, Attribut, Plätze der Stufe 1
+  if (cls && r.caster) {
     sheet.spellcasting.className = cls.name;
-    sheet.spellcasting.ability = sc.ability;
-    sheet.spellcasting.slots[0] = { total: sc.slots, used: 0 };
+    if (r.caster.ability) sheet.spellcasting.ability = r.caster.ability;
+    if (r.caster.slots) sheet.spellcasting.slots = r.caster.slots.map((total) => ({ total, used: 0 }));
   }
   return characterSheetSchema.parse(sheet);
 }
