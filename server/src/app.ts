@@ -50,7 +50,8 @@ export function createApp(options: { accessLog?: boolean } = {}) {
         useDefaults: true,
         directives: {
           'default-src': ["'self'"],
-          'img-src': ["'self'", 'data:', 'https:'],
+          // blob: für die Vorschau/Verkleinerung hochgeladener Bilder im Browser (Charakterbogen)
+          'img-src': ["'self'", 'data:', 'blob:', 'https:'],
           'style-src': ["'self'", "'unsafe-inline'"],
           'script-src': ["'self'"],
           'font-src': ["'self'", 'data:'],

@@ -218,7 +218,9 @@ Rettungswürfe, Fertigkeiten, passive Wahrnehmung, Initiative, Angriffsbonus, Za
 -Angriffsbonus, Sprungweiten, Gewichte (50 Münzen = 1 lb) und Traglastgrenzen.
 
 Änderungen werden automatisch gespeichert (kurz nach der letzten Eingabe sowie beim Verlassen der Seite).
-Bilder werden im Browser verkleinert und mit dem Bogen gespeichert. Admin und Moderator sehen alle
+Bilder (JPG, PNG, WebP, GIF; iPhone-Fotos wandelt das Gerät beim Auswählen um) werden im Browser verkleinert
+(Porträt max. 700 px, Symbol max. 500 px, Drehung aus den Kamera-Daten wird übernommen) und mit dem Bogen
+gespeichert – Fotos als JPEG, Bilder mit transparentem Hintergrund (z. B. Wappen) als PNG. Admin und Moderator sehen alle
 Bögen auf der Seite **Charakterbogen** unter „Charakterbögen weiterer Spieler“ – nur lesend. Der Bogen lässt sich über das Drucker-Symbol drucken.
 
 ### Lebensstil & tägliche Kosten

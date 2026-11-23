@@ -629,7 +629,7 @@
     "development": "Werdegang",
     "chooseImage": "Bild auswählen",
     "removeImage": "Bild entfernen",
-    "imageError": "Das Bild konnte nicht geladen werden.",
+    "imageError": "Das Bild konnte nicht geladen werden. Unterstützt werden JPG, PNG, WebP und GIF (iPhone-Fotos werden beim Auswählen automatisch umgewandelt).",
     "spellcastingClass": "Zauberwirkende Klasse",
     "spellAbility": "Attribut zum Zauberwirken",
     "spellSaveDc": "Zauber-Rettungswurf-SG",

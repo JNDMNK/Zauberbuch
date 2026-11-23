@@ -629,7 +629,7 @@
     "development": "Development",
     "chooseImage": "Choose image",
     "removeImage": "Remove image",
-    "imageError": "The image could not be loaded.",
+    "imageError": "The image could not be loaded. Supported formats are JPG, PNG, WebP and GIF (iPhone photos are converted automatically when selected).",
     "spellcastingClass": "Spellcasting class",
     "spellAbility": "Spellcasting ability",
     "spellSaveDc": "Spell save DC",
