@@ -10,10 +10,21 @@ import { useActiveStory } from '../../hooks/useActiveStory';
 const lower = (s: string) => s.trim().toLocaleLowerCase('de');
 
 /** Ordnet einen Klassennamen aus dem Wiki (deutsch oder englisch) der Zauberklasse der Zauberbibliothek zu */
+/** Weitere gebräuchliche Namen der Zauberklassen (z. B. deutsche Bezeichnungen aus anderen Büchern) */
+export const CLASS_ALIASES: Partial<Record<SpellClass, string[]>> = {
+  artificer: ['Artifizient', 'Artefizient', 'Artifizientin'],
+  warlock: ['Paktmagier'],
+};
+
+/** Alle Namen, unter denen eine Zauberklasse erkannt wird (deutsch, englisch, Kennung, Aliase), klein geschrieben */
+export function spellClassNames(t: (key: string, opts?: { lng: string }) => string, c: SpellClass): string[] {
+  return [t(`class.${c}`, { lng: 'de' }), t(`class.${c}`, { lng: 'en' }), c, ...(CLASS_ALIASES[c] ?? [])].map(lower);
+}
+
 export function useSpellClass(name: string): SpellClass | null {
   const { t } = useTranslation();
   const n = lower(name);
-  return CLASSES.find((c) => [t(`class.${c}`, { lng: 'de' }), t(`class.${c}`, { lng: 'en' }), c].some((x) => lower(x) === n)) ?? null;
+  return CLASSES.find((c) => spellClassNames(t, c).includes(n)) ?? null;
 }
 
 /**

@@ -342,7 +342,7 @@
     "catalog": "Items",
     "sources": "Sources",
     "wikiClassHint": "Custom class from the wiki",
-    "wikiClassesHint": "Further names are custom classes from the wiki – the spell then appears in their spell list."
+    "wikiClassesHint": "Further names are custom spellcasting classes from the wiki (spellcasting set in the class form) – the spell then appears in their spell list."
   },
   "errors": {
     "unknown": "Unknown error.",

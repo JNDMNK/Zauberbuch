@@ -342,7 +342,7 @@
     "catalog": "Gegenstände",
     "sources": "Quellen",
     "wikiClassHint": "Eigene Klasse aus dem Wiki",
-    "wikiClassesHint": "Weitere Namen sind eigene Klassen aus dem Wiki – der Zauber erscheint dann in deren Zauberliste."
+    "wikiClassesHint": "Weitere Namen sind eigene zaubernde Klassen aus dem Wiki (Zauberwirken im Klassenformular eingestellt) – der Zauber erscheint dann in deren Zauberliste."
   },
   "errors": {
     "unknown": "Unbekannter Fehler.",

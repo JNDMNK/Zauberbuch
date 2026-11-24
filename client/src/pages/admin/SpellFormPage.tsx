@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { spellClassNames } from '../../components/wiki/ClassSpells';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Copy, Save, Trash2 } from 'lucide-react';
@@ -153,16 +154,24 @@ export function SpellFormPage() {
   const toast = useToast();
   const navigate = useNavigate();
   const { canDeleteSpells } = useAuth();
-  // Eigene Wiki-Klassen zum Zuordnen (Klassen, deren Name keiner der neun Zauberklassen entspricht)
-  const [customClasses, setCustomClasses] = useState<{ id: string; name: string }[]>([]);
+  // Eigene zaubernde Wiki-Klassen zum Zuordnen: Name entspricht keiner der neun Zauberklassen und im Wiki ist ein
+  // Zauberwirken eingestellt (Barbar, Kämpfer & Co. erscheinen nicht); bereits zugeordnete bleiben sichtbar
+  const [wikiClasses, setWikiClasses] = useState<{ id: string; name: string; caster: boolean }[]>([]);
   useEffect(() => {
-    const known = new Set(CLASSES.flatMap((c) => [t(`class.${c}`, { lng: 'de' }), t(`class.${c}`, { lng: 'en' }), c].map((x) => x.toLocaleLowerCase('de'))));
+    const known = new Set(CLASSES.flatMap((c) => spellClassNames(t, c)));
     api
       .wiki()
-      .then((r) => setCustomClasses(r.entries.filter((e) => e.kind === 'class' && !known.has(e.name.trim().toLocaleLowerCase('de'))).map((e) => ({ id: e.id, name: e.name }))))
-      .catch(() => setCustomClasses([]));
+      .then((r) =>
+        setWikiClasses(
+          r.entries.flatMap((e) =>
+            e.kind === 'class' && !known.has(e.name.trim().toLocaleLowerCase('de')) ? [{ id: e.id, name: e.name, caster: !!e.data.casterType && e.data.casterType !== 'none' }] : [],
+          ),
+        ),
+      )
+      .catch(() => setWikiClasses([]));
   }, [t]);
   const [form, setForm] = useState<FormState>(emptyForm);
+  const customClasses = wikiClasses.filter((c) => c.caster || form.wikiClasses.includes(c.id));
   const [spellId, setSpellId] = useState<string | null>(null);
   const [slugTouched, setSlugTouched] = useState(isEdit);
   const [tab, setTab] = useState<Locale>('de');

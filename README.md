@@ -422,8 +422,9 @@ Format:
 - **Zauberliste je Klasse:** Die Detailansicht einer Klasse zeigt alle Zauber ihrer Zauberlisten aus der
   Zauberbibliothek, nach Grad gruppiert; ein Klick öffnet den Zauber. Die neun SRD-Zauberklassen werden am Namen
   erkannt; im Klassenformular lassen sich die genutzten Listen auch frei wählen (z. B. eine eigene Klasse nutzt die
-  Artificer-Liste). Eigene Wiki-Klassen erscheinen außerdem im **Zauberformular** neben den neun Klassen – so lassen
-  sich einzelne Zauber direkt einer eigenen Klasse zuordnen.
+  Artificer-Liste; „Artifizient“ wird als Artificer erkannt). Eigene **zaubernde** Wiki-Klassen (Zauberwirken im
+  Klassenformular eingestellt) erscheinen außerdem im **Zauberformular** neben den neun Klassen – so lassen sich
+  einzelne Zauber direkt einer eigenen Klasse zuordnen; Klassen ohne Zauberwirken (Barbar, Kämpfer …) erscheinen dort nicht.
 - **Zauberplätze je Klasse:** Im Klassenformular unter „Zauberplätze & Zauberlisten“: Art des Zauberwirkens
   (automatisch nach Klassenname, kein Zauberwirken, Vollzauberer, Halbzauberer ab Stufe 2 bzw. ab Stufe 1,
   Drittelzauberer ab Stufe 3, Paktmagie) oder eine **eigene Tabelle** (Plätze je Stufe 1–20 und Grad 1–9, mit
