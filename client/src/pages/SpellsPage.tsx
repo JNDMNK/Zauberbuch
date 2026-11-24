@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowDownAZ, ArrowUpAZ, BookHeart, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { ArrowDownAZ, ArrowUpAZ, BookHeart, Plus, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import type { SortField, SpellDto } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { countActiveFilters, filtersToParams, parseFilters, type SpellFilters } from '../lib/filters';
@@ -42,7 +42,7 @@ interface SpellsPageProps {
 
 export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageProps) {
   const { t, i18n } = useTranslation();
-  const { user } = useAuth();
+  const { user, canWriteSpells } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = useMemo(() => parseFilters(searchParams), [searchParams]);
   const [sources, setSources] = useState<string[]>([]);
@@ -104,10 +104,19 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
     <div>
       <div className="mb-5 flex flex-col gap-1">
         {header}
-        <Heading className="flex items-center gap-2 text-2xl font-bold sm:text-3xl">
-          {favoritesPage || owner ? <BookHeart className="h-7 w-7 text-red-700 dark:text-red-400" /> : <Sparkles className="h-7 w-7 text-parchment-600" />}
-          {owner ? t('admin.spellbookOf', { name: owner.username }) : favoritesPage ? t('nav.favorites') : t('nav.spells')}
-        </Heading>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Heading className="flex items-center gap-2 text-2xl font-bold sm:text-3xl">
+            {favoritesPage || owner ? <BookHeart className="h-7 w-7 text-red-700 dark:text-red-400" /> : <Sparkles className="h-7 w-7 text-parchment-600" />}
+            {owner ? t('admin.spellbookOf', { name: owner.username }) : favoritesPage ? t('nav.favorites') : t('nav.spells')}
+          </Heading>
+          {/* Wie im Wiki und bei Charakteren: neuen Eintrag direkt auf der Seite anlegen */}
+          {canWriteSpells && !owner && !favoritesPage && (
+            <Link to="/admin/spells/new" className="btn-primary">
+              <Plus className="h-4 w-4" />
+              {t('admin.newSpell')}
+            </Link>
+          )}
+        </div>
         {!owner && <StorySourceBanner what={t('storySources.spells')} />}
       </div>
 
