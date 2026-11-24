@@ -98,6 +98,11 @@ Mit dem Plugin „Docker Compose Manager“ einen neuen Stack anlegen, den Inhal
 `docker-compose.yml` einfügen und unter „Edit Stack → ENV File“ die Werte aus `.env.example`
 setzen (mindestens `ZAUBERBUCH_IMAGE` und `ADMIN_PASSWORD`). Dann **Compose Up**.
 
+**Icon in der Docker-Übersicht:** Das Template bringt das Zauberbuch-Icon mit. Zusätzlich trägt das Image die Labels
+`net.unraid.docker.icon` und `net.unraid.docker.webui` (ebenso die `docker-compose.yml`) – so zeigt Unraid Icon und
+WebUI-Link auch bei Containern, die ohne Template (Compose oder „Add Container“) angelegt wurden. Fehlt das Icon nach
+dem Update noch, einmal **Check for Updates** bzw. den Container neu erstellen; Unraid speichert Icons zwischen.
+
 ## Rollen & Benutzer
 
 Die **Verwaltung** erreichst du über das Benutzermenü oben rechts (auf dem Handy über das ☰-Menü). „Alle Zauber“

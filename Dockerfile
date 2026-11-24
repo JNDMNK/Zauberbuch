@@ -43,7 +43,11 @@ ARG APP_VERSION=1.0.0
 LABEL org.opencontainers.image.title="Zauberbuch" \
       org.opencontainers.image.description="DnD 5e Spell Library – Zauber durchsuchen, filtern und im eigenen Zauberbuch sammeln" \
       org.opencontainers.image.version="${APP_VERSION}" \
-      org.opencontainers.image.licenses="MIT"
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.source="https://github.com/JNDMNK/zauberbuch" \
+      org.opencontainers.image.url="https://github.com/JNDMNK/zauberbuch" \
+      net.unraid.docker.icon="https://raw.githubusercontent.com/JNDMNK/zauberbuch/main/client/public/icon.png" \
+      net.unraid.docker.webui="http://[IP]:[PORT:8080]/"
 
 RUN apk add --no-cache su-exec tzdata sqlite tini
 
