@@ -6,6 +6,7 @@ import { validate } from '../lib/validate';
 import { badRequest, forbidden, notFound } from '../lib/errors';
 import { requireAuth } from '../middleware/auth';
 import { roleFromMembership, visibleStoryWhere } from '../lib/stories';
+import { publishToUsers } from '../lib/events';
 
 /**
  * Chat je Geschichte: private Zweiergespräche zwischen Mitgliedern (Spieler ↔ DM, Spieler ↔ Spieler).
@@ -125,7 +126,9 @@ chatRouter.get('/stories/:storyId/with/:userId', async (req, res) => {
   const messages = since
     ? await prisma.chatMessage.findMany({ where: { ...between(story.id, me.id, other), updatedAt: { gt: since } }, orderBy: { createdAt: 'asc' }, take: MAX_PAGE })
     : (await prisma.chatMessage.findMany({ where: between(story.id, me.id, other), orderBy: { createdAt: 'desc' }, take: MAX_PAGE })).reverse();
-  await prisma.chatMessage.updateMany({ where: { storyId: story.id, senderId: other, recipientId: me.id, readAt: null }, data: { readAt: serverTime } });
+  const read = await prisma.chatMessage.updateMany({ where: { storyId: story.id, senderId: other, recipientId: me.id, readAt: null }, data: { readAt: serverTime } });
+  // Lesebestätigung live an den Absender
+  if (read.count > 0) publishToUsers([other], { type: 'chat', storyId: story.id });
   res.json({ messages: messages.map(toDto), serverTime: serverTime.toISOString() });
 });
 
@@ -151,6 +154,7 @@ chatRouter.post('/stories/:storyId/with/:userId', async (req, res) => {
       dice: input.dice ? JSON.stringify(input.dice) : '',
     },
   });
+  publishToUsers([me.id, other], { type: 'chat', storyId: story.id });
   res.status(201).json({ message: toDto(m) });
 });
 
@@ -167,6 +171,7 @@ chatRouter.put('/messages/:id', async (req, res) => {
   if (m.deleted || m.kind !== 'text') throw badRequest('chat_not_editable', 'Message cannot be edited');
   const { body } = validate(chatEditSchema, req.body);
   const updated = await prisma.chatMessage.update({ where: { id: m.id }, data: { body, edited: true } });
+  publishToUsers([m.senderId, m.recipientId], { type: 'chat', storyId: m.storyId });
   res.json({ message: toDto(updated) });
 });
 
@@ -174,5 +179,6 @@ chatRouter.put('/messages/:id', async (req, res) => {
 chatRouter.delete('/messages/:id', async (req, res) => {
   const m = await ownMessage(req.user!.id, String(req.params.id));
   const updated = await prisma.chatMessage.update({ where: { id: m.id }, data: { deleted: true, body: '', dice: '' } });
+  publishToUsers([m.senderId, m.recipientId], { type: 'chat', storyId: m.storyId });
   res.json({ message: toDto(updated) });
 });

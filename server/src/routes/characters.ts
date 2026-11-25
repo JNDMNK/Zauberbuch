@@ -25,6 +25,7 @@ import {
   lifestyleCost,
 } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
+import { publishToStory } from '../lib/events';
 import { wikiGodNames, wikiLanguageNames } from './wiki';
 import { validate } from '../lib/validate';
 import { notifyUsers } from '../lib/notifications';
@@ -311,6 +312,9 @@ charactersRouter.put('/:id', async (req, res) => {
     // Freigegebener Meilenstein ist erledigt, sobald die Stufe erreicht ist
     data: { ...summaryFields(data), data: JSON.stringify(data), ...(c.milestoneLevel !== null && data.identity.level >= c.milestoneLevel ? { milestoneLevel: null } : {}) },
   });
+  // TP & Co. erscheinen live in laufenden Kämpfen
+  const fighting = await prisma.combatant.findFirst({ where: { characterId: c.id, encounter: { ended: false } }, select: { encounter: { select: { storyId: true } } } });
+  if (fighting) publishToStory(fighting.encounter.storyId, { type: 'combat', storyId: fighting.encounter.storyId });
   res.json({ character: toDto(c, data, updated) });
 });
 

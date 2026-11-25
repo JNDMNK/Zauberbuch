@@ -8,6 +8,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { ChatProvider } from './components/chat/Chat';
+import { LiveEventsConnection } from './hooks/useLiveEvents';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -15,6 +16,7 @@ createRoot(document.getElementById('root')!).render(
       <ThemeProvider>
         <ToastProvider>
           <AuthProvider>
+            <LiveEventsConnection />
             <ChatProvider>
               <App />
             </ChatProvider>

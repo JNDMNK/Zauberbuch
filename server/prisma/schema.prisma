@@ -38,6 +38,7 @@ model User {
   boardPostsDeleted       BoardPost[]       @relation("BoardPostDeleter")
   boardComments           BoardComment[]
   boardReads              BoardRead[]
+  boardReactions          BoardReaction[]
   notifications           Notification[]
   chatSent                ChatMessage[]     @relation("ChatSender")
   chatReceived            ChatMessage[]     @relation("ChatRecipient")
@@ -126,22 +127,22 @@ model Favorite {
 
 /// Charakterbogen – der eigentliche Bogen steht als validiertes JSON in `data`
 model Character {
-  id         String            @id @default(cuid())
-  userId     String
-  name       String            @default("")
-  classLevel String            @default("")
-  race       String            @default("")
-  level      Int               @default(1)
-  data       String
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  combatants Combatant[]
+  id             String            @id @default(cuid())
+  userId         String
+  name           String            @default("")
+  classLevel     String            @default("")
+  race           String            @default("")
+  level          Int               @default(1)
+  data           String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  combatants     Combatant[]
   /**
    * Zuordnung zu einer Geschichte (Besitzer wird dabei Mitspieler); grenzt die Auswahl im Kampf ein
    */
-  storyId    String?
-  story      Story?            @relation(fields: [storyId], references: [id], onDelete: SetNull)
+  storyId        String?
+  story          Story?            @relation(fields: [storyId], references: [id], onDelete: SetNull)
   /**
    * Vom Dungeon Master freigegebener Meilenstein-Aufstieg: Stufe, auf die ohne genug EP aufgestiegen werden darf
    */
@@ -149,13 +150,13 @@ model Character {
   /**
    * Weitere Benutzer, die den Bogen bearbeiten dürfen
    */
-  editors    CharacterEditor[]
+  editors        CharacterEditor[]
   /**
    * Persönliche Notizen zum Charakter (privat, einzeln für den DM freigebbar)
    */
-  notes      CharacterNote[]
-  chatMessages ChatMessage[]
-  magicItems MagicItemHolder[]
+  notes          CharacterNote[]
+  chatMessages   ChatMessage[]
+  magicItems     MagicItemHolder[]
 
   @@index([userId])
 }
@@ -220,35 +221,49 @@ model StoryMember {
 }
 
 model BoardPost {
-  id          String         @id @default(cuid())
+  id          String          @id @default(cuid())
   storyId     String
-  story       Story          @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  story       Story           @relation(fields: [storyId], references: [id], onDelete: Cascade)
   /**
    * null = Ersteller wurde gelöscht (Beitrag bleibt erhalten)
    */
   authorId    String?
-  author      User?          @relation("BoardPostAuthor", fields: [authorId], references: [id], onDelete: SetNull)
-  title       String         @default("")
+  author      User?           @relation("BoardPostAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  title       String          @default("")
   body        String
-  category    String         @default("general") // general | dates | places | npcs | quests | items | lore
-  searchText  String         @default("")
-  pinned      Boolean        @default(false)
+  category    String          @default("general") // general | dates | places | npcs | quests | items | lore
+  searchText  String          @default("")
+  pinned      Boolean         @default(false)
   pinnedAt    DateTime?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   editedAt    DateTime?
   editedById  String?
-  editedBy    User?          @relation("BoardPostEditor", fields: [editedById], references: [id], onDelete: SetNull)
+  editedBy    User?           @relation("BoardPostEditor", fields: [editedById], references: [id], onDelete: SetNull)
   /**
    * Papierkorb: gelöschte Beiträge kann der Admin 90 Tage lang wiederherstellen
    */
   deletedAt   DateTime?
   deletedById String?
-  deletedBy   User?          @relation("BoardPostDeleter", fields: [deletedById], references: [id], onDelete: SetNull)
+  deletedBy   User?           @relation("BoardPostDeleter", fields: [deletedById], references: [id], onDelete: SetNull)
   comments    BoardComment[]
+  reactions   BoardReaction[]
 
   @@index([storyId, deletedAt, createdAt])
   @@index([deletedAt])
+}
+
+/// Gefällt mir / Gefällt mir nicht – je Benutzer und Beitrag höchstens eine Reaktion
+model BoardReaction {
+  id        String    @id @default(cuid())
+  postId    String
+  post      BoardPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  value     Int // 1 = Like, -1 = Dislike
+  createdAt DateTime  @default(now())
+
+  @@unique([postId, userId])
 }
 
 model BoardComment {
@@ -305,41 +320,41 @@ model Encounter {
  * Teilnehmer: Spielercharakter (Werte live aus dem Charakterbogen, nur lesend) oder Monster (vom DM gepflegt)
  */
 model Combatant {
-  id          String     @id @default(cuid())
+  id          String           @id @default(cuid())
   encounterId String
-  encounter   Encounter  @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  encounter   Encounter        @relation(fields: [encounterId], references: [id], onDelete: Cascade)
   kind        String // character | monster | ally (verbündeter NSC)
   characterId String?
-  character   Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  name        String     @default("")
+  character   Character?       @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  name        String           @default("")
   initiative  Int?
   ac          Int?
-  hpCurrent   Int        @default(0)
-  hpMax       Int        @default(0)
+  hpCurrent   Int              @default(0)
+  hpMax       Int              @default(0)
   /**
    * Monster: RK und LP für Spieler verbergen (Spieler sehen nur einen groben Zustand)
    */
-  hideStats   Boolean    @default(true)
+  hideStats   Boolean          @default(true)
   /**
    * JSON-Array der Zustände
    */
-  conditions  String     @default("[]")
+  conditions  String           @default("[]")
   /**
    * Nur für DM/Admin sichtbar (aus der Monster-Datenbank übernommen)
    */
-  attack      String     @default("")
+  attack      String           @default("")
   /**
    * Schaden wie bei Zaubern: Würfelausdruck (z. B. "1d6+2") und Schadensart
    */
   damageDice  String?
   damageType  String?
-  description String     @default("")
+  description String           @default("")
   /**
    * Vorlage aus der DM-Monster-Datenbank, aus der das Monster stammt (Werteblock im Kampf öffnen)
    */
   templateId  String?
   template    MonsterTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime         @default(now())
 
   @@index([encounterId])
   @@index([characterId])
@@ -391,7 +406,7 @@ model MonsterTemplate {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  combatants  Combatant[]
+  combatants Combatant[]
 
   @@index([name])
 }
@@ -540,15 +555,15 @@ model CatalogItem {
 
 /// DM-Notizen einer Geschichte (nur für die Dungeon Master der Geschichte): sortierbare Abschnitte mit Markdown-Text
 model DmNote {
-  id          String   @id @default(cuid())
-  storyId     String
-  story       Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
-  title       String
-  body        String   @default("")
-  position    Int      @default(0)
-  updatedBy   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  storyId   String
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  title     String
+  body      String   @default("")
+  position  Int      @default(0)
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([storyId, position])
 }

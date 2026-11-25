@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MessageSquare, Pencil, Pin, PinOff, Send, Trash2 } from 'lucide-react';
+import { MessageSquare, Pencil, Pin, PinOff, Send, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-react';
 import { MAX_COMMENT_LENGTH, type BoardCommentDto, type BoardPostDto } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
@@ -54,6 +54,13 @@ export function PostCard({ post, readOnly, canPin, onChange, onRemove }: Props) 
   const togglePin = () =>
     run(async () => {
       const res = await api.pinPost(post.id, !post.pinned);
+      onChange(res.post);
+    });
+
+  /** Gleicher Knopf erneut = Reaktion zurücknehmen */
+  const react = (value: 1 | -1) =>
+    run(async () => {
+      const res = await api.reactPost(post.id, post.myReaction === value ? 0 : value);
       onChange(res.post);
     });
 
@@ -155,6 +162,36 @@ export function PostCard({ post, readOnly, canPin, onChange, onRemove }: Props) 
           </>
         )}
       </p>
+
+      <div className="mt-2 flex items-center gap-2" role="group" aria-label={t('board.reactions')}>
+        {([1, -1] as const).map((v) => {
+          const names = v === 1 ? post.likedBy : post.dislikedBy;
+          const mine = post.myReaction === v;
+          const Icon = v === 1 ? ThumbsUp : ThumbsDown;
+          const label = t(v === 1 ? 'board.like' : 'board.dislike');
+          return (
+            <button
+              key={v}
+              type="button"
+              disabled={readOnly || busy}
+              onClick={() => react(v)}
+              aria-pressed={mine}
+              aria-label={`${label} (${names.length})`}
+              title={names.length ? `${label}: ${names.join(', ')}` : label}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-sm tabular-nums transition disabled:cursor-default disabled:opacity-70 ${
+                mine
+                  ? v === 1
+                    ? 'border-emerald-700 bg-emerald-100 text-emerald-900 dark:border-emerald-500 dark:bg-emerald-950 dark:text-emerald-200'
+                    : 'border-red-700 bg-red-100 text-red-900 dark:border-red-500 dark:bg-red-950 dark:text-red-200'
+                  : 'border-parchment-400 hover:border-parchment-700 dark:border-night-700 dark:hover:border-parchment-400'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {names.length}
+            </button>
+          );
+        })}
+      </div>
 
       <section className="mt-3 border-t border-parchment-300/70 pt-3 dark:border-night-700" aria-label={t('board.comments')}>
         <h4 className="flex items-center gap-1.5 text-sm font-semibold text-parchment-800 dark:text-parchment-300">

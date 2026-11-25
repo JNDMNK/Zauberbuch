@@ -1,12 +1,14 @@
 import type { Role } from '@zauberbuch/shared';
 import { prisma } from './prisma';
 import { logger } from './logger';
+import { publishToUsers } from './events';
 
 /** Benachrichtigung an alle Benutzer einer Rolle */
 export async function notifyRole(role: Role, type: string, data: Record<string, string>) {
   const users = await prisma.user.findMany({ where: { role }, select: { id: true } });
   if (users.length === 0) return 0;
   await prisma.notification.createMany({ data: users.map((u) => ({ userId: u.id, type, data: JSON.stringify(data) })) });
+  publishToUsers(users.map((u) => u.id), { type: 'notifications' });
   return users.length;
 }
 
@@ -15,6 +17,7 @@ export async function notifyUsers(userIds: string[], type: string, data: Record<
   const unique = [...new Set(userIds)];
   if (unique.length === 0) return 0;
   await prisma.notification.createMany({ data: unique.map((userId) => ({ userId, type, data: JSON.stringify(data) })) });
+  publishToUsers(unique, { type: 'notifications' });
   return unique.length;
 }
 

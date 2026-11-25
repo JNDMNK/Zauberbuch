@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
+import { useLiveEvent } from './useLiveEvents';
 
 const EVENT = 'zauberbuch:combat-active';
-const POLL_MS = 60_000;
+const POLL_MS = 120_000;
 
 export const refreshCombatActive = () => window.dispatchEvent(new Event(EVENT));
 
 /** Anzahl laufender Kämpfe in den eigenen Geschichten (Markierung im Menü) */
 export function useCombatActive(enabled: boolean): number {
   const [count, setCount] = useState(0);
+  useLiveEvent((e) => e.type === 'combat', () => window.dispatchEvent(new Event(EVENT)));
   useEffect(() => {
     if (!enabled) {
       setCount(0);

@@ -29,6 +29,7 @@ Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutze
   Initiative, Angriffe samt Schaden (aus „Waffen & Angriffszauber“, z. B. „1W6 + 3“) und Zauberangriff setzen Würfel
   und Modifikator direkt aus dem Charakterbogen; Ergebnis, Verlauf und „In den Chat“ (als dieser Charakter) tragen die
   Bezeichnung mit.
+- ⚡ **Live-Aktualisierung**: Infotafel, Chat, Glocke und Kampf erscheinen bei allen sofort, ohne Neuladen
 - 💬 **Chat** je Geschichte: private Zweiergespräche (Spieler ↔ DM, Spieler ↔ Spieler) über die Sprechblase in der
   Kopfzeile – als Charakter schreiben, Würfe teilen, Nachrichten bearbeiten/löschen, Zähler für Ungelesenes
 - 🧭 **Geschichten-Ansicht**: per Umschalter in der Kopfzeile führen Charakterbogen, Infotafel und Kampf direkt
@@ -54,6 +55,7 @@ Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutze
 4. [Umgebungsvariablen](#umgebungsvariablen)
 5. [Daten, Backup & Wiederherstellung](#daten-backup--wiederherstellung)
 6. [Reverse Proxy](#reverse-proxy-nginx-proxy-manager--swag)
+   - [Live-Aktualisierung](#live-aktualisierung)
 7. [JSON-Importformat](#json-importformat)
 8. [REST-API](#rest-api)
 9. [Lokale Entwicklung ohne Docker](#lokale-entwicklung-ohne-docker)
@@ -503,11 +505,14 @@ Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Grupp
   Ändern und löschen dürfen der Ersteller und die Dungeon Master der Geschichte. Lange Beiträge werden eingeklappt.
 - **Anheften** (📌, Dungeon Master der Geschichte) hält wichtige Beiträge oben.
 - **Kommentare** unter jedem Beitrag; dieselben Rechte wie bei Beiträgen.
+- **Gefällt mir / Gefällt mir nicht** (👍/👎) unter jedem Beitrag: je Mitspieler eine Reaktion, erneuter Klick nimmt
+  sie zurück, ein Klick auf den anderen Knopf wechselt. Die Zahlen sehen alle, beim Darüberfahren erscheinen die
+  Namen. In archivierten Geschichten nur lesbar.
 - **Benachrichtigung:** Ein neuer Beitrag löst bei allen anderen Mitspielern der Geschichte die Glocke aus
   („frodo hat auf der Infotafel „…“ geschrieben: …“); ein Klick darauf öffnet die Infotafel der Geschichte.
 - **Suche** über Beiträge und Kommentare, **Filter** nach Kategorie.
 - **Ungelesen-Zähler** am Reiter und an jeder Geschichte (neue Beiträge und Kommentare anderer seit dem letzten
-  Öffnen). Die Tafel aktualisiert sich automatisch alle 30 Sekunden.
+  Öffnen). Neue Beiträge, Kommentare und Reaktionen anderer erscheinen **sofort** (Live-Aktualisierung).
 - **Papierkorb:** Gelöschte Beiträge kann der Admin unter **Infotafel → Papierkorb** **90 Tage** lang
   wiederherstellen; danach werden sie automatisch endgültig entfernt. Gelöschte Kommentare sind sofort weg.
 - Wird ein Benutzer gelöscht, bleiben seine Beiträge erhalten („gelöschter Benutzer“).
@@ -538,7 +543,7 @@ Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Grupp
 - Eigene Nachrichten lassen sich **bearbeiten** (Text) und **löschen** („Nachricht gelöscht“ bleibt im Verlauf);
   gelesene Nachrichten erhalten ✓✓. Enter sendet, Umschalt+Enter fügt eine Zeile ein; Formatierung und Querverweise
   wie bei Notizen.
-- Neue Nachrichten erscheinen ohne Neuladen (Abfrage alle 3 s im offenen Gespräch). In archivierten Geschichten ist
+- Neue Nachrichten, Bearbeitungen und Lesebestätigungen erscheinen sofort (Live-Aktualisierung). In archivierten Geschichten ist
   der Verlauf nur lesbar. Der Chat ist in der Gesamtsicherung enthalten.
 
 ## Kampfhilfe
@@ -724,6 +729,21 @@ cp backups/zauberbuch-20250101-120000.db zauberbuch.db
 docker start zauberbuch
 ```
 
+## Live-Aktualisierung
+
+Infotafel (Beiträge, Kommentare, Reaktionen, roter Punkt im Menü), Chat, Glocke und Kampf (Zugwechsel, Trefferpunkte
+– auch aus den Charakterbögen –, neue/beendete Kämpfe) aktualisieren sich bei allen Beteiligten **sofort**, ohne
+Neuladen. Technisch hält jeder angemeldete Tab eine schlanke Verbindung zu `/api/events` (Server-Sent Events). Der
+Server schickt darüber nur kurze Signale wie „Infotafel der Geschichte X hat sich geändert“ – **keine Inhalte** –, und
+der Browser lädt den Bereich über die normale API nach. So gelten immer die üblichen Rechte: private Chats und
+DM-Inhalte erreichen nur, wer sie sehen darf.
+
+- Ein Kommentar-Herzschlag alle 25 Sekunden hält die Verbindung durch Proxys und Router offen.
+- Nach einem Abbruch (WLAN-Wechsel, Neustart des Containers) verbindet sich der Browser selbst neu und lädt alle
+  Bereiche einmal nach.
+- Als Sicherheitsnetz fragen die Bereiche zusätzlich selten selbst nach (Infotafel, Glocke, Zähler alle 2 Minuten,
+  offener Chat/Kampf alle 30 Sekunden).
+
 ## Reverse Proxy (Nginx Proxy Manager / SWAG)
 
 Die App setzt `trust proxy` (Standard: ein Proxy-Hop), wertet also `X-Forwarded-Proto` und
@@ -731,7 +751,10 @@ Die App setzt `trust proxy` (Standard: ein Proxy-Hop), wertet also `X-Forwarded-
 gesetzt, und das Rate-Limiting sieht die echte Client-IP.
 
 - **Nginx Proxy Manager:** Proxy Host → Forward Hostname `zauberbuch` (oder Server-IP), Port `8080`,
-  „Block Common Exploits“ und SSL aktivieren. Weitere Einstellungen sind nicht nötig.
+  „Block Common Exploits“ und SSL aktivieren. Weitere Einstellungen sind nicht nötig – auch nicht für die
+  Live-Aktualisierung: Die App schickt dafür den Header `X-Accel-Buffering: no`, sodass nginx diese Verbindung nicht
+  puffert, und hält sie mit einem Herzschlag alle 25 s unter dem nginx-Standard-Timeout von 60 s. (Getestet mit
+  einem nginx in Standard-Proxy-Konfiguration mit eingeschalteter Pufferung.)
 - **SWAG:** Beispiel `/config/nginx/proxy-confs/zauberbuch.subdomain.conf`:
 
   ```nginx
@@ -752,6 +775,27 @@ gesetzt, und das Rate-Limiting sieht die echte Client-IP.
       }
   }
   ```
+
+Eigene nginx-Konfiguration: Wer die Pufferung oder Timeouts global verändert hat, kann für die Live-Verbindung
+optional einen eigenen Block ergänzen (im Nginx Proxy Manager unter Proxy Host → Advanced → Custom Nginx
+Configuration):
+
+```nginx
+location /api/events {
+    proxy_pass http://SERVER-IP:8080;
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_buffering off;
+    proxy_read_timeout 1h;
+}
+```
+
+**FRITZ!Box / DuckDNS:** Für die Live-Aktualisierung ist keine zusätzliche Portfreigabe nötig – sie läuft über
+dieselbe HTTPS-Verbindung (Port 443) wie die App. Fällt die Verbindung kurz weg, z. B. bei der täglichen
+Zwangstrennung oder einer neuen IP über DuckDNS, verbindet sich der Browser nach wenigen Sekunden selbst neu.
 
 Bei mehreren hintereinandergeschalteten Proxys `TRUST_PROXY` auf die Anzahl der Hops setzen.
 Die App ist für den Betrieb unter einer eigenen (Sub-)Domain ausgelegt, nicht unter einem Unterpfad.
@@ -895,6 +939,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `POST /api/board/stories/:id/posts` | Mitspieler, DM/Admin | `{ title?, body, category? }` |
 | `PATCH /api/board/posts/:id` · `DELETE /api/board/posts/:id` | Ersteller, DM/Admin | Bearbeiten bzw. in den Papierkorb |
 | `POST /api/board/posts/:id/pin` | DM/Admin | `{ pinned }` |
+| `PUT /api/board/posts/:id/reaction` | Mitspieler, DM/Admin | Gefällt mir / nicht: `{ value: 1 \| -1 \| 0 }` (0 nimmt zurück); Beiträge liefern `likedBy`, `dislikedBy`, `myReaction` |
 | `POST /api/board/posts/:id/comments` · `PATCH`/`DELETE /api/board/comments/:id` | Mitspieler / Ersteller, DM/Admin | Kommentare |
 | `GET /api/board/unread` · `POST /api/board/stories/:id/read` | User | Ungelesen-Zähler bzw. als gelesen markieren |
 | `GET /api/board/deleted` · `POST /api/board/posts/:id/restore` · `DELETE /api/board/posts/:id/permanent` | Admin | Papierkorb |
@@ -908,6 +953,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
 | `GET/POST /api/characters/:id/notes` · `PUT/DELETE …/notes/:noteId` | Besitzer/Mitbearbeiter (DM: freigegebene lesen) | Persönliche Notizen |
+| `GET /api/events` | angemeldet | Live-Aktualisierung (Server-Sent Events): Ereignis `change` mit `{ type: board \| chat \| combat, storyId }` bzw. `{ type: notifications }` |
 | `GET /api/chat/unread` | angemeldet | Ungelesene Chat-Nachrichten (`{ total, byStory }`) |
 | `GET /api/chat/stories/:storyId` · `GET …/portraits` | Mitglied der Geschichte | Gesprächspartner mit letzter Nachricht/Ungelesenen, eigene Charaktere; Charakterporträts |
 | `GET`/`POST /api/chat/stories/:storyId/with/:userId` | Mitglied (nur die beiden Beteiligten) | Verlauf (`?since=ISO` für Änderungen, markiert als gelesen) bzw. senden (`{ body, characterId?, dice? }`) |

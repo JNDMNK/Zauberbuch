@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus, Swords } from 'lucide-react';
 import type { EncounterSummaryDto, StoryDto } from '@zauberbuch/shared';
+import { useLiveEvent } from '../hooks/useLiveEvents';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
 import { useAuth } from '../context/AuthContext';
@@ -36,6 +37,8 @@ export function CombatPage() {
       .catch(setError);
   }, []);
   useEffect(() => setShowAll(false), [activeStoryId]);
+  // Neue/beendete Kämpfe der eigenen Geschichten live übernehmen
+  useLiveEvent((e) => e.type === 'combat', () => api.encounters().then((e) => setAll(e.encounters), () => undefined));
 
   const activeStory = stories.find((s) => s.id === activeStoryId) ?? null;
   const storyMode = Boolean(activeStory) && !showAll;

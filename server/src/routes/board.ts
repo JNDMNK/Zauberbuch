@@ -8,6 +8,7 @@ import {
   boardSearchText,
   commentInputSchema,
   pinSchema,
+  reactionSchema,
   postInputSchema,
   postQuerySchema,
   type BoardCategory,
@@ -34,6 +35,7 @@ import { logger } from '../lib/logger';
 import { requireAdmin, requireAuth } from '../middleware/auth';
 import { roleFromMembership, visibleStoryWhere } from '../lib/stories';
 import { notifyUsers } from '../lib/notifications';
+import { publishToStory } from '../lib/events';
 
 /**
  * Infotafel pro Geschichte.
@@ -59,12 +61,14 @@ type PostWithRelations = BoardPost & {
   author: Pick<User, 'id' | 'username'> | null;
   editedBy: Pick<User, 'id' | 'username'> | null;
   comments: CommentWithAuthor[];
+  reactions: { userId: string; value: number; user: Pick<User, 'id' | 'username'> }[];
 };
 
 const postInclude = {
   author: userRefSelect,
   editedBy: userRefSelect,
   comments: { orderBy: { createdAt: 'asc' }, include: { author: userRefSelect } },
+  reactions: { orderBy: { createdAt: 'asc' }, select: { userId: true, value: true, user: userRefSelect } },
 } satisfies Prisma.BoardPostInclude;
 
 function toCommentDto(req: Request, c: CommentWithAuthor): BoardCommentDto {
@@ -92,6 +96,9 @@ function toPostDto(req: Request, p: PostWithRelations): BoardPostDto {
     editedBy: ref(p.editedBy),
     comments: p.comments.map((c) => toCommentDto(req, c)),
     canEdit: canModify(req, p.authorId),
+    likedBy: p.reactions.filter((r) => r.value > 0).map((r) => r.user.username),
+    dislikedBy: p.reactions.filter((r) => r.value < 0).map((r) => r.user.username),
+    myReaction: (Math.sign(p.reactions.find((r) => r.userId === req.user!.id)?.value ?? 0) as -1 | 0 | 1),
   };
 }
 
@@ -256,6 +263,7 @@ boardRouter.post('/stories/:id/posts', async (req, res) => {
     title: input.title || postSnippet(input.body),
     link: `/board/${story.id}`,
   });
+  publishToStory(story.id, { type: 'board', storyId: story.id });
   res.status(201).json({ post: toPostDto(req, post) });
 });
 
@@ -276,6 +284,7 @@ boardRouter.patch('/posts/:id', async (req, res) => {
     },
     include: postInclude,
   });
+  publishToStory(story.id, { type: 'board', storyId: story.id });
   res.json({ post: toPostDto(req, updated) });
 });
 
@@ -288,6 +297,20 @@ boardRouter.post('/posts/:id/pin', async (req, res) => {
     data: { pinned, pinnedAt: pinned ? new Date() : null },
     include: postInclude,
   });
+  publishToStory(story.id, { type: 'board', storyId: story.id });
+  res.json({ post: toPostDto(req, updated) });
+});
+
+/** Gefällt mir / Gefällt mir nicht – je Benutzer eine Reaktion; 0 nimmt sie zurück */
+boardRouter.put('/posts/:id/reaction', async (req, res) => {
+  const { post, story } = await loadPost(req, String(req.params.id));
+  assertWritable(story);
+  const { value } = validate(reactionSchema, req.body);
+  const key = { postId_userId: { postId: post.id, userId: req.user!.id } };
+  if (value === 0) await prisma.boardReaction.deleteMany({ where: { postId: post.id, userId: req.user!.id } });
+  else await prisma.boardReaction.upsert({ where: key, create: { postId: post.id, userId: req.user!.id, value }, update: { value } });
+  const updated = await prisma.boardPost.findUniqueOrThrow({ where: { id: post.id }, include: postInclude });
+  publishToStory(story.id, { type: 'board', storyId: story.id });
   res.json({ post: toPostDto(req, updated) });
 });
 
@@ -296,6 +319,7 @@ boardRouter.delete('/posts/:id', async (req, res) => {
   const { post } = await loadPost(req, String(req.params.id));
   if (!canModify(req, post.authorId)) throw forbidden();
   await prisma.boardPost.update({ where: { id: post.id }, data: { deletedAt: new Date(), deletedById: req.user!.id } });
+  publishToStory(post.storyId, { type: 'board', storyId: post.storyId });
   res.status(204).end();
 });
 
@@ -326,6 +350,7 @@ boardRouter.post('/posts/:id/restore', requireAdmin, async (req, res) => {
   if (!post || !post.deletedAt) throw notFound();
   const updated = await prisma.boardPost.update({ where: { id: post.id }, data: { deletedAt: null, deletedById: null }, include: postInclude });
   storyDm.set(req, true);
+  publishToStory(post.storyId, { type: 'board', storyId: post.storyId });
   res.json({ post: toPostDto(req, updated) });
 });
 
@@ -344,6 +369,7 @@ boardRouter.post('/posts/:id/comments', async (req, res) => {
   assertWritable(story);
   const { body } = validate(commentInputSchema, req.body);
   const comment = await prisma.boardComment.create({ data: { postId: post.id, authorId: req.user!.id, body }, include: { author: userRefSelect } });
+  publishToStory(story.id, { type: 'board', storyId: story.id });
   res.status(201).json({ comment: toCommentDto(req, comment) });
 });
 
@@ -360,12 +386,14 @@ boardRouter.patch('/comments/:id', async (req, res) => {
   assertWritable(story);
   const { body } = validate(commentInputSchema, req.body);
   const updated = await prisma.boardComment.update({ where: { id: comment.id }, data: { body, editedAt: new Date() }, include: { author: userRefSelect } });
+  publishToStory(story.id, { type: 'board', storyId: story.id });
   res.json({ comment: toCommentDto(req, updated) });
 });
 
 boardRouter.delete('/comments/:id', async (req, res) => {
-  const { comment } = await loadComment(req, String(req.params.id));
+  const { comment, story } = await loadComment(req, String(req.params.id));
   await prisma.boardComment.delete({ where: { id: comment.id } });
+  publishToStory(story.id, { type: 'board', storyId: story.id });
   res.status(204).end();
 });
 

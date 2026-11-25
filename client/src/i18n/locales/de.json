@@ -783,7 +783,10 @@
     "purgeTitle": "Endgültig löschen?",
     "purgeText": "Der Beitrag wird sofort und unwiderruflich gelöscht.",
     "deletedInfo": "Gelöscht von {{name}} am {{date}} · wird am {{purge}} endgültig entfernt",
-    "backToBoard": "Zur Infotafel"
+    "backToBoard": "Zur Infotafel",
+    "reactions": "Reaktionen",
+    "like": "Gefällt mir",
+    "dislike": "Gefällt mir nicht"
   },
   "combat": {
     "heading": "Kampf",

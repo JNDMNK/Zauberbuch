@@ -783,7 +783,10 @@
     "purgeTitle": "Delete permanently?",
     "purgeText": "The post will be deleted immediately and irrevocably.",
     "deletedInfo": "Deleted by {{name}} on {{date}} · will be removed permanently on {{purge}}",
-    "backToBoard": "Back to info board"
+    "backToBoard": "Back to info board",
+    "reactions": "Reactions",
+    "like": "Like",
+    "dislike": "Dislike"
   },
   "combat": {
     "heading": "Combat",

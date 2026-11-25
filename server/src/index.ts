@@ -7,6 +7,7 @@ import { purgeDeletedBoardPosts } from './routes/board';
 import { seedCatalog } from './routes/catalog';
 import { backfillBackgroundFields, backfillSubclassSources, seedWiki } from './routes/wiki';
 import { purgeNotifications } from './lib/notifications';
+import { closeAllClients } from './lib/events';
 
 async function main() {
   ensureDataDirs();
@@ -33,6 +34,7 @@ async function main() {
 
   const shutdown = (signal: string) => {
     logger.info(`${signal} empfangen, fahre herunter …`);
+    closeAllClients();
     server.close(async () => {
       await prisma.$disconnect();
       process.exit(0);

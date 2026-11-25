@@ -11,6 +11,7 @@ import {
   type EncounterDto,
   type MonsterTemplateDto,
 } from '@zauberbuch/shared';
+import { useLiveEvent } from '../hooks/useLiveEvents';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
 import { useToast } from '../context/ToastContext';
@@ -22,7 +23,8 @@ import { CombatantCard } from '../components/combat/CombatantCard';
 import { StatBlock } from '../components/bestiary/StatBlock';
 import { DamageInput, checkDamage, type DamageState } from '../components/DamageInput';
 
-const POLL_MS = 3_000;
+/** Sicherheitsnetz; normalerweise kommen Änderungen sofort per Live-Ereignis */
+const POLL_MS = 30_000;
 /** D&D 5e: 1 Runde = 6 Sekunden (10 Runden = 1 Minute) */
 const SECONDS_PER_ROUND = 6;
 
@@ -83,6 +85,8 @@ export function EncounterPage() {
       document.removeEventListener('visibilitychange', tick);
     };
   }, [load]);
+
+  useLiveEvent((e) => e.type === 'combat' && e.storyId === enc?.storyId, () => document.visibilityState === 'visible' && void load());
 
   const changeSort = (m: SortMode) => {
     setSort(m);

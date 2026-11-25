@@ -200,6 +200,7 @@ export const api = {
   boardPosts: (storyId: string, params: URLSearchParams, signal?: AbortSignal) => request<BoardPostsPage>('GET', `/api/board/stories/${storyId}/posts?${params.toString()}`, undefined, signal),
   createPost: (storyId: string, input: PostInput) => request<{ post: BoardPostDto }>('POST', `/api/board/stories/${storyId}/posts`, input),
   updatePost: (id: string, input: PostInput) => request<{ post: BoardPostDto }>('PATCH', `/api/board/posts/${id}`, input),
+  reactPost: (id: string, value: -1 | 0 | 1) => request<{ post: BoardPostDto }>('PUT', `/api/board/posts/${id}/reaction`, { value }),
   pinPost: (id: string, pinned: boolean) => request<{ post: BoardPostDto }>('POST', `/api/board/posts/${id}/pin`, { pinned }),
   deletePost: (id: string) => request<void>('DELETE', `/api/board/posts/${id}`),
   deletedPosts: (storyId?: string) => request<{ posts: DeletedBoardPostDto[] }>('GET', `/api/board/deleted${storyId ? `?storyId=${storyId}` : ''}`),

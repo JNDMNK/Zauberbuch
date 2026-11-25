@@ -27,6 +27,7 @@ import { validate } from '../lib/validate';
 import { badRequest, forbidden, notFound } from '../lib/errors';
 import { requireAuth } from '../middleware/auth';
 import { storyRole, visibleStoryWhere } from '../lib/stories';
+import { publishToStory } from '../lib/events';
 
 /**
  * Kampfhilfe je Geschichte.
@@ -41,6 +42,17 @@ combatRouter.use(requireAuth);
 /** DM-Rechte und Geschichte des Kampfes der aktuellen Anfrage (gesetzt von loadEncounter) */
 const encDm = new WeakMap<Request, boolean>();
 const encStory = new WeakMap<Request, string>();
+
+/** Nach jeder erfolgreichen Änderung: alle in der Geschichte des Kampfs live informieren */
+combatRouter.use((req, res, next) => {
+  if (req.method !== 'GET') {
+    res.on('finish', () => {
+      const storyId = encStory.get(req);
+      if (res.statusCode < 400 && storyId) publishToStory(storyId, { type: 'combat', storyId });
+    });
+  }
+  next();
+});
 const isDm = (req: Request) => encDm.get(req) === true;
 
 type CombatantWithCharacter = Combatant & { character: (Character & { user: Pick<User, 'id' | 'username'> }) | null };
@@ -193,6 +205,7 @@ combatRouter.post('/encounters', async (req, res) => {
   if (!story) throw badRequest('story_not_found', 'Story not found');
   if ((await storyRole(req.user!, story.id)) !== 'dm') throw forbidden();
   const e = await prisma.encounter.create({ data: { storyId: story.id, name: input.name } });
+  encStory.set(req, story.id);
   res.status(201);
   await sendEncounter(req, res, e.id);
 });

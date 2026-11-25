@@ -5,8 +5,10 @@ import { Bell, Trash2 } from 'lucide-react';
 import type { NotificationDto } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { useToast } from '../context/ToastContext';
+import { useLiveEvent } from '../hooks/useLiveEvents';
 
-const POLL_MS = 30_000;
+/** Sicherheitsnetz; neue Benachrichtigungen kommen normalerweise sofort per Live-Ereignis */
+const POLL_MS = 120_000;
 
 /** Glocke mit ungelesenen Benachrichtigungen; neue werden zusätzlich kurz eingeblendet */
 export function NotificationBell() {
@@ -34,6 +36,8 @@ export function NotificationBell() {
       })
       .catch(() => undefined);
   }, [toast, text]);
+
+  useLiveEvent((e) => e.type === 'notifications', load);
 
   useEffect(() => {
     load();

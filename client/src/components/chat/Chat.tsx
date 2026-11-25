@@ -8,12 +8,14 @@ import { errorMessage } from '../../lib/errors';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { useActiveStory } from '../../hooks/useActiveStory';
+import { useLiveEvent } from '../../hooks/useLiveEvents';
 import { Markdown } from '../Markdown';
 import { Spinner } from '../ui';
 
-const UNREAD_POLL_MS = 20_000;
-const STORY_POLL_MS = 10_000;
-const MESSAGES_POLL_MS = 3_000;
+// Sicherheitsnetz; neue Nachrichten kommen normalerweise sofort per Live-Ereignis
+const UNREAD_POLL_MS = 120_000;
+const STORY_POLL_MS = 60_000;
+const MESSAGES_POLL_MS = 30_000;
 
 interface ChatCtx {
   open: boolean;
@@ -43,6 +45,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     api.chatUnread().then(setUnread, () => undefined);
   }, [user]);
+  useLiveEvent((e) => e.type === 'chat', refreshUnread);
   useEffect(() => {
     if (!user) return;
     refreshUnread();
@@ -126,6 +129,7 @@ function ChatPanel({ start, onClose }: { start: { storyId: string | null; charac
     const id = window.setInterval(loadStory, STORY_POLL_MS);
     return () => window.clearInterval(id);
   }, [storyId, loadStory]);
+  useLiveEvent((e) => e.type === 'chat' && e.storyId === storyId, loadStory);
   // Als-Charakter-Auswahl nur mit eigenen Charakteren dieser Geschichte
   useEffect(() => {
     if (data && asCharacter && !data.myCharacters.some((c) => c.id === asCharacter)) setAsCharacter('');
@@ -263,6 +267,8 @@ function Conversation({
   const listRef = useRef<HTMLDivElement>(null);
   const stick = useRef(true);
   const partnerName = data.contacts.find((c) => c.userId === partnerId)?.username ?? '';
+  const tickRef = useRef<() => Promise<void>>(async () => undefined);
+  useLiveEvent((e) => e.type === 'chat' && e.storyId === storyId, () => void tickRef.current());
 
   const merge = (incoming: ChatMessageDto[]) =>
     setMessages((list) => {
@@ -287,6 +293,7 @@ function Conversation({
         /* nächster Versuch beim nächsten Takt */
       }
     };
+    tickRef.current = tick;
     void tick();
     const id = window.setInterval(tick, MESSAGES_POLL_MS);
     return () => {

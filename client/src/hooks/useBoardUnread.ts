@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
+import { useLiveEvent } from './useLiveEvents';
 
 const EVENT = 'zauberbuch:board-unread';
-const POLL_MS = 60_000;
+const POLL_MS = 120_000;
 
 /** Andere Komponenten (z. B. nach dem Lesen einer Geschichte) stoßen damit eine Aktualisierung an */
 export const refreshBoardUnread = () => window.dispatchEvent(new Event(EVENT));
@@ -10,6 +11,7 @@ export const refreshBoardUnread = () => window.dispatchEvent(new Event(EVENT));
 /** Anzahl ungelesener Beiträge/Kommentare auf der Infotafel; aktualisiert sich regelmäßig */
 export function useBoardUnread(enabled: boolean): number {
   const [total, setTotal] = useState(0);
+  useLiveEvent((e) => e.type === 'board', () => window.dispatchEvent(new Event(EVENT)));
   useEffect(() => {
     if (!enabled) {
       setTotal(0);

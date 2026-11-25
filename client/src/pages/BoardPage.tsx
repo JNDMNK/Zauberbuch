@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import { Archive, MessagesSquare, NotebookPen, Plus, Search, Settings2, Trash, Users, X } from 'lucide-react';
 import { BOARD_CATEGORIES, type BoardCategory, type BoardPostDto, type StoryDto } from '@zauberbuch/shared';
+import { useLiveEvent } from '../hooks/useLiveEvents';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
 import { useAuth } from '../context/AuthContext';
@@ -14,7 +15,8 @@ import { PostCard } from '../components/board/PostCard';
 import { PostForm } from '../components/board/PostForm';
 import { DmNotesPanel } from '../components/board/DmNotesPanel';
 
-const REFRESH_MS = 30_000;
+/** Sicherheitsnetz; neue Beiträge kommen normalerweise sofort per Live-Ereignis */
+const REFRESH_MS = 120_000;
 const LAST_STORY_KEY = 'zauberbuch.board.story';
 
 function rememberStory(id: string) {
@@ -211,6 +213,8 @@ function StoryBoard({ story, onRead }: { story: StoryDto; onRead: (id: string) =
       document.removeEventListener('visibilitychange', tick);
     };
   }, [reload]);
+
+  useLiveEvent((e) => e.type === 'board' && e.storyId === story.id, () => document.visibilityState === 'visible' && reload(pagesRef.current).catch(() => undefined));
 
   const loadMore = async () => {
     setLoadingMore(true);

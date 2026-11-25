@@ -10,7 +10,7 @@ import { config } from './config';
 import { HttpError } from './lib/errors';
 import { logger } from './lib/logger';
 import { prisma } from './lib/prisma';
-import { csrfProtection, loadUser } from './middleware/auth';
+import { csrfProtection, loadUser, requireAuth } from './middleware/auth';
 import { authRouter } from './routes/auth';
 import { spellsRouter } from './routes/spells';
 import { favoritesRouter } from './routes/favorites';
@@ -29,6 +29,7 @@ import { wikiRouter } from './routes/wiki';
 import { sourcesRouter } from './routes/sources';
 import { backupRouter } from './routes/backup';
 import { chatRouter } from './routes/chat';
+import { addClient } from './lib/events';
 
 const LARGE_BODY_PATHS = new Set(['/api/characters/import', '/api/characters/import/preview', '/api/backup/import']);
 
@@ -116,6 +117,7 @@ export function createApp(options: { accessLog?: boolean } = {}) {
   api.use('/wiki', wikiRouter);
   api.use('/backup', backupRouter);
   api.use('/chat', chatRouter);
+  api.get('/events', requireAuth, (req, res) => addClient(req.user!, res));
   api.use('/sources', sourcesRouter);
 
   api.use((_req, _res, next) => next(new HttpError(404, 'not_found', 'API route not found')));

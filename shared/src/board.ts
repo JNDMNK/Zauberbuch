@@ -137,7 +137,15 @@ export interface BoardPostDto {
   editedBy: BoardUserRef | null;
   comments: BoardCommentDto[];
   canEdit: boolean;
+  /** Gefällt mir / Gefällt mir nicht (Benutzernamen für den Hinweis beim Darüberfahren) */
+  likedBy: string[];
+  dislikedBy: string[];
+  /** eigene Reaktion: 1 = Like, -1 = Dislike, 0 = keine */
+  myReaction: -1 | 0 | 1;
 }
+
+/** Reaktion setzen: 1 = Like, -1 = Dislike, 0 = zurücknehmen */
+export const reactionSchema = z.object({ value: z.union([z.literal(-1), z.literal(0), z.literal(1)]) });
 
 export interface BoardPostsPage {
   posts: BoardPostDto[];
