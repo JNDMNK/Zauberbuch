@@ -747,6 +747,10 @@ der Browser lädt den Bereich über die normale API nach. So gelten immer die ü
 DM-Inhalte erreichen nur, wer sie sehen darf.
 
 - Ein Kommentar-Herzschlag alle 25 Sekunden hält die Verbindung durch Proxys und Router offen.
+- **Drucken (Safari):** Safari/WebKit wertet die offene Verbindung als „Seite lädt noch“ und würde den Druck endlos
+  verschieben. Der Drucken-Knopf und ⌘P bzw. Strg+P trennen sie deshalb vorher; sie verbindet sich wieder, sobald man
+  danach klickt oder tippt (spätestens nach 2 Minuten). Das Drucken über das Safari-Menü „Ablage → Drucken“ läuft
+  daran vorbei – dafür bitte ⌘P oder den Knopf verwenden.
 - Nach einem Abbruch (WLAN-Wechsel, Neustart des Containers) verbindet sich der Browser selbst neu und lädt alle
   Bereiche einmal nach.
 - Als Sicherheitsnetz fragen die Bereiche zusätzlich selten selbst nach (Infotafel, Glocke, Zähler alle 2 Minuten,

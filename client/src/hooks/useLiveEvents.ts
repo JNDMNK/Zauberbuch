@@ -16,20 +16,53 @@ export type LiveEvent =
 
 type Handler = (e: LiveEvent) => void;
 const handlers = new Set<Handler>();
-let source: EventSource | null = null;
-let wasReady = false;
-let retry: number | null = null;
-
 const emit = (e: LiveEvent) => handlers.forEach((h) => h(e));
 
-let paused = false;
+interface Connection {
+  close: () => void;
+}
+let conn: Connection | null = null;
+let wasReady = false;
+let retry: number | null = null;
 let wanted = false;
+let paused = false;
 let waitingForLoad = false;
 
+function onReady() {
+  // nach einem Abbruch alles einmal nachladen
+  if (wasReady) emit({ type: 'resync' });
+  wasReady = true;
+}
+function onChange(data: string) {
+  try {
+    emit(JSON.parse(data) as LiveEvent);
+  } catch {
+    /* unbekanntes Format ignorieren */
+  }
+}
+function onClosed(c: Connection) {
+  if (conn !== c) return;
+  c.close();
+  conn = null;
+  retry ??= window.setTimeout(() => {
+    retry = null;
+    connect();
+  }, 15_000);
+}
+
+function openInPage(): Connection | null {
+  if (typeof EventSource === 'undefined') return null;
+  const es = new EventSource('/api/events', { withCredentials: true });
+  const c: Connection = { close: () => es.close() };
+  es.addEventListener('ready', onReady);
+  es.addEventListener('change', (m) => onChange((m as MessageEvent<string>).data));
+  es.onerror = () => es.readyState === EventSource.CLOSED && onClosed(c);
+  return c;
+}
+
 function connect() {
-  if (source || paused || !wanted || typeof EventSource === 'undefined') return;
-  // Erst nach dem vollständigen Laden verbinden: Safari wertet eine früh geöffnete, dauerhaft offene Verbindung
-  // sonst als „Seite lädt noch“ – und window.print() wartet dann endlos auf das Ende des Ladens.
+  if (conn || paused || !wanted) return;
+  // Erst nach dem vollständigen Laden verbinden (sonst kann Safari das Laden als nie beendet ansehen)
   if (document.readyState !== 'complete') {
     if (!waitingForLoad) {
       waitingForLoad = true;
@@ -37,57 +70,50 @@ function connect() {
     }
     return;
   }
-  const es = new EventSource('/api/events', { withCredentials: true });
-  source = es;
-  es.addEventListener('ready', () => {
-    // nach einem Abbruch alles einmal nachladen
-    if (wasReady) emit({ type: 'resync' });
-    wasReady = true;
-  });
-  es.addEventListener('change', (m) => {
-    try {
-      emit(JSON.parse((m as MessageEvent<string>).data) as LiveEvent);
-    } catch {
-      /* unbekanntes Format ignorieren */
-    }
-  });
-  es.onerror = () => {
-    // Der Browser verbindet sich selbst neu; nur wenn er aufgegeben hat (z. B. 401/502), später erneut versuchen
-    if (es.readyState === EventSource.CLOSED && source === es) {
-      source = null;
-      retry ??= window.setTimeout(() => {
-        retry = null;
-        connect();
-      }, 15_000);
-    }
-  };
+  conn = openInPage();
 }
 
 /**
- * Drucken: Live-Verbindung kurz trennen, damit Safari den Druckdialog sicher öffnet, und danach wieder verbinden
- * (beim Wiederverbinden lädt alles einmal nach).
+ * Drucken (Knopf und ⌘P/Strg+P).
+ * Safari/WebKit wertet die dauerhaft offene Live-Verbindung als „Seite lädt noch“ und verschiebt window.print()
+ * bis zum Ende des Ladens – also endlos. Deshalb wird sie vor dem Drucken getrennt. Safari meldet „afterprint“ schon,
+ * während der Druckdialog noch offen ist; verbunden wird daher erst wieder, wenn man danach etwas tut (Klick,
+ * Taste), spätestens nach 2 Minuten. Beim Wiederverbinden lädt alles einmal nach.
  */
 export function printPage() {
-  const reconnect = () => {
-    if (!paused) return;
-    paused = false;
-    connect();
-  };
-  paused = true;
-  source?.close();
-  source = null;
-  window.addEventListener('afterprint', reconnect, { once: true });
-  // Sicherheitsnetz, falls ein Browser kein „afterprint“ meldet
-  window.setTimeout(reconnect, 15_000);
-  // direkt im Klick aufrufen – Safari öffnet den Dialog sonst unter Umständen nicht
+  if (conn || retry !== null) {
+    paused = true;
+    if (retry !== null) window.clearTimeout(retry);
+    retry = null;
+    conn?.close();
+    conn = null;
+    const since = Date.now();
+    const resume = () => {
+      if (!paused || Date.now() - since < 1500) return;
+      paused = false;
+      window.removeEventListener('pointerdown', resume, true);
+      window.removeEventListener('keydown', resume, true);
+      connect();
+    };
+    window.addEventListener('pointerdown', resume, true);
+    window.addEventListener('keydown', resume, true);
+    window.setTimeout(() => {
+      if (paused) {
+        paused = false;
+        window.removeEventListener('pointerdown', resume, true);
+        window.removeEventListener('keydown', resume, true);
+        connect();
+      }
+    }, 120_000);
+  }
   window.print();
 }
 
 function disconnect() {
   if (retry !== null) window.clearTimeout(retry);
   retry = null;
-  source?.close();
-  source = null;
+  conn?.close();
+  conn = null;
   wasReady = false;
 }
 
@@ -99,7 +125,16 @@ export function LiveEventsConnection() {
     if (!userId) return;
     wanted = true;
     connect();
+    // ⌘P / Strg+P über printPage leiten (sonst blockiert die Live-Verbindung den Druck in Safari)
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        printPage();
+      }
+    };
+    window.addEventListener('keydown', onKey);
     return () => {
+      window.removeEventListener('keydown', onKey);
       wanted = false;
       disconnect();
     };
