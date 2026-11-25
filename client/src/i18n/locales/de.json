@@ -405,7 +405,10 @@
     "backup_import_failed": "Import fehlgeschlagen, es wurde nichts verändert.",
     "confirm_required": "Der Import muss bestätigt werden.",
     "not_story_dm": "Nur der Dungeon Master der Geschichte kann einen Meilenstein-Aufstieg freigeben.",
-    "milestone_invalid": "Die Stufe muss über der aktuellen Stufe liegen."
+    "milestone_invalid": "Die Stufe muss über der aktuellen Stufe liegen.",
+    "note_empty": "Die Notiz braucht einen Titel oder Text.",
+    "note_not_found": "Notiz nicht gefunden.",
+    "too_many_notes": "Zu viele Notizen für diesen Charakter (max. 500)."
   },
   "damageType": {
     "acid": "Säure",
@@ -466,7 +469,8 @@
       "background": "Hintergrund",
       "spells": "Zauber",
       "settings": "Einstellungen",
-      "items": "Magische Gegenstände"
+      "items": "Magische Gegenstände",
+      "notes": "Notizen"
     },
     "characterName": "Charaktername",
     "classLevel": "Klassen & Stufen",
@@ -1637,5 +1641,40 @@
     "history": "Letzte Würfe",
     "clearHistory": "Verlauf löschen",
     "repeat": "Erneut würfeln"
+  },
+  "notes": {
+    "title": "Persönliche Notizen",
+    "hint": "Nur für dich (und Mitbearbeiter dieses Bogens) sichtbar – außer Notizen mit „für den DM sichtbar“. Text mit Formatierung; Namen aus Wiki und Zauberbibliothek werden verlinkt.",
+    "hintDm": "Notizen, die der Spieler für den Dungeon Master freigegeben hat (nur lesend).",
+    "new": "Neue Notiz",
+    "edit": "Notiz bearbeiten",
+    "search": "Notizen durchsuchen …",
+    "category": "Kategorie",
+    "categories": {
+      "general": "Allgemein",
+      "quest": "Auftrag",
+      "npc": "Person (NSC)",
+      "place": "Ort",
+      "lore": "Wissen & Geheimnisse",
+      "loot": "Beute",
+      "todo": "Erledigen"
+    },
+    "empty": "Noch keine Notizen – halte Aufträge, Personen, Orte oder Pläne fest.",
+    "emptyDm": "Der Spieler hat noch keine Notizen für dich freigegeben.",
+    "noHits": "Keine passenden Notizen.",
+    "pinned": "Angepinnt",
+    "pin": "Anpinnen",
+    "unpin": "Nicht mehr anpinnen",
+    "shared": "für DM sichtbar",
+    "private": "privat",
+    "shareWithDm": "Für den DM sichtbar",
+    "updated": "{{date}} · {{author}}",
+    "untitled": "Ohne Titel",
+    "titleField": "Titel",
+    "body": "Notiz",
+    "saved": "Notiz gespeichert",
+    "deleted": "Notiz gelöscht",
+    "deleteTitle": "Notiz löschen?",
+    "deleteText": "„{{title}}“ wird endgültig gelöscht."
   }
 }

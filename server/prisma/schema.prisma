@@ -148,6 +148,10 @@ model Character {
    * Weitere Benutzer, die den Bogen bearbeiten dürfen
    */
   editors    CharacterEditor[]
+  /**
+   * Persönliche Notizen zum Charakter (privat, einzeln für den DM freigebbar)
+   */
+  notes      CharacterNote[]
   magicItems MagicItemHolder[]
 
   @@index([userId])
@@ -574,4 +578,22 @@ model Source {
   wikiEntries  WikiEntry[]
   catalogItems CatalogItem[]
   magicItems   MagicItem[]
+}
+
+/// Persönliche Notiz zu einem Charakter: sichtbar für Besitzer und Mitbearbeiter, mit sharedWithDm auch für den DM der Geschichte
+model CharacterNote {
+  id           String    @id @default(cuid())
+  characterId  String
+  character    Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  title        String    @default("")
+  body         String    @default("")
+  category     String    @default("general")
+  pinned       Boolean   @default(false)
+  sharedWithDm Boolean   @default(false)
+  /// Name des Verfassers zum Zeitpunkt des Schreibens
+  authorName   String    @default("")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([characterId])
 }

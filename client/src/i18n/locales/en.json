@@ -405,7 +405,10 @@
     "backup_import_failed": "Import failed, nothing was changed.",
     "confirm_required": "The import must be confirmed.",
     "not_story_dm": "Only the Dungeon Master of the story can grant a milestone level up.",
-    "milestone_invalid": "The level must be above the current level."
+    "milestone_invalid": "The level must be above the current level.",
+    "note_empty": "The note needs a title or text.",
+    "note_not_found": "Note not found.",
+    "too_many_notes": "Too many notes for this character (max 500)."
   },
   "damageType": {
     "acid": "Acid",
@@ -466,7 +469,8 @@
       "background": "Background",
       "spells": "Spells",
       "settings": "Settings",
-      "items": "Magic items"
+      "items": "Magic items",
+      "notes": "Notes"
     },
     "characterName": "Character name",
     "classLevel": "Class & level",
@@ -1637,5 +1641,40 @@
     "history": "Recent rolls",
     "clearHistory": "Clear history",
     "repeat": "Roll again"
+  },
+  "notes": {
+    "title": "Personal notes",
+    "hint": "Only visible to you (and co-editors of this sheet) – except notes marked “visible to the DM”. Formatted text; names from wiki and spell library are linked.",
+    "hintDm": "Notes the player shared with the Dungeon Master (read-only).",
+    "new": "New note",
+    "edit": "Edit note",
+    "search": "Search notes …",
+    "category": "Category",
+    "categories": {
+      "general": "General",
+      "quest": "Quest",
+      "npc": "Person (NPC)",
+      "place": "Place",
+      "lore": "Lore & secrets",
+      "loot": "Loot",
+      "todo": "To do"
+    },
+    "empty": "No notes yet – keep track of quests, people, places or plans.",
+    "emptyDm": "The player has not shared any notes with you yet.",
+    "noHits": "No matching notes.",
+    "pinned": "Pinned",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "shared": "visible to DM",
+    "private": "private",
+    "shareWithDm": "Visible to the DM",
+    "updated": "{{date}} · {{author}}",
+    "untitled": "Untitled",
+    "titleField": "Title",
+    "body": "Note",
+    "saved": "Note saved",
+    "deleted": "Note deleted",
+    "deleteTitle": "Delete note?",
+    "deleteText": "“{{title}}” will be deleted permanently."
   }
 }

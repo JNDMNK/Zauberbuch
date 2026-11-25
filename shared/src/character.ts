@@ -398,3 +398,29 @@ export interface CharacterImportResult {
   skipped: number;
   invalid: number;
 }
+
+/** Kategorien persönlicher Notizen im Charakterbogen */
+export const NOTE_CATEGORIES = ['general', 'quest', 'npc', 'place', 'lore', 'loot', 'todo'] as const;
+export type NoteCategory = (typeof NOTE_CATEGORIES)[number];
+
+export const characterNoteSchema = z.object({
+  title: z.string().trim().max(150).optional().default(''),
+  body: z.string().max(20000).optional().default(''),
+  category: z.enum(NOTE_CATEGORIES).optional().default('general'),
+  pinned: z.boolean().optional().default(false),
+  /** auch für den Dungeon Master der Geschichte (und Admin) sichtbar */
+  sharedWithDm: z.boolean().optional().default(false),
+});
+export type CharacterNoteInput = z.input<typeof characterNoteSchema>;
+
+export interface CharacterNoteDto {
+  id: string;
+  title: string;
+  body: string;
+  category: NoteCategory;
+  pinned: boolean;
+  sharedWithDm: boolean;
+  authorName: string;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -12,11 +12,12 @@ import { FeaturesTab } from '../components/sheet/FeaturesTab';
 import { BackgroundTab, PhysicalHeader } from '../components/sheet/BackgroundTab';
 import { SpellsTab } from '../components/sheet/SpellsTab';
 import { SettingsTab } from '../components/sheet/SettingsTab';
+import { NotesTab } from '../components/sheet/NotesTab';
 import { ItemsTab } from '../components/sheet/ItemsTab';
 
 const TABS = ['main', 'features', 'background', 'spells', 'items'] as const;
 /** „Einstellungen“ nur für Besitzer, DM und Admin; nicht im Druck */
-type Tab = (typeof TABS)[number] | 'settings';
+type Tab = (typeof TABS)[number] | 'notes' | 'settings';
 type SaveState = 'saved' | 'dirty' | 'saving' | 'error';
 
 export function CharacterSheetPage() {
@@ -93,7 +94,7 @@ export function CharacterSheetPage() {
   }, []);
 
   const canEdit = Boolean(character?.canEdit);
-  const navTabs: readonly Tab[] = character?.canManageSettings ? [...TABS, 'settings'] : TABS;
+  const navTabs: readonly Tab[] = character?.canManageSettings ? [...TABS, 'notes', 'settings'] : [...TABS, 'notes'];
   const tab: Tab = (navTabs as readonly string[]).includes(requestedTab) ? (requestedTab as Tab) : 'main';
 
   const set = useCallback(
@@ -297,6 +298,12 @@ export function CharacterSheetPage() {
             </div>
           ))}
         </fieldset>
+        {/* Persönliche Notizen außerhalb des Bogens (eigene Rechte, nicht gedruckt) */}
+        {tab === 'notes' && (
+          <div className="print:hidden">
+            <NotesTab characterId={character.id} />
+          </div>
+        )}
         {/* Einstellungen außerhalb des Bogens: auch DM/Admin (nur lesend im Bogen) dürfen sie ändern */}
         {tab === 'settings' && character.canManageSettings && (
           <SettingsTab

@@ -214,6 +214,7 @@ Der Bogen ist wie der D&D-5e-Charakterbogen in vier Reiter gegliedert:
 | **Charakter** | Klasse & Stufe, Hintergrund, Volk, EP · Attribute · Inspiration, Übungsbonus · Rettungswürfe und Fertigkeiten (Kreis anklicken: nicht geübt → geübt → Expertise) · RK, Initiative, Bewegungsrate · Trefferpunkte, Trefferwürfel, Todesrettungswürfe · Angriffe · Persönlichkeit · Übungen & Sprachen · Klassenmerkmale |
 | **Merkmale & Inventar** | Volksmerkmale, Sinne, Lebensstil, Hoch-/Weitsprung, Feinde, weitere Merkmale · Inventar mit Teilgewicht, eingestimmte Gegenstände, Münzen, Traglast |
 | **Hintergrund** | Alter, Glaube, Größe, Gewicht, Gesinnung, Aussehen … · Porträt und Symbol (Bild-Upload) · Verbündete, Aussehen, Hintergrundgeschichte, zusätzliche Ausrüstung, Werdegang |
+| **Notizen** | Persönliche Notizen wie auf der Infotafel: Titel, Kategorie (Allgemein, Auftrag, Person, Ort, Wissen & Geheimnisse, Beute, Erledigen), formatierter Text mit Querverweisen, anpinnen, Suche und Filter. Privat für Besitzer und Mitbearbeiter; einzelne Notizen lassen sich „für den DM sichtbar“ machen – der DM der Geschichte (und Admin/Moderator) liest dann nur diese, ohne sie ändern zu können. Nicht im Druck, in der Gesamtsicherung enthalten |
 | **Zauber** | Zauberwirkende Klasse und Attribut · Zauberplätze je Grad (verbrauchte Plätze anklickbar, „lange Rast“ setzt zurück) · Zauberlisten mit „vorbereitet“, Namensvorschlägen aus der Bibliothek, Link zur Zauberbeschreibung und Übernahme aus „Mein Zauberbuch“ |
 
 **Automatisch berechnet** werden die benötigten Erfahrungspunkte für die nächste Stufe (laut Spielerhandbuch;
@@ -881,6 +882,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET`/`POST /api/bestiary/dm?storyId=` · `GET`/`PUT`/`DELETE /api/bestiary/dm/:id?storyId=` | DM der angegebenen Geschichte | DM-Datenbank (Vorlagen) |
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
+| `GET/POST /api/characters/:id/notes` · `PUT/DELETE …/notes/:noteId` | Besitzer/Mitbearbeiter (DM: freigegebene lesen) | Persönliche Notizen |
 | `PUT /api/characters/:id/milestone` | DM der Geschichte | Meilenstein-Aufstieg freigeben (`{ level }` bzw. `{ level: null }`) |
 | `GET /api/backup/export` · `POST /api/backup/import` | Admin | Gesamtsicherung (`{ backup, confirm: true }`) |
 | `GET /api/sources` · `POST /api/sources` · `PUT`/`DELETE /api/sources/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Quellen (`{ name, abbreviation? }`) |

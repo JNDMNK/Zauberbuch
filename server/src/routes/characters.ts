@@ -1,10 +1,13 @@
 import express, { Router } from 'express';
-import type { Character, User } from '@prisma/client';
+import type { Character, CharacterNote, User } from '@prisma/client';
 import {
   CHARACTER_EXPORT_FORMAT,
   MAX_ATTACKS,
   characterImportSchema,
   characterSheetSchema,
+  characterNoteSchema,
+  NOTE_CATEGORIES,
+  type CharacterNoteDto,
   createCharacterSchema,
   type CharacterExportFile,
   type CharacterImportPreview,
@@ -334,6 +337,64 @@ charactersRouter.post('/:id/duplicate', async (req, res) => {
       ...storyOptionLists(copy.story, { languages: await wikiLanguageNames(), gods: await wikiGodNames() }),
     } satisfies CharacterDto,
   });
+});
+
+// ---------------------------------------------------------------- Persönliche Notizen
+
+function noteDto(n: CharacterNote): CharacterNoteDto {
+  return {
+    id: n.id,
+    title: n.title,
+    body: n.body,
+    category: ((NOTE_CATEGORIES as readonly string[]).includes(n.category) ? n.category : 'general') as CharacterNoteDto['category'],
+    pinned: n.pinned,
+    sharedWithDm: n.sharedWithDm,
+    authorName: n.authorName,
+    createdAt: n.createdAt.toISOString(),
+    updatedAt: n.updatedAt.toISOString(),
+  };
+}
+
+/**
+ * Notizen lesen: Besitzer und Mitbearbeiter sehen alle; DM der Geschichte bzw. Admin/Moderator nur die freigegebenen.
+ * Schreiben dürfen nur Besitzer und Mitbearbeiter.
+ */
+charactersRouter.get('/:id/notes', async (req, res) => {
+  const c = await loadReadable(String(req.params.id), req.user!);
+  const notes = await prisma.characterNote.findMany({
+    where: { characterId: c.id, ...(c.canEdit ? {} : { sharedWithDm: true }) },
+    orderBy: [{ pinned: 'desc' }, { updatedAt: 'desc' }],
+  });
+  res.json({ notes: notes.map(noteDto), canWrite: c.canEdit });
+});
+
+charactersRouter.post('/:id/notes', async (req, res) => {
+  const c = await loadReadable(String(req.params.id), req.user!);
+  if (!c.canEdit) throw forbidden('read_only', 'Only the owner and co-editors can write notes');
+  const input = validate(characterNoteSchema, req.body);
+  if (!input.title && !input.body.trim()) throw badRequest('note_empty', 'Note is empty');
+  if ((await prisma.characterNote.count({ where: { characterId: c.id } })) >= 500) throw forbidden('too_many_notes', 'Note limit reached');
+  const n = await prisma.characterNote.create({ data: { characterId: c.id, ...input, authorName: req.user!.username } });
+  res.status(201).json({ note: noteDto(n) });
+});
+
+charactersRouter.put('/:id/notes/:noteId', async (req, res) => {
+  const c = await loadReadable(String(req.params.id), req.user!);
+  if (!c.canEdit) throw forbidden('read_only', 'Only the owner and co-editors can write notes');
+  const note = await prisma.characterNote.findFirst({ where: { id: String(req.params.noteId), characterId: c.id } });
+  if (!note) throw notFound('note_not_found', 'Note not found');
+  const input = validate(characterNoteSchema, req.body);
+  if (!input.title && !input.body.trim()) throw badRequest('note_empty', 'Note is empty');
+  const n = await prisma.characterNote.update({ where: { id: note.id }, data: input });
+  res.json({ note: noteDto(n) });
+});
+
+charactersRouter.delete('/:id/notes/:noteId', async (req, res) => {
+  const c = await loadReadable(String(req.params.id), req.user!);
+  if (!c.canEdit) throw forbidden('read_only', 'Only the owner and co-editors can write notes');
+  const { count } = await prisma.characterNote.deleteMany({ where: { id: String(req.params.noteId), characterId: c.id } });
+  if (count === 0) throw notFound('note_not_found', 'Note not found');
+  res.status(204).end();
 });
 
 charactersRouter.delete('/:id', async (req, res) => {

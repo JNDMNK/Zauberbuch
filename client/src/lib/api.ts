@@ -1,3 +1,4 @@
+import type { CharacterNoteDto, CharacterNoteInput } from '@zauberbuch/shared';
 import type {
   SourceDto,
   SourceInput,
@@ -160,6 +161,10 @@ export const api = {
 
   characters: () => request<{ characters: CharacterSummaryDto[]; shared: CharacterSummaryDto[] }>('GET', '/api/characters'),
   characterSettings: (id: string) => request<{ settings: CharacterSettingsDto }>('GET', `/api/characters/${id}/settings`),
+  characterNotes: (id: string) => request<{ notes: CharacterNoteDto[]; canWrite: boolean }>('GET', `/api/characters/${id}/notes`),
+  createCharacterNote: (id: string, input: CharacterNoteInput) => request<{ note: CharacterNoteDto }>('POST', `/api/characters/${id}/notes`, input),
+  updateCharacterNote: (id: string, noteId: string, input: CharacterNoteInput) => request<{ note: CharacterNoteDto }>('PUT', `/api/characters/${id}/notes/${noteId}`, input),
+  deleteCharacterNote: (id: string, noteId: string) => request<void>('DELETE', `/api/characters/${id}/notes/${noteId}`),
   saveCharacterSettings: (id: string, input: CharacterSettingsInput) => request<{ settings: CharacterSettingsDto }>('PUT', `/api/characters/${id}/settings`, input),
   allCharacters: () => request<{ characters: CharacterSummaryDto[] }>('GET', '/api/characters/all'),
   character: (id: string) => request<{ character: CharacterDto }>('GET', `/api/characters/${id}`),
