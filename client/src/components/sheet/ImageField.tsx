@@ -10,7 +10,7 @@ const MAX_DATA_URL = 1_450_000;
  * Verkleinert ein Bild clientseitig (max. Kantenlänge maxSize) und liefert eine Data-URL: JPEG für Fotos,
  * PNG bzw. WebP, wenn das Bild transparente Bereiche hat (z. B. Wappen), damit die Transparenz erhalten bleibt.
  */
-async function resizeImage(file: File, maxSize: number): Promise<string> {
+export async function resizeImage(file: File, maxSize: number): Promise<string> {
   const url = URL.createObjectURL(file);
   try {
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {

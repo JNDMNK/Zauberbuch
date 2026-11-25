@@ -36,7 +36,24 @@ function rehypeWikiLinks(options: { split: (text: string) => ReturnType<typeof s
  * Rendert Markdown sicher (kein Roh-HTML). Mit `links` werden Namen von Wiki-Einträgen, Rüstung/Waffen/Werkzeugen
  * und Zaubern automatisch verlinkt (je Ziel das erste Vorkommen; `selfKey` schließt den eigenen Eintrag aus).
  */
-export function Markdown({ children, className = '', links = false, selfKey }: { children: string; className?: string; links?: boolean; selfKey?: string }) {
+export function Markdown({
+  children,
+  className = '',
+  links = false,
+  selfKey,
+  onTaskToggle,
+  onInternalLink,
+}: {
+  children: string;
+  className?: string;
+  links?: boolean;
+  selfKey?: string;
+  /** Checklisten (`- [ ]`) abhakbar machen: Index des Kästchens in Textreihenfolge */
+  onTaskToggle?: (index: number) => void;
+  /** Interne Verweise (`#dm:…`) statt in neuem Tab öffnen */
+  onInternalLink?: (href: string) => void;
+}) {
+  let taskIndex = 0;
   const linker = useWikiLinks(links);
   const seen = new Set<string>();
   return (
@@ -45,7 +62,19 @@ export function Markdown({ children, className = '', links = false, selfKey }: {
         remarkPlugins={[remarkGfm]}
         rehypePlugins={linker ? [[rehypeWikiLinks, { split: (text: string) => splitLinks(text, linker.data, seen, selfKey) }]] : []}
         components={{
+          input: ({ node: _node, ...props }) => {
+            if (props.type !== 'checkbox' || !onTaskToggle) return <input {...props} />;
+            const index = taskIndex++;
+            return <input type="checkbox" checked={!!props.checked} onChange={() => onTaskToggle(index)} className="cursor-pointer" />;
+          },
+          img: ({ node: _node, src, alt }) => <img src={typeof src === 'string' ? src : undefined} alt={alt ?? ''} loading="lazy" className="my-2 max-h-[32rem] max-w-full rounded-lg border border-parchment-300 dark:border-night-700" />,
           a: ({ node: _node, href, children: content, ...props }) => {
+            if (href?.startsWith('#dm:') && onInternalLink)
+              return (
+                <button type="button" className="wiki-link" onClick={() => onInternalLink(href)}>
+                  {content}
+                </button>
+              );
             const key = href?.startsWith('#wl-') ? href.slice(4) : null;
             const target = key ? linker?.data.targets.get(key) : undefined;
             if (target && linker)

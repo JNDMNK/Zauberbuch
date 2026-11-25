@@ -520,15 +520,41 @@ Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Grupp
   wiederherstellen; danach werden sie automatisch endgültig entfernt. Gelöschte Kommentare sind sofort weg.
 - Wird ein Benutzer gelöscht, bleiben seine Beiträge erhalten („gelöschter Benutzer“).
 
-### DM-Notizen
+### DM-Notizen (Kampagnenbuch)
 
-- Dungeon Master einer Geschichte (und der Admin, sofern er dort nicht Spieler ist) sehen auf der Infotafel den
-  zusätzlichen Reiter **„DM-Notizen“** – Spieler sehen ihn nicht, auch die API verweigert ihnen den Zugriff.
-- Notizen sind in **Abschnitte** gegliedert (z. B. „Dorf A“) mit formatiertem Text (Markdown wie bei den Zaubern),
-  etwa um mögliche Ereignisse und Abläufe festzuhalten.
-- Abschnitte lassen sich mit Pfeilen **sortieren**, auf- und zuklappen (wird im Browser gemerkt), bearbeiten,
-  löschen und durchsuchen. Jeder Abschnitt zeigt, wann und von wem er zuletzt geändert wurde; mehrere DMs einer
-  Geschichte teilen sich die Notizen.
+Dungeon Master einer Geschichte (und der Admin, sofern er dort nicht Spieler ist) sehen auf der Infotafel den
+zusätzlichen Reiter **„DM-Notizen“** – Spieler sehen ihn nicht, auch die API verweigert ihnen den Zugriff. Mehrere DMs
+einer Geschichte teilen sich die Notizen. Links steht die Übersicht, rechts der gewählte Abschnitt (auf dem Handy
+untereinander).
+
+- **Kapitelbaum:** Abschnitte lassen sich beliebig verschachteln (z. B. Akt → Kapitel → Szene), auf- und zuklappen
+  (wird im Browser gemerkt) und innerhalb ihrer Ebene mit Pfeilen sortieren. Brotkrumen zeigen den Pfad. Beim Löschen
+  rücken Unterabschnitte eine Ebene nach oben.
+- **Typ je Abschnitt** mit Symbol: Kapitel, Szene, Begegnung, Ort, NSC, Fraktion, Gegenstand, Hinweis/Rätsel, Lore,
+  Sitzungsprotokoll, Zufallstabelle.
+- **Status** (Vorbereitet, Aktiv, Erledigt, Verworfen – direkt im Abschnitt umschaltbar), **Schlagwörter** und
+  **„Für die Sitzung anpinnen“**. Die Übersicht filtert nach Suche, Typ, Status, Schlagwort und Angepinnt.
+- **Text** mit Markdown, dazu:
+  - `[[Titel]]` verweist auf einen anderen Abschnitt (anklickbar); jeder Abschnitt zeigt „Erwähnt in“.
+  - `- [ ]` erzeugt **Checklisten**, die sich direkt abhaken lassen.
+  - Zeilen zwischen `:::geheim` und `:::` werden als **geheim** hervorgehoben und beim Freigeben entfernt.
+  - **Bilder einfügen** (Karten, Handouts, Porträts; im Browser verkleinert).
+  - Namen aus Wiki, Gegenstands-Datenbank und Zauberbibliothek werden wie überall automatisch verlinkt.
+- **Verknüpfte Charaktere** der Spieler (Link zum Bogen).
+- **Begegnung:** Monster aus der DM-Monster-Datenbank mit Anzahl hinterlegen; **„Kampf vorbereiten“** legt daraus
+  einen Kampf in der Kampfhilfe an und öffnet ihn.
+- **Zufallstabelle:** Einträge je Zeile, optional mit Bereich („1-3: Wolfsrudel“); **„Würfeln“** würfelt mit dem
+  passenden Würfel und hebt das Ergebnis hervor.
+- **Sitzungsprotokoll:** Datum des Spielabends und vergebene EP; die Ansicht **„Sitzungen“** listet alle Protokolle
+  mit EP-Summe.
+- **Zeitleiste:** Abschnitte mit „Datum in der Spielwelt“ in Reihenfolge des Kapitelbaums.
+- **Freigeben:** einen Abschnitt als **Beitrag auf die Infotafel** (Kategorie passend zum Typ, mit Benachrichtigung)
+  oder als **Chat-Nachricht an einzelne Spieler** schicken – mit Vorschau, geheime Stellen entfernt. Darin
+  enthaltene Bilder werden für die Mitglieder sichtbar. Der Abschnitt zeigt danach, wann und wohin er freigegeben
+  wurde.
+- **Versionen:** Ändert sich Titel oder Text, wird die vorige Fassung gesichert (Änderungen derselben Person innerhalb
+  von 10 Minuten zählen als eine; höchstens 30 je Abschnitt). Ältere Fassungen lassen sich ansehen und
+  wiederherstellen.
 
 ### Chat
 
@@ -991,7 +1017,12 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET /api/backup/export` · `POST /api/backup/import` | Admin | Gesamtsicherung (`{ backup, confirm: true }`) |
 | `GET /api/sources` · `POST /api/sources` · `PUT`/`DELETE /api/sources/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Quellen (`{ name, abbreviation? }`) |
 | `GET /api/wiki` · `POST /api/wiki` · `PUT`/`DELETE /api/wiki/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Wiki (`{ kind: 'race' \| 'class' \| 'feat' \| 'background' \| 'language' \| 'god', name, summary?, description?, data }`) |
-| `GET`/`POST /api/dm-notes/stories/:storyId` · `PUT …/order` · `PUT`/`DELETE /api/dm-notes/:id` | DM der Geschichte | DM-Notizen (`{ title, body? }`; Reihenfolge `{ ids }`) |
+| `GET`/`POST /api/dm-notes/stories/:storyId` · `PUT …/order` | DM der Geschichte | DM-Notizen auflisten/anlegen (`{ title, body?, parentId?, kind?, status?, tags?, pinned?, gameDate?, sessionDate?, xp?, tableRows?, monsters?, characterIds? }`); Reihenfolge `{ ids, parentId? }` |
+| `PUT`/`PATCH`/`DELETE /api/dm-notes/:id` | DM der Geschichte | Abschnitt ändern (alles bzw. nur `status`/`pinned`/`body`) oder löschen |
+| `GET /api/dm-notes/:id/versions` · `POST …/versions/:versionId/restore` | DM der Geschichte | Versionen ansehen bzw. wiederherstellen |
+| `POST /api/dm-notes/:id/share` | DM der Geschichte | Freigeben: `{ to: "board" }` oder `{ to: "chat", userIds }` (ohne `:::geheim`-Stellen) |
+| `POST /api/dm-notes/:id/encounter` | DM der Geschichte | Begegnung → neuer Kampf mit den hinterlegten Monstern (`{ encounterId }`) |
+| `POST /api/dm-notes/stories/:storyId/images` · `GET /api/dm-notes/images/:id` | DM / nach Freigabe Mitglieder | Bild hochladen (`{ image: Data-URL }`) bzw. abrufen |
 | `GET /api/catalog?storyId=` | angemeldet | Wirksame Gegenstands-Datenbank (Standard bzw. Geschichte) |
 | `POST /api/catalog/standard` · `PUT`/`DELETE /api/catalog/:id` | Moderator/Admin | Standard-Datenbank bzw. eigene Einträge bearbeiten (`{ category, name, description?, weight?, value?, ac?, strength?, damageDice?, damageType? }`) |
 | `GET`/`POST /api/catalog/stories/:storyId` · `PUT`/`DELETE …/override/:baseId` · `POST …/hide/:baseId` | Moderator/Admin | Liste einer Geschichte: anpassen, zurücksetzen, ausblenden, eigene Einträge |

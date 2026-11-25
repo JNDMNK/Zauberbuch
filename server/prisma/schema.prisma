@@ -207,6 +207,7 @@ model Story {
   catalogItems CatalogItem[]
   dmNotes      DmNote[]
   chatMessages ChatMessage[]
+  dmNoteImages DmNoteImage[]
   chatGroups   ChatGroup[]
 }
 
@@ -567,17 +568,66 @@ model CatalogItem {
 
 /// DM-Notizen einer Geschichte (nur für die Dungeon Master der Geschichte): sortierbare Abschnitte mit Markdown-Text
 model DmNote {
+  id           String          @id @default(cuid())
+  storyId      String
+  story        Story           @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  title        String
+  body         String          @default("")
+  position     Int             @default(0)
+  updatedBy    String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  /// Kapitelbaum: übergeordneter Abschnitt (null = oberste Ebene)
+  parentId     String?
+  /// chapter | scene | encounter | place | npc | faction | item | clue | lore | session | table
+  kind         String          @default("scene")
+  /// none | prepared | active | done | discarded
+  status       String          @default("none")
+  /// freie Schlagwörter (JSON-Liste)
+  tags         String          @default("[]")
+  pinned       Boolean         @default(false)
+  /// Datum in der Spielwelt (freier Text, für die Zeitleiste)
+  gameDate     String          @default("")
+  /// Sitzungsprotokoll: Datum des Spielabends (JJJJ-MM-TT) und vergebene EP
+  sessionDate  String          @default("")
+  xp           Int?
+  /// Zufallstabelle: Einträge (JSON-Liste von Texten)
+  tableRows    String          @default("[]")
+  /// Begegnung: Monster aus der DM-Datenbank (JSON [{templateId, name, count}])
+  monsters     String          @default("[]")
+  /// verknüpfte Charaktere der Spieler (JSON-Liste von ids)
+  characterIds String          @default("[]")
+  /// zuletzt für Spieler freigegeben (Infotafel/Chat)
+  sharedAt     DateTime?
+  sharedInfo   String          @default("")
+  versions     DmNoteVersion[]
+
+  @@index([storyId, position])
+}
+
+/// Ältere Fassungen eines DM-Abschnitts (wiederherstellbar)
+model DmNoteVersion {
+  id        String   @id @default(cuid())
+  noteId    String
+  note      DmNote   @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  updatedBy String?
+  createdAt DateTime @default(now())
+
+  @@index([noteId, createdAt])
+}
+
+/// Bilder in DM-Notizen (Karten, Handouts …); public = über eine Freigabe für Mitglieder der Geschichte sichtbar
+model DmNoteImage {
   id        String   @id @default(cuid())
   storyId   String
   story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
-  title     String
-  body      String   @default("")
-  position  Int      @default(0)
-  updatedBy String?
+  data      String
+  public    Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  @@index([storyId, position])
+  @@index([storyId])
 }
 
 /// Wiki (Völker und Klassen nach SRD): für alle lesbar, bearbeitbar von Admin und Moderator
