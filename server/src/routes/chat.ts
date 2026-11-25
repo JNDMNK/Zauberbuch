@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type { ChatMessage } from '@prisma/client';
-import { avatarUrlFor, chatDiceSchema, chatEditSchema, chatGroupInputSchema, chatMessageInputSchema, chatSpeakAsSchema, type ChatContactDto, type ChatGroupDto, type ChatMessageDto, type ChatStoryDto } from '@zauberbuch/shared';
+import { avatarUrlFor, chatDiceSchema, chatEditSchema, chatGroupImageSchema, chatGroupInputSchema, chatMessageInputSchema, chatSpeakAsSchema, type ChatContactDto, type ChatGroupDto, type ChatMessageDto, type ChatStoryDto } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { badRequest, forbidden, notFound } from '../lib/errors';
@@ -78,10 +78,17 @@ async function groupUnread(userId: string, storyId?: string) {
 
 const groupInclude = { members: { orderBy: { joinedAt: 'asc' }, include: { user: { select: { id: true, username: true, role: true } } } } } as const;
 
-/** Verwalten darf der Ersteller; ist er nicht mehr dabei, das am längsten dabei befindliche Mitglied */
-function managerId(g: { createdById: string | null; members: { userId: string }[] }) {
-  return g.createdById && g.members.some((m) => m.userId === g.createdById) ? g.createdById : (g.members[0]?.userId ?? null);
+/**
+ * Besitzer: der Ersteller; ist er nicht mehr dabei, der am längsten dabei befindliche Admin, sonst das am längsten
+ * dabei befindliche Mitglied (Mitglieder nach Beitritt sortiert).
+ */
+function ownerId(g: { createdById: string | null; members: { userId: string; isAdmin: boolean }[] }) {
+  if (g.createdById && g.members.some((m) => m.userId === g.createdById)) return g.createdById;
+  return (g.members.find((m) => m.isAdmin) ?? g.members[0])?.userId ?? null;
 }
+/** Name, Bild und Mitglieder ändern: Besitzer und Gruppenadmins */
+const canManageGroup = (g: { createdById: string | null; members: { userId: string; isAdmin: boolean }[] }, userId: string) =>
+  ownerId(g) === userId || g.members.some((m) => m.userId === userId && m.isAdmin);
 
 /** Gruppe laden – nur für Mitglieder (sonst 404, damit fremde Gruppen verborgen bleiben) */
 async function loadGroup(user: Express.Request['user'], id: string) {
@@ -144,8 +151,11 @@ chatRouter.get('/stories/:storyId', async (req, res) => {
         id: g.id,
         name: g.name,
         createdById: g.createdById,
-        canManage: managerId(g) === me.id,
-        members: g.members.map((m) => ({ userId: m.userId, username: m.user.username, role: roleFromMembership(m.user, roleOf.get(m.userId)) })),
+        ownerId: ownerId(g),
+        isOwner: ownerId(g) === me.id,
+        canManage: canManageGroup(g, me.id),
+        imageUrl: g.imageUpdatedAt ? `/api/chat/groups/${g.id}/image?v=${g.imageUpdatedAt.getTime()}` : null,
+        members: g.members.map((m) => ({ userId: m.userId, username: m.user.username, role: roleFromMembership(m.user, roleOf.get(m.userId)), isAdmin: m.isAdmin })),
         unread: gUnread.find((u) => u.groupId === g.id)?.count ?? 0,
         last: last ? { body: last.deleted ? '' : last.kind === 'dice' ? `🎲 ${last.body || ''}`.trim() : last.body.slice(0, 120), at: last.createdAt.toISOString(), mine: last.senderId === me.id, sender: last.characterName || last.sender.username } : null,
       };
@@ -293,30 +303,64 @@ chatRouter.post('/stories/:storyId/groups', async (req, res) => {
   const others = validMemberIds(story, input.memberIds, me.id);
   if (others.length === 0) throw badRequest('chat_group_empty', 'Add at least one other member');
   const g = await prisma.chatGroup.create({
-    data: { storyId: story.id, name: input.name, createdById: me.id, members: { create: [me.id, ...others].map((userId) => ({ userId })) } },
+    data: { storyId: story.id, name: input.name, createdById: me.id, members: { create: [me.id, ...others].map((userId) => ({ userId, isAdmin: userId !== me.id && (input.adminIds ?? []).includes(userId) })) } },
   });
   publishToUsers([me.id, ...others], { type: 'chat', storyId: story.id });
   res.status(201).json({ group: { id: g.id } });
 });
 
-/** Name/Mitglieder ändern: nur wer die Gruppe verwaltet */
+/**
+ * Name/Mitglieder ändern: Besitzer und Gruppenadmins. Admins können Besitzer und andere Admins nicht entfernen;
+ * Admins ernennen (adminIds) kann nur der Besitzer.
+ */
 chatRouter.put('/groups/:id', async (req, res) => {
   const me = req.user!;
   const g = await loadGroup(me, String(req.params.id));
   if (g.story.archived) throw forbidden('story_archived', 'Story is archived');
-  if (managerId(g) !== me.id) throw forbidden('chat_group_forbidden', 'Only the group creator can change it');
+  if (!canManageGroup(g, me.id)) throw forbidden('chat_group_forbidden', 'Only the group owner and admins can change it');
   const input = validate(chatGroupInputSchema, req.body);
+  const owner = ownerId(g)!;
+  const isOwner = owner === me.id;
   const others = validMemberIds(g.story, input.memberIds, me.id);
-  if (others.length === 0) throw badRequest('chat_group_empty', 'Add at least one other member');
-  const wanted = new Set([me.id, ...others]);
+  const currentAdmins = g.members.filter((m) => m.isAdmin).map((m) => m.userId);
+  // Geschützt: Besitzer und – wenn ein Admin ändert – die übrigen Admins
+  const wanted = new Set([me.id, owner, ...others, ...(isOwner ? [] : currentAdmins)]);
+  if (wanted.size < 2) throw badRequest('chat_group_empty', 'Add at least one other member');
+  const admins = new Set((isOwner && input.adminIds ? input.adminIds : currentAdmins).filter((id) => wanted.has(id) && id !== owner));
   const before = g.members.map((m) => m.userId);
   await prisma.$transaction([
-    prisma.chatGroup.update({ where: { id: g.id }, data: { name: input.name, createdById: me.id } }),
+    prisma.chatGroup.update({ where: { id: g.id }, data: { name: input.name, createdById: owner } }),
     prisma.chatGroupMember.deleteMany({ where: { groupId: g.id, userId: { notIn: [...wanted] } } }),
-    ...[...wanted].filter((id) => !before.includes(id)).map((userId) => prisma.chatGroupMember.create({ data: { groupId: g.id, userId } })),
+    ...[...wanted].filter((id) => !before.includes(id)).map((userId) => prisma.chatGroupMember.create({ data: { groupId: g.id, userId, isAdmin: admins.has(userId) } })),
+    ...[...wanted].filter((id) => before.includes(id)).map((userId) => prisma.chatGroupMember.update({ where: { groupId_userId: { groupId: g.id, userId } }, data: { isAdmin: admins.has(userId) } })),
   ]);
   publishToUsers(new Set([...before, ...wanted]), { type: 'chat', storyId: g.storyId });
   res.json({ group: { id: g.id } });
+});
+
+/** Gruppenbild setzen oder entfernen: Besitzer und Gruppenadmins */
+chatRouter.put('/groups/:id/image', async (req, res) => {
+  const me = req.user!;
+  const g = await loadGroup(me, String(req.params.id));
+  if (g.story.archived) throw forbidden('story_archived', 'Story is archived');
+  if (!canManageGroup(g, me.id)) throw forbidden('chat_group_forbidden', 'Only the group owner and admins can change it');
+  const { image } = validate(chatGroupImageSchema, req.body);
+  const updated = image
+    ? await prisma.chatGroup.update({ where: { id: g.id }, data: { imageUpdatedAt: new Date(), image: { upsert: { create: { data: image }, update: { data: image } } } } })
+    : await prisma.chatGroup.update({ where: { id: g.id }, data: { imageUpdatedAt: null, image: { delete: (await prisma.chatGroupImage.count({ where: { groupId: g.id } })) > 0 } } });
+  publishToUsers(g.members.map((m) => m.userId), { type: 'chat', storyId: g.storyId });
+  res.json({ imageUrl: updated.imageUpdatedAt ? `/api/chat/groups/${g.id}/image?v=${updated.imageUpdatedAt.getTime()}` : null });
+});
+
+/** Gruppenbild abrufen: nur Mitglieder */
+chatRouter.get('/groups/:id/image', async (req, res) => {
+  const g = await loadGroup(req.user, String(req.params.id));
+  const row = await prisma.chatGroupImage.findUnique({ where: { groupId: g.id } });
+  const m = row?.data.match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/);
+  if (!m) throw notFound('not_found', 'No image');
+  res.setHeader('Content-Type', m[1]);
+  res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
+  res.send(Buffer.from(m[2], 'base64'));
 });
 
 /** Gruppe verlassen; die letzte Person löscht sie damit */
@@ -327,8 +371,11 @@ chatRouter.post('/groups/:id/leave', async (req, res) => {
   if (rest.length === 0) await prisma.chatGroup.delete({ where: { id: g.id } });
   else {
     await prisma.chatGroupMember.delete({ where: { groupId_userId: { groupId: g.id, userId: me.id } } });
-    // Verwaltung geht an das am längsten dabei befindliche Mitglied
-    if (managerId(g) === me.id) await prisma.chatGroup.update({ where: { id: g.id }, data: { createdById: rest[0].userId } });
+    // Besitz geht an den am längsten dabei befindlichen Admin, sonst an das am längsten dabei befindliche Mitglied
+    if (ownerId(g) === me.id) {
+      const next = rest.find((m) => m.isAdmin) ?? rest[0];
+      await prisma.chatGroup.update({ where: { id: g.id }, data: { createdById: next.userId } });
+    }
   }
   publishToUsers(g.members.map((m) => m.userId), { type: 'chat', storyId: g.storyId });
   res.status(204).end();
@@ -338,7 +385,7 @@ chatRouter.post('/groups/:id/leave', async (req, res) => {
 chatRouter.delete('/groups/:id', async (req, res) => {
   const me = req.user!;
   const g = await loadGroup(me, String(req.params.id));
-  if (managerId(g) !== me.id) throw forbidden('chat_group_forbidden', 'Only the group creator can delete it');
+  if (ownerId(g) !== me.id) throw forbidden('chat_group_forbidden', 'Only the group owner can delete it');
   await prisma.chatGroup.delete({ where: { id: g.id } });
   publishToUsers(g.members.map((m) => m.userId), { type: 'chat', storyId: g.storyId });
   res.status(204).end();

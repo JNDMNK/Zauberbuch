@@ -540,9 +540,12 @@ Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Grupp
   sieht Gespräche zwischen Spielern nicht.
 - **Gruppen:** Jedes Mitglied einer Geschichte kann über „Neue Gruppe“ eine Gruppe mit Namen anlegen und andere
   Mitglieder der Geschichte (auch den DM) hinzufügen. Eine Gruppe und ihren Verlauf sehen **nur ihre Mitglieder** –
-  DM und Admin nur, wenn sie hinzugefügt wurden. Wer die Gruppe erstellt hat, ändert über ⚙ Name und Mitglieder oder
-  löscht sie samt Verlauf; alle anderen sehen dort die Mitglieder und können die Gruppe verlassen. Verlässt der
-  Ersteller die Gruppe, übernimmt das am längsten dabei befindliche Mitglied die Verwaltung. Entfernte Mitglieder
+  DM und Admin nur, wenn sie hinzugefügt wurden. Über ⚙ verwalten der **Besitzer** (Ersteller) und die
+  **Gruppenadmins** die Gruppe: Name, **Gruppenbild** (quadratisch zugeschnitten) und Mitglieder. Admins ernennt nur der
+  Besitzer (auch schon beim Anlegen); Admins können Besitzer und andere Admins nicht entfernen. Löschen samt Verlauf
+  kann nur der Besitzer. Alle anderen sehen dort Mitglieder mit „Besitzer“/„Admin“-Kennzeichnung und können die
+  Gruppe verlassen. Verlässt der Besitzer die Gruppe, übernimmt der am längsten dabei befindliche Admin, sonst das am
+  längsten dabei befindliche Mitglied. Entfernte Mitglieder
   sehen die Gruppe danach nicht mehr. In Gruppen steht über jeder Nachricht, wer (bzw. welcher Charakter) schreibt.
 - **Als Charakter schreiben:** Wer eigene Charaktere in der Geschichte hat, wählt „Schreiben als“; die Nachricht
   zeigt dann Namen und Porträt des Charakters. Die Wahl wird **je Geschichte gespeichert** (auf dem Server, also auch
@@ -979,7 +982,9 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `PUT /api/chat/stories/:storyId/speak-as` | Mitglied der Geschichte | „Schreiben als“ merken (`{ characterId }`, `null` = als Benutzer) |
 | `GET`/`POST /api/chat/stories/:storyId/with/:userId` | Mitglied (nur die beiden Beteiligten) | Verlauf (`?since=ISO` für Änderungen, markiert als gelesen) bzw. senden (`{ body, characterId?, dice? }`) |
 | `POST /api/chat/stories/:storyId/groups` | Mitglied der Geschichte | Gruppe anlegen (`{ name, memberIds }`, Ersteller ist automatisch dabei) |
-| `PUT`/`DELETE /api/chat/groups/:id` · `POST …/leave` | Ersteller (verwaltet) / Gruppenmitglied | Name/Mitglieder ändern bzw. löschen; verlassen |
+| `PUT /api/chat/groups/:id` | Besitzer, Gruppenadmins | Name/Mitglieder ändern (`{ name, memberIds, adminIds? }` – `adminIds` nur vom Besitzer) |
+| `DELETE /api/chat/groups/:id` · `POST …/leave` | Besitzer / Gruppenmitglied | Gruppe löschen bzw. verlassen |
+| `PUT`/`GET /api/chat/groups/:id/image` | Besitzer, Gruppenadmins / Gruppenmitglied | Gruppenbild setzen (`{ image: Data-URL \| null }`) bzw. abrufen |
 | `GET`/`POST /api/chat/groups/:id/messages` | Gruppenmitglied | Verlauf (`?since=ISO`, markiert als gelesen) bzw. senden (`{ body, characterId?, dice? }`) |
 | `PUT`/`DELETE /api/chat/messages/:id` | Absender | Eigene Nachricht bearbeiten (`{ body }`) bzw. löschen |
 | `PUT /api/characters/:id/milestone` | DM der Geschichte | Meilenstein-Aufstieg freigeben (`{ level }` bzw. `{ level: null }`) |

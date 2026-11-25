@@ -174,6 +174,7 @@ export const api = {
   sendGroupChat: (groupId: string, input: ChatMessageInput) => request<{ message: ChatMessageDto }>('POST', `/api/chat/groups/${groupId}/messages`, input),
   createChatGroup: (storyId: string, input: ChatGroupInput) => request<{ group: { id: string } }>('POST', `/api/chat/stories/${storyId}/groups`, input),
   updateChatGroup: (id: string, input: ChatGroupInput) => request<{ group: { id: string } }>('PUT', `/api/chat/groups/${id}`, input),
+  setChatGroupImage: (id: string, image: string | null) => request<{ imageUrl: string | null }>('PUT', `/api/chat/groups/${id}/image`, { image }),
   leaveChatGroup: (id: string) => request<void>('POST', `/api/chat/groups/${id}/leave`),
   deleteChatGroup: (id: string) => request<void>('DELETE', `/api/chat/groups/${id}`),
   editChat: (id: string, body: string) => request<{ message: ChatMessageDto }>('PUT', `/api/chat/messages/${id}`, { body }),

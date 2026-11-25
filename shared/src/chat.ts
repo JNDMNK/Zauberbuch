@@ -62,8 +62,14 @@ export interface ChatGroupDto {
   name: string;
   /** Ersteller verwaltet die Gruppe (null = Ersteller gelöscht/ausgetreten → ältestes Mitglied) */
   createdById: string | null;
+  /** Besitzer (Ersteller bzw. Nachfolger): ernennt Admins, löscht die Gruppe */
+  ownerId: string | null;
+  isOwner: boolean;
+  /** Besitzer oder Gruppenadmin: Name, Bild und Mitglieder ändern */
   canManage: boolean;
-  members: { userId: string; username: string; role: StoryRole | null }[];
+  /** Gruppenbild (URL mit Versionsangabe) oder null */
+  imageUrl: string | null;
+  members: { userId: string; username: string; role: StoryRole | null; isAdmin: boolean }[];
   unread: number;
   last: { body: string; at: string; mine: boolean; sender: string } | null;
 }
@@ -72,6 +78,17 @@ export const chatGroupInputSchema = z.object({
   name: z.string().trim().min(1).max(60),
   /** weitere Mitglieder (Ersteller ist immer dabei) */
   memberIds: z.array(z.string().min(1).max(64)).max(100).default([]),
+  /** Gruppenadmins (nur der Besitzer kann sie festlegen; sonst ignoriert) */
+  adminIds: z.array(z.string().min(1).max(64)).max(100).optional(),
+});
+
+/** Gruppenbild setzen (Data-URL) oder entfernen (null) */
+export const chatGroupImageSchema = z.object({
+  image: z
+    .string()
+    .max(400_000)
+    .regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/, 'avatar_invalid')
+    .nullable(),
 });
 export type ChatGroupInput = z.input<typeof chatGroupInputSchema>;
 

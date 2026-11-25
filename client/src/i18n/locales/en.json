@@ -1758,8 +1758,16 @@
       "delete": "Delete group",
       "confirmLeave": "Really leave the group? You won't see its history afterwards.",
       "confirmDelete": "Delete the group and its history for everyone?",
-      "onlyCreator": "The group's creator changes its name and members.",
-      "start": "Send the first message to the group."
+      "onlyCreator": "The owner and group admins change the name, picture and members.",
+      "start": "Send the first message to the group.",
+      "owner": "Owner",
+      "admin": "Admin",
+      "admins": "Group admins",
+      "adminsHint": "Admins may change the name, picture and members. Only you can appoint admins and delete the group.",
+      "hintAdmin": "As an admin you can add and remove members – but not the owner or other admins.",
+      "imageAdd": "Add group picture",
+      "imageChange": "Change picture",
+      "imageRemove": "Remove picture"
     }
   }
 }

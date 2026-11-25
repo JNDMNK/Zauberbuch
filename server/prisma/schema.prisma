@@ -665,16 +665,19 @@ model ChatMessage {
 
 /// Chatgruppe innerhalb einer Geschichte – sichtbar nur für ihre Mitglieder
 model ChatGroup {
-  id          String            @id @default(cuid())
-  storyId     String
-  story       Story             @relation(fields: [storyId], references: [id], onDelete: Cascade)
-  name        String
-  createdById String?
-  createdBy   User?             @relation("ChatGroupCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  members     ChatGroupMember[]
-  messages    ChatMessage[]
+  id             String            @id @default(cuid())
+  storyId        String
+  story          Story             @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  name           String
+  createdById    String?
+  createdBy      User?             @relation("ChatGroupCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  /// Gruppenbild: Zeitpunkt der letzten Änderung (null = kein Bild); das Bild liegt in ChatGroupImage
+  imageUpdatedAt DateTime?
+  image          ChatGroupImage?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  members        ChatGroupMember[]
+  messages       ChatMessage[]
 
   @@index([storyId])
 }
@@ -687,6 +690,8 @@ model ChatGroupMember {
   /// bis hierhin gelesen (Ungelesen-Zähler)
   lastReadAt DateTime  @default(now())
   joinedAt   DateTime  @default(now())
+  /// Gruppenadmin (vom Ersteller ernannt): Name, Bild und Mitglieder ändern
+  isAdmin    Boolean   @default(false)
 
   @@id([groupId, userId])
   @@index([userId])
@@ -698,4 +703,12 @@ model UserAvatar {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   data      String
   updatedAt DateTime @updatedAt
+}
+
+/// Gruppenbild (Data-URL, im Browser verkleinert)
+model ChatGroupImage {
+  groupId   String    @id
+  group     ChatGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  data      String
+  updatedAt DateTime  @updatedAt
 }

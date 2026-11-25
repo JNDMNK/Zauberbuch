@@ -1,7 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Check, Dices, LogOut, MessageCircle, Pencil, Plus, Send, Settings, Trash2, Users, X } from 'lucide-react';
+import { ArrowLeft, Check, Dices, ImagePlus, LogOut, MessageCircle, Pencil, Plus, Send, Settings, Trash2, Users, X } from 'lucide-react';
 import type { ChatDice, ChatGroupDto, ChatMessageDto, ChatStoryDto } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
@@ -11,7 +11,7 @@ import { useActiveStory } from '../../hooks/useActiveStory';
 import { useLiveEvent } from '../../hooks/useLiveEvents';
 import { Markdown } from '../Markdown';
 import { Spinner } from '../ui';
-import { Avatar } from '../Avatar';
+import { Avatar, avatarFromFile } from '../Avatar';
 
 // Sicherheitsnetz; neue Nachrichten kommen normalerweise sofort per Live-Ereignis
 const UNREAD_POLL_MS = 120_000;
@@ -297,11 +297,7 @@ function ChatPanel({ start, onClose }: { start: { storyId: string | null; charac
                   {data.groups.map((g) => (
                     <li key={g.id}>
                       <ListRow
-                        avatar={
-                          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-800 text-white">
-                            <Users className="h-5 w-5" />
-                          </span>
-                        }
+                        avatar={<GroupImage src={g.imageUrl} />}
                         name={g.name}
                         extra={t('chat.group.memberCount', { count: g.members.length })}
                         preview={g.last ? `${g.last.mine ? t('chat.you') : g.last.sender}: ${g.last.body || t('chat.deleted')}` : t('chat.noMessages')}
@@ -352,17 +348,34 @@ function ListRow({ avatar, name, extra, preview, unread, onClick }: { avatar: Re
   );
 }
 
-/** Gruppe anlegen bzw. verwalten (Ersteller) oder ansehen und verlassen (andere Mitglieder) */
+/**
+ * Gruppe anlegen bzw. verwalten. Besitzer und Gruppenadmins ändern Name, Bild und Mitglieder; nur der Besitzer ernennt
+ * Admins und löscht die Gruppe. Andere Mitglieder sehen die Mitglieder und können die Gruppe verlassen.
+ */
 function GroupForm({ storyId, data, group, pic, onDone }: { storyId: string; data: ChatStoryDto; group: ChatGroupDto | null; pic: (userId: string) => string | null; onDone: (groupId: string | null) => void | Promise<void> }) {
   const { t } = useTranslation();
   const toast = useToast();
   const { user } = useAuth();
   const manage = !group || group.canManage;
+  const isOwner = !group || group.isOwner;
+  const ownerId = group?.ownerId ?? user?.id ?? null;
   const [name, setName] = useState(group?.name ?? '');
   const [members, setMembers] = useState<Set<string>>(() => new Set(group?.members.map((m) => m.userId).filter((id) => id !== user?.id) ?? []));
+  const [admins, setAdmins] = useState<Set<string>>(() => new Set(group?.members.filter((m) => m.isAdmin).map((m) => m.userId) ?? []));
+  // Bild: für neue Gruppen erst nach dem Anlegen hochladen; undefined = unverändert
+  const [image, setImage] = useState<string | null | undefined>(undefined);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState<'leave' | 'delete' | null>(null);
-  const toggle = (id: string) => setMembers((s) => (s.has(id) ? (s.delete(id), new Set(s)) : new Set(s.add(id))));
+  const flip = (set: Set<string>, id: string) => {
+    const next = new Set(set);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    return next;
+  };
+  // Admins können Besitzer und andere Admins nicht entfernen
+  const locked = (id: string) => !isOwner && (id === ownerId || (group?.members.some((m) => m.userId === id && m.isAdmin) ?? false));
+  const shownImage = image === undefined ? (group?.imageUrl ?? null) : image;
 
   const run = async (fn: () => Promise<string | null>) => {
     setBusy(true);
@@ -376,14 +389,65 @@ function GroupForm({ storyId, data, group, pic, onDone }: { storyId: string; dat
   };
   const save = () =>
     run(async () => {
-      const input = { name: name.trim(), memberIds: [...members] };
-      if (group) return (await api.updateChatGroup(group.id, input)).group.id;
-      return (await api.createChatGroup(storyId, input)).group.id;
+      const input = { name: name.trim(), memberIds: [...members], ...(isOwner ? { adminIds: [...admins].filter((id) => members.has(id)) } : {}) };
+      const id = group ? (await api.updateChatGroup(group.id, input)).group.id : (await api.createChatGroup(storyId, input)).group.id;
+      if (image !== undefined) await api.setChatGroupImage(id, image);
+      return id;
     });
+  const onFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      setImage(await avatarFromFile(file));
+    } catch {
+      toast.error(t('sheet.imageError'));
+    }
+  };
+
+  const badge = (id: string) =>
+    id === ownerId ? (
+      <span className="rounded-full bg-amber-200 px-1.5 text-[0.65rem] font-bold uppercase text-amber-900 dark:bg-amber-900 dark:text-amber-100">{t('chat.group.owner')}</span>
+    ) : group?.members.some((m) => m.userId === id && m.isAdmin) ? (
+      <span className="rounded-full bg-emerald-200 px-1.5 text-[0.65rem] font-bold uppercase text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100">{t('chat.group.admin')}</span>
+    ) : null;
+
+  const leaveDelete = group && (
+    <div className="flex flex-wrap items-center gap-2 border-t border-parchment-300/70 pt-3 dark:border-night-700">
+      {confirm ? (
+        <>
+          <span className="text-sm">{t(confirm === 'delete' ? 'chat.group.confirmDelete' : 'chat.group.confirmLeave')}</span>
+          <button type="button" className="btn-danger" disabled={busy} onClick={() => run(async () => (confirm === 'delete' ? await api.deleteChatGroup(group.id) : await api.leaveChatGroup(group.id), null))}>
+            {t(confirm === 'delete' ? 'chat.group.delete' : 'chat.group.leave')}
+          </button>
+          <button type="button" className="btn-secondary" onClick={() => setConfirm(null)}>
+            {t('common.cancel')}
+          </button>
+        </>
+      ) : (
+        <>
+          <button type="button" className="btn-secondary" onClick={() => setConfirm('leave')}>
+            <LogOut className="h-4 w-4" />
+            {t('chat.group.leave')}
+          </button>
+          {group.isOwner && (
+            <button type="button" className="btn-secondary text-red-700 dark:text-red-400" onClick={() => setConfirm('delete')}>
+              <Trash2 className="h-4 w-4" />
+              {t('chat.group.delete')}
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
 
   if (!manage && group) {
     return (
       <div className="h-full space-y-3 overflow-y-auto p-4">
+        <div className="flex items-center gap-3">
+          <GroupImage src={group.imageUrl} className="h-16 w-16" />
+          <p className="font-display text-xl font-bold">{group.name}</p>
+        </div>
         <h3 className="font-semibold">{t('chat.group.members')}</h3>
         <ul className="space-y-1">
           {group.members.map((m) => (
@@ -391,26 +455,12 @@ function GroupForm({ storyId, data, group, pic, onDone }: { storyId: string; dat
               <Avatar src={pic(m.userId)} name={m.username} className="h-7 w-7 text-xs" />
               {m.username}
               {m.role && <span className="text-xs text-parchment-700 dark:text-parchment-400">{t(`storyRole.${m.role}`)}</span>}
+              {badge(m.userId)}
             </li>
           ))}
         </ul>
         <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('chat.group.onlyCreator')}</p>
-        {confirm === 'leave' ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm">{t('chat.group.confirmLeave')}</span>
-            <button type="button" className="btn-danger" disabled={busy} onClick={() => run(async () => (await api.leaveChatGroup(group.id), null))}>
-              {t('chat.group.leave')}
-            </button>
-            <button type="button" className="btn-secondary" onClick={() => setConfirm(null)}>
-              {t('common.cancel')}
-            </button>
-          </div>
-        ) : (
-          <button type="button" className="btn-secondary" onClick={() => setConfirm('leave')}>
-            <LogOut className="h-4 w-4" />
-            {t('chat.group.leave')}
-          </button>
-        )}
+        {leaveDelete}
       </div>
     );
   }
@@ -424,6 +474,22 @@ function GroupForm({ storyId, data, group, pic, onDone }: { storyId: string; dat
       }}
     >
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+        <div className="flex items-center gap-3">
+          <GroupImage src={shownImage} className="h-16 w-16" />
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className="btn-secondary !py-1 text-sm" onClick={() => fileRef.current?.click()}>
+              <ImagePlus className="h-4 w-4" />
+              {t(shownImage ? 'chat.group.imageChange' : 'chat.group.imageAdd')}
+            </button>
+            {shownImage && (
+              <button type="button" className="btn-secondary !py-1 text-sm text-red-700 dark:text-red-400" onClick={() => setImage(null)}>
+                <Trash2 className="h-4 w-4" />
+                {t('chat.group.imageRemove')}
+              </button>
+            )}
+          </div>
+          <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="sr-only" onChange={onFile} tabIndex={-1} aria-label={t('chat.group.imageAdd')} />
+        </div>
         <div>
           <label htmlFor="chat-group-name" className="mb-1 block text-sm font-semibold">
             {t('chat.group.name')}
@@ -435,40 +501,32 @@ function GroupForm({ storyId, data, group, pic, onDone }: { storyId: string; dat
           <div className="flex flex-wrap gap-2">
             {data.contacts.map((c) => (
               <label key={c.userId} className="chip-check">
-                <input type="checkbox" checked={members.has(c.userId)} onChange={() => toggle(c.userId)} />
+                <input type="checkbox" checked={members.has(c.userId) || locked(c.userId)} disabled={locked(c.userId)} onChange={() => setMembers((m) => flip(m, c.userId))} />
                 {c.username}
                 {c.role === 'dm' && <span className="text-xs opacity-70">({t('storyRole.dm')})</span>}
+                {group && badge(c.userId)}
               </label>
             ))}
           </div>
-          <p className="mt-2 text-xs text-parchment-700 dark:text-parchment-400">{t('chat.group.hint')}</p>
+          <p className="mt-2 text-xs text-parchment-700 dark:text-parchment-400">{t(isOwner ? 'chat.group.hint' : 'chat.group.hintAdmin')}</p>
         </fieldset>
-        {group && (
-          <div className="flex flex-wrap items-center gap-2 border-t border-parchment-300/70 pt-3 dark:border-night-700">
-            {confirm ? (
-              <>
-                <span className="text-sm">{t(confirm === 'delete' ? 'chat.group.confirmDelete' : 'chat.group.confirmLeave')}</span>
-                <button type="button" className="btn-danger" disabled={busy} onClick={() => run(async () => (confirm === 'delete' ? await api.deleteChatGroup(group.id) : await api.leaveChatGroup(group.id), null))}>
-                  {t(confirm === 'delete' ? 'chat.group.delete' : 'chat.group.leave')}
-                </button>
-                <button type="button" className="btn-secondary" onClick={() => setConfirm(null)}>
-                  {t('common.cancel')}
-                </button>
-              </>
-            ) : (
-              <>
-                <button type="button" className="btn-secondary" onClick={() => setConfirm('leave')}>
-                  <LogOut className="h-4 w-4" />
-                  {t('chat.group.leave')}
-                </button>
-                <button type="button" className="btn-secondary text-red-700 dark:text-red-400" onClick={() => setConfirm('delete')}>
-                  <Trash2 className="h-4 w-4" />
-                  {t('chat.group.delete')}
-                </button>
-              </>
-            )}
-          </div>
+        {isOwner && members.size > 0 && (
+          <fieldset>
+            <legend className="mb-1 text-sm font-semibold">{t('chat.group.admins')}</legend>
+            <div className="flex flex-wrap gap-2">
+              {data.contacts
+                .filter((c) => members.has(c.userId))
+                .map((c) => (
+                  <label key={c.userId} className="chip-check">
+                    <input type="checkbox" checked={admins.has(c.userId)} onChange={() => setAdmins((a) => flip(a, c.userId))} />
+                    {c.username}
+                  </label>
+                ))}
+            </div>
+            <p className="mt-2 text-xs text-parchment-700 dark:text-parchment-400">{t('chat.group.adminsHint')}</p>
+          </fieldset>
         )}
+        {leaveDelete}
       </div>
       <div className="border-t border-parchment-400/60 px-4 py-3 dark:border-night-700">
         <button type="submit" className="btn-primary w-full" disabled={busy || !name.trim() || members.size === 0}>
@@ -477,6 +535,16 @@ function GroupForm({ storyId, data, group, pic, onDone }: { storyId: string; dat
         </button>
       </div>
     </form>
+  );
+}
+
+/** Gruppenbild oder Gruppensymbol */
+function GroupImage({ src, className = 'h-10 w-10' }: { src: string | null | undefined; className?: string }) {
+  if (src) return <img src={src} alt="" className={`${className} shrink-0 rounded-full object-cover`} />;
+  return (
+    <span className={`${className} grid shrink-0 place-items-center rounded-full bg-emerald-800 text-white`}>
+      <Users className="h-1/2 w-1/2" />
+    </span>
   );
 }
 

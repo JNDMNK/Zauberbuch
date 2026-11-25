@@ -1758,8 +1758,16 @@
       "delete": "Gruppe löschen",
       "confirmLeave": "Gruppe wirklich verlassen? Du siehst den Verlauf danach nicht mehr.",
       "confirmDelete": "Gruppe samt Verlauf für alle löschen?",
-      "onlyCreator": "Name und Mitglieder ändert, wer die Gruppe erstellt hat.",
-      "start": "Schreib die erste Nachricht an die Gruppe."
+      "onlyCreator": "Name, Bild und Mitglieder ändern der Besitzer und die Gruppenadmins.",
+      "start": "Schreib die erste Nachricht an die Gruppe.",
+      "owner": "Besitzer",
+      "admin": "Admin",
+      "admins": "Gruppenadmins",
+      "adminsHint": "Admins dürfen Name, Bild und Mitglieder ändern. Admins ernennen und die Gruppe löschen kannst nur du.",
+      "hintAdmin": "Als Admin kannst du Mitglieder hinzufügen und entfernen – Besitzer und andere Admins nicht.",
+      "imageAdd": "Gruppenbild hinzufügen",
+      "imageChange": "Bild ändern",
+      "imageRemove": "Bild entfernen"
     }
   }
 }

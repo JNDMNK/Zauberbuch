@@ -66,4 +66,54 @@ describe('Chatgruppen', () => {
     expect((await sam.agent.delete(`/api/chat/groups/${gid}`).set(CSRF)).status).toBe(204);
     expect(await groups(dm.agent)).toEqual([]);
   });
+
+  it('Gruppenadmins: vom Besitzer ernannt, ändern Name/Mitglieder/Bild, Besitz geht beim Verlassen an Admins', async () => {
+    const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+    const admin = await loginAs('admin', 'admin-password');
+    const [frodo, sam, pippin, merry] = await Promise.all(['frodo', 'sam', 'pippin', 'merry'].map((n) => createUser(n)));
+    const s = (await admin.post('/api/stories').set(CSRF).send({ name: 'Ringkrieg', members: [frodo, sam, pippin, merry].map((u) => ({ userId: u.user.id, role: 'player' })) })).body.story;
+    const gid = (await frodo.agent.post(`/api/chat/stories/${s.id}/groups`).set(CSRF).send({ name: 'Hobbits', memberIds: [sam.user.id, pippin.user.id] })).body.group.id;
+    const group = async (a: typeof frodo.agent) => (await a.get(`/api/chat/stories/${s.id}`)).body.groups[0];
+    const put = (a: typeof frodo.agent, body: object) => a.put(`/api/chat/groups/${gid}`).set(CSRF).send(body);
+
+    // Admins schon beim Anlegen
+    const g0 = (await frodo.agent.post(`/api/chat/stories/${s.id}/groups`).set(CSRF).send({ name: 'Zweite', memberIds: [merry.user.id], adminIds: [merry.user.id, frodo.user.id] })).body.group.id;
+    const z = (await merry.agent.get(`/api/chat/stories/${s.id}`)).body.groups.find((x: { id: string }) => x.id === g0);
+    expect(z.members.map((m: { username: string; isAdmin: boolean }) => `${m.username}:${m.isAdmin}`)).toEqual(['frodo:false', 'merry:true']);
+    await frodo.agent.delete(`/api/chat/groups/${g0}`).set(CSRF);
+    // Nur der Besitzer ernennt Admins
+    expect((await put(frodo.agent, { name: 'Hobbits', memberIds: [sam.user.id, pippin.user.id], adminIds: [sam.user.id] })).status).toBe(200);
+    const g1 = await group(sam.agent);
+    expect(g1).toMatchObject({ ownerId: frodo.user.id, isOwner: false, canManage: true, imageUrl: null });
+    expect(g1.members.find((m: { username: string }) => m.username === 'sam').isAdmin).toBe(true);
+    expect((await group(pippin.agent)).canManage).toBe(false);
+
+    // Admin Sam: Merry hinzufügen, Namen ändern; Versuch, Pippin zum Admin zu machen bzw. Frodo zu entfernen, greift nicht
+    expect((await put(sam.agent, { name: 'Gefährten', memberIds: [pippin.user.id, merry.user.id], adminIds: [pippin.user.id] })).status).toBe(200);
+    const g2 = await group(frodo.agent);
+    expect(g2.name).toBe('Gefährten');
+    expect(g2.members.map((m: { username: string }) => m.username).sort()).toEqual(['frodo', 'merry', 'pippin', 'sam']);
+    expect(g2.members.filter((m: { isAdmin: boolean }) => m.isAdmin).map((m: { username: string }) => m.username)).toEqual(['sam']);
+    // Pippin (kein Admin) darf nichts ändern
+    expect((await put(pippin.agent, { name: 'X', memberIds: [frodo.user.id] })).status).toBe(403);
+    expect((await pippin.agent.put(`/api/chat/groups/${gid}/image`).set(CSRF).send({ image: PNG })).status).toBe(403);
+
+    // Bild: Admin lädt hoch, Mitglieder sehen es, Fremde nicht
+    const img = await sam.agent.put(`/api/chat/groups/${gid}/image`).set(CSRF).send({ image: PNG });
+    expect(img.body.imageUrl).toMatch(new RegExp(`^/api/chat/groups/${gid}/image\\?v=\\d+$`));
+    expect((await group(pippin.agent)).imageUrl).toBe(img.body.imageUrl);
+    const got = await merry.agent.get(img.body.imageUrl);
+    expect([got.status, got.headers['content-type']]).toEqual([200, 'image/png']);
+    expect((await admin.get(img.body.imageUrl)).status).toBe(404);
+    expect((await sam.agent.put(`/api/chat/groups/${gid}/image`).set(CSRF).send({ image: 'data:image/svg+xml;base64,PHN2Zz4=' })).status).toBe(400);
+
+    // Löschen nur durch den Besitzer
+    expect((await sam.agent.delete(`/api/chat/groups/${gid}`).set(CSRF)).status).toBe(403);
+    // Besitzer verlässt → Admin Sam wird Besitzer (obwohl Pippin früher dabei war)
+    expect((await frodo.agent.post(`/api/chat/groups/${gid}/leave`).set(CSRF)).status).toBe(204);
+    expect(await group(sam.agent)).toMatchObject({ ownerId: sam.user.id, isOwner: true });
+    // Bild entfernen
+    expect((await sam.agent.put(`/api/chat/groups/${gid}/image`).set(CSRF).send({ image: null })).body.imageUrl).toBeNull();
+    expect((await merry.agent.get(img.body.imageUrl)).status).toBe(404);
+  });
 });
