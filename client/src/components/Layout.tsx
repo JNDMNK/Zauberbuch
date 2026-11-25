@@ -12,7 +12,7 @@ export function Layout() {
         {t('common.skipToContent')}
       </a>
       <Header />
-      <main id="main" className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-6">
+      <main id="main" className="mx-auto w-full max-w-[2200px] flex-1 px-4 py-6">
         <Outlet />
       </main>
       <footer className="border-t border-parchment-400/50 py-4 text-center text-xs text-parchment-700 dark:border-night-700 dark:text-parchment-500">

@@ -11,6 +11,9 @@ export default {
       lg: { raw: '(min-width: 1024px), print' },
       xl: { raw: '(min-width: 1280px), print' },
       '2xl': '1536px',
+      // Große Monitore: mehr Karten nebeneinander statt breiterer Karten
+      '3xl': '1900px',
+      '4xl': '2300px',
     },
     extend: {
       fontFamily: {

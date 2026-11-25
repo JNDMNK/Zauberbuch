@@ -56,7 +56,7 @@ export function CombatPage() {
   const running = encounters.filter((e) => !e.ended);
   const ended = encounters.filter((e) => e.ended);
   const list = (items: EncounterSummaryDto[]) => (
-    <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
       {items.map((e) => (
         <li key={e.id}>
           <Link to={`/combat/${e.id}`} className="parchment block p-4 transition hover:shadow-cardhover">

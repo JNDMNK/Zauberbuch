@@ -23,7 +23,7 @@ export function ItemsTab({ characterId }: { characterId: string }) {
       {items.data.items.length === 0 ? (
         <div className="parchment px-6 py-12 text-center italic">{t('items.sheetEmpty')}</div>
       ) : (
-        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
           {items.data.items.map((i) => (
             <li key={i.id}>
               <ItemCard item={i} attuned={attuned.has(i.name.toLocaleLowerCase('de'))} footer={items.data!.canTransfer ? <TransferControls item={i} characterId={characterId} /> : undefined} />

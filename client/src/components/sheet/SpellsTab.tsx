@@ -251,7 +251,7 @@ export function SpellsTab() {
           </button>
         </div>
       )}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
         {Array.from({ length: 10 }, (_, level) => (
           <LevelBox key={level} level={level} names={names} lang={lang} />
         ))}

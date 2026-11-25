@@ -211,7 +211,7 @@ export function CatalogManager({
       {shown.length === 0 ? (
         <div className="parchment px-6 py-10 text-center italic">{needle ? t('search.noResults') : t('catalog.empty')}</div>
       ) : (
-        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
           {shown.map((i) => (
             <li key={i.id}>
               <CatalogCard item={i} badge={badge(i)} actions={actions(i)} dimmed={i.hidden} />

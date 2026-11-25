@@ -55,7 +55,7 @@ export function SpellbooksPage() {
           />
         </div>
       </div>
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
         {filtered.map((o) => (
           <li key={o.id}>
             <Link

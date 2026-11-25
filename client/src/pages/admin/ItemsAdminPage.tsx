@@ -134,7 +134,7 @@ export function ItemsAdminPage() {
       ) : shown.length === 0 ? (
         <div className="parchment px-6 py-12 text-center italic">{items.length === 0 ? t('items.empty') : t('search.noResults')}</div>
       ) : (
-        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
           {shown.map((i) => (
             <li key={i.id}>
               <ItemCard

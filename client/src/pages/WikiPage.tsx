@@ -386,7 +386,7 @@ export function WikiPage() {
                 {shown.length === 0 ? (
                   <div className="parchment px-6 py-12 text-center italic">{needle ? t('wiki.noHits') : t('wiki.empty')}</div>
                 ) : (
-                  <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
                     {shown.map((e) => {
                       const Icon = KIND_ICON[e.kind];
                       const sub =

@@ -194,7 +194,7 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
               </button>
             </Alert>
           ) : firstLoad ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 4xl:grid-cols-5">
               {Array.from({ length: 8 }, (_, i) => (
                 <SkeletonCard key={i} />
               ))}
@@ -210,7 +210,7 @@ export function SpellsPage({ favoritesPage = false, owner, header }: SpellsPageP
             </div>
           ) : (
             <>
-              <div className={`grid grid-cols-1 gap-4 transition-opacity sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 ${search.loading && search.page <= 1 ? 'opacity-60' : ''}`}>
+              <div className={`grid grid-cols-1 gap-4 transition-opacity sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 4xl:grid-cols-5 ${search.loading && search.page <= 1 ? 'opacity-60' : ''}`}>
                 {search.items.map((spell) => (
                   <SpellCard key={spell.id} spell={spell} onFavoriteChange={onFavoriteChange} />
                 ))}

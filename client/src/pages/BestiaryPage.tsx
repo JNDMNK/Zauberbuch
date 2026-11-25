@@ -239,7 +239,7 @@ function EntryList({ source, storyName }: { source: Source; storyName: string })
       {shown.length === 0 ? (
         <p className="parchment p-8 text-center text-parchment-700 dark:text-parchment-400">{entries.length === 0 ? t('bestiary.empty') : t('bestiary.noMatch')}</p>
       ) : (
-        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
           {shown.map((e) => {
             const sub = subtitle(e.stats);
             const actions = canWrite && (

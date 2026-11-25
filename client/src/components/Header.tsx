@@ -246,7 +246,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-parchment-400/60 bg-parchment-100/85 backdrop-blur dark:border-night-700 dark:bg-night-900/85">
-      <div className="mx-auto flex max-w-[1600px] items-center gap-3 px-4 py-2.5">
+      <div className="mx-auto flex max-w-[2200px] items-center gap-3 px-4 py-2.5">
         <Link to="/" className="flex items-center gap-2" aria-label={t('app.title')}>
           <img src="/favicon.svg" alt="" className="h-8 w-8" />
           <span className="hidden flex-col leading-none sm:flex lg:hidden xl:flex">

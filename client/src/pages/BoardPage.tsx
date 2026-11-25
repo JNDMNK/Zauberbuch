@@ -75,7 +75,7 @@ export function BoardPage() {
   if (!stories) return <PageSpinner />;
 
   return (
-    <div className="space-y-5">
+    <div className="mx-auto max-w-[1600px] space-y-5">
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="flex-1 text-3xl font-bold">{t('board.heading')}</h1>
         {isAdmin && (

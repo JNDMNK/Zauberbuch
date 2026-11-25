@@ -262,7 +262,7 @@ export function EncounterPage() {
       {sorted.length === 0 ? (
         <p className="parchment p-8 text-center text-parchment-700 dark:text-parchment-400">{manage ? t('combat.emptyEditor') : t('combat.emptyUser')}</p>
       ) : (
-        <div className="grid grid-cols-1 gap-5 pt-2 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 pt-2 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 4xl:grid-cols-5">
           {sorted.map((c) => (
             <CombatantCard
               key={c.id}

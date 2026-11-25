@@ -306,7 +306,7 @@ export function SpellFormPage() {
   const damagePreview = dicePreview.success && dicePreview.data && form.damageType ? { dice: dicePreview.data, type: form.damageType } : null;
 
   return (
-    <form onSubmit={onSubmit} noValidate className="space-y-6">
+    <form onSubmit={onSubmit} noValidate className="mx-auto max-w-[1600px] space-y-6">
       <div className="flex flex-wrap items-center gap-2">
         <Link to="/admin/spells" className="btn-ghost !px-2">
           <ArrowLeft className="h-4 w-4" />
