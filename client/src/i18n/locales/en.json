@@ -1646,7 +1646,20 @@
     "natural1": "Natural 1 – fumble!",
     "history": "Recent rolls",
     "clearHistory": "Clear history",
-    "repeat": "Roll again"
+    "repeat": "Roll again",
+    "fromCharacter": "Roll from character sheet ({{story}})",
+    "character": "Character",
+    "check": "Roll",
+    "checkPlaceholder": "Choose a roll for {{name}} …",
+    "saveOf": "{{ability}} saving throw",
+    "attackOf": "{{name}} – attack",
+    "damageOf": "{{name}} – damage",
+    "group": {
+      "combat": "Combat",
+      "ability": "Ability checks",
+      "save": "Saving throws",
+      "skill": "Skills"
+    }
   },
   "notes": {
     "title": "Personal notes",

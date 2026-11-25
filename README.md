@@ -24,7 +24,11 @@ Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutze
 - 🎲 **Würfel**: Würfel-Symbol in der Kopfzeile öffnet den Würfelbecher – W4, W6, W8, W10, W12, W20 und W100 in
   beliebiger Anzahl, Modifikator, Vorteil/Nachteil für den W20 (verworfener Wurf durchgestrichen), Einzelwerte und
   Summe, Hinweis bei natürlicher 20 bzw. 1 und ein Verlauf der letzten 20 Würfe (Klick würfelt erneut; nur in diesem
-  Browser gespeichert). Gewürfelt wird mit kryptografisch sicherem Zufall.
+  Browser gespeichert). Gewürfelt wird mit kryptografisch sicherem Zufall. Ist eine **Geschichte ausgewählt**, bietet
+  der Würfelbecher die eigenen Charaktere dieser Geschichte an: Attributswürfe, Rettungswürfe, Fertigkeiten,
+  Initiative, Angriffe samt Schaden (aus „Waffen & Angriffszauber“, z. B. „1W6 + 3“) und Zauberangriff setzen Würfel
+  und Modifikator direkt aus dem Charakterbogen; Ergebnis, Verlauf und „In den Chat“ (als dieser Charakter) tragen die
+  Bezeichnung mit.
 - 💬 **Chat** je Geschichte: private Zweiergespräche (Spieler ↔ DM, Spieler ↔ Spieler) über die Sprechblase in der
   Kopfzeile – als Charakter schreiben, Würfe teilen, Nachrichten bearbeiten/löschen, Zähler für Ungelesenes
 - 🧭 **Geschichten-Ansicht**: per Umschalter in der Kopfzeile führen Charakterbogen, Infotafel und Kampf direkt

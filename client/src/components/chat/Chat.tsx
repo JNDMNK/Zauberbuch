@@ -23,7 +23,7 @@ interface ChatCtx {
   openChat: (opts?: { storyId?: string | null; characterId?: string | null }) => void;
   close: () => void;
   /** Würfelwurf zum Senden vormerken und den Chat öffnen */
-  shareDice: (dice: ChatDice) => void;
+  shareDice: (dice: ChatDice, characterId?: string) => void;
   refreshUnread: () => void;
 }
 const Ctx = createContext<ChatCtx | null>(null);
@@ -60,8 +60,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setOpen(true);
       },
       close: () => setOpen(false),
-      shareDice: (dice) => {
-        setStart((s) => ({ storyId: null, characterId: null, dice, key: s.key + 1 }));
+      shareDice: (dice, characterId) => {
+        setStart((s) => ({ storyId: null, characterId: characterId ?? null, dice, key: s.key + 1 }));
         setOpen(true);
       },
       refreshUnread,

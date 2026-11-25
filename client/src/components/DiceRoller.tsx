@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Dices, History, MessageCircle, Minus, Plus, RotateCcw, Trash2 } from 'lucide-react';
+import { Dices, History, MessageCircle, Minus, Plus, RotateCcw, Trash2, UserRound } from 'lucide-react';
+import { ABILITIES, SKILLS, abilityModifier, attackBonus, formatModifier, initiative, savingThrowBonus, skillBonus, spellAttackBonus, type CharacterSheet, type CharacterSummaryDto } from '@zauberbuch/shared';
+import { api } from '../lib/api';
+import { useActiveStory } from '../hooks/useActiveStory';
 import { useChat } from './chat/Chat';
 import { Modal } from './Modal';
 
@@ -24,6 +27,9 @@ interface RollResult {
   total: number;
   mode: Mode;
   at: number;
+  /** Wurf aus dem Charakterbogen, z. B. „Heimlichkeit (Ireena)“ */
+  label?: string;
+  characterId?: string;
 }
 
 const HISTORY_KEY = 'zauberbuch.diceHistory';
@@ -79,6 +85,151 @@ function DieShape({ sides, className = '' }: { sides: Die; className?: string })
   );
 }
 
+/** Vorgabe aus dem Charakterbogen: Würfel, Modifikator und Bezeichnung */
+interface CharacterRoll {
+  key: string;
+  group: 'ability' | 'save' | 'skill' | 'combat';
+  label: string;
+  pool: Partial<Record<Die, number>>;
+  modifier: number;
+}
+
+/** Schadensangabe wie „1W8 + 3“, „2d6+1“ oder „1W10“ in Würfel und Modifikator zerlegen (sonst null) */
+export function parseDamage(text: string): { pool: Partial<Record<Die, number>>; modifier: number } | null {
+  const src = text.replace(/−/g, '-');
+  const pool: Partial<Record<Die, number>> = {};
+  let found = false;
+  for (const m of src.matchAll(/(\d*)\s*[WwDd]\s*(\d+)/g)) {
+    const sides = Number(m[2]) as Die;
+    if (!(DICE as readonly number[]).includes(sides)) return null;
+    pool[sides] = Math.min(20, (pool[sides] ?? 0) + (Number(m[1]) || 1));
+    found = true;
+  }
+  if (!found) return null;
+  let modifier = 0;
+  for (const m of src.replace(/(\d*)\s*[WwDd]\s*(\d+)/g, '').matchAll(/([+-])\s*(\d+)/g)) modifier += (m[1] === '-' ? -1 : 1) * Number(m[2]);
+  return { pool, modifier: Math.max(-30, Math.min(30, modifier)) };
+}
+
+function characterRolls(t: (k: string, o?: Record<string, unknown>) => string, sheet: CharacterSheet): CharacterRoll[] {
+  const list: CharacterRoll[] = [];
+  for (const a of ABILITIES) list.push({ key: `ability.${a}`, group: 'ability', label: t(`sheet.ability.${a}`), pool: { 20: 1 }, modifier: abilityModifier(sheet.abilities[a]) });
+  for (const a of ABILITIES) list.push({ key: `save.${a}`, group: 'save', label: t('dice.saveOf', { ability: t(`sheet.ability.${a}`) }), pool: { 20: 1 }, modifier: savingThrowBonus(sheet, a) });
+  for (const [k] of SKILLS) list.push({ key: `skill.${k}`, group: 'skill', label: t(`sheet.skill.${k}`), pool: { 20: 1 }, modifier: skillBonus(sheet, k) });
+  list.push({ key: 'initiative', group: 'combat', label: t('sheet.initiative'), pool: { 20: 1 }, modifier: initiative(sheet) });
+  sheet.attacks.forEach((atk, i) => {
+    if (!atk.name.trim()) return;
+    list.push({ key: `attack.${i}`, group: 'combat', label: t('dice.attackOf', { name: atk.name.trim() }), pool: { 20: 1 }, modifier: attackBonus(sheet, atk) });
+    const dmg = parseDamage(atk.damage);
+    if (dmg) list.push({ key: `damage.${i}`, group: 'combat', label: t('dice.damageOf', { name: atk.name.trim() }), pool: dmg.pool, modifier: dmg.modifier });
+  });
+  const spell = spellAttackBonus(sheet);
+  if (spell !== null) list.push({ key: 'spellAttack', group: 'combat', label: t('sheet.spellAttack'), pool: { 20: 1 }, modifier: spell });
+  for (const r of list) r.modifier = Math.max(-30, Math.min(30, r.modifier));
+  return list;
+}
+
+/**
+ * Bei aktiver Geschichte: eigene Charaktere dieser Geschichte und ihre Würfe (Attribute, Rettungswürfe,
+ * Fertigkeiten, Initiative, Angriffe/Schaden, Zauberangriff) als Vorgabe für den Würfelbecher.
+ */
+function CharacterRollPicker({ value, onPick }: { value: string; onPick: (roll: CharacterRoll | null, character: { id: string; name: string } | null) => void }) {
+  const { t } = useTranslation();
+  const { story } = useActiveStory();
+  const [chars, setChars] = useState<CharacterSummaryDto[]>([]);
+  const [charId, setCharId] = useState('');
+  const [sheet, setSheet] = useState<CharacterSheet | null>(null);
+
+  useEffect(() => {
+    setChars([]);
+    setCharId('');
+    if (!story) return;
+    let alive = true;
+    api.characters().then(
+      (r) => {
+        if (!alive) return;
+        const seen = new Set<string>();
+        const list = [...r.characters, ...r.shared].filter((c) => c.story?.id === story.id && !seen.has(c.id) && seen.add(c.id));
+        setChars(list);
+        try {
+          const last = localStorage.getItem('zauberbuch.diceCharacter');
+          setCharId(list.find((c) => c.id === last)?.id ?? list[0]?.id ?? '');
+        } catch {
+          setCharId(list[0]?.id ?? '');
+        }
+      },
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, [story]);
+
+  useEffect(() => {
+    setSheet(null);
+    if (!charId) return;
+    let alive = true;
+    api.character(charId).then((r) => alive && setSheet(r.character.data), () => undefined);
+    try {
+      localStorage.setItem('zauberbuch.diceCharacter', charId);
+    } catch {
+      /* egal */
+    }
+    return () => {
+      alive = false;
+    };
+  }, [charId]);
+
+  const rolls = useMemo(() => (sheet ? characterRolls(t, sheet) : []), [sheet, t]);
+  if (!story || chars.length === 0) return null;
+  const character = chars.find((c) => c.id === charId);
+  const groups: CharacterRoll['group'][] = ['combat', 'ability', 'save', 'skill'];
+  return (
+    <div className="space-y-1.5 rounded-lg border border-parchment-400/70 bg-parchment-100/60 p-2.5 dark:border-night-700 dark:bg-night-900/40">
+      <p className="flex items-center gap-1.5 text-sm font-semibold">
+        <UserRound className="h-4 w-4" />
+        {t('dice.fromCharacter', { story: story.name })}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {chars.length > 1 && (
+          <select className="input !w-auto min-w-0 flex-1 !py-1.5 text-sm" value={charId} onChange={(e) => (setCharId(e.target.value), onPick(null, null))} aria-label={t('dice.character')}>
+            {chars.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name || '—'}
+              </option>
+            ))}
+          </select>
+        )}
+        <select
+          className="input !w-auto min-w-0 flex-[2] !py-1.5 text-sm"
+          value={value}
+          disabled={!sheet}
+          onChange={(e) => {
+            const r = rolls.find((x) => x.key === e.target.value) ?? null;
+            onPick(r, r && character ? { id: character.id, name: character.name } : null);
+          }}
+          aria-label={t('dice.check')}
+        >
+          <option value="">{sheet ? t('dice.checkPlaceholder', { name: character?.name || '—' }) : t('common.loading')}</option>
+          {groups.map((g) => {
+            const items = rolls.filter((r) => r.group === g);
+            if (!items.length) return null;
+            return (
+              <optgroup key={g} label={t(`dice.group.${g}`)}>
+                {items.map((r) => (
+                  <option key={r.key} value={r.key}>
+                    {r.label} ({r.key.startsWith('damage.') ? Object.entries(r.pool).map(([d, n]) => `${n}${t('dice.prefix')}${d}`).join(' + ') + (r.modifier ? ` ${formatModifier(r.modifier)}` : '') : formatModifier(r.modifier)})
+                  </option>
+                ))}
+              </optgroup>
+            );
+          })}
+        </select>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Würfel-Knopf in der Kopfzeile: öffnet den Würfelbecher mit W4, W6, W8, W10, W12, W20 und W100, Anzahl je Würfel,
  * Modifikator, Vorteil/Nachteil für W20 und einem Verlauf der letzten Würfe (nur in diesem Browser gespeichert).
@@ -108,6 +259,8 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
   const [history, setHistory] = useState<RollResult[]>(loadHistory);
   const timer = useRef<number | null>(null);
   const chat = useChat();
+  /** gewählter Wurf aus dem Charakterbogen (wird bei Handänderung verworfen) */
+  const [picked, setPicked] = useState<{ key: string; label: string; characterId: string } | null>(null);
   useEffect(() => () => void (timer.current && window.clearInterval(timer.current)), []);
 
   const count = DICE.reduce((n, d) => n + pool[d], 0);
@@ -118,14 +271,26 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
     if (m !== 'normal' && p[20] > 0) text += ` (${t(`dice.${m}`)})`;
     return text || '–';
   };
-  const add = (d: Die, delta: number) => setPool((p) => ({ ...p, [d]: Math.max(0, Math.min(20, p[d] + delta)) }));
+  const add = (d: Die, delta: number) => {
+    setPicked(null);
+    setPool((p) => ({ ...p, [d]: Math.max(0, Math.min(20, p[d] + delta)) }));
+  };
+  const pick = (r: CharacterRoll | null, character: { id: string; name: string } | null) => {
+    if (!r || !character) return setPicked(null);
+    const p = Object.fromEntries(DICE.map((d) => [d, r.pool[d] ?? 0])) as Record<Die, number>;
+    setPool(p);
+    setModifier(r.modifier);
+    if (!p[20]) setMode('normal');
+    setPicked({ key: r.key, label: `${r.label} (${character.name || '—'})`, characterId: character.id });
+  };
   const clear = () => {
+    setPicked(null);
     setPool(Object.fromEntries(DICE.map((d) => [d, 0])) as Record<Die, number>);
     setModifier(0);
     setMode('normal');
   };
 
-  const roll = (p = pool, mod = modifier, m = mode) => {
+  const roll = (p = pool, mod = modifier, m = mode, tag: { label?: string; characterId?: string } = picked ?? {}) => {
     const n = DICE.reduce((s, d) => s + p[d], 0);
     if (n === 0 || rolling) return;
     const dice: RolledDie[] = [];
@@ -138,7 +303,7 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
           dice.push({ sides: 20, value: keep, dropped: keep === a ? b : a });
         } else dice.push({ sides: d, value: rollDie(d) });
       }
-    const final: RollResult = { id: Date.now(), expression: describe(p, mod, m), dice, modifier: mod, total: dice.reduce((s, x) => s + x.value, 0) + mod, mode: m, at: Date.now() };
+    const final: RollResult = { id: Date.now(), expression: describe(p, mod, m), dice, modifier: mod, total: dice.reduce((s, x) => s + x.value, 0) + mod, mode: m, at: Date.now(), label: tag.label, characterId: tag.characterId };
     // kurze „Roll“-Animation, dann Ergebnis (bei reduzierter Bewegung sofort)
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const finish = () => {
@@ -170,7 +335,8 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
     setPool(p);
     setModifier(r.modifier);
     setMode(r.mode);
-    roll(p, r.modifier, r.mode);
+    setPicked(null);
+    roll(p, r.modifier, r.mode, { label: r.label, characterId: r.characterId });
   };
 
   const shown = rolling ?? result?.dice ?? [];
@@ -186,7 +352,9 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
         </span>
       }
     >
-      <div className="space-y-4" onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'BUTTON' && roll()}>
+      <div className="space-y-4" onKeyDown={(e) => e.key === 'Enter' && !['BUTTON', 'SELECT'].includes((e.target as HTMLElement).tagName) && roll()}>
+        <CharacterRollPicker value={picked?.key ?? ''} onPick={pick} />
+
         {/* Würfel wählen */}
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
           {DICE.map((d) => (
@@ -230,11 +398,11 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-1">
             <span className="text-sm font-semibold">{t('dice.modifier')}</span>
-            <button type="button" className="btn-icon !p-1" onClick={() => setModifier((m) => Math.max(-30, m - 1))} aria-label={t('dice.modifierMinus')}>
+            <button type="button" className="btn-icon !p-1" onClick={() => (setPicked(null), setModifier((m) => Math.max(-30, m - 1)))} aria-label={t('dice.modifierMinus')}>
               <Minus className="h-4 w-4" />
             </button>
             <span className="w-8 text-center font-bold tabular-nums">{modifier > 0 ? `+${modifier}` : modifier}</span>
-            <button type="button" className="btn-icon !p-1" onClick={() => setModifier((m) => Math.min(30, m + 1))} aria-label={t('dice.modifierPlus')}>
+            <button type="button" className="btn-icon !p-1" onClick={() => (setPicked(null), setModifier((m) => Math.min(30, m + 1)))} aria-label={t('dice.modifierPlus')}>
               <Plus className="h-4 w-4" />
             </button>
           </div>
@@ -251,6 +419,7 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
         {/* Ausdruck + Würfeln */}
         <div className="flex items-center gap-2">
           <p className="min-w-0 flex-1 truncate rounded-md bg-parchment-200/60 px-3 py-2 font-display font-bold dark:bg-night-900/60" aria-live="polite">
+            {picked && <span className="mr-1.5 font-normal italic">{picked.label}:</span>}
             {describe(pool, modifier, mode)}
           </p>
           <button type="button" className="btn-icon" onClick={clear} title={t('dice.clear')} aria-label={t('dice.clear')}>
@@ -265,6 +434,7 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
         {/* Ergebnis */}
         {(rolling || result) && (
           <div className="rounded-xl border border-parchment-400/70 bg-parchment-50 p-4 text-center dark:border-night-700 dark:bg-night-800" aria-live="polite">
+            {!rolling && result?.label && <p className="mb-1 text-sm font-semibold italic">{result.label}</p>}
             <div className={`font-display text-5xl font-bold tabular-nums ${rolling ? 'opacity-40' : ''}`}>{rolling ? '…' : result!.total}</div>
             <div className="mt-3 flex flex-wrap justify-center gap-1.5">
               {shown.map((x, i) => {
@@ -301,7 +471,7 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
                 type="button"
                 className="btn-secondary mt-3 !py-1 text-sm"
                 onClick={() => {
-                  chat.shareDice({ expression: result.expression, total: result.total, modifier: result.modifier, mode: result.mode, dice: result.dice });
+                  chat.shareDice({ expression: (result.label ? `${result.label}: ${result.expression}` : result.expression).slice(0, 120), total: result.total, modifier: result.modifier, mode: result.mode, dice: result.dice }, result.characterId);
                   onClose();
                 }}
               >
@@ -334,7 +504,10 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
                     title={t('dice.repeat')}
                   >
                     <span className="w-10 shrink-0 text-right font-display text-lg font-bold tabular-nums">{r.total}</span>
-                    <span className="min-w-0 flex-1 truncate">{r.expression}</span>
+                    <span className="min-w-0 flex-1 truncate">
+                      {r.label && <span className="mr-1 italic">{r.label}:</span>}
+                      {r.expression}
+                    </span>
                     <span className="shrink-0 text-xs text-parchment-700 dark:text-parchment-400">{new Date(r.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </button>
                 </li>

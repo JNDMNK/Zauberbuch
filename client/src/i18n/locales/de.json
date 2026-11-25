@@ -1646,7 +1646,20 @@
     "natural1": "Natürliche 1 – Patzer!",
     "history": "Letzte Würfe",
     "clearHistory": "Verlauf löschen",
-    "repeat": "Erneut würfeln"
+    "repeat": "Erneut würfeln",
+    "fromCharacter": "Wurf aus dem Charakterbogen ({{story}})",
+    "character": "Charakter",
+    "check": "Wurf",
+    "checkPlaceholder": "Wurf für {{name}} wählen …",
+    "saveOf": "Rettungswurf {{ability}}",
+    "attackOf": "{{name}} – Angriff",
+    "damageOf": "{{name}} – Schaden",
+    "group": {
+      "combat": "Kampf",
+      "ability": "Attributswürfe",
+      "save": "Rettungswürfe",
+      "skill": "Fertigkeiten"
+    }
   },
   "notes": {
     "title": "Persönliche Notizen",
