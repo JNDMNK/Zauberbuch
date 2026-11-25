@@ -40,9 +40,10 @@ export function OptionListField({
   const [pending, setPending] = useState(0);
   const save = (list: string[]) => set(path, list.join('\n'));
 
-  const rows: (string | null)[] = [...values, ...Array.from({ length: pending }, () => null)];
-  // Beim Leeren Bogen eine Zeile zum Auswählen anzeigen
-  if (rows.length === 0 && !readOnly) rows.push(null);
+  // Leere Zeilen: die neu hinzugefügten; ist noch nichts gewählt, mindestens eine zum Auswählen.
+  // Diese automatische Zeile zählt mit – sonst würde der erste Klick auf „Hinzufügen“ nur sie ersetzen.
+  const empty = Math.max(pending, values.length === 0 && !readOnly ? 1 : 0);
+  const rows: (string | null)[] = [...values, ...Array.from({ length: empty }, () => null)];
 
   const change = (index: number, value: string) => {
     if (index < values.length) {
@@ -50,13 +51,13 @@ export function OptionListField({
       save(value ? values.map((v, i) => (i === index ? value : v)) : values.filter((_, i) => i !== index));
     } else if (value) {
       save([...values, value]);
-      setPending((p) => Math.max(0, p - 1));
+      setPending(Math.max(0, empty - 1));
     }
   };
 
   const remove = (index: number) => {
     if (index < values.length) save(values.filter((_, i) => i !== index));
-    else setPending((p) => Math.max(0, p - 1));
+    else setPending(Math.max(0, empty - 1));
   };
 
   return (
@@ -103,7 +104,7 @@ export function OptionListField({
         })}
       </ul>
       {!readOnly && (
-        <button type="button" className="btn-ghost mt-1 self-start !px-2 !py-0.5 text-xs print:hidden" onClick={() => setPending((p) => p + 1)} aria-label={`${t('sheet.addEntry')}: ${label}`}>
+        <button type="button" className="btn-ghost mt-1 self-start !px-2 !py-0.5 text-xs print:hidden" onClick={() => setPending(empty + 1)} aria-label={`${t('sheet.addEntry')}: ${label}`}>
           <Plus className="h-3.5 w-3.5" />
           {t('sheet.addEntry')}
         </button>
