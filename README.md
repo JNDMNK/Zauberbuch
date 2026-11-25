@@ -128,6 +128,9 @@ Es gibt zwei Ebenen von Rechten:
   Geschichte Dungeon Master und in einer anderen Spieler sein. Der **Admin** hat in allen Geschichten DM-Rechte,
   außer er ist dort als Spieler eingetragen.
 
+Unter **Mein Konto** (Benutzermenü) stellt jeder seine Sprache ein, ändert sein Passwort und lädt ein **Profilbild**
+hoch (wird quadratisch zugeschnitten und auf 256 px verkleinert; entfernbar). Es erscheint im Benutzermenü und im Chat.
+
 Ohne Anmeldung sind keine Daten sichtbar – weder in der Oberfläche noch über die API. Eine
 Selbstregistrierung gibt es nicht: Benutzer legt der Admin unter **Verwaltung → Benutzer → Neuer Benutzer**
 an (Benutzername, optional E-Mail, Passwort, Rolle). Dort kann er auch Rollen ändern, das Zusatzrecht
@@ -546,6 +549,10 @@ Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Grupp
   auf anderen Geräten) und gilt für alle Gespräche dieser Geschichte, bis man sie selbst ändert. Angeboten werden nur
   eigene Charaktere dieser Geschichte; wechselt ein Charakter die Geschichte, gilt die Wahl dort nicht mehr. Im
   Charakterbogen öffnet die Sprechblase den Chat direkt als dieser Charakter (und merkt ihn ebenso).
+- **Bilder im Chat:** Ist oben eine Geschichte gewählt, zeigen Kontaktliste und Nachrichten das **Charakterbild** des
+  Mitglieds aus dieser Geschichte (bevorzugt der Charakter, als der es schreibt), sonst sein **Profilbild**; in
+  „Allgemein“ zuerst das Profilbild, dann das Charakterbild. Ohne beides erscheint der Anfangsbuchstabe. Nachrichten
+  „als Charakter“ zeigen immer dessen Bild.
 - **Würfe teilen:** Im Würfelbecher schickt „In den Chat“ das Ergebnis (Ausdruck, Summe, Einzelwürfe) an einen
   wählbaren Gesprächspartner, optional mit Kommentar.
 - Eigene Nachrichten lassen sich **bearbeiten** (Text) und **löschen** („Nachricht gelöscht“ bleibt im Verlauf);
@@ -965,6 +972,7 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
 | `GET/POST /api/characters/:id/notes` · `PUT/DELETE …/notes/:noteId` | Besitzer/Mitbearbeiter (DM: freigegebene lesen) | Persönliche Notizen |
+| `PUT /api/auth/me/avatar` · `GET /api/avatars/:userId?v=` | angemeldet | Eigenes Profilbild setzen (`{ avatar: Data-URL \| null }`, PNG/JPEG/WebP, im Browser auf 256 px zugeschnitten) bzw. abrufen |
 | `GET /api/events` | angemeldet | Live-Aktualisierung (Server-Sent Events): Ereignis `change` mit `{ type: board \| chat \| combat, storyId }` bzw. `{ type: notifications }` |
 | `GET /api/chat/unread` | angemeldet | Ungelesene Chat-Nachrichten (`{ total, byStory }`) |
 | `GET /api/chat/stories/:storyId` · `GET …/portraits` | Mitglied der Geschichte | Gesprächspartner mit letzter Nachricht/Ungelesenen, eigene Charaktere, gespeicherte Wahl `speakAs`; Charakterporträts |

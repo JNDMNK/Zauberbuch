@@ -185,7 +185,14 @@
     "currentPassword": "Aktuelles Passwort",
     "newPassword": "Neues Passwort",
     "passwordChanged": "Das Passwort wurde geändert. Andere Sitzungen wurden abgemeldet.",
-    "languageHint": "Die Sprache wird in deinem Konto gespeichert."
+    "languageHint": "Die Sprache wird in deinem Konto gespeichert.",
+    "avatar": "Profilbild",
+    "avatarAdd": "Profilbild hinzufügen",
+    "avatarChange": "Profilbild ändern",
+    "avatarRemove": "Entfernen",
+    "avatarHint": "Wird quadratisch zugeschnitten und verkleinert. Erscheint u. a. im Chat – in der Geschichten-Ansicht haben Charakterbilder Vorrang.",
+    "avatarSaved": "Profilbild gespeichert.",
+    "avatarRemoved": "Profilbild entfernt."
   },
   "role": {
     "admin": "Admin",
@@ -419,7 +426,8 @@
     "chat_group_member_invalid": "Mitglieder müssen zur Geschichte gehören.",
     "chat_group_empty": "Füge mindestens ein weiteres Mitglied hinzu.",
     "chat_group_forbidden": "Nur wer die Gruppe erstellt hat, kann sie ändern.",
-    "chat_group_not_member": "Nur Mitglieder der Geschichte können Gruppen erstellen."
+    "chat_group_not_member": "Nur Mitglieder der Geschichte können Gruppen erstellen.",
+    "avatar_invalid": "Ungültiges Bild (erlaubt: PNG, JPEG, WebP)."
   },
   "damageType": {
     "acid": "Säure",

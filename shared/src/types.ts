@@ -55,7 +55,13 @@ export interface UserDto {
   activeStoryId: string | null;
   language: Locale;
   createdAt: string;
+  /** Profilbild (Bild-URL mit Versionsangabe) oder null */
+  avatarUrl: string | null;
 }
+
+/** URL des Profilbilds; die Versionsangabe sorgt dafür, dass Browser ein neues Bild sofort laden */
+export const avatarUrlFor = (userId: string, updatedAt: Date | string | null | undefined) =>
+  updatedAt ? `/api/avatars/${userId}?v=${new Date(updatedAt).getTime()}` : null;
 
 export interface ApiErrorBody {
   error: {

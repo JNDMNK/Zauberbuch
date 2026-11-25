@@ -185,7 +185,14 @@
     "currentPassword": "Current password",
     "newPassword": "New password",
     "passwordChanged": "Your password was changed. Other sessions have been logged out.",
-    "languageHint": "Your language is saved to your account."
+    "languageHint": "Your language is saved to your account.",
+    "avatar": "Profile picture",
+    "avatarAdd": "Add profile picture",
+    "avatarChange": "Change profile picture",
+    "avatarRemove": "Remove",
+    "avatarHint": "Cropped to a square and resized. Shown e.g. in the chat – in the story view, character pictures take precedence.",
+    "avatarSaved": "Profile picture saved.",
+    "avatarRemoved": "Profile picture removed."
   },
   "role": {
     "admin": "Admin",
@@ -419,7 +426,8 @@
     "chat_group_member_invalid": "Members must belong to the story.",
     "chat_group_empty": "Add at least one other member.",
     "chat_group_forbidden": "Only the group's creator can change it.",
-    "chat_group_not_member": "Only story members can create groups."
+    "chat_group_not_member": "Only story members can create groups.",
+    "avatar_invalid": "Invalid image (allowed: PNG, JPEG, WebP)."
   },
   "damageType": {
     "acid": "Acid",

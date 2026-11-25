@@ -163,6 +163,7 @@ export const api = {
   characterSettings: (id: string) => request<{ settings: CharacterSettingsDto }>('GET', `/api/characters/${id}/settings`),
   chatUnread: () => request<{ total: number; byStory: Record<string, number> }>('GET', '/api/chat/unread'),
   chatStory: (storyId: string) => request<ChatStoryDto>('GET', `/api/chat/stories/${storyId}`),
+  setAvatar: (avatar: string | null) => request<{ user: UserDto }>('PUT', '/api/auth/me/avatar', { avatar }),
   chatSpeakAs: (storyId: string, characterId: string | null) => request<{ speakAs: string | null }>('PUT', `/api/chat/stories/${storyId}/speak-as`, { characterId }),
   chatPortraits: (storyId: string) => request<{ portraits: Record<string, string> }>('GET', `/api/chat/stories/${storyId}/portraits`),
   chatMessages: (storyId: string, userId: string, since?: string) =>

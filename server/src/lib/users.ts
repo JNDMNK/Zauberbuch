@@ -1,5 +1,5 @@
 import type { User } from '@prisma/client';
-import type { Locale, Role, UserDto } from '@zauberbuch/shared';
+import { avatarUrlFor, type Locale, type Role, type UserDto } from '@zauberbuch/shared';
 
 export function toUserDto(user: User): UserDto {
   return {
@@ -12,5 +12,6 @@ export function toUserDto(user: User): UserDto {
     activeStoryId: user.activeStoryId ?? null,
     language: user.language as Locale,
     createdAt: user.createdAt.toISOString(),
+    avatarUrl: avatarUrlFor(user.id, user.avatarUpdatedAt),
   };
 }

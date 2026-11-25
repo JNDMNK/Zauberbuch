@@ -118,6 +118,15 @@ export function createApp(options: { accessLog?: boolean } = {}) {
   api.use('/backup', backupRouter);
   api.use('/chat', chatRouter);
   api.get('/events', requireAuth, (req, res) => addClient(req.user!, res));
+  // Profilbilder (für angemeldete Benutzer; die URL trägt eine Versionsangabe, daher lange zwischenspeicherbar)
+  api.get('/avatars/:userId', requireAuth, async (req, res, next) => {
+    const row = await prisma.userAvatar.findUnique({ where: { userId: String(req.params.userId) } });
+    const m = row?.data.match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/);
+    if (!m) return next(new HttpError(404, 'not_found', 'No avatar'));
+    res.setHeader('Content-Type', m[1]);
+    res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
+    res.send(Buffer.from(m[2], 'base64'));
+  });
   api.use('/sources', sourcesRouter);
 
   api.use((_req, _res, next) => next(new HttpError(404, 'not_found', 'API route not found')));

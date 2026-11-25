@@ -11,6 +11,7 @@ import { useActiveStory } from '../../hooks/useActiveStory';
 import { useLiveEvent } from '../../hooks/useLiveEvents';
 import { Markdown } from '../Markdown';
 import { Spinner } from '../ui';
+import { Avatar } from '../Avatar';
 
 // Sicherheitsnetz; neue Nachrichten kommen normalerweise sofort per Live-Ereignis
 const UNREAD_POLL_MS = 120_000;
@@ -96,8 +97,6 @@ export function ChatButton() {
   );
 }
 
-const initial = (name: string) => (name.trim()[0] ?? '?').toUpperCase();
-
 /** Gesprächsziel: Zweiergespräch mit einem Mitglied oder eine Gruppe */
 type Target = { kind: 'user'; id: string } | { kind: 'group'; id: string };
 type View = { mode: 'list' } | { mode: 'chat'; target: Target } | { mode: 'group-form'; groupId: string | null };
@@ -169,6 +168,20 @@ function ChatPanel({ start, onClose }: { start: { storyId: string | null; charac
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
+  /**
+   * Bild eines Mitglieds: Ist oben eine Geschichte gewählt, zuerst sein Charakterbild in dieser Geschichte,
+   * sonst das Profilbild; in „Allgemein“ umgekehrt. Ohne beides der Anfangsbuchstabe.
+   */
+  const pic = useCallback(
+    (userId: string): string | null => {
+      const p = data?.people[userId];
+      const character = p?.characterId ? (portraits[p.characterId] ?? null) : null;
+      const profile = p?.avatarUrl ?? null;
+      return activeStory ? (character ?? profile) : (profile ?? character);
+    },
+    [data, portraits, activeStory],
+  );
+
   const target = view.mode === 'chat' ? view.target : null;
   const contact = target?.kind === 'user' ? (data?.contacts.find((c) => c.userId === target.id) ?? null) : null;
   const group = target?.kind === 'group' ? (data?.groups.find((g) => g.id === target.id) ?? null) : null;
@@ -237,6 +250,7 @@ function ChatPanel({ start, onClose }: { start: { storyId: string | null; charac
             </div>
           ) : view.mode === 'group-form' ? (
             <GroupForm
+              pic={pic}
               storyId={storyId}
               data={data}
               group={view.groupId ? (data.groups.find((g) => g.id === view.groupId) ?? null) : null}
@@ -253,6 +267,7 @@ function ChatPanel({ start, onClose }: { start: { storyId: string | null; charac
               title={contact?.username ?? group?.name ?? ''}
               data={data}
               portraits={portraits}
+              pic={pic}
               asCharacter={asCharacter}
               setAsCharacter={chooseAs}
               pendingDice={pendingDice}
@@ -282,8 +297,11 @@ function ChatPanel({ start, onClose }: { start: { storyId: string | null; charac
                   {data.groups.map((g) => (
                     <li key={g.id}>
                       <ListRow
-                        avatar={<Users className="h-5 w-5" />}
-                        avatarCls="bg-emerald-800 text-white"
+                        avatar={
+                          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-800 text-white">
+                            <Users className="h-5 w-5" />
+                          </span>
+                        }
                         name={g.name}
                         extra={t('chat.group.memberCount', { count: g.members.length })}
                         preview={g.last ? `${g.last.mine ? t('chat.you') : g.last.sender}: ${g.last.body || t('chat.deleted')}` : t('chat.noMessages')}
@@ -299,8 +317,7 @@ function ChatPanel({ start, onClose }: { start: { storyId: string | null; charac
                 {data.contacts.map((c) => (
                   <li key={c.userId}>
                     <ListRow
-                      avatar={initial(c.username)}
-                      avatarCls={c.role === 'dm' ? 'bg-red-800 text-white' : 'bg-parchment-300 text-ink dark:bg-night-700 dark:text-parchment-100'}
+                      avatar={<Avatar src={pic(c.userId)} name={c.username} fallbackCls={c.role === 'dm' ? 'bg-red-800 text-white' : undefined} />}
                       name={c.username}
                       extra={c.role ? t(`storyRole.${c.role}`) : ''}
                       preview={c.last ? `${c.last.mine ? `${t('chat.you')}: ` : ''}${c.last.body || t('chat.deleted')}` : t('chat.noMessages')}
@@ -319,10 +336,10 @@ function ChatPanel({ start, onClose }: { start: { storyId: string | null; charac
   );
 }
 
-function ListRow({ avatar, avatarCls, name, extra, preview, unread, onClick }: { avatar: ReactNode; avatarCls: string; name: string; extra: string; preview: string; unread: number; onClick: () => void }) {
+function ListRow({ avatar, name, extra, preview, unread, onClick }: { avatar: ReactNode; name: string; extra: string; preview: string; unread: number; onClick: () => void }) {
   return (
     <button type="button" className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-parchment-200/60 dark:hover:bg-night-700/60" onClick={onClick}>
-      <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full font-display font-bold ${avatarCls}`}>{avatar}</span>
+      {avatar}
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline gap-2">
           <span className={`truncate ${unread ? 'font-bold' : 'font-semibold'}`}>{name}</span>
@@ -336,7 +353,7 @@ function ListRow({ avatar, avatarCls, name, extra, preview, unread, onClick }: {
 }
 
 /** Gruppe anlegen bzw. verwalten (Ersteller) oder ansehen und verlassen (andere Mitglieder) */
-function GroupForm({ storyId, data, group, onDone }: { storyId: string; data: ChatStoryDto; group: ChatGroupDto | null; onDone: (groupId: string | null) => void | Promise<void> }) {
+function GroupForm({ storyId, data, group, pic, onDone }: { storyId: string; data: ChatStoryDto; group: ChatGroupDto | null; pic: (userId: string) => string | null; onDone: (groupId: string | null) => void | Promise<void> }) {
   const { t } = useTranslation();
   const toast = useToast();
   const { user } = useAuth();
@@ -371,7 +388,7 @@ function GroupForm({ storyId, data, group, onDone }: { storyId: string; data: Ch
         <ul className="space-y-1">
           {group.members.map((m) => (
             <li key={m.userId} className="flex items-center gap-2">
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-parchment-300 text-xs font-bold text-ink dark:bg-night-700 dark:text-parchment-100">{initial(m.username)}</span>
+              <Avatar src={pic(m.userId)} name={m.username} className="h-7 w-7 text-xs" />
               {m.username}
               {m.role && <span className="text-xs text-parchment-700 dark:text-parchment-400">{t(`storyRole.${m.role}`)}</span>}
             </li>
@@ -469,6 +486,7 @@ function Conversation({
   title,
   data,
   portraits,
+  pic,
   asCharacter,
   setAsCharacter,
   pendingDice,
@@ -480,6 +498,7 @@ function Conversation({
   title: string;
   data: ChatStoryDto;
   portraits: Record<string, string>;
+  pic: (userId: string) => string | null;
   asCharacter: string;
   setAsCharacter: (v: string) => void;
   pendingDice: ChatDice | null;
@@ -599,15 +618,12 @@ function Conversation({
         ) : (
           messages.map((m) => {
             const mine = m.senderId === user?.id;
-            const portrait = m.characterId ? portraits[m.characterId] : undefined;
+            // „als Charakter“ geschrieben → immer das Charakterbild, sonst nach der Regel oben
+            const portrait = (m.characterId ? portraits[m.characterId] : undefined) ?? (m.characterName ? null : pic(m.senderId));
             const who = m.characterName || (mine ? t('chat.you') : isGroup ? m.senderName : partnerName);
             return (
               <div key={m.id} className={`group flex items-end gap-2 ${mine ? 'flex-row-reverse' : ''}`}>
-                {portrait ? (
-                  <img src={portrait} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
-                ) : (
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-parchment-300 text-sm font-bold text-ink dark:bg-night-700 dark:text-parchment-100">{initial(who)}</span>
-                )}
+                <Avatar src={portrait} name={who} className="h-8 w-8 text-sm" />
                 <div className={`max-w-[80%] rounded-2xl px-3 py-2 ${mine ? 'rounded-br-sm bg-parchment-800 text-parchment-50 dark:bg-parchment-300 dark:text-night-900' : 'rounded-bl-sm bg-parchment-200 text-ink dark:bg-night-700 dark:text-parchment-100'}`}>
                   {isGroup && !mine ? (
                     <p className="text-xs font-bold opacity-80">{m.characterName ? t('chat.characterOf', { name: m.characterName, user: m.senderName }) : m.senderName}</p>

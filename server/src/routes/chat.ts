@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type { ChatMessage } from '@prisma/client';
-import { chatDiceSchema, chatEditSchema, chatGroupInputSchema, chatMessageInputSchema, chatSpeakAsSchema, type ChatContactDto, type ChatGroupDto, type ChatMessageDto, type ChatStoryDto } from '@zauberbuch/shared';
+import { avatarUrlFor, chatDiceSchema, chatEditSchema, chatGroupInputSchema, chatMessageInputSchema, chatSpeakAsSchema, type ChatContactDto, type ChatGroupDto, type ChatMessageDto, type ChatStoryDto } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { badRequest, forbidden, notFound } from '../lib/errors';
@@ -49,7 +49,7 @@ function toDto(m: MessageWithSender): ChatMessageDto {
 async function loadStory(user: Express.Request['user'], storyId: string) {
   const story = await prisma.story.findFirst({
     where: { id: storyId, ...visibleStoryWhere(user!) },
-    include: { members: { include: { user: { select: { id: true, username: true, role: true } } } } },
+    include: { members: { include: { user: { select: { id: true, username: true, role: true, avatarUpdatedAt: true } } } } },
   });
   if (!story) throw notFound('story_not_found', 'Story not found');
   return story;
@@ -155,7 +155,17 @@ chatRouter.get('/stories/:storyId', async (req, res) => {
   // Gespeicherte Wahl nur, wenn der Charakter noch mir gehört und in dieser Geschichte ist
   const saved = story.members.find((m) => m.userId === me.id)?.chatCharacterId ?? null;
   const speakAs = saved && characters.some((c) => c.id === saved) ? saved : null;
-  const body: ChatStoryDto = { storyId: story.id, archived: story.archived, contacts, groups: groupDtos, myCharacters: characters.map((c) => ({ id: c.id, name: c.name || '—' })), speakAs };
+  // Bilder je Mitglied: Profilbild und ein Charakter mit Porträt (bevorzugt die eigene Wahl „Schreiben als“)
+  const withPortrait = await prisma.character.findMany({ where: { storyId: story.id, data: { contains: '"portrait":"data:image/' } }, select: { id: true, userId: true }, orderBy: { name: 'asc' } });
+  const people: ChatStoryDto['people'] = Object.fromEntries(
+    story.members.map((m) => {
+      const own = withPortrait.filter((c) => c.userId === m.userId);
+      const characterId = own.find((c) => c.id === m.chatCharacterId)?.id ?? own[0]?.id ?? null;
+      return [m.userId, { avatarUrl: avatarUrlFor(m.userId, m.user.avatarUpdatedAt), characterId }];
+    }),
+  );
+  people[me.id] ??= { avatarUrl: avatarUrlFor(me.id, me.avatarUpdatedAt), characterId: null };
+  const body: ChatStoryDto = { storyId: story.id, archived: story.archived, contacts, groups: groupDtos, myCharacters: characters.map((c) => ({ id: c.id, name: c.name || '—' })), speakAs, people };
   res.json(body);
 });
 

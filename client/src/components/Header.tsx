@@ -12,6 +12,7 @@ import { StorySwitcher } from './StorySwitcher';
 import { NotificationBell } from './NotificationBell';
 import { DiceRoller } from './DiceRoller';
 import { ChatButton } from './chat/Chat';
+import { Avatar } from './Avatar';
 
 function LanguageSwitch() {
   const { t } = useTranslation();
@@ -73,7 +74,7 @@ function UserMenu() {
   return (
     <div ref={ref} className="relative">
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="menu" className="btn-ghost !px-2">
-        <UserRound className="h-5 w-5" />
+        {user.avatarUrl ? <Avatar src={user.avatarUrl} name={user.username} className="h-6 w-6" /> : <UserRound className="h-5 w-5" />}
         <span className="hidden max-w-[10rem] truncate sm:inline">{user.username}</span>
         <ChevronDown className="h-4 w-4" />
       </button>

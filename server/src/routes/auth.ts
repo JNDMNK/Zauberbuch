@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { changePasswordSchema, loginSchema, updateMeSchema } from '@zauberbuch/shared';
+import { avatarSchema, changePasswordSchema, loginSchema, updateMeSchema } from '@zauberbuch/shared';
 import { config } from '../config';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
@@ -51,6 +51,16 @@ authRouter.patch('/me', requireAuth, async (req, res) => {
     where: { id: req.user!.id },
     data: { language: input.language },
   });
+  res.json({ user: toUserDto(user) });
+});
+
+/** Eigenes Profilbild setzen bzw. entfernen (avatar: null) */
+authRouter.put('/me/avatar', requireAuth, async (req, res) => {
+  const { avatar } = validate(avatarSchema, req.body);
+  const me = req.user!.id;
+  const user = avatar
+    ? await prisma.user.update({ where: { id: me }, data: { avatarUpdatedAt: new Date(), avatar: { upsert: { create: { data: avatar }, update: { data: avatar } } } } })
+    : await prisma.user.update({ where: { id: me }, data: { avatarUpdatedAt: null, avatar: { delete: (await prisma.userAvatar.count({ where: { userId: me } })) > 0 } } });
   res.json({ user: toUserDto(user) });
 });
 

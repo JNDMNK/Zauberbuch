@@ -28,6 +28,11 @@ model User {
    */
   activeStoryId           String?
   activeStory             Story?            @relation("ActiveStory", fields: [activeStoryId], references: [id], onDelete: SetNull)
+  /**
+   * Profilbild: Zeitpunkt der letzten Änderung (null = kein Bild); das Bild selbst liegt in UserAvatar
+   */
+  avatarUpdatedAt         DateTime?
+  avatar                  UserAvatar?
   createdAt               DateTime          @default(now())
   updatedAt               DateTime          @updatedAt
   favorites               Favorite[]
@@ -685,4 +690,12 @@ model ChatGroupMember {
 
   @@id([groupId, userId])
   @@index([userId])
+}
+
+/// Profilbild eines Benutzers (Data-URL, im Browser verkleinert) – getrennt, damit es nicht bei jeder Anfrage mitgeladen wird
+model UserAvatar {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  data      String
+  updatedAt DateTime @updatedAt
 }

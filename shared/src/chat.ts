@@ -85,6 +85,17 @@ export interface ChatStoryDto {
   myCharacters: { id: string; name: string }[];
   /** Gespeicherte Wahl „Schreiben als“ in dieser Geschichte (null = als Benutzer) */
   speakAs: string | null;
+  /** Bilder je Mitglied (inkl. mir): Profilbild und Charakter mit Porträt in dieser Geschichte */
+  people: Record<string, { avatarUrl: string | null; characterId: string | null }>;
 }
 
 export const chatSpeakAsSchema = z.object({ characterId: z.string().min(1).max(64).nullable() });
+
+/** Profilbild setzen (Data-URL, im Browser verkleinert) oder entfernen (null) */
+export const avatarSchema = z.object({
+  avatar: z
+    .string()
+    .max(400_000)
+    .regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/, 'avatar_invalid')
+    .nullable(),
+});
