@@ -30,8 +30,8 @@ Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutze
   und Modifikator direkt aus dem Charakterbogen; Ergebnis, Verlauf und „In den Chat“ (als dieser Charakter) tragen die
   Bezeichnung mit.
 - ⚡ **Live-Aktualisierung**: Infotafel, Chat, Glocke und Kampf erscheinen bei allen sofort, ohne Neuladen
-- 💬 **Chat** je Geschichte: private Zweiergespräche (Spieler ↔ DM, Spieler ↔ Spieler) über die Sprechblase in der
-  Kopfzeile – als Charakter schreiben, Würfe teilen, Nachrichten bearbeiten/löschen, Zähler für Ungelesenes
+- 💬 **Chat** je Geschichte: private Zweiergespräche (Spieler ↔ DM, Spieler ↔ Spieler) und selbst erstellte Gruppen
+  (nur für ihre Mitglieder sichtbar) über die Sprechblase in der Kopfzeile – als Charakter schreiben, Würfe teilen, Nachrichten bearbeiten/löschen, Zähler für Ungelesenes
 - 🧭 **Geschichten-Ansicht**: per Umschalter in der Kopfzeile führen Charakterbogen, Infotafel und Kampf direkt
   zur gewählten Geschichte
 - 🔒 Ohne Anmeldung keine Daten – die Startseite ist der Login, es gibt keine Selbstregistrierung
@@ -533,8 +533,14 @@ Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Grupp
   ein roter Zähler zeigt ungelesene Nachrichten.
 - Chats gehören immer zu einer **Geschichte**: Oben wählt man die Geschichte (voreingestellt die aktive), darunter
   stehen alle anderen Mitglieder – zuletzt aktive Gespräche zuerst.
-- Gespräche sind **privat zu zweit** (Spieler ↔ DM, Spieler ↔ Spieler). Niemand sonst liest mit – auch der DM sieht
-  Gespräche zwischen Spielern nicht.
+- **Direktnachrichten** sind privat zu zweit (Spieler ↔ DM, Spieler ↔ Spieler). Niemand sonst liest mit – auch der DM
+  sieht Gespräche zwischen Spielern nicht.
+- **Gruppen:** Jedes Mitglied einer Geschichte kann über „Neue Gruppe“ eine Gruppe mit Namen anlegen und andere
+  Mitglieder der Geschichte (auch den DM) hinzufügen. Eine Gruppe und ihren Verlauf sehen **nur ihre Mitglieder** –
+  DM und Admin nur, wenn sie hinzugefügt wurden. Wer die Gruppe erstellt hat, ändert über ⚙ Name und Mitglieder oder
+  löscht sie samt Verlauf; alle anderen sehen dort die Mitglieder und können die Gruppe verlassen. Verlässt der
+  Ersteller die Gruppe, übernimmt das am längsten dabei befindliche Mitglied die Verwaltung. Entfernte Mitglieder
+  sehen die Gruppe danach nicht mehr. In Gruppen steht über jeder Nachricht, wer (bzw. welcher Charakter) schreibt.
 - **Als Charakter schreiben:** Wer eigene Charaktere in der Geschichte hat, wählt „Schreiben als“; die Nachricht
   zeigt dann Namen und Porträt des Charakters. Im Charakterbogen öffnet die Sprechblase den Chat direkt als dieser
   Charakter.
@@ -957,6 +963,9 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET /api/chat/unread` | angemeldet | Ungelesene Chat-Nachrichten (`{ total, byStory }`) |
 | `GET /api/chat/stories/:storyId` · `GET …/portraits` | Mitglied der Geschichte | Gesprächspartner mit letzter Nachricht/Ungelesenen, eigene Charaktere; Charakterporträts |
 | `GET`/`POST /api/chat/stories/:storyId/with/:userId` | Mitglied (nur die beiden Beteiligten) | Verlauf (`?since=ISO` für Änderungen, markiert als gelesen) bzw. senden (`{ body, characterId?, dice? }`) |
+| `POST /api/chat/stories/:storyId/groups` | Mitglied der Geschichte | Gruppe anlegen (`{ name, memberIds }`, Ersteller ist automatisch dabei) |
+| `PUT`/`DELETE /api/chat/groups/:id` · `POST …/leave` | Ersteller (verwaltet) / Gruppenmitglied | Name/Mitglieder ändern bzw. löschen; verlassen |
+| `GET`/`POST /api/chat/groups/:id/messages` | Gruppenmitglied | Verlauf (`?since=ISO`, markiert als gelesen) bzw. senden (`{ body, characterId?, dice? }`) |
 | `PUT`/`DELETE /api/chat/messages/:id` | Absender | Eigene Nachricht bearbeiten (`{ body }`) bzw. löschen |
 | `PUT /api/characters/:id/milestone` | DM der Geschichte | Meilenstein-Aufstieg freigeben (`{ level }` bzw. `{ level: null }`) |
 | `GET /api/backup/export` · `POST /api/backup/import` | Admin | Gesamtsicherung (`{ backup, confirm: true }`) |

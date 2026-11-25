@@ -1,4 +1,4 @@
-import type { CharacterNoteDto, CharacterNoteInput, ChatMessageDto, ChatMessageInput, ChatStoryDto } from '@zauberbuch/shared';
+import type { CharacterNoteDto, CharacterNoteInput, ChatMessageDto, ChatGroupInput, ChatMessageInput, ChatStoryDto } from '@zauberbuch/shared';
 import type {
   SourceDto,
   SourceInput,
@@ -167,6 +167,13 @@ export const api = {
   chatMessages: (storyId: string, userId: string, since?: string) =>
     request<{ messages: ChatMessageDto[]; serverTime: string }>('GET', `/api/chat/stories/${storyId}/with/${userId}${since ? `?since=${encodeURIComponent(since)}` : ''}`),
   sendChat: (storyId: string, userId: string, input: ChatMessageInput) => request<{ message: ChatMessageDto }>('POST', `/api/chat/stories/${storyId}/with/${userId}`, input),
+  chatGroupMessages: (groupId: string, since?: string) =>
+    request<{ messages: ChatMessageDto[]; serverTime: string }>('GET', `/api/chat/groups/${groupId}/messages${since ? `?since=${encodeURIComponent(since)}` : ''}`),
+  sendGroupChat: (groupId: string, input: ChatMessageInput) => request<{ message: ChatMessageDto }>('POST', `/api/chat/groups/${groupId}/messages`, input),
+  createChatGroup: (storyId: string, input: ChatGroupInput) => request<{ group: { id: string } }>('POST', `/api/chat/stories/${storyId}/groups`, input),
+  updateChatGroup: (id: string, input: ChatGroupInput) => request<{ group: { id: string } }>('PUT', `/api/chat/groups/${id}`, input),
+  leaveChatGroup: (id: string) => request<void>('POST', `/api/chat/groups/${id}/leave`),
+  deleteChatGroup: (id: string) => request<void>('DELETE', `/api/chat/groups/${id}`),
   editChat: (id: string, body: string) => request<{ message: ChatMessageDto }>('PUT', `/api/chat/messages/${id}`, { body }),
   deleteChat: (id: string) => request<{ message: ChatMessageDto }>('DELETE', `/api/chat/messages/${id}`),
   characterNotes: (id: string) => request<{ notes: CharacterNoteDto[]; canWrite: boolean }>('GET', `/api/characters/${id}/notes`),

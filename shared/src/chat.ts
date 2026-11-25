@@ -29,7 +29,11 @@ export const chatEditSchema = z.object({ body: z.string().trim().min(1).max(4000
 export interface ChatMessageDto {
   id: string;
   senderId: string;
-  recipientId: string;
+  /** Benutzername des Absenders (für Gruppen) */
+  senderName: string;
+  /** Zweiergespräch: Empfänger; Gruppe: null */
+  recipientId: string | null;
+  groupId: string | null;
   /** Name des Charakters, als der gesprochen wurde ('' = als Benutzer) */
   characterId: string | null;
   characterName: string;
@@ -52,10 +56,31 @@ export interface ChatContactDto {
   last: { body: string; at: string; mine: boolean } | null;
 }
 
+/** Chatgruppe – nur für ihre Mitglieder sichtbar */
+export interface ChatGroupDto {
+  id: string;
+  name: string;
+  /** Ersteller verwaltet die Gruppe (null = Ersteller gelöscht/ausgetreten → ältestes Mitglied) */
+  createdById: string | null;
+  canManage: boolean;
+  members: { userId: string; username: string; role: StoryRole | null }[];
+  unread: number;
+  last: { body: string; at: string; mine: boolean; sender: string } | null;
+}
+
+export const chatGroupInputSchema = z.object({
+  name: z.string().trim().min(1).max(60),
+  /** weitere Mitglieder (Ersteller ist immer dabei) */
+  memberIds: z.array(z.string().min(1).max(64)).max(100).default([]),
+});
+export type ChatGroupInput = z.input<typeof chatGroupInputSchema>;
+
 export interface ChatStoryDto {
   storyId: string;
   archived: boolean;
   contacts: ChatContactDto[];
+  /** Gruppen dieser Geschichte, in denen ich Mitglied bin */
+  groups: ChatGroupDto[];
   /** Eigene Charaktere dieser Geschichte („als Charakter sprechen“) */
   myCharacters: { id: string; name: string }[];
 }

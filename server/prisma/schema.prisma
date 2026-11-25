@@ -42,6 +42,8 @@ model User {
   notifications           Notification[]
   chatSent                ChatMessage[]     @relation("ChatSender")
   chatReceived            ChatMessage[]     @relation("ChatRecipient")
+  chatGroupsCreated       ChatGroup[]       @relation("ChatGroupCreator")
+  chatGroups              ChatGroupMember[]
   characterEdits          CharacterEditor[]
   monsterTemplatesCreated MonsterTemplate[] @relation("MonsterTemplateCreator")
   monsterTemplatesUpdated MonsterTemplate[] @relation("MonsterTemplateUpdater")
@@ -200,6 +202,7 @@ model Story {
   catalogItems CatalogItem[]
   dmNotes      DmNote[]
   chatMessages ChatMessage[]
+  chatGroups   ChatGroup[]
 }
 
 /**
@@ -624,8 +627,12 @@ model ChatMessage {
   story         Story      @relation(fields: [storyId], references: [id], onDelete: Cascade)
   senderId      String
   sender        User       @relation("ChatSender", fields: [senderId], references: [id], onDelete: Cascade)
-  recipientId   String
-  recipient     User       @relation("ChatRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  /// Zweiergespräch: Empfänger; Gruppennachricht: null
+  recipientId   String?
+  recipient     User?      @relation("ChatRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  /// Gruppennachricht: Gruppe
+  groupId       String?
+  group         ChatGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
   /// „Als Charakter sprechen“ (Name zum Zeitpunkt des Schreibens)
   characterId   String?
   character     Character? @relation(fields: [characterId], references: [id], onDelete: SetNull)
@@ -643,5 +650,35 @@ model ChatMessage {
 
   @@index([storyId, senderId, recipientId, createdAt])
   @@index([recipientId, readAt])
+  @@index([groupId, createdAt])
   @@index([updatedAt])
+}
+
+/// Chatgruppe innerhalb einer Geschichte – sichtbar nur für ihre Mitglieder
+model ChatGroup {
+  id          String            @id @default(cuid())
+  storyId     String
+  story       Story             @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  name        String
+  createdById String?
+  createdBy   User?             @relation("ChatGroupCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  members     ChatGroupMember[]
+  messages    ChatMessage[]
+
+  @@index([storyId])
+}
+
+model ChatGroupMember {
+  groupId    String
+  group      ChatGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// bis hierhin gelesen (Ungelesen-Zähler)
+  lastReadAt DateTime  @default(now())
+  joinedAt   DateTime  @default(now())
+
+  @@id([groupId, userId])
+  @@index([userId])
 }

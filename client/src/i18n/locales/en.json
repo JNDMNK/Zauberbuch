@@ -414,7 +414,12 @@
     "chat_character_invalid": "This character is not available here.",
     "chat_message_not_found": "Message not found.",
     "chat_not_editable": "This message cannot be edited.",
-    "message_empty": "The message is empty."
+    "message_empty": "The message is empty.",
+    "chat_group_not_found": "Group not found.",
+    "chat_group_member_invalid": "Members must belong to the story.",
+    "chat_group_empty": "Add at least one other member.",
+    "chat_group_forbidden": "Only the group's creator can change it.",
+    "chat_group_not_member": "Only story members can create groups."
   },
   "damageType": {
     "acid": "Acid",
@@ -1710,7 +1715,7 @@
     "noMessages": "No messages yet",
     "you": "You",
     "deleted": "Message deleted",
-    "privacy": "Conversations are private: only the two of you see them – the DM does not read conversations between players.",
+    "privacy": "Conversations are private: direct messages are visible only to the two of you, groups only to their members – the DM and admin don't read along unless they are members.",
     "pickForDice": "Choose who should receive the roll {{expression}} = {{total}}.",
     "diceAttached": "Roll {{expression}} = {{total}} will be attached",
     "removeDice": "Remove roll",
@@ -1726,6 +1731,27 @@
     "archived": "This story is archived – the history is read-only.",
     "speakAs": "Write as",
     "openFromSheet": "Open this story's chat",
-    "shareDice": "Send to chat"
+    "shareDice": "Send to chat",
+    "direct": "Direct messages",
+    "characterOf": "{{name}} ({{user}})",
+    "group": {
+      "title": "Groups",
+      "new": "New group",
+      "none": "No groups yet. Create one and add fellow players.",
+      "settings": "Group",
+      "memberCount_one": "{{count}} member",
+      "memberCount_other": "{{count}} members",
+      "name": "Group name",
+      "namePlaceholder": "e.g. Thieves' guild",
+      "members": "Members",
+      "hint": "You are included automatically. Only members see the group and its history.",
+      "create": "Create group",
+      "leave": "Leave group",
+      "delete": "Delete group",
+      "confirmLeave": "Really leave the group? You won't see its history afterwards.",
+      "confirmDelete": "Delete the group and its history for everyone?",
+      "onlyCreator": "The group's creator changes its name and members.",
+      "start": "Send the first message to the group."
+    }
   }
 }

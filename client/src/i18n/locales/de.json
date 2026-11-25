@@ -414,7 +414,12 @@
     "chat_character_invalid": "Dieser Charakter steht hier nicht zur Verfügung.",
     "chat_message_not_found": "Nachricht nicht gefunden.",
     "chat_not_editable": "Diese Nachricht kann nicht bearbeitet werden.",
-    "message_empty": "Die Nachricht ist leer."
+    "message_empty": "Die Nachricht ist leer.",
+    "chat_group_not_found": "Gruppe nicht gefunden.",
+    "chat_group_member_invalid": "Mitglieder müssen zur Geschichte gehören.",
+    "chat_group_empty": "Füge mindestens ein weiteres Mitglied hinzu.",
+    "chat_group_forbidden": "Nur wer die Gruppe erstellt hat, kann sie ändern.",
+    "chat_group_not_member": "Nur Mitglieder der Geschichte können Gruppen erstellen."
   },
   "damageType": {
     "acid": "Säure",
@@ -1710,7 +1715,7 @@
     "noMessages": "Noch keine Nachrichten",
     "you": "Du",
     "deleted": "Nachricht gelöscht",
-    "privacy": "Gespräche sind privat: Nur ihr beide seht sie – auch der DM liest Gespräche zwischen Spielern nicht mit.",
+    "privacy": "Gespräche sind privat: Direktnachrichten sehen nur ihr beide, Gruppen nur ihre Mitglieder – auch DM und Admin lesen nicht mit, wenn sie nicht dabei sind.",
     "pickForDice": "Wähle, an wen der Wurf {{expression}} = {{total}} gehen soll.",
     "diceAttached": "Wurf {{expression}} = {{total}} wird mitgeschickt",
     "removeDice": "Wurf entfernen",
@@ -1726,6 +1731,27 @@
     "archived": "Die Geschichte ist archiviert – der Verlauf kann nur noch gelesen werden.",
     "speakAs": "Schreiben als",
     "openFromSheet": "Chat dieser Geschichte öffnen",
-    "shareDice": "In den Chat"
+    "shareDice": "In den Chat",
+    "direct": "Direktnachrichten",
+    "characterOf": "{{name}} ({{user}})",
+    "group": {
+      "title": "Gruppen",
+      "new": "Neue Gruppe",
+      "none": "Noch keine Gruppen. Erstelle eine und füge Mitspieler hinzu.",
+      "settings": "Gruppe",
+      "memberCount_one": "{{count}} Mitglied",
+      "memberCount_other": "{{count}} Mitglieder",
+      "name": "Name der Gruppe",
+      "namePlaceholder": "z. B. Diebesgilde",
+      "members": "Mitglieder",
+      "hint": "Du bist automatisch dabei. Nur die Mitglieder sehen die Gruppe und ihren Verlauf.",
+      "create": "Gruppe erstellen",
+      "leave": "Gruppe verlassen",
+      "delete": "Gruppe löschen",
+      "confirmLeave": "Gruppe wirklich verlassen? Du siehst den Verlauf danach nicht mehr.",
+      "confirmDelete": "Gruppe samt Verlauf für alle löschen?",
+      "onlyCreator": "Name und Mitglieder ändert, wer die Gruppe erstellt hat.",
+      "start": "Schreib die erste Nachricht an die Gruppe."
+    }
   }
 }
