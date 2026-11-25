@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, ArrowLeft, Check, Eye, MessageCircle, Printer } from 'lucide-react';
 import { useChat } from '../components/chat/Chat';
+import { printPage } from '../hooks/useLiveEvents';
 import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, characterSheetSchema, type CharacterDto, type CharacterItemsDto, type CharacterSheet, type CatalogItemDto } from '@zauberbuch/shared';
 import { api, saveCharacterKeepalive } from '../lib/api';
 import { errorMessage } from '../lib/errors';
@@ -233,7 +234,7 @@ export function CharacterSheetPage() {
               <MessageCircle className="h-5 w-5" />
             </button>
           )}
-          <button type="button" className="btn-icon" onClick={() => window.print()} title={t('characters.print')} aria-label={t('characters.print')}>
+          <button type="button" className="btn-icon" onClick={printPage} title={t('characters.print')} aria-label={t('characters.print')}>
             <Printer className="h-5 w-5" />
           </button>
         </div>

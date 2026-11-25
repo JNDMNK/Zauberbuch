@@ -22,8 +22,21 @@ let retry: number | null = null;
 
 const emit = (e: LiveEvent) => handlers.forEach((h) => h(e));
 
+let paused = false;
+let wanted = false;
+let waitingForLoad = false;
+
 function connect() {
-  if (source || typeof EventSource === 'undefined') return;
+  if (source || paused || !wanted || typeof EventSource === 'undefined') return;
+  // Erst nach dem vollständigen Laden verbinden: Safari wertet eine früh geöffnete, dauerhaft offene Verbindung
+  // sonst als „Seite lädt noch“ – und window.print() wartet dann endlos auf das Ende des Ladens.
+  if (document.readyState !== 'complete') {
+    if (!waitingForLoad) {
+      waitingForLoad = true;
+      window.addEventListener('load', () => ((waitingForLoad = false), window.setTimeout(connect, 0)), { once: true });
+    }
+    return;
+  }
   const es = new EventSource('/api/events', { withCredentials: true });
   source = es;
   es.addEventListener('ready', () => {
@@ -50,6 +63,26 @@ function connect() {
   };
 }
 
+/**
+ * Drucken: Live-Verbindung kurz trennen, damit Safari den Druckdialog sicher öffnet, und danach wieder verbinden
+ * (beim Wiederverbinden lädt alles einmal nach).
+ */
+export function printPage() {
+  const reconnect = () => {
+    if (!paused) return;
+    paused = false;
+    connect();
+  };
+  paused = true;
+  source?.close();
+  source = null;
+  window.addEventListener('afterprint', reconnect, { once: true });
+  // Sicherheitsnetz, falls ein Browser kein „afterprint“ meldet
+  window.setTimeout(reconnect, 15_000);
+  // direkt im Klick aufrufen – Safari öffnet den Dialog sonst unter Umständen nicht
+  window.print();
+}
+
 function disconnect() {
   if (retry !== null) window.clearTimeout(retry);
   retry = null;
@@ -64,8 +97,12 @@ export function LiveEventsConnection() {
   const userId = user?.id;
   useEffect(() => {
     if (!userId) return;
+    wanted = true;
     connect();
-    return disconnect;
+    return () => {
+      wanted = false;
+      disconnect();
+    };
   }, [userId]);
   return null;
 }
