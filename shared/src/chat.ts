@@ -83,4 +83,8 @@ export interface ChatStoryDto {
   groups: ChatGroupDto[];
   /** Eigene Charaktere dieser Geschichte („als Charakter sprechen“) */
   myCharacters: { id: string; name: string }[];
+  /** Gespeicherte Wahl „Schreiben als“ in dieser Geschichte (null = als Benutzer) */
+  speakAs: string | null;
 }
+
+export const chatSpeakAsSchema = z.object({ characterId: z.string().min(1).max(64).nullable() });

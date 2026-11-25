@@ -209,15 +209,19 @@ model Story {
  * Mitspieler einer Geschichte (Admin und Dungeon Master sehen alle Geschichten)
  */
 model StoryMember {
-  storyId   String
-  userId    String
+  storyId         String
+  userId          String
   /**
    * Rolle in dieser Geschichte: player | dm (steuert Infotafel und Kampf)
    */
-  role      String   @default("player")
-  createdAt DateTime @default(now())
-  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role            String   @default("player")
+  /**
+   * Chat: zuletzt gewählter Charakter für „Schreiben als“ (null = als Benutzer)
+   */
+  chatCharacterId String?
+  createdAt       DateTime @default(now())
+  story           Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([storyId, userId])
   @@index([userId])

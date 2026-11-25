@@ -58,4 +58,31 @@ describe('Chat je Geschichte', () => {
     expect((await frodo.agent.post(url(dm.user.id)).set(CSRF).send({ body: 'Hallo?' })).status).toBe(403);
     expect((await frodo.agent.get(url(dm.user.id))).status).toBe(200);
   });
+
+  it('merkt „Schreiben als“ je Geschichte, nur mit eigenen Charakteren dieser Geschichte', async () => {
+    const admin = await loginAs('admin', 'admin-password');
+    const frodo = await createUser('frodo');
+    const sam = await createUser('sam');
+    const mk = async (name: string) => (await admin.post('/api/stories').set(CSRF).send({ name, members: [{ userId: frodo.user.id, role: 'player' }, { userId: sam.user.id, role: 'player' }] })).body.story;
+    const a = await mk('Ringkrieg');
+    const b = await mk('Hobbingen');
+    const charA = (await frodo.agent.post('/api/characters').set(CSRF).send({ name: 'Frodo', storyId: a.id })).body.character;
+    const charB = (await frodo.agent.post('/api/characters').set(CSRF).send({ name: 'Herr Beutlin', storyId: b.id })).body.character;
+    const samChar = (await sam.agent.post('/api/characters').set(CSRF).send({ name: 'Sam', storyId: a.id })).body.character;
+    const speakAs = async (storyId: string) => (await frodo.agent.get(`/api/chat/stories/${storyId}`)).body.speakAs;
+    const put = (storyId: string, characterId: string | null) => frodo.agent.put(`/api/chat/stories/${storyId}/speak-as`).set(CSRF).send({ characterId });
+
+    expect(await speakAs(a.id)).toBeNull();
+    expect((await put(a.id, charA.id)).status).toBe(200);
+    expect(await speakAs(a.id)).toBe(charA.id);
+    expect(await speakAs(b.id)).toBeNull(); // je Geschichte getrennt
+    expect((await put(b.id, charA.id)).status).toBe(400); // Charakter einer anderen Geschichte
+    expect((await put(a.id, samChar.id)).status).toBe(400); // fremder Charakter
+    expect((await put(b.id, charB.id)).status).toBe(200);
+    expect([await speakAs(a.id), await speakAs(b.id)]).toEqual([charA.id, charB.id]);
+    // Charakter wechselt die Geschichte → gespeicherte Wahl gilt dort nicht mehr
+    await frodo.agent.put(`/api/characters/${charA.id}/settings`).set(CSRF).send({ storyId: b.id, editorIds: [] });
+    expect(await speakAs(a.id)).toBeNull();
+    expect((await put(a.id, null)).status).toBe(200);
+  });
 });

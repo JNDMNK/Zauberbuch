@@ -111,7 +111,9 @@ function ChatPanel({ start, onClose }: { start: { storyId: string | null; charac
   const [view, setView] = useState<View>({ mode: 'list' });
   const [portraits, setPortraits] = useState<Record<string, string>>({});
   const [pendingDice, setPendingDice] = useState<ChatDice | null>(start.dice);
-  const [asCharacter, setAsCharacter] = useState<string>(start.characterId ?? '');
+  // „Schreiben als“: je Geschichte auf dem Server gemerkt; gilt, bis man es selbst ändert
+  const [asCharacter, setAsCharacter] = useState('');
+  const appliedFor = useRef<string | null>(null);
   const [error, setError] = useState<unknown>(null);
 
   // Ohne Vorgabe: aktive Geschichte, sonst die erste
@@ -138,6 +140,22 @@ function ChatPanel({ start, onClose }: { start: { storyId: string | null; charac
   useEffect(() => {
     if (data && asCharacter && !data.myCharacters.some((c) => c.id === asCharacter)) setAsCharacter('');
   }, [data, asCharacter]);
+  const chooseAs = useCallback(
+    (characterId: string) => {
+      setAsCharacter(characterId);
+      api.chatSpeakAs(storyId, characterId || null).catch(() => undefined);
+    },
+    [storyId],
+  );
+  // Beim ersten Laden einer Geschichte: gespeicherte Wahl übernehmen. Wurde der Chat ausdrücklich als ein Charakter
+  // geöffnet (Charakterbogen, Würfelbecher), gilt dieser – und wird ebenfalls gemerkt.
+  useEffect(() => {
+    if (!data || appliedFor.current === data.storyId) return;
+    appliedFor.current = data.storyId;
+    const explicit = start.characterId && data.myCharacters.some((c) => c.id === start.characterId) ? start.characterId : null;
+    if (explicit && explicit !== data.speakAs) chooseAs(explicit);
+    else setAsCharacter(explicit ?? data.speakAs ?? '');
+  }, [data, start.characterId, chooseAs]);
   // Aus einer Gruppe entfernt oder Gruppe gelöscht → zurück zur Übersicht
   useEffect(() => {
     if (!data) return;
@@ -236,7 +254,7 @@ function ChatPanel({ start, onClose }: { start: { storyId: string | null; charac
               data={data}
               portraits={portraits}
               asCharacter={asCharacter}
-              setAsCharacter={setAsCharacter}
+              setAsCharacter={chooseAs}
               pendingDice={pendingDice}
               clearDice={() => setPendingDice(null)}
               onRead={chat.refreshUnread}

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type { ChatMessage } from '@prisma/client';
-import { chatDiceSchema, chatEditSchema, chatGroupInputSchema, chatMessageInputSchema, type ChatContactDto, type ChatGroupDto, type ChatMessageDto, type ChatStoryDto } from '@zauberbuch/shared';
+import { chatDiceSchema, chatEditSchema, chatGroupInputSchema, chatMessageInputSchema, chatSpeakAsSchema, type ChatContactDto, type ChatGroupDto, type ChatMessageDto, type ChatStoryDto } from '@zauberbuch/shared';
 import { prisma } from '../lib/prisma';
 import { validate } from '../lib/validate';
 import { badRequest, forbidden, notFound } from '../lib/errors';
@@ -152,8 +152,24 @@ chatRouter.get('/stories/:storyId', async (req, res) => {
     }),
   );
   groupDtos.sort((a, b) => (b.last?.at ?? '').localeCompare(a.last?.at ?? '') || a.name.localeCompare(b.name));
-  const body: ChatStoryDto = { storyId: story.id, archived: story.archived, contacts, groups: groupDtos, myCharacters: characters.map((c) => ({ id: c.id, name: c.name || '—' })) };
+  // Gespeicherte Wahl nur, wenn der Charakter noch mir gehört und in dieser Geschichte ist
+  const saved = story.members.find((m) => m.userId === me.id)?.chatCharacterId ?? null;
+  const speakAs = saved && characters.some((c) => c.id === saved) ? saved : null;
+  const body: ChatStoryDto = { storyId: story.id, archived: story.archived, contacts, groups: groupDtos, myCharacters: characters.map((c) => ({ id: c.id, name: c.name || '—' })), speakAs };
   res.json(body);
+});
+
+/** „Schreiben als“ für diese Geschichte merken (nur eigene Charaktere der Geschichte, null = als Benutzer) */
+chatRouter.put('/stories/:storyId/speak-as', async (req, res) => {
+  const me = req.user!;
+  const story = await loadStory(me, String(req.params.storyId));
+  const { characterId } = validate(chatSpeakAsSchema, req.body);
+  if (characterId && !(await prisma.character.findFirst({ where: { id: characterId, userId: me.id, storyId: story.id }, select: { id: true } }))) {
+    throw badRequest('chat_character_invalid', 'Character not available');
+  }
+  // Nur Mitglieder haben einen Eintrag (wer eigene Charaktere in der Geschichte hat, ist Mitglied)
+  await prisma.storyMember.updateMany({ where: { storyId: story.id, userId: me.id }, data: { chatCharacterId: characterId } });
+  res.json({ speakAs: characterId });
 });
 
 /** Porträts der Charaktere einer Geschichte (einmal beim Öffnen; für Nachrichten „als Charakter“) */

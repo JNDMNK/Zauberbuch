@@ -542,8 +542,10 @@ Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Grupp
   Ersteller die Gruppe, übernimmt das am längsten dabei befindliche Mitglied die Verwaltung. Entfernte Mitglieder
   sehen die Gruppe danach nicht mehr. In Gruppen steht über jeder Nachricht, wer (bzw. welcher Charakter) schreibt.
 - **Als Charakter schreiben:** Wer eigene Charaktere in der Geschichte hat, wählt „Schreiben als“; die Nachricht
-  zeigt dann Namen und Porträt des Charakters. Im Charakterbogen öffnet die Sprechblase den Chat direkt als dieser
-  Charakter.
+  zeigt dann Namen und Porträt des Charakters. Die Wahl wird **je Geschichte gespeichert** (auf dem Server, also auch
+  auf anderen Geräten) und gilt für alle Gespräche dieser Geschichte, bis man sie selbst ändert. Angeboten werden nur
+  eigene Charaktere dieser Geschichte; wechselt ein Charakter die Geschichte, gilt die Wahl dort nicht mehr. Im
+  Charakterbogen öffnet die Sprechblase den Chat direkt als dieser Charakter (und merkt ihn ebenso).
 - **Würfe teilen:** Im Würfelbecher schickt „In den Chat“ das Ergebnis (Ausdruck, Summe, Einzelwürfe) an einen
   wählbaren Gesprächspartner, optional mit Kommentar.
 - Eigene Nachrichten lassen sich **bearbeiten** (Text) und **löschen** („Nachricht gelöscht“ bleibt im Verlauf);
@@ -961,7 +963,8 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET/POST /api/characters/:id/notes` · `PUT/DELETE …/notes/:noteId` | Besitzer/Mitbearbeiter (DM: freigegebene lesen) | Persönliche Notizen |
 | `GET /api/events` | angemeldet | Live-Aktualisierung (Server-Sent Events): Ereignis `change` mit `{ type: board \| chat \| combat, storyId }` bzw. `{ type: notifications }` |
 | `GET /api/chat/unread` | angemeldet | Ungelesene Chat-Nachrichten (`{ total, byStory }`) |
-| `GET /api/chat/stories/:storyId` · `GET …/portraits` | Mitglied der Geschichte | Gesprächspartner mit letzter Nachricht/Ungelesenen, eigene Charaktere; Charakterporträts |
+| `GET /api/chat/stories/:storyId` · `GET …/portraits` | Mitglied der Geschichte | Gesprächspartner mit letzter Nachricht/Ungelesenen, eigene Charaktere, gespeicherte Wahl `speakAs`; Charakterporträts |
+| `PUT /api/chat/stories/:storyId/speak-as` | Mitglied der Geschichte | „Schreiben als“ merken (`{ characterId }`, `null` = als Benutzer) |
 | `GET`/`POST /api/chat/stories/:storyId/with/:userId` | Mitglied (nur die beiden Beteiligten) | Verlauf (`?since=ISO` für Änderungen, markiert als gelesen) bzw. senden (`{ body, characterId?, dice? }`) |
 | `POST /api/chat/stories/:storyId/groups` | Mitglied der Geschichte | Gruppe anlegen (`{ name, memberIds }`, Ersteller ist automatisch dabei) |
 | `PUT`/`DELETE /api/chat/groups/:id` · `POST …/leave` | Ersteller (verwaltet) / Gruppenmitglied | Name/Mitglieder ändern bzw. löschen; verlassen |
