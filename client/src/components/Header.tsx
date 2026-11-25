@@ -11,6 +11,7 @@ import { useCombatActive } from '../hooks/useCombatActive';
 import { StorySwitcher } from './StorySwitcher';
 import { NotificationBell } from './NotificationBell';
 import { DiceRoller } from './DiceRoller';
+import { ChatButton } from './chat/Chat';
 
 function LanguageSwitch() {
   const { t } = useTranslation();
@@ -257,9 +258,15 @@ export function Header() {
         <nav className="ml-4 hidden items-center gap-1 lg:flex">{desktopLinks}</nav>
         <div className="ml-auto flex items-center gap-1.5">
           {user && <StorySwitcher />}
-          <LanguageSwitch />
+          {/* Auf schmalen Handys: Sprache und Design im Menü */}
+          <span className={user ? 'hidden sm:contents' : 'contents'}>
+            <LanguageSwitch />
+          </span>
           {user && <DiceRoller />}
-          <ThemeToggle />
+          {user && <ChatButton />}
+          <span className={user ? 'hidden sm:contents' : 'contents'}>
+            <ThemeToggle />
+          </span>
           {user && <NotificationBell />}
           <UserMenu />
           {user && (
@@ -270,7 +277,13 @@ export function Header() {
           )}
         </div>
       </div>
-      {mobileOpen && user && <nav className="flex flex-col gap-1 border-t border-parchment-400/60 px-4 py-3 lg:hidden dark:border-night-700">{mobileLinks}</nav>}
+      {mobileOpen && user && <nav className="flex flex-col gap-1 border-t border-parchment-400/60 px-4 py-3 lg:hidden dark:border-night-700">
+          {mobileLinks}
+          <div className="mt-1 flex items-center gap-2 border-t border-parchment-400/60 pt-2 sm:hidden dark:border-night-700">
+            <LanguageSwitch />
+            <ThemeToggle />
+          </div>
+        </nav>}
     </header>
   );
 }

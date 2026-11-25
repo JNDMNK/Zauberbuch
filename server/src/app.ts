@@ -28,6 +28,7 @@ import { dmNotesRouter } from './routes/dmnotes';
 import { wikiRouter } from './routes/wiki';
 import { sourcesRouter } from './routes/sources';
 import { backupRouter } from './routes/backup';
+import { chatRouter } from './routes/chat';
 
 const LARGE_BODY_PATHS = new Set(['/api/characters/import', '/api/characters/import/preview', '/api/backup/import']);
 
@@ -114,6 +115,7 @@ export function createApp(options: { accessLog?: boolean } = {}) {
   api.use('/dm-notes', dmNotesRouter);
   api.use('/wiki', wikiRouter);
   api.use('/backup', backupRouter);
+  api.use('/chat', chatRouter);
   api.use('/sources', sourcesRouter);
 
   api.use((_req, _res, next) => next(new HttpError(404, 'not_found', 'API route not found')));

@@ -25,6 +25,8 @@ Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutze
   beliebiger Anzahl, Modifikator, Vorteil/Nachteil für den W20 (verworfener Wurf durchgestrichen), Einzelwerte und
   Summe, Hinweis bei natürlicher 20 bzw. 1 und ein Verlauf der letzten 20 Würfe (Klick würfelt erneut; nur in diesem
   Browser gespeichert). Gewürfelt wird mit kryptografisch sicherem Zufall.
+- 💬 **Chat** je Geschichte: private Zweiergespräche (Spieler ↔ DM, Spieler ↔ Spieler) über die Sprechblase in der
+  Kopfzeile – als Charakter schreiben, Würfe teilen, Nachrichten bearbeiten/löschen, Zähler für Ungelesenes
 - 🧭 **Geschichten-Ansicht**: per Umschalter in der Kopfzeile führen Charakterbogen, Infotafel und Kampf direkt
   zur gewählten Geschichte
 - 🔒 Ohne Anmeldung keine Daten – die Startseite ist der Login, es gibt keine Selbstregistrierung
@@ -516,6 +518,25 @@ Lore. Jede **Geschichte** (Kampagne) hat ihre eigene Tafel, sodass mehrere Grupp
   löschen und durchsuchen. Jeder Abschnitt zeigt, wann und von wem er zuletzt geändert wurde; mehrere DMs einer
   Geschichte teilen sich die Notizen.
 
+### Chat
+
+- Die **Sprechblase** oben in der Kopfzeile öffnet den Chat (rechts als Seitenleiste, auf dem Handy bildschirmfüllend);
+  ein roter Zähler zeigt ungelesene Nachrichten.
+- Chats gehören immer zu einer **Geschichte**: Oben wählt man die Geschichte (voreingestellt die aktive), darunter
+  stehen alle anderen Mitglieder – zuletzt aktive Gespräche zuerst.
+- Gespräche sind **privat zu zweit** (Spieler ↔ DM, Spieler ↔ Spieler). Niemand sonst liest mit – auch der DM sieht
+  Gespräche zwischen Spielern nicht.
+- **Als Charakter schreiben:** Wer eigene Charaktere in der Geschichte hat, wählt „Schreiben als“; die Nachricht
+  zeigt dann Namen und Porträt des Charakters. Im Charakterbogen öffnet die Sprechblase den Chat direkt als dieser
+  Charakter.
+- **Würfe teilen:** Im Würfelbecher schickt „In den Chat“ das Ergebnis (Ausdruck, Summe, Einzelwürfe) an einen
+  wählbaren Gesprächspartner, optional mit Kommentar.
+- Eigene Nachrichten lassen sich **bearbeiten** (Text) und **löschen** („Nachricht gelöscht“ bleibt im Verlauf);
+  gelesene Nachrichten erhalten ✓✓. Enter sendet, Umschalt+Enter fügt eine Zeile ein; Formatierung und Querverweise
+  wie bei Notizen.
+- Neue Nachrichten erscheinen ohne Neuladen (Abfrage alle 3 s im offenen Gespräch). In archivierten Geschichten ist
+  der Verlauf nur lesbar. Der Chat ist in der Gesamtsicherung enthalten.
+
 ## Kampfhilfe
 
 Unter **Kampf** führt der Dungeon Master einer Geschichte Kämpfe. Jeder Kampf gehört zu einer **Geschichte**; deren
@@ -883,6 +904,10 @@ Alle Endpunkte liegen unter `/api` und sprechen JSON. Bis auf `/api/health`, `/a
 | `GET`/`POST /api/bestiary/stories/:storyId` · `PUT`/`DELETE /api/bestiary/entries/:id` | Mitspieler (DM/Admin nur `GET`) | Spieler-Datenbank je Geschichte |
 | `GET /api/combat/encounters/:id/candidates` | DM der Geschichte | Charakterbögen für „Spieler hinzufügen“ |
 | `GET/POST /api/characters/:id/notes` · `PUT/DELETE …/notes/:noteId` | Besitzer/Mitbearbeiter (DM: freigegebene lesen) | Persönliche Notizen |
+| `GET /api/chat/unread` | angemeldet | Ungelesene Chat-Nachrichten (`{ total, byStory }`) |
+| `GET /api/chat/stories/:storyId` · `GET …/portraits` | Mitglied der Geschichte | Gesprächspartner mit letzter Nachricht/Ungelesenen, eigene Charaktere; Charakterporträts |
+| `GET`/`POST /api/chat/stories/:storyId/with/:userId` | Mitglied (nur die beiden Beteiligten) | Verlauf (`?since=ISO` für Änderungen, markiert als gelesen) bzw. senden (`{ body, characterId?, dice? }`) |
+| `PUT`/`DELETE /api/chat/messages/:id` | Absender | Eigene Nachricht bearbeiten (`{ body }`) bzw. löschen |
 | `PUT /api/characters/:id/milestone` | DM der Geschichte | Meilenstein-Aufstieg freigeben (`{ level }` bzw. `{ level: null }`) |
 | `GET /api/backup/export` · `POST /api/backup/import` | Admin | Gesamtsicherung (`{ backup, confirm: true }`) |
 | `GET /api/sources` · `POST /api/sources` · `PUT`/`DELETE /api/sources/:id` | lesen: angemeldet; schreiben: Moderator/Admin | Quellen (`{ name, abbreviation? }`) |

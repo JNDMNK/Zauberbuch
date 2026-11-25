@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Dices, History, Minus, Plus, RotateCcw, Trash2 } from 'lucide-react';
+import { Dices, History, MessageCircle, Minus, Plus, RotateCcw, Trash2 } from 'lucide-react';
+import { useChat } from './chat/Chat';
 import { Modal } from './Modal';
 
 /** Würfel in D&D */
@@ -106,6 +107,7 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
   const [rolling, setRolling] = useState<RolledDie[] | null>(null);
   const [history, setHistory] = useState<RollResult[]>(loadHistory);
   const timer = useRef<number | null>(null);
+  const chat = useChat();
   useEffect(() => () => void (timer.current && window.clearInterval(timer.current)), []);
 
   const count = DICE.reduce((n, d) => n + pool[d], 0);
@@ -294,6 +296,19 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
             </div>
             {!rolling && result?.dice.some((x) => x.sides === 20 && x.value === 20) && <p className="mt-2 text-sm font-semibold text-emerald-800 dark:text-emerald-300">{t('dice.natural20')}</p>}
             {!rolling && result?.dice.some((x) => x.sides === 20 && x.value === 1) && <p className="mt-2 text-sm font-semibold text-red-800 dark:text-red-300">{t('dice.natural1')}</p>}
+            {!rolling && result && chat && (
+              <button
+                type="button"
+                className="btn-secondary mt-3 !py-1 text-sm"
+                onClick={() => {
+                  chat.shareDice({ expression: result.expression, total: result.total, modifier: result.modifier, mode: result.mode, dice: result.dice });
+                  onClose();
+                }}
+              >
+                <MessageCircle className="h-4 w-4" />
+                {t('chat.shareDice')}
+              </button>
+            )}
           </div>
         )}
 

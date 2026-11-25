@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, ArrowLeft, Check, Eye, Printer } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Check, Eye, MessageCircle, Printer } from 'lucide-react';
+import { useChat } from '../components/chat/Chat';
 import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, characterSheetSchema, type CharacterDto, type CharacterItemsDto, type CharacterSheet, type CatalogItemDto } from '@zauberbuch/shared';
 import { api, saveCharacterKeepalive } from '../lib/api';
 import { errorMessage } from '../lib/errors';
@@ -94,6 +95,7 @@ export function CharacterSheetPage() {
   }, []);
 
   const canEdit = Boolean(character?.canEdit);
+  const chat = useChat();
   const navTabs: readonly Tab[] = character?.canManageSettings ? [...TABS, 'notes', 'settings'] : [...TABS, 'notes'];
   const tab: Tab = (navTabs as readonly string[]).includes(requestedTab) ? (requestedTab as Tab) : 'main';
 
@@ -226,6 +228,11 @@ export function CharacterSheetPage() {
             </span>
           )}
           {!canEdit && <MilestoneControl />}
+          {chat && character.story && (
+            <button type="button" className="btn-icon" onClick={() => chat.openChat({ storyId: character.story!.id, characterId: character.isOwner ? character.id : null })} title={t('chat.openFromSheet')} aria-label={t('chat.openFromSheet')}>
+              <MessageCircle className="h-5 w-5" />
+            </button>
+          )}
           <button type="button" className="btn-icon" onClick={() => window.print()} title={t('characters.print')} aria-label={t('characters.print')}>
             <Printer className="h-5 w-5" />
           </button>

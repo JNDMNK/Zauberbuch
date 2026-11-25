@@ -408,7 +408,13 @@
     "milestone_invalid": "Die Stufe muss über der aktuellen Stufe liegen.",
     "note_empty": "Die Notiz braucht einen Titel oder Text.",
     "note_not_found": "Notiz nicht gefunden.",
-    "too_many_notes": "Zu viele Notizen für diesen Charakter (max. 500)."
+    "too_many_notes": "Zu viele Notizen für diesen Charakter (max. 500).",
+    "chat_partner_not_found": "Dieses Mitglied gehört nicht zur Geschichte.",
+    "chat_self": "Du kannst dir nicht selbst schreiben.",
+    "chat_character_invalid": "Dieser Charakter steht hier nicht zur Verfügung.",
+    "chat_message_not_found": "Nachricht nicht gefunden.",
+    "chat_not_editable": "Diese Nachricht kann nicht bearbeitet werden.",
+    "message_empty": "Die Nachricht ist leer."
   },
   "damageType": {
     "acid": "Säure",
@@ -1676,5 +1682,34 @@
     "deleted": "Notiz gelöscht",
     "deleteTitle": "Notiz löschen?",
     "deleteText": "„{{title}}“ wird endgültig gelöscht."
+  },
+  "chat": {
+    "title": "Chat",
+    "unread_one": "Chat – {{count}} ungelesene Nachricht",
+    "unread_other": "Chat – {{count}} ungelesene Nachrichten",
+    "back": "Zurück zur Übersicht",
+    "story": "Geschichte",
+    "noStories": "Du bist noch in keiner Geschichte. Chats gehören immer zu einer Geschichte.",
+    "noContacts": "In dieser Geschichte gibt es noch keine weiteren Mitglieder.",
+    "noMessages": "Noch keine Nachrichten",
+    "you": "Du",
+    "deleted": "Nachricht gelöscht",
+    "privacy": "Gespräche sind privat: Nur ihr beide seht sie – auch der DM liest Gespräche zwischen Spielern nicht mit.",
+    "pickForDice": "Wähle, an wen der Wurf {{expression}} = {{total}} gehen soll.",
+    "diceAttached": "Wurf {{expression}} = {{total}} wird mitgeschickt",
+    "removeDice": "Wurf entfernen",
+    "diceComment": "Kommentar zum Wurf (optional) …",
+    "placeholder": "Nachricht an {{name}} …",
+    "send": "Senden",
+    "startWith": "Schreib {{name}} die erste Nachricht.",
+    "asCharacterLabel": "als {{name}}",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "confirmDelete": "Diese Nachricht löschen?",
+    "edited": "bearbeitet",
+    "archived": "Die Geschichte ist archiviert – der Verlauf kann nur noch gelesen werden.",
+    "speakAs": "Schreiben als",
+    "openFromSheet": "Chat dieser Geschichte öffnen",
+    "shareDice": "In den Chat"
   }
 }

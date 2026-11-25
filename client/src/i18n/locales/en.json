@@ -408,7 +408,13 @@
     "milestone_invalid": "The level must be above the current level.",
     "note_empty": "The note needs a title or text.",
     "note_not_found": "Note not found.",
-    "too_many_notes": "Too many notes for this character (max 500)."
+    "too_many_notes": "Too many notes for this character (max 500).",
+    "chat_partner_not_found": "This member is not part of the story.",
+    "chat_self": "You cannot message yourself.",
+    "chat_character_invalid": "This character is not available here.",
+    "chat_message_not_found": "Message not found.",
+    "chat_not_editable": "This message cannot be edited.",
+    "message_empty": "The message is empty."
   },
   "damageType": {
     "acid": "Acid",
@@ -1676,5 +1682,34 @@
     "deleted": "Note deleted",
     "deleteTitle": "Delete note?",
     "deleteText": "“{{title}}” will be deleted permanently."
+  },
+  "chat": {
+    "title": "Chat",
+    "unread_one": "Chat – {{count}} unread message",
+    "unread_other": "Chat – {{count}} unread messages",
+    "back": "Back to overview",
+    "story": "Story",
+    "noStories": "You are not part of a story yet. Chats always belong to a story.",
+    "noContacts": "This story has no other members yet.",
+    "noMessages": "No messages yet",
+    "you": "You",
+    "deleted": "Message deleted",
+    "privacy": "Conversations are private: only the two of you see them – the DM does not read conversations between players.",
+    "pickForDice": "Choose who should receive the roll {{expression}} = {{total}}.",
+    "diceAttached": "Roll {{expression}} = {{total}} will be attached",
+    "removeDice": "Remove roll",
+    "diceComment": "Comment on the roll (optional) …",
+    "placeholder": "Message to {{name}} …",
+    "send": "Send",
+    "startWith": "Send {{name}} the first message.",
+    "asCharacterLabel": "as {{name}}",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Delete this message?",
+    "edited": "edited",
+    "archived": "This story is archived – the history is read-only.",
+    "speakAs": "Write as",
+    "openFromSheet": "Open this story's chat",
+    "shareDice": "Send to chat"
   }
 }

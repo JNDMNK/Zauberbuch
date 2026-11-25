@@ -11,3 +11,4 @@ export * from './catalog';
 export * from './dmnotes';
 export * from './wiki';
 export * from './sources';
+export * from './chat';

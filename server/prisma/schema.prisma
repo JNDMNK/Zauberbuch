@@ -39,6 +39,8 @@ model User {
   boardComments           BoardComment[]
   boardReads              BoardRead[]
   notifications           Notification[]
+  chatSent                ChatMessage[]     @relation("ChatSender")
+  chatReceived            ChatMessage[]     @relation("ChatRecipient")
   characterEdits          CharacterEditor[]
   monsterTemplatesCreated MonsterTemplate[] @relation("MonsterTemplateCreator")
   monsterTemplatesUpdated MonsterTemplate[] @relation("MonsterTemplateUpdater")
@@ -152,6 +154,7 @@ model Character {
    * Persönliche Notizen zum Charakter (privat, einzeln für den DM freigebbar)
    */
   notes      CharacterNote[]
+  chatMessages ChatMessage[]
   magicItems MagicItemHolder[]
 
   @@index([userId])
@@ -195,6 +198,7 @@ model Story {
   activeFor    User[]          @relation("ActiveStory")
   catalogItems CatalogItem[]
   dmNotes      DmNote[]
+  chatMessages ChatMessage[]
 }
 
 /**
@@ -596,4 +600,33 @@ model CharacterNote {
   updatedAt    DateTime  @updatedAt
 
   @@index([characterId])
+}
+
+/// Private Chat-Nachricht zwischen zwei Mitgliedern einer Geschichte (Spieler ↔ DM, Spieler ↔ Spieler)
+model ChatMessage {
+  id            String     @id @default(cuid())
+  storyId       String
+  story         Story      @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  senderId      String
+  sender        User       @relation("ChatSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipientId   String
+  recipient     User       @relation("ChatRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  /// „Als Charakter sprechen“ (Name zum Zeitpunkt des Schreibens)
+  characterId   String?
+  character     Character? @relation(fields: [characterId], references: [id], onDelete: SetNull)
+  characterName String     @default("")
+  /// text | dice
+  kind          String     @default("text")
+  body          String     @default("")
+  /// Würfelwurf als JSON (bei kind = dice)
+  dice          String     @default("")
+  edited        Boolean    @default(false)
+  deleted       Boolean    @default(false)
+  readAt        DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([storyId, senderId, recipientId, createdAt])
+  @@index([recipientId, readAt])
+  @@index([updatedAt])
 }
