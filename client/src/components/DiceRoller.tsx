@@ -274,6 +274,7 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
   const add = (d: Die, delta: number) => {
     setPicked(null);
     setPool((p) => ({ ...p, [d]: Math.max(0, Math.min(20, p[d] + delta)) }));
+    if (d === 20 && delta < 0 && pool[20] <= 1) setMode('normal');
   };
   const pick = (r: CharacterRoll | null, character: { id: string; name: string } | null) => {
     if (!r || !character) return setPicked(null);
@@ -285,7 +286,8 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
   };
   const clear = () => {
     setPicked(null);
-    setPool(Object.fromEntries(DICE.map((d) => [d, 0])) as Record<Die, number>);
+    // zurück zum Ausgangszustand: ein W20, damit Vorteil/Nachteil sofort wählbar bleibt
+    setPool(Object.fromEntries(DICE.map((d) => [d, d === 20 ? 1 : 0])) as Record<Die, number>);
     setModifier(0);
     setMode('normal');
   };
@@ -409,7 +411,16 @@ function DiceDialog({ onClose }: { onClose: () => void }) {
           <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('dice.mode')}>
             {(['normal', 'advantage', 'disadvantage'] as Mode[]).map((m) => (
               <label key={m} className="chip-check !py-0.5">
-                <input type="radio" name="dice-mode" checked={mode === m} disabled={pool[20] === 0 && m !== 'normal'} onChange={() => setMode(m)} />
+                <input
+                  type="radio"
+                  name="dice-mode"
+                  checked={mode === m}
+                  onChange={() => {
+                    setMode(m);
+                    // Vorteil/Nachteil gilt für den W20 – fehlt er, wird einer hinzugefügt
+                    if (m !== 'normal' && pool[20] === 0) setPool((p) => ({ ...p, 20: 1 }));
+                  }}
+                />
                 {t(`dice.${m}`)}
               </label>
             ))}
