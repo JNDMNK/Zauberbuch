@@ -9,6 +9,9 @@ export const MAX_ITEM_DESCRIPTION = 5000;
 export const magicItemSchema = z.object({
   name: z.string().trim().min(1).max(100),
   description: z.string().trim().max(MAX_ITEM_DESCRIPTION).optional().default(''),
+  /** Englische Fassung (optional) */
+  nameEn: z.string().trim().max(100).optional().default(''),
+  descriptionEn: z.string().trim().max(MAX_ITEM_DESCRIPTION).optional().default(''),
   /** Gewicht in lb (zählt zur Last der Besitzer) */
   weight: z.number().min(0).max(9999).optional().default(0),
   /** Wert als Freitext, z. B. „200 GM“ */
@@ -47,6 +50,9 @@ export interface MagicItemDto {
   id: string;
   name: string;
   description: string;
+  /** Englische Fassung ('' = nicht hinterlegt) */
+  nameEn: string;
+  descriptionEn: string;
   /** Gewicht in lb */
   weight: number;
   /** Wert, z. B. „200 GM“ (leer = unbekannt) */

@@ -1218,7 +1218,8 @@
       "gaming": "Gaming set",
       "instrument": "Musical instrument",
       "other": "Other tool"
-    }
+    },
+    "strengthShort": "Str"
   },
   "dmNotes": {
     "tab": "DM notes",
@@ -1865,5 +1866,9 @@
       "imageChange": "Change picture",
       "imageRemove": "Remove picture"
     }
+  },
+  "content": {
+    "enHint": "Empty English fields show the German version.",
+    "wikiDetailsDe": "The detail fields (traits, subclasses, equipment …) apply to both languages."
   }
 }

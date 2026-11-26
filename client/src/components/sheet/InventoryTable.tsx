@@ -5,7 +5,7 @@ import { useSheet } from './SheetContext';
 import { NF } from './fields';
 import { useState } from 'react';
 import { ExternalLink } from 'lucide-react';
-import { catalogInventoryText, type CatalogItemDto, type DamageType } from '@zauberbuch/shared';
+import { catalogInventoryText, localized, type CatalogItemDto, type DamageType } from '@zauberbuch/shared';
 import { Modal } from '../Modal';
 import { CatalogCard } from '../catalog/CatalogCard';
 import { formatDice } from '../../lib/damage';
@@ -25,7 +25,7 @@ export function InventoryTable({ listKey }: { listKey: 'inventory' | 'extraEquip
       {/* Vorschläge aus der Gegenstands-Datenbank (Name wie bei den Zaubern) */}
       <datalist id={listId}>
         {catalog.map((c) => (
-          <option key={c.id} value={c.name} label={`${c.category === 'tool' && c.toolType ? t(`catalog.toolTypes.${c.toolType}`) : t(`catalog.categoriesOne.${c.category}`)}${c.damage ? ` · ${formatDamage(c.damage)}` : ''}${c.ac ? ` · RK ${c.ac}` : ''}${c.strength ? ` · Stä ${c.strength}` : ''} · ${c.weight} lb${c.value ? ` · ${c.value}` : ''}`} />
+          <option key={c.id} value={localized(c.name, c.nameEn, i18n.language)} label={`${c.category === 'tool' && c.toolType ? t(`catalog.toolTypes.${c.toolType}`) : t(`catalog.categoriesOne.${c.category}`)}${c.damage ? ` · ${formatDamage(c.damage)}` : ''}${c.ac ? ` · ${t('combat.acShort')} ${c.ac}` : ''}${c.strength ? ` · ${t('catalog.strengthShort')} ${c.strength}` : ''} · ${c.weight} lb${c.value ? ` · ${c.value}` : ''}`} />
         ))}
       </datalist>
       <Modal open={!!openItem} title={openItem ? t(`catalog.categoriesOne.${openItem.category}`) : ''} onClose={() => setOpenRef(null)} size="max-w-md">
@@ -99,15 +99,25 @@ export function useFormatDamage() {
  * und Beschreibung als Text übernommen, das Gewicht ins Gewichtsfeld geschrieben und die Karte verknüpft.
  */
 function ItemNameField({ listKey, index, item, listId, onOpen }: { listKey: 'inventory' | 'extraEquipment'; index: number; item: SheetItem; listId: string; onOpen: (id: string) => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  /** Katalogeintrag zu einem Namen (deutsch oder englisch) */
+  const byName = (name: string) => {
+    const n = name.trim().toLocaleLowerCase('de');
+    return catalog.find((c) => c.name.toLocaleLowerCase('de') === n || (c.nameEn && c.nameEn.toLocaleLowerCase('de') === n));
+  };
   const { sheet, set, readOnly, catalog } = useSheet();
   const formatDamage = useFormatDamage();
   const linked = item.ref ? catalog.find((c) => c.id === item.ref) : null;
   // Name entspricht genau einem Eintrag, ist aber noch nicht verknüpft -> „Übernehmen“ anbieten
-  const exact = !linked && item.name.trim() ? catalog.find((c) => c.name.toLocaleLowerCase('de') === item.name.trim().toLocaleLowerCase('de')) : undefined;
+  const exact = !linked && item.name.trim() ? byName(item.name) : undefined;
 
   const update = (patch: Partial<SheetItem>) => set([listKey], sheet[listKey].map((x, i) => (i === index ? { ...x, ...patch } : x)));
-  const apply = (c: CatalogItemDto) => update({ name: catalogInventoryText(c, formatDamage), weight: c.weight, ref: c.id });
+  const apply = (c: CatalogItemDto) =>
+    update({
+      name: catalogInventoryText({ ...c, name: localized(c.name, c.nameEn, i18n.language), description: localized(c.description, c.descriptionEn, i18n.language) }, formatDamage, { ac: t('combat.acShort'), strength: t('catalog.strengthShort') }),
+      weight: c.weight,
+      ref: c.id,
+    });
 
   return (
     <div className="flex items-center gap-1">
@@ -122,7 +132,7 @@ function ItemNameField({ listKey, index, item, listId, onOpen }: { listKey: 'inv
         onChange={(e) => {
           const value = e.target.value;
           // Exakter Treffer aus der Vorschlagsliste -> übernehmen
-          const match = catalog.find((c) => c.name.toLocaleLowerCase('de') === value.trim().toLocaleLowerCase('de'));
+          const match = byName(value);
           if (match && value.length > item.name.length + 1) apply(match);
           else update({ name: value, ref: value.trim() ? item.ref : null });
         }}

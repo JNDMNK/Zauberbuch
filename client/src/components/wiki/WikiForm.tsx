@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { LangTabs } from '../LangTabs';
 import { useTranslation } from 'react-i18next';
 import { Plus, Save, Trash2 } from 'lucide-react';
 import { slotsFor } from '../../lib/levelUp';
@@ -32,6 +33,7 @@ import {
   type WikiLevelFeature,
   type WikiRaceData,
   type WikiTrait,
+  type Locale,
 } from '@zauberbuch/shared';
 import { errorMessage } from '../../lib/errors';
 import { useToast } from '../../context/ToastContext';
@@ -774,6 +776,8 @@ export function WikiForm({
   const [name, setName] = useState('');
   const [summary, setSummary] = useState('');
   const [description, setDescription] = useState('');
+  const [en, setEn] = useState({ name: '', summary: '', description: '' });
+  const [tab, setTab] = useState<Locale>('de');
   const [sourceId, setSourceId] = useState<string | null>(null);
   const [race, setRace] = useState<WikiRaceData>(() => raceDataSchema.parse({}));
   const [cls, setCls] = useState<WikiClassData>(() => classDataSchema.parse({}));
@@ -788,6 +792,8 @@ export function WikiForm({
     setName(entry?.name ?? '');
     setSummary(entry?.summary ?? '');
     setDescription(entry?.description ?? '');
+    setEn({ name: entry?.nameEn ?? '', summary: entry?.summaryEn ?? '', description: entry?.descriptionEn ?? '' });
+    setTab('de');
     setSourceId(entry?.sourceId ?? null);
     setRace(entry?.kind === 'race' ? entry.data : raceDataSchema.parse({}));
     setCls(entry?.kind === 'class' ? entry.data : classDataSchema.parse({}));
@@ -803,7 +809,7 @@ export function WikiForm({
     if (!name.trim()) return;
     setBusy(true);
     try {
-      const base = { name: name.trim(), summary: summary.trim(), description, sourceId };
+      const base = { name: name.trim(), summary: summary.trim(), description, nameEn: en.name.trim(), summaryEn: en.summary.trim(), descriptionEn: en.description, sourceId };
       await onSave(
         k === 'race'
           ? { kind: 'race', ...base, data: race }
@@ -833,22 +839,46 @@ export function WikiForm({
   return (
     <Modal open={open} title={entry ? t('wiki.edit', { name: entry.name }) : t(`wiki.new.${k}`)} onClose={onClose} size="max-w-4xl">
       <form onSubmit={submit} className="space-y-4">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
-            <label htmlFor="w-name" className="label">
-              {t('wiki.name')}
-            </label>
-            <input id="w-name" className="input" value={name} maxLength={120} required autoFocus onChange={(e) => setName(e.target.value)} />
-          </div>
-          <TextInput id="w-summary" label={t('wiki.summary')} value={summary} onChange={setSummary} max={500} placeholder={t('wiki.summaryPlaceholder')} />
-          <SourceSelect id="w-source" value={sourceId} onChange={setSourceId} />
-        </div>
-        <div>
-          <label htmlFor="w-desc" className="label">
-            {t('wiki.description')}
-          </label>
-          <MarkdownEditor id="w-desc" value={description} onChange={(v) => setDescription(v.slice(0, 10000))} rows={4} />
-        </div>
+        <LangTabs value={tab} onChange={setTab} missing={{ en: !en.name.trim() }} />
+        {tab === 'de' ? (
+          <>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="w-name" className="label">
+                  {t('wiki.name')}
+                </label>
+                <input id="w-name" className="input" value={name} maxLength={120} required autoFocus onChange={(e) => setName(e.target.value)} lang="de" />
+              </div>
+              <TextInput id="w-summary" label={t('wiki.summary')} value={summary} onChange={setSummary} max={500} placeholder={t('wiki.summaryPlaceholder')} />
+              <SourceSelect id="w-source" value={sourceId} onChange={setSourceId} />
+            </div>
+            <div>
+              <label htmlFor="w-desc" className="label">
+                {t('wiki.description')}
+              </label>
+              <MarkdownEditor id="w-desc" value={description} onChange={(v) => setDescription(v.slice(0, 10000))} rows={4} />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="w-name-en" className="label">
+                  {t('wiki.name')} (EN)
+                </label>
+                <input id="w-name-en" className="input" value={en.name} maxLength={120} onChange={(e) => setEn((x) => ({ ...x, name: e.target.value }))} placeholder={name} lang="en" />
+              </div>
+              <TextInput id="w-summary-en" label={`${t('wiki.summary')} (EN)`} value={en.summary} onChange={(v) => setEn((x) => ({ ...x, summary: v }))} max={500} placeholder={summary} />
+            </div>
+            <div>
+              <label htmlFor="w-desc-en" className="label">
+                {t('wiki.description')} (EN)
+              </label>
+              <MarkdownEditor id="w-desc-en" value={en.description} onChange={(v) => setEn((x) => ({ ...x, description: v.slice(0, 10000) }))} rows={4} />
+            </div>
+            <p className="text-xs italic text-parchment-700 dark:text-parchment-400">{t('content.wikiDetailsDe')}</p>
+          </>
+        )}
         {k === 'race' ? (
           <RaceFields d={race} set={setRace} />
         ) : k === 'class' ? (

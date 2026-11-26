@@ -17,6 +17,9 @@ export const catalogItemSchema = z
     category: z.enum(CATALOG_CATEGORIES),
     name: z.string().trim().min(1).max(100),
     description: z.string().trim().max(2000).optional().default(''),
+    /** Englische Fassung (optional) */
+    nameEn: z.string().trim().max(100).optional().default(''),
+    descriptionEn: z.string().trim().max(2000).optional().default(''),
     weight: z.number().min(0).max(99999).optional().default(0),
     /** Wert als Freitext, z. B. „5 GM“ */
     value: z.string().trim().max(40).optional().default(''),
@@ -46,6 +49,9 @@ export interface CatalogItemDto {
   category: CatalogCategory;
   name: string;
   description: string;
+  /** Englische Fassung ('' = nicht hinterlegt) */
+  nameEn: string;
+  descriptionEn: string;
   weight: number;
   /** Wert, z. B. „5 GM“ */
   value: string;
@@ -65,11 +71,16 @@ export interface CatalogItemDto {
 }
 
 /** Text für das Inventar: „Name · Schaden/RK · Beschreibung“ (max. 150 Zeichen) */
-export function catalogInventoryText(item: Pick<CatalogItemDto, 'name' | 'description' | 'ac' | 'damage'> & { strength?: number | null }, formatDamage: (d: { dice: string; type: DamageType }) => string): string {
+export function catalogInventoryText(
+  item: Pick<CatalogItemDto, 'name' | 'description' | 'ac' | 'damage'> & { strength?: number | null },
+  formatDamage: (d: { dice: string; type: DamageType }) => string,
+  /** Kürzel in der Sprache der Oberfläche */
+  labels: { ac: string; strength: string } = { ac: 'RK', strength: 'Stä' },
+): string {
   const parts = [item.name];
   if (item.damage) parts.push(formatDamage(item.damage));
-  if (item.ac) parts.push(`RK ${item.ac}`);
-  if (item.strength) parts.push(`Stä ${item.strength}`);
+  if (item.ac) parts.push(`${labels.ac} ${item.ac}`);
+  if (item.strength) parts.push(`${labels.strength} ${item.strength}`);
   if (item.description) parts.push(item.description);
   const text = parts.join(' · ');
   return text.length > 150 ? `${text.slice(0, 149)}…` : text;

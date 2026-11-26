@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { SourceDto } from '@zauberbuch/shared';
+import { useTranslation } from 'react-i18next';
+import { localized, type SourceDto } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 
 /** Quellen werden app-weit einmal geladen und geteilt; nach Änderungen in der Verwaltung neu laden */
@@ -34,6 +35,10 @@ export function useSources() {
       listeners.delete(setList);
     };
   }, []);
+  const { i18n } = useTranslation();
   const byId = (id: string | null | undefined) => (id ? (list?.find((s) => s.id === id) ?? null) : null);
-  return { sources: list ?? [], loaded: list !== null, byId };
+  /** Anzeige in der gewählten Sprache (gespeichert und verglichen wird weiterhin der deutsche Name) */
+  const label = (s: Pick<SourceDto, 'name' | 'nameEn'>) => localized(s.name, s.nameEn, i18n.language);
+  const abbr = (s: Pick<SourceDto, 'abbreviation' | 'abbreviationEn'>) => localized(s.abbreviation, s.abbreviationEn, i18n.language);
+  return { sources: list ?? [], loaded: list !== null, byId, label, abbr };
 }

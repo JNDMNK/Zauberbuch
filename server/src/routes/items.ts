@@ -42,6 +42,8 @@ function toDto(i: ItemWithHolders, visible: Set<string> | null): MagicItemDto {
     id: i.id,
     name: i.name,
     description: i.description,
+    nameEn: i.nameEn,
+    descriptionEn: i.descriptionEn,
     weight: i.weight,
     value: i.value,
     attunement: i.attunement,
@@ -143,7 +145,7 @@ itemsRouter.post('/', async (req, res) => {
   const input = validate(magicItemSchema, req.body);
   if (input.storyId) await requireStoryManage(req, input.storyId);
   else if (input.holderIds.length) throw badRequest('invalid_holder', 'storyId required for holders');
-  const item = await prisma.magicItem.create({ data: { name: input.name, description: input.description, weight: input.weight, value: input.value, attunement: input.attunement, sourceId: await validSourceId(input.sourceId) } });
+  const item = await prisma.magicItem.create({ data: { name: input.name, description: input.description, nameEn: input.nameEn, descriptionEn: input.descriptionEn, weight: input.weight, value: input.value, attunement: input.attunement, sourceId: await validSourceId(input.sourceId) } });
   const added = input.storyId ? await setStoryHolders(item.id, input.storyId, input.holderIds) : [];
   await notifyReceived(item.id, added, req.user!.username, req.user!.id);
   res.status(201).json({ item: toDto(await prisma.magicItem.findUniqueOrThrow({ where: { id: item.id }, include: itemInclude }), visible) });
@@ -156,7 +158,7 @@ itemsRouter.put('/:id', async (req, res) => {
   if (!existing) throw notFound();
   const input = validate(magicItemSchema, req.body);
   if (input.storyId) await requireStoryManage(req, input.storyId);
-  await prisma.magicItem.update({ where: { id: existing.id }, data: { name: input.name, description: input.description, weight: input.weight, value: input.value, attunement: input.attunement, sourceId: await validSourceId(input.sourceId) } });
+  await prisma.magicItem.update({ where: { id: existing.id }, data: { name: input.name, description: input.description, nameEn: input.nameEn, descriptionEn: input.descriptionEn, weight: input.weight, value: input.value, attunement: input.attunement, sourceId: await validSourceId(input.sourceId) } });
   const added = input.storyId ? await setStoryHolders(existing.id, input.storyId, input.holderIds) : [];
   await notifyReceived(existing.id, added, req.user!.username, req.user!.id);
   res.json({ item: toDto(await prisma.magicItem.findUniqueOrThrow({ where: { id: existing.id }, include: itemInclude }), visible) });

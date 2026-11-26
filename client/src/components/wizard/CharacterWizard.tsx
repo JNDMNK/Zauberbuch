@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { resolveCaster } from '../../lib/levelUp';
 import { useActiveStory } from '../../hooks/useActiveStory';
 import { useSources } from '../../hooks/useSources';
+import { useContentLabels } from '../wiki/WikiLinks';
 import { Check, ChevronLeft, ChevronRight, Dices, Minus, Plus, Wand2 } from 'lucide-react';
 import {
   ABILITIES,
@@ -18,6 +19,7 @@ import {
   type SheetItem,
   type SkillKey,
   type WikiEntryDto,
+  localized,
 } from '@zauberbuch/shared';
 import { useFormatDamage } from '../sheet/InventoryTable';
 import { matchesPlaceholder, parseEquipment } from '../../lib/startingEquipment';
@@ -56,10 +58,10 @@ const base8 = () => Object.fromEntries(ABILITIES.map((a) => [a, 8])) as Record<A
 /** Quellen einer Geschichte als Liste (Name) */
 function StorySourceList({ sources }: { sources: string[] }) {
   const { t } = useTranslation();
-  const { byId } = useSources();
+  const { byId, label } = useSources();
   return (
     <p className="text-sm text-parchment-700 dark:text-parchment-400">
-      {t('wizard.storySources', { list: sources.map((id) => (id === HOMEBREW_SOURCE ? t('storySources.homebrew') : (byId(id)?.name ?? id))).join(', ') })}
+      {t('wizard.storySources', { list: sources.map((id) => (id === HOMEBREW_SOURCE ? t('storySources.homebrew') : (byId(id) ? label(byId(id)!) : id))).join(', ') })}
     </p>
   );
 }
@@ -123,12 +125,15 @@ function Select({
  * → Zusammenfassung. Werte stammen aus dem Wiki; am Ende wird ein vollständig ausgefüllter Bogen der Stufe 1 angelegt.
  */
 export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: (id: string) => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const toast = useToast();
   const { user } = useAuth();
   const [wiki, setWiki] = useState<WikiEntryDto[] | null>(null);
   const [catalog, setCatalog] = useState<CatalogItemDto[]>([]);
   const tools = useMemo(() => catalog.filter((i) => i.category === 'tool'), [catalog]);
+  const labels = useContentLabels();
+  /** Wiki-Eintrag in der gewählten Sprache (Name, Kurzbeschreibung, Text) */
+  const L = <E extends WikiEntryDto>(e: E): E => ({ ...e, name: localized(e.name, e.nameEn, i18n.language), summary: localized(e.summary, e.summaryEn, i18n.language), description: localized(e.description, e.descriptionEn, i18n.language) });
   const [error, setError] = useState<unknown>(null);
   const [step, setStep] = useState<Step>('story');
   // Geschichte, in der der Charakter mitspielt ('' = ohne Geschichte); vorausgewählt: aktive Geschichte
@@ -263,7 +268,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
     const add = (item: CatalogItemDto | null, name: string, qty: number) => {
       const existing = items.find((x) => (item ? x.ref === item.id : !x.ref && x.name === name));
       if (existing) existing.qty += qty;
-      else items.push(item ? { name: catalogInventoryText(item, formatDamage), qty, weight: item.weight, ref: item.id } : { name: name.slice(0, 150), qty, weight: 0, ref: null });
+      else items.push(item ? { name: catalogInventoryText({ ...item, name: localized(item.name, item.nameEn, i18n.language), description: localized(item.description, item.descriptionEn, i18n.language) }, formatDamage, { ac: t('combat.acShort'), strength: t('catalog.strengthShort') }), qty, weight: item.weight, ref: item.id } : { name: name.slice(0, 150), qty, weight: 0, ref: null });
     };
     equipLines.forEach((line, li) => {
       const oi = Math.min(equipChoice[`${li}`] ?? 0, line.options.length - 1);
@@ -334,13 +339,14 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
       const sheet = buildSheet({
         name,
         playerName: user?.username ?? '',
-        race,
+        // Namen in der gewählten Sprache in den Bogen (Klassen werden später an beiden Namen erkannt)
+        race: race ? L(race) : race,
         subrace,
-        cls,
+        cls: cls ? L(cls) : cls,
         subclass,
         spellClass,
         caster: casterInfo.type ? { ability: casterInfo.ability, slots: level1Slots } : null,
-        background: bg,
+        background: bg ? L(bg) : bg,
         abilities: finalScores,
         skills: [...new Set([...bgSkills, ...classSkills])],
         languages: [...fixedLanguages, ...extraLanguages],
@@ -447,7 +453,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {races.map((r) => (
-                  <ChoiceCard key={r.id} selected={r.id === raceId} onClick={() => setRaceId(r.id)} title={r.name}>
+                  <ChoiceCard key={r.id} selected={r.id === raceId} onClick={() => setRaceId(r.id)} title={L(r).name}>
                     {[r.data.abilityIncrease, r.data.speed.split(';')[0]].filter(Boolean).join(' · ')}
                   </ChoiceCard>
                 ))}
@@ -464,7 +470,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
                   />
                 </div>
               )}
-              {race?.summary && <p className="italic">{race.summary}</p>}
+              {race && L(race).summary && <p className="italic">{L(race).summary}</p>}
             </div>
           )}
 
@@ -472,7 +478,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {classes.map((c) => (
-                  <ChoiceCard key={c.id} selected={c.id === classId} onClick={() => setClassId(c.id)} title={c.name}>
+                  <ChoiceCard key={c.id} selected={c.id === classId} onClick={() => setClassId(c.id)} title={L(c).name}>
                     {[c.data.hitDie ? t('wizard.hitDie', { die: c.data.hitDie.replace('d', 'W') }) : '', c.data.primaryAbility].filter(Boolean).join(' · ')}
                   </ChoiceCard>
                 ))}
@@ -503,7 +509,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
               ) : (
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {backgrounds.map((b) => (
-                    <ChoiceCard key={b.id} selected={b.id === bgId} onClick={() => setBgId(b.id === bgId ? '' : b.id)} title={b.name}>
+                    <ChoiceCard key={b.id} selected={b.id === bgId} onClick={() => setBgId(b.id === bgId ? '' : b.id)} title={L(b).name}>
                       {[b.data.skills, b.data.feat].filter(Boolean).join(' · ')}
                     </ChoiceCard>
                   ))}
@@ -725,7 +731,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
                         label={t('wizard.extraLanguage', { n: i + 1 })}
                         value={extraLanguages[i] ?? ''}
                         onChange={(v) => setExtraLanguages((l) => Object.assign([...l], { [i]: v }))}
-                        options={languageNames.filter((n) => !fixedLanguages.includes(n) && (extraLanguages[i] === n || !extraLanguages.includes(n))).map((n) => ({ value: n, label: n }))}
+                        options={languageNames.filter((n) => !fixedLanguages.includes(n) && (extraLanguages[i] === n || !extraLanguages.includes(n))).map((n) => ({ value: n, label: labels.language(n) }))}
                       />
                     ))}
                   </div>
@@ -815,7 +821,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
                                     .filter((c) => allowed(c.sourceId) && matchesPlaceholder(c, part.placeholder!))
                                     .map((c) => (
                                       <option key={c.id} value={c.id}>
-                                        {c.name}
+                                        {localized(c.name, c.nameEn, i18n.language)}
                                       </option>
                                     ))}
                                 </select>
@@ -857,8 +863,8 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
               <div className="grid grid-cols-1 gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
                 {[
                   [t('wizard.name'), name],
-                  [t('wizard.step.race'), race ? `${race.name}${subrace ? ` (${subrace})` : ''}` : '–'],
-                  [t('wizard.step.class'), cls ? `${cls.name}${subclass ? ` (${subclass})` : ''} 1` : '–'],
+                  [t('wizard.step.race'), race ? `${L(race).name}${subrace ? ` (${subrace})` : ''}` : '–'],
+                  [t('wizard.step.class'), cls ? `${L(cls).name}${subclass ? ` (${subclass})` : ''} 1` : '–'],
                   [t('wizard.step.background'), bg?.name ?? '–'],
                   [t('sheet.hpMax'), cls ? String(Math.max(1, (Number.parseInt((cls.data.hitDie ?? '').replace(/\D/g, ''), 10) || 8) + abilityModifier(finalScores.con))) : '–'],
                   [t('sheet.ac'), String(10 + abilityModifier(finalScores.dex))],

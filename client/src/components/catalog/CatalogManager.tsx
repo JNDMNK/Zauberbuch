@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Pencil, Plus, RotateCcw, Search, Trash2 } from 'lucide-react';
-import { CATALOG_CATEGORIES, type CatalogCategory, type CatalogItemDto, type CatalogItemInput } from '@zauberbuch/shared';
+import { CATALOG_CATEGORIES, localized, type CatalogCategory, type CatalogItemDto, type CatalogItemInput } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
 import { useToast } from '../../context/ToastContext';
@@ -32,7 +32,7 @@ export function CatalogManager({
   /** Geschichten-Ansicht: nur Einträge aus erlaubten Quellen */
   allowed?: (sourceId: string | null) => boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const toast = useToast();
   const [items, setItems] = useState<CatalogItemDto[] | null>(null);
   const [ownCategory, setCategory] = useState<CatalogCategory>('weapon');
@@ -64,9 +64,11 @@ export function CatalogManager({
           i.category === category &&
           (!allowed || allowed(i.sourceId)) &&
           matchesSource(sourceFilter, i.sourceId) &&
-          (!needle || `${i.name}\n${i.description}`.toLocaleLowerCase('de').includes(needle)),
-      ),
-    [items, category, needle, sourceFilter, allowed],
+          (!needle || `${i.name}\n${i.description}\n${i.nameEn}\n${i.descriptionEn}`.toLocaleLowerCase('de').includes(needle)),
+      )
+        // auf Englisch nach dem englischen Namen sortieren
+        .sort((a, b) => (i18n.language === 'en' ? localized(a.name, a.nameEn, 'en').localeCompare(localized(b.name, b.nameEn, 'en'), 'en') : 0)),
+    [items, category, needle, sourceFilter, allowed, i18n.language],
   );
 
   const act = async (fn: () => Promise<unknown>, msg: string) => {

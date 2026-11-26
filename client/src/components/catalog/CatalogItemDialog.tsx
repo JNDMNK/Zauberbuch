@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { LangTabs } from '../LangTabs';
 import { useTranslation } from 'react-i18next';
 import { Save } from 'lucide-react';
 import { TOOL_TYPES, type ToolType } from '@zauberbuch/shared';
-import type { CatalogCategory, CatalogItemDto, CatalogItemInput } from '@zauberbuch/shared';
+import type { CatalogCategory, CatalogItemDto, CatalogItemInput, Locale } from '@zauberbuch/shared';
 import { errorMessage } from '../../lib/errors';
 import { useToast } from '../../context/ToastContext';
 import { Modal } from '../Modal';
@@ -28,6 +29,8 @@ export function CatalogItemDialog({
   const toast = useToast();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [en, setEn] = useState({ name: '', description: '' });
+  const [tab, setTab] = useState<Locale>('de');
   const [weight, setWeight] = useState('');
   const [value, setValue] = useState('');
   const [sourceId, setSourceId] = useState<string | null>(null);
@@ -42,6 +45,8 @@ export function CatalogItemDialog({
     if (!open) return;
     setName(item?.name ?? '');
     setDescription(item?.description ?? '');
+    setEn({ name: item?.nameEn ?? '', description: item?.descriptionEn ?? '' });
+    setTab('de');
     setWeight(item?.weight ? String(item.weight).replace('.', ',') : '');
     setAc(item?.ac ?? '');
     setStrength(item?.strength ? String(item.strength) : '');
@@ -67,6 +72,8 @@ export function CatalogItemDialog({
         category,
         name: name.trim(),
         description: description.trim(),
+        nameEn: en.name.trim(),
+        descriptionEn: en.description.trim(),
         weight: parsedWeight,
         value: value.trim(),
         sourceId,
@@ -86,11 +93,17 @@ export function CatalogItemDialog({
   return (
     <Modal open={open} title={`${t(`catalog.categoriesOne.${category}`)} ${item ? t('common.edit').toLowerCase() : t('catalog.add')}`} onClose={onClose} size="max-w-lg">
       <form onSubmit={submit} className="space-y-4">
+        <LangTabs value={tab} onChange={setTab} missing={{ en: !en.name.trim() }} />
         <div>
           <label htmlFor="cat-name" className="label">
             {t('combat.monsterName')}
+            {tab === 'en' && ' (EN)'}
           </label>
-          <input id="cat-name" className="input" value={name} maxLength={100} required autoFocus onChange={(e) => setName(e.target.value)} />
+          {tab === 'de' ? (
+            <input id="cat-name" className="input" value={name} maxLength={100} required autoFocus onChange={(e) => setName(e.target.value)} lang="de" />
+          ) : (
+            <input id="cat-name" className="input" value={en.name} maxLength={100} onChange={(e) => setEn((x) => ({ ...x, name: e.target.value }))} placeholder={name} lang="en" />
+          )}
         </div>
         <div className="grid grid-cols-2 gap-3">
           {category === 'armor' && (
@@ -158,8 +171,13 @@ export function CatalogItemDialog({
         <div>
           <label htmlFor="cat-desc" className="label">
             {t('bestiary.description')}
+            {tab === 'en' && ' (EN)'}
           </label>
-          <textarea id="cat-desc" className="input min-h-[5rem]" rows={4} value={description} maxLength={2000} onChange={(e) => setDescription(e.target.value)} />
+          {tab === 'de' ? (
+            <textarea id="cat-desc" className="input min-h-[5rem]" rows={4} value={description} maxLength={2000} onChange={(e) => setDescription(e.target.value)} lang="de" />
+          ) : (
+            <textarea id="cat-desc" className="input min-h-[5rem]" rows={4} value={en.description} maxLength={2000} onChange={(e) => setEn((x) => ({ ...x, description: e.target.value }))} placeholder={description} lang="en" />
+          )}
         </div>
         <div className="flex justify-end gap-2">
           <button type="button" className="btn-secondary" onClick={onClose}>

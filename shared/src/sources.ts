@@ -4,6 +4,9 @@ import { z } from 'zod';
 export const sourceSchema = z.object({
   name: z.string().trim().min(1).max(100),
   abbreviation: z.string().trim().max(12).optional().default(''),
+  /** Englische Fassung (optional) */
+  nameEn: z.string().trim().max(100).optional().default(''),
+  abbreviationEn: z.string().trim().max(12).optional().default(''),
 });
 export type SourceInput = z.input<typeof sourceSchema>;
 
@@ -11,6 +14,8 @@ export interface SourceDto {
   id: string;
   name: string;
   abbreviation: string;
+  nameEn: string;
+  abbreviationEn: string;
   /** Verwendungen: Wiki-Einträge, Gegenstände und Zauber (über den Namen) */
   usage: { wiki: number; catalog: number; spells: number; monsters: number; magicItems: number };
 }

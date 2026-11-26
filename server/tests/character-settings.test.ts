@@ -123,7 +123,7 @@ describe('Lebensstil und tägliche Kosten', () => {
     const frodo = await createUser('frodo');
     const ch = (await frodo.agent.post('/api/characters').set(CSRF).send({ name: 'Vaelor' })).body.character;
     expect(ch.lifestyles).toHaveLength(7);
-    expect(ch.lifestyles[3]).toEqual({ name: 'Einfach', cost: '1 GM' });
+    expect(ch.lifestyles[3]).toEqual({ name: 'Einfach', nameEn: 'Modest', cost: '1 GM' });
 
     // Ohne Geschichte: Standardkosten
     let saved = await frodo.agent.put(`/api/characters/${ch.id}`).set(CSRF).send({ data: { ...ch.data, lifestyle: { name: 'Komfortabel', dailyCost: 'egal' } } });
@@ -138,21 +138,27 @@ describe('Lebensstil und tägliche Kosten', () => {
       { name: 'Palast', cost: '50 GM' },
     ];
     const upd = await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ lifestyles: custom });
-    expect(upd.body.story.lifestyles).toEqual(custom);
+    // englische Namen der Standardwerte werden ergänzt, eigene Einträge bleiben ohne
+    const withEn = [
+      { name: 'Einfach', cost: '3 GM', nameEn: 'Modest' },
+      { name: 'Komfortabel', cost: '6 GM', nameEn: 'Comfortable' },
+      { name: 'Palast', cost: '50 GM' },
+    ];
+    expect(upd.body.story.lifestyles).toEqual(withEn);
     expect((await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ lifestyles: [{ name: 'A', cost: '1' }, { name: 'a', cost: '2' }] })).status).toBe(400);
     expect((await admin.patch(`/api/stories/${story.id}`).set(CSRF).send({ lifestyles: [] })).status).toBe(400);
 
     // Export/Import der Infotafel nimmt die Tabelle mit
     const exp = (await admin.get('/api/board/export')).body;
-    expect(exp.stories[0].lifestyles).toEqual(custom);
+    expect(exp.stories[0].lifestyles).toEqual(withEn);
 
     // Bogen der Geschichte zuordnen -> deren Tabelle gilt
     await frodo.agent.put(`/api/characters/${ch.id}/settings`).set(CSRF).send({ storyId: story.id, editorIds: [] });
     const view = (await frodo.agent.get(`/api/characters/${ch.id}`)).body.character;
-    expect(view.lifestyles).toEqual(custom);
+    expect(view.lifestyles).toEqual(withEn);
     saved = await frodo.agent.put(`/api/characters/${ch.id}`).set(CSRF).send({ data: view.data });
     expect(saved.body.character.data.lifestyle.dailyCost).toBe('6 GM');
-    expect(saved.body.character.lifestyles).toEqual(custom);
+    expect(saved.body.character.lifestyles).toEqual(withEn);
     // Unbekannter Lebensstil: eingegebene Kosten bleiben
     saved = await frodo.agent.put(`/api/characters/${ch.id}`).set(CSRF).send({ data: { ...view.data, lifestyle: { name: 'Hausboot', dailyCost: '5 SM' } } });
     expect(saved.body.character.data.lifestyle).toEqual({ name: 'Hausboot', dailyCost: '5 SM' });

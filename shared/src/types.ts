@@ -155,3 +155,9 @@ export interface NotificationDto {
   createdAt: string;
   readAt: string | null;
 }
+
+/**
+ * Inhalt in der gewählten Sprache: auf Englisch die englische Fassung, falls hinterlegt – sonst die deutsche.
+ * Gespeicherte Verweise (z. B. Sprachen im Charakterbogen) nutzen weiterhin den deutschen Namen.
+ */
+export const localized = (de: string, en: string | null | undefined, lang: string) => (lang === 'en' && en?.trim() ? en : de);

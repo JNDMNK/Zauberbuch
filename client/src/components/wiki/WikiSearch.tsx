@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
-import type { CatalogItemDto, WikiEntryDto } from '@zauberbuch/shared';
+import { localized, type CatalogItemDto, type WikiEntryDto } from '@zauberbuch/shared';
 
 /** Ein Treffer der globalen Wiki-Suche: Wiki-Eintrag oder Eintrag der Gegenstands-Datenbank */
 export interface WikiHit {
@@ -40,26 +40,36 @@ function Highlight({ text, needle }: { text: string; needle: string }) {
 }
 
 /** Durchsucht Wiki-Einträge und die Gegenstands-Datenbank (Name vor Kurzbeschreibung vor Beschreibung/Werten) */
-export function searchWiki(entries: WikiEntryDto[], items: CatalogItemDto[], query: string): WikiHit[] {
+export function searchWiki(entries: WikiEntryDto[], items: CatalogItemDto[], query: string, lang = 'de'): WikiHit[] {
   const needle = norm(query.trim());
   if (needle.length < 2) return [];
   const hits: WikiHit[] = [];
-  const add = (type: WikiHit['type'], id: string, area: string, name: string, texts: string[]) => {
+  // Angezeigt wird die gewählte Sprache; gefunden wird auch über den Namen der anderen Sprache
+  const add = (type: WikiHit['type'], id: string, area: string, name: string, texts: string[], otherName = '') => {
     const n = norm(name);
     if (n.includes(needle)) return hits.push({ type, id, area, name, snippet: '', rank: n.startsWith(needle) ? 0 : 1 });
+    if (otherName && norm(otherName).includes(needle)) return hits.push({ type, id, area, name, snippet: otherName, rank: 1 });
     for (const [i, text] of texts.entries()) {
       if (text && norm(text).includes(needle)) return hits.push({ type, id, area, name, snippet: snippetAround(text, needle), rank: 2 + i });
     }
   };
+  const L = (de: string, en: string | null | undefined) => localized(de, en, lang);
   for (const e of entries)
-    add('entry', e.id, e.kind, e.name, [
-      e.summary,
-      e.description,
-      Object.values(e.data as Record<string, unknown>)
-        .filter((v) => typeof v === 'string')
-        .join(' · '),
-    ]);
-  for (const i of items) if (!i.hidden) add('item', i.id, i.category, i.name, [i.description]);
+    add(
+      'entry',
+      e.id,
+      e.kind,
+      L(e.name, e.nameEn),
+      [
+        L(e.summary, e.summaryEn),
+        L(e.description, e.descriptionEn),
+        Object.values(e.data as Record<string, unknown>)
+          .filter((v) => typeof v === 'string')
+          .join(' · '),
+      ],
+      lang === 'en' ? e.name : e.nameEn,
+    );
+  for (const i of items) if (!i.hidden) add('item', i.id, i.category, L(i.name, i.nameEn), [L(i.description, i.descriptionEn)], lang === 'en' ? i.name : i.nameEn);
   return hits.sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name, 'de'));
 }
 
@@ -83,7 +93,7 @@ export function WikiSearch({
   areaIcon: (area: string) => ReactNode;
   onPick: (hit: WikiHit) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const listId = useId();
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(false);
@@ -91,7 +101,7 @@ export function WikiSearch({
   const box = useRef<HTMLDivElement>(null);
   const needle = norm(q.trim());
 
-  const all = useMemo(() => searchWiki(entries, items, q), [entries, items, q]);
+  const all = useMemo(() => searchWiki(entries, items, q, i18n.language), [entries, items, q, i18n.language]);
   // Nach Bereich gruppiert (höchstens 8 je Bereich), die Reihenfolge der Bereiche folgt der Navigation
   const groups = useMemo(
     () =>

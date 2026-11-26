@@ -8,6 +8,7 @@ import { prisma } from '../lib/prisma';
 import { requireAdmin } from '../middleware/auth';
 import { ensureAdmin } from '../bootstrap';
 import { seedCatalog } from './catalog';
+import { backfillEnglish } from '../lib/englishSeed';
 import { backfillBackgroundFields, backfillSubclassSources, seedWiki } from './wiki';
 
 /**
@@ -127,6 +128,7 @@ backupRouter.post('/import', requireAdmin, largeJson, async (req, res) => {
   await ensureAdmin();
   await seedCatalog();
   await seedWiki();
+  await backfillEnglish();
   await backfillSubclassSources();
   await backfillBackgroundFields();
   logger.info(`Gesamt-Import durch ${req.user!.username}: ${Object.values(counts).reduce((a, b) => a + b, 0)} Datensätze, Sicherung: ${safety}`);

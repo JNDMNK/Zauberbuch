@@ -202,14 +202,17 @@ const ruleObject = z.object({
 export const ruleDataSchema = ruleObject.catch(() => ruleObject.parse({})).default({});
 export type WikiRuleData = z.output<typeof ruleDataSchema>;
 
+/** Englische Fassung (optional; leer = deutsche Fassung wird angezeigt) */
+const wikiEn = { nameEn: z.string().trim().max(120).optional().default(''), summaryEn: z.string().trim().max(500).optional().default(''), descriptionEn: z.string().max(20000).optional().default('') };
+
 export const wikiEntrySchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('race'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: raceDataSchema }),
-  z.object({ kind: z.literal('class'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: classDataSchema }),
-  z.object({ kind: z.literal('feat'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: featDataSchema }),
-  z.object({ kind: z.literal('background'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: backgroundDataSchema }),
-  z.object({ kind: z.literal('language'), name: z.string().trim().min(1).max(60), summary: text(500), description: md(), sourceId: sourceIdSchema, data: languageDataSchema }),
-  z.object({ kind: z.literal('rule'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, data: ruleDataSchema }),
-  z.object({ kind: z.literal('god'), name: z.string().trim().min(1).max(100), summary: text(500), description: md(), sourceId: sourceIdSchema, data: godDataSchema }),
+  z.object({ kind: z.literal('race'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, ...wikiEn, data: raceDataSchema }),
+  z.object({ kind: z.literal('class'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, ...wikiEn, data: classDataSchema }),
+  z.object({ kind: z.literal('feat'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, ...wikiEn, data: featDataSchema }),
+  z.object({ kind: z.literal('background'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, ...wikiEn, data: backgroundDataSchema }),
+  z.object({ kind: z.literal('language'), name: z.string().trim().min(1).max(60), summary: text(500), description: md(), sourceId: sourceIdSchema, ...wikiEn, data: languageDataSchema }),
+  z.object({ kind: z.literal('rule'), name: z.string().trim().min(1).max(120), summary: text(500), description: md(), sourceId: sourceIdSchema, ...wikiEn, data: ruleDataSchema }),
+  z.object({ kind: z.literal('god'), name: z.string().trim().min(1).max(100), summary: text(500), description: md(), sourceId: sourceIdSchema, ...wikiEn, data: godDataSchema }),
 ]);
 export type WikiEntryInput = z.input<typeof wikiEntrySchema>;
 
@@ -218,6 +221,10 @@ interface WikiBase {
   name: string;
   summary: string;
   description: string;
+  /** Englische Fassung ('' = nicht hinterlegt) */
+  nameEn: string;
+  summaryEn: string;
+  descriptionEn: string;
   /** Quelle (Buch) */
   sourceId: string | null;
   updatedAt: string;

@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookMarked, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
-import type { SourceDto } from '@zauberbuch/shared';
+import type { Locale, SourceDto } from '@zauberbuch/shared';
+import { LangTabs } from '../../components/LangTabs';
 import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
 import { useToast } from '../../context/ToastContext';
@@ -93,6 +94,8 @@ function SourceForm({ source, onCancel, onSaved }: { source?: SourceDto; onCance
   const toast = useToast();
   const [name, setName] = useState(source?.name ?? '');
   const [abbreviation, setAbbreviation] = useState(source?.abbreviation ?? '');
+  const [en, setEn] = useState({ name: source?.nameEn ?? '', abbreviation: source?.abbreviationEn ?? '' });
+  const [tab, setTab] = useState<Locale>('de');
   const [busy, setBusy] = useState(false);
   const id = source?.id ?? 'new';
   const submit = async (e: FormEvent) => {
@@ -100,7 +103,7 @@ function SourceForm({ source, onCancel, onSaved }: { source?: SourceDto; onCance
     if (!name.trim()) return;
     setBusy(true);
     try {
-      const input = { name: name.trim(), abbreviation: abbreviation.trim() };
+      const input = { name: name.trim(), abbreviation: abbreviation.trim(), nameEn: en.name.trim(), abbreviationEn: en.abbreviation.trim() };
       if (source) await api.updateSource(source.id, input);
       else await api.createSource(input);
       await reloadSources();
@@ -114,17 +117,30 @@ function SourceForm({ source, onCancel, onSaved }: { source?: SourceDto; onCance
   };
   return (
     <form onSubmit={submit} className="flex flex-wrap items-end gap-3">
+      <div className="w-full">
+        <LangTabs value={tab} onChange={setTab} missing={{ en: !en.name.trim() }} />
+      </div>
       <div className="min-w-[14rem] flex-1">
         <label htmlFor={`src-name-${id}`} className="label">
           {t('sources.name')}
+          {tab === 'en' && ' (EN)'}
         </label>
-        <input id={`src-name-${id}`} className="input" value={name} maxLength={100} required autoFocus onChange={(e) => setName(e.target.value)} placeholder={t('sources.namePlaceholder')} />
+        {tab === 'de' ? (
+          <input id={`src-name-${id}`} className="input" value={name} maxLength={100} required autoFocus onChange={(e) => setName(e.target.value)} placeholder={t('sources.namePlaceholder')} lang="de" />
+        ) : (
+          <input id={`src-name-${id}`} className="input" value={en.name} maxLength={100} onChange={(e) => setEn((x) => ({ ...x, name: e.target.value }))} placeholder={name} lang="en" />
+        )}
       </div>
       <div className="w-32">
         <label htmlFor={`src-abbr-${id}`} className="label">
           {t('sources.abbreviation')}
+          {tab === 'en' && ' (EN)'}
         </label>
-        <input id={`src-abbr-${id}`} className="input" value={abbreviation} maxLength={12} onChange={(e) => setAbbreviation(e.target.value)} placeholder={t('sources.abbreviationPlaceholder')} />
+        {tab === 'de' ? (
+          <input id={`src-abbr-${id}`} className="input" value={abbreviation} maxLength={12} onChange={(e) => setAbbreviation(e.target.value)} placeholder={t('sources.abbreviationPlaceholder')} />
+        ) : (
+          <input id={`src-abbr-${id}`} className="input" value={en.abbreviation} maxLength={12} onChange={(e) => setEn((x) => ({ ...x, abbreviation: e.target.value }))} placeholder={abbreviation} />
+        )}
       </div>
       <div className="flex gap-2">
         <button type="button" className="btn-secondary" onClick={onCancel}>

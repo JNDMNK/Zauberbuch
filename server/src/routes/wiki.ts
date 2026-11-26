@@ -27,7 +27,7 @@ function parseData(raw: string): unknown {
 
 function toDto(e: WikiEntry): WikiEntryDto {
   const kind = (WIKI_KINDS as readonly string[]).includes(e.kind) ? (e.kind as WikiKind) : 'race';
-  const base = { id: e.id, name: e.name, summary: e.summary, description: e.description, sourceId: e.sourceId, updatedAt: e.updatedAt.toISOString(), updatedBy: e.updatedBy };
+  const base = { id: e.id, name: e.name, summary: e.summary, description: e.description, nameEn: e.nameEn, summaryEn: e.summaryEn, descriptionEn: e.descriptionEn, sourceId: e.sourceId, updatedAt: e.updatedAt.toISOString(), updatedBy: e.updatedBy };
   const json = parseData(e.data);
   switch (kind) {
     case 'class':
@@ -138,7 +138,7 @@ wikiRouter.get('/', async (_req, res) => {
 wikiRouter.post('/', requireEditor, async (req, res) => {
   const e = await cleanSubclassSources(validate(wikiEntrySchema, req.body));
   const row = await prisma.wikiEntry.create({
-    data: { kind: e.kind, name: e.name, summary: e.summary, description: e.description, sourceId: await validSourceId(e.sourceId), data: JSON.stringify(e.data), updatedBy: req.user!.username },
+    data: { kind: e.kind, name: e.name, summary: e.summary, description: e.description, nameEn: e.nameEn, summaryEn: e.summaryEn, descriptionEn: e.descriptionEn, sourceId: await validSourceId(e.sourceId), data: JSON.stringify(e.data), updatedBy: req.user!.username },
   });
   res.status(201).json({ entry: toDto(row) });
 });
@@ -149,7 +149,7 @@ wikiRouter.put('/:id', requireEditor, async (req, res) => {
   const e = await cleanSubclassSources(validate(wikiEntrySchema, req.body));
   const row = await prisma.wikiEntry.update({
     where: { id: existing.id },
-    data: { kind: e.kind, name: e.name, summary: e.summary, description: e.description, sourceId: await validSourceId(e.sourceId), data: JSON.stringify(e.data), updatedBy: req.user!.username },
+    data: { kind: e.kind, name: e.name, summary: e.summary, description: e.description, nameEn: e.nameEn, summaryEn: e.summaryEn, descriptionEn: e.descriptionEn, sourceId: await validSourceId(e.sourceId), data: JSON.stringify(e.data), updatedBy: req.user!.username },
   });
   res.json({ entry: toDto(row) });
 });

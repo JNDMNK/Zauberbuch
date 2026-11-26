@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { SourceBadge } from './sources/SourceFields';
 import { Coins, Gem, Sparkles, UserRound, Weight } from 'lucide-react';
-import type { MagicItemDto } from '@zauberbuch/shared';
+import { localized, type MagicItemDto } from '@zauberbuch/shared';
 import { Modal } from './Modal';
 import { Markdown } from './Markdown';
 
@@ -14,8 +14,10 @@ const ACCENT = { '--accent': '#7c3aed' } as CSSProperties;
  * ein Klick auf die Karte zeigt den Gegenstand vollständig im Vordergrund. `actions` (z. B. Bearbeiten/Löschen)
  * stehen auf der Karte und in der Detailansicht, `footer` (z. B. Weitergeben) nur in der Detailansicht.
  */
-export function ItemCard({ item, actions, footer, attuned = false }: { item: MagicItemDto; actions?: ReactNode; footer?: ReactNode; attuned?: boolean }) {
-  const { t } = useTranslation();
+export function ItemCard({ item: raw, actions, footer, attuned = false }: { item: MagicItemDto; actions?: ReactNode; footer?: ReactNode; attuned?: boolean }) {
+  const { t, i18n } = useTranslation();
+  // Name und Beschreibung in der gewählten Sprache
+  const item = { ...raw, name: localized(raw.name, raw.nameEn, i18n.language), description: localized(raw.description, raw.descriptionEn, i18n.language) };
   const [open, setOpen] = useState(false);
   return (
     <>

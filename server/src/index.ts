@@ -8,6 +8,7 @@ import { seedCatalog } from './routes/catalog';
 import { backfillBackgroundFields, backfillSubclassSources, seedWiki } from './routes/wiki';
 import { purgeNotifications } from './lib/notifications';
 import { closeAllClients } from './lib/events';
+import { backfillEnglish } from './lib/englishSeed';
 
 async function main() {
   ensureDataDirs();
@@ -20,6 +21,7 @@ async function main() {
   await seedWiki();
   await backfillSubclassSources();
   await backfillBackgroundFields();
+  await backfillEnglish();
 
   // Papierkorb der Infotafel (90 Tage) und alte Benachrichtigungen bereinigen – beim Start und danach alle 12 Stunden
   const purge = () =>

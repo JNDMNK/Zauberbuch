@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Coins, Dumbbell, Package, Shield, Swords, Weight, Wrench } from 'lucide-react';
-import type { CatalogCategory, CatalogItemDto } from '@zauberbuch/shared';
+import { localized, type CatalogCategory, type CatalogItemDto } from '@zauberbuch/shared';
 import { DamageValue } from '../DamageValue';
 import { SourceBadge } from '../sources/SourceFields';
 
@@ -14,8 +14,10 @@ const CATEGORY_BORDER: Record<CatalogCategory, string> = {
 };
 
 /** Karte eines Eintrags der Gegenstands-Datenbank (Rüstung, Waffe, Gegenstand) */
-export function CatalogCard({ item, actions, badge, dimmed = false }: { item: CatalogItemDto; actions?: ReactNode; badge?: ReactNode; dimmed?: boolean }) {
+export function CatalogCard({ item: raw, actions, badge, dimmed = false }: { item: CatalogItemDto; actions?: ReactNode; badge?: ReactNode; dimmed?: boolean }) {
   const { t, i18n } = useTranslation();
+  // Name und Beschreibung in der gewählten Sprache
+  const item = { ...raw, name: localized(raw.name, raw.nameEn, i18n.language), description: localized(raw.description, raw.descriptionEn, i18n.language) };
   const Icon = CATEGORY_ICON[item.category];
   return (
     <article className={`parchment flex h-full flex-col gap-2 border-t-4 p-4 ${CATEGORY_BORDER[item.category]} ${dimmed ? 'opacity-55' : ''}`}>

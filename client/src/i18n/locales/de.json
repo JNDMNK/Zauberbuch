@@ -1218,7 +1218,8 @@
       "gaming": "Spielset",
       "instrument": "Musikinstrument",
       "other": "Sonstiges Werkzeug"
-    }
+    },
+    "strengthShort": "Stä"
   },
   "dmNotes": {
     "tab": "DM-Notizen",
@@ -1865,5 +1866,9 @@
       "imageChange": "Bild ändern",
       "imageRemove": "Bild entfernen"
     }
+  },
+  "content": {
+    "enHint": "Leere englische Felder zeigen die deutsche Fassung.",
+    "wikiDetailsDe": "Die Detailfelder (Merkmale, Unterklassen, Ausrüstung …) gelten für beide Sprachen."
   }
 }

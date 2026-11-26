@@ -126,7 +126,10 @@ const contains = (text: string, name: string) => new RegExp(`(?<![\\p{L}])${esca
 
 /** Klasse (und Unterklasse) aus „Klasse & Stufe“ des Bogens, z. B. „Kleriker (Domäne des Lebens) 3“ */
 export function detectClass(classLevel: string, classes: ClassEntry[]) {
-  const cls = [...classes].sort((a, b) => b.name.length - a.name.length).find((c) => contains(classLevel, c.name)) ?? null;
+  // deutscher oder englischer Klassenname (Bögen können in beiden Sprachen angelegt sein)
+  const names = (c: ClassEntry) => [c.name, c.nameEn].filter((n): n is string => !!n?.trim());
+  const longest = (c: ClassEntry) => Math.max(...names(c).map((n) => n.length));
+  const cls = [...classes].sort((a, b) => longest(b) - longest(a)).find((c) => names(c).some((n) => contains(classLevel, n))) ?? null;
   const subclass = cls?.data.subclasses.find((s) => contains(classLevel, s.name)) ?? null;
   return { cls, subclass };
 }

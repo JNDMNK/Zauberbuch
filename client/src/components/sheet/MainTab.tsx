@@ -22,7 +22,9 @@ import {
   savingThrowBonus,
   skillBonus,
   type SheetAttack,
+  localized,
 } from '@zauberbuch/shared';
+import { useContentLabels } from '../wiki/WikiLinks';
 import { useSheet } from './SheetContext';
 import { useToast } from '../../context/ToastContext';
 import { errorMessage } from '../../lib/errors';
@@ -392,14 +394,19 @@ function AttackRow({ index, attack }: { index: number; attack: SheetAttack }) {
  */
 
 function ToolsField({ tools }: { tools: string[] }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { catalog } = useSheet();
   const [open, setOpen] = useState<CatalogItemDto | null>(null);
   const toolItems = catalog.filter((c) => c.category === 'tool');
   const byName = new Map(toolItems.map((c) => [c.name.toLocaleLowerCase('de'), c]));
   // Bezeichnungen der früheren Standardliste → Name im Wiki (damit alte Einträge verknüpft sind)
   const find = (value: string) => byName.get(value.toLocaleLowerCase('de')) ?? byName.get((TOOL_ALIASES[value] ?? '').toLocaleLowerCase('de'));
-  const sorted = (l: string[]) => [...l].sort((a, b) => a.localeCompare(b, 'de'));
+  // Anzeige in der gewählten Sprache, gespeichert wird der deutsche Name
+  const labelFor = (value: string) => {
+    const item = find(value);
+    return item ? localized(item.name, item.nameEn, i18n.language) : value;
+  };
+  const sorted = (l: string[]) => [...l].sort((a, b) => labelFor(a).localeCompare(labelFor(b), i18n.language));
   // Einträge der Werkzeugliste der Geschichte, die es im Wiki nicht gibt, bleiben unter „Weitere“ wählbar
   const extra = tools.filter((x) => !find(x));
   const groups: OptionGroup[] = [
@@ -413,6 +420,7 @@ function ToolsField({ tools }: { tools: string[] }) {
         label={t('sheet.tools')}
         options={[]}
         groups={groups}
+        labelFor={labelFor}
         renderAction={(value) => {
           const item = find(value);
           return item ? (
@@ -432,6 +440,7 @@ function ToolsField({ tools }: { tools: string[] }) {
 function Proficiencies() {
   const { languages, tools } = useSheet();
   const { t } = useTranslation();
+  const labels = useContentLabels();
   return (
     <Box label={t('sheet.proficienciesLanguages')}>
       <div className="space-y-3">
@@ -454,7 +463,7 @@ function Proficiencies() {
           <TF path={['proficiencies', 'otherWeapons']} label={t('sheet.otherWeapons')} className="mt-1" maxLength={500} />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <OptionListField path={['proficiencies', 'languages']} label={t('sheet.languages')} options={languages} />
+          <OptionListField path={['proficiencies', 'languages']} label={t('sheet.languages')} options={languages} labelFor={labels.language} />
           <ToolsField tools={tools} />
         </div>
       </div>

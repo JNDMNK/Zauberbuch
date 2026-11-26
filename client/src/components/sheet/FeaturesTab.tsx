@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { carrying, jumps, lifestyleCost } from '@zauberbuch/shared';
+import { carrying, jumps, lifestyleCost, localized } from '@zauberbuch/shared';
 import { useSheet } from './SheetContext';
 import { Box, NF, TA } from './fields';
 import { InventoryTable } from './InventoryTable';
@@ -125,9 +125,14 @@ export function FeaturesTab() {
 }
 
 function AttunedItems() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { sheet, set, readOnly, items } = useSheet();
   const slots = [0, 1, 2].map((i) => sheet.attunedItems[i] ?? '');
+  // gespeichert wird der deutsche Name, angezeigt die gewählte Sprache
+  const labelOf = (name: string) => {
+    const it = (items.data?.items ?? []).find((i) => i.name.toLocaleLowerCase('de') === name.toLocaleLowerCase('de'));
+    return it ? localized(it.name, it.nameEn, i18n.language) : name;
+  };
   // Auswahl aus den magischen Gegenständen des Bogens; frühere freie Einträge bleiben wählbar
   // nur Gegenstände, die eine Einstimmung benötigen
   const owned = (items.data?.items ?? []).filter((i) => i.attunement).map((i) => i.name);
@@ -155,7 +160,7 @@ function AttunedItems() {
               <option value="">{t('sheet.attunedSlot', { n: i + 1 })}</option>
               {owned.map((o) => (
                 <option key={o} value={o} disabled={chosen.has(o.toLocaleLowerCase('de'))}>
-                  {o}
+                  {labelOf(o)}
                 </option>
               ))}
               {!known && <option value={v}>{v}</option>}
@@ -173,7 +178,7 @@ function AttunedItems() {
  * Ein früher frei eingetragener Lebensstil, der nicht in der Tabelle steht, bleibt wählbar und behält seine Kosten.
  */
 function LifestyleFields() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { sheet, set, readOnly, lifestyles } = useSheet();
   const current = sheet.lifestyle.name;
   const tableCost = current ? lifestyleCost(lifestyles, current) : null;
@@ -195,7 +200,7 @@ function LifestyleFields() {
           <option value="">–</option>
           {lifestyles.map((l) => (
             <option key={l.name} value={l.name}>
-              {l.name}
+              {localized(l.name, l.nameEn, i18n.language)}
             </option>
           ))}
           {current && !inTable && <option value={current}>{current}</option>}

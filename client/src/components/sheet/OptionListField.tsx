@@ -20,6 +20,7 @@ export function OptionListField({
   options,
   groups,
   renderAction,
+  labelFor = (v) => v,
 }: {
   path: Path;
   label: string;
@@ -28,6 +29,8 @@ export function OptionListField({
   groups?: OptionGroup[];
   /** Zusatzknopf je gewähltem Eintrag (z. B. Karte öffnen) */
   renderAction?: (value: string) => ReactNode;
+  /** Anzeige eines gespeicherten Werts (z. B. englischer Name); gespeichert wird weiterhin der Wert */
+  labelFor?: (value: string) => string;
 }) {
   const { t } = useTranslation();
   const { sheet, set, readOnly } = useSheet();
@@ -69,7 +72,7 @@ export function OptionListField({
           const known = value === null || all.some((o) => o.toLocaleLowerCase('de') === value.toLocaleLowerCase('de'));
           const opt = (o: string) => (
             <option key={o} value={o} disabled={chosen.has(o.toLocaleLowerCase('de'))}>
-              {o}
+              {labelFor(o)}
             </option>
           );
           return (
@@ -91,7 +94,7 @@ export function OptionListField({
                         </optgroup>
                       ))
                   : options.map(opt)}
-                {!known && value && <option value={value}>{value}</option>}
+                {!known && value && <option value={value}>{labelFor(value)}</option>}
               </select>
               {value && renderAction?.(value)}
               {!readOnly && (value !== null || rows.length > 1) && (

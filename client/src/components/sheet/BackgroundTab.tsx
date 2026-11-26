@@ -1,10 +1,11 @@
 import { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink } from 'lucide-react';
-import type { WikiEntryDto } from '@zauberbuch/shared';
+import { localized, type WikiEntryDto } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
 import { Modal } from '../Modal';
 import { WikiDetail } from '../wiki/WikiDetail';
+import { useContentLabels } from '../wiki/WikiLinks';
 import { getIn, useSheet } from './SheetContext';
 import { Box, TA, TF } from './fields';
 import { ImageField } from './ImageField';
@@ -15,7 +16,8 @@ import { InventoryTable } from './InventoryTable';
  * Steht die Gottheit im Wiki, öffnet ein Knopf ihre Karte.
  */
 function FaithField() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const labels = useContentLabels();
   const { sheet, set, readOnly, gods } = useSheet();
   const id = useId();
   const value = String(getIn(sheet, ['identity', 'faith']) ?? '');
@@ -25,7 +27,12 @@ function FaithField() {
     let cancelled = false;
     api
       .wiki()
-      .then((r) => !cancelled && setWikiGods(new Map(r.entries.filter((e) => e.kind === 'god').map((e) => [e.name.toLocaleLowerCase('de'), e]))))
+      .then((r) => {
+        if (cancelled) return;
+        // deutsche und englische Namen führen zur Karte
+        const gods = r.entries.filter((e) => e.kind === 'god');
+        setWikiGods(new Map([...gods.map((e): [string, WikiEntryDto] => [e.name.toLocaleLowerCase('de'), e]), ...gods.filter((e) => e.nameEn).map((e): [string, WikiEntryDto] => [e.nameEn.toLocaleLowerCase('de'), e])]));
+      })
       .catch(() => undefined);
     return () => {
       cancelled = true;
@@ -53,14 +60,14 @@ function FaithField() {
       </div>
       <datalist id={`${id}-gods`}>
         {gods.map((g) => (
-          <option key={g} value={g} />
+          <option key={g} value={labels.god(g)} />
         ))}
       </datalist>
       <label htmlFor={id} className="sheet-label">
         {t('sheet.faith')}
       </label>
-      <Modal open={!!open} title={open?.name ?? ''} onClose={() => setOpen(null)} size="max-w-2xl">
-        {open && <WikiDetail entry={open} />}
+      <Modal open={!!open} title={open ? localized(open.name, open.nameEn, i18n.language) : ''} onClose={() => setOpen(null)} size="max-w-2xl">
+        {open && <WikiDetail entry={{ ...open, name: localized(open.name, open.nameEn, i18n.language), summary: localized(open.summary, open.summaryEn, i18n.language), description: localized(open.description, open.descriptionEn, i18n.language) }} />}
       </Modal>
     </div>
   );

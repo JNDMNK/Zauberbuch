@@ -4,21 +4,23 @@ import { z } from 'zod';
 export interface Lifestyle {
   name: string;
   cost: string;
+  /** Englischer Name (optional) */
+  nameEn?: string;
 }
 
 /** Standardwerte wie im Charakterbogen-PDF (Spielerhandbuch) – für neue Geschichten und Bögen ohne Geschichte */
 export const DEFAULT_LIFESTYLES: Lifestyle[] = [
-  { name: 'Jämmerlich', cost: '—' },
-  { name: 'Ärmlich', cost: '1 SM' },
-  { name: 'Schlecht', cost: '2 SM' },
-  { name: 'Einfach', cost: '1 GM' },
-  { name: 'Komfortabel', cost: '2 GM' },
-  { name: 'Wohlhabend', cost: '4 GM' },
-  { name: 'Edel', cost: '10 GM min.' },
+  { name: 'Jämmerlich', nameEn: 'Wretched', cost: '—' },
+  { name: 'Ärmlich', nameEn: 'Squalid', cost: '1 SM' },
+  { name: 'Schlecht', nameEn: 'Poor', cost: '2 SM' },
+  { name: 'Einfach', nameEn: 'Modest', cost: '1 GM' },
+  { name: 'Komfortabel', nameEn: 'Comfortable', cost: '2 GM' },
+  { name: 'Wohlhabend', nameEn: 'Wealthy', cost: '4 GM' },
+  { name: 'Edel', nameEn: 'Aristocratic', cost: '10 GM min.' },
 ];
 
 export const lifestylesSchema = z
-  .array(z.object({ name: z.string().trim().min(1).max(50), cost: z.string().trim().max(30) }))
+  .array(z.object({ name: z.string().trim().min(1).max(50), cost: z.string().trim().max(30), nameEn: z.string().trim().max(50).optional() }))
   .min(1)
   .max(20)
   .refine((list) => new Set(list.map((l) => l.name.toLocaleLowerCase('de'))).size === list.length, 'lifestyle_duplicate');
@@ -28,7 +30,9 @@ export function parseLifestyles(raw: string | null | undefined): Lifestyle[] {
   if (!raw) return DEFAULT_LIFESTYLES;
   try {
     const parsed = lifestylesSchema.safeParse(JSON.parse(raw));
-    return parsed.success ? parsed.data : DEFAULT_LIFESTYLES;
+    if (!parsed.success) return DEFAULT_LIFESTYLES;
+    // Ohne eigenen englischen Namen: den der Standardwerte übernehmen (gleicher deutscher Name)
+    return parsed.data.map((l) => (l.nameEn ? l : { ...l, nameEn: DEFAULT_LIFESTYLES.find((d) => d.name.toLocaleLowerCase('de') === l.name.toLocaleLowerCase('de'))?.nameEn }));
   } catch {
     return DEFAULT_LIFESTYLES;
   }

@@ -37,6 +37,8 @@ Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutze
 - 🔒 Ohne Anmeldung keine Daten – die Startseite ist der Login, es gibt keine Selbstregistrierung
 - 🌍 DE/EN-Umschalter für Oberfläche **und** Zaubertexte (pro Benutzer gespeichert, Gäste im localStorage);
   fehlende Übersetzungen fallen auf die andere Sprache zurück (mit Hinweis-Badge)
+- 🇬🇧 **Zweisprachige Inhalte**: Wiki, Gegenstands-Datenbank, magische Gegenstände, Quellen und Lebensstile haben wie die
+  Zauber einen DE/EN-Umschalter; die mitgelieferte Grundausstattung (SRD) ist bereits ins Englische übersetzt
 - 🌙 Dark-/Light-Mode
 - 🛠️ Verwaltung: Zauber anlegen/bearbeiten/duplizieren/löschen, Markdown-Editor mit Vorschau, DE/EN-Tabs,
   Zauberbücher aller Benutzer ansehen, JSON-Import (Vorschau + Dublettenprüfung) und -Export, Benutzerverwaltung
@@ -54,6 +56,7 @@ Verwaltungsoberfläche gepflegt. Die App ist nur nach Anmeldung nutzbar; Benutze
    - [Kampfhilfe](#kampfhilfe)
 4. [Umgebungsvariablen](#umgebungsvariablen)
 5. [Daten, Backup & Wiederherstellung](#daten-backup--wiederherstellung)
+   - [Zweisprachige Inhalte](#zweisprachige-inhalte-deen)
 6. [Reverse Proxy](#reverse-proxy-nginx-proxy-manager--swag)
    - [Live-Aktualisierung](#live-aktualisierung)
 7. [JSON-Importformat](#json-importformat)
@@ -416,6 +419,33 @@ Format:
   Zauber und Monster mit dem alten Namen automatisch angepasst. Ein Name, der nicht (mehr) in der Liste steht, bleibt
   erhalten und wird als „nicht in der Liste“ markiert. Löscht man eine Quelle, verlieren Wiki-Einträge und
   (magische) Gegenstände die Angabe, Zauber und Monster behalten ihren Text.
+
+## Zweisprachige Inhalte (DE/EN)
+
+Neben der Oberfläche lassen sich auch Inhalte zweisprachig pflegen – wie bei den Zaubern mit einem **DE/EN-Umschalter**
+im jeweiligen Formular:
+
+| Bereich | Englische Felder |
+|---|---|
+| Wiki (Völker, Klassen, Talente, Hintergründe, Sprachen, Götter, Regeln) | Name, Kurzbeschreibung, Beschreibung |
+| Gegenstands-Datenbank (Standard und je Geschichte) | Name, Beschreibung |
+| Magische Gegenstände | Name, Beschreibung |
+| Quellen | Name, Kürzel |
+| Lebensstile einer Geschichte | Name |
+
+- Angezeigt wird die Sprache der Oberfläche; ist ein englisches Feld leer, erscheint die deutsche Fassung.
+- **Gespeicherte Verweise bleiben deutsch**: Sprachen, Werkzeuge, Lebensstil und eingestimmte Gegenstände im
+  Charakterbogen sowie die Auswahllisten einer Geschichte speichern weiterhin den deutschen Namen und zeigen ihn nur
+  übersetzt an. So passen Bögen in beiden Sprachen zusammen. Der Charakter-Assistent schreibt Volk, Klasse und
+  Hintergrund in der gewählten Sprache in den Bogen; der Stufenaufstieg erkennt Klassen an beiden Namen.
+- Suche und Querverweise finden Einträge unter dem deutschen **und** dem englischen Namen; Listen werden nach dem
+  angezeigten Namen sortiert.
+- Die Detailfelder im Wiki (Merkmale, Unterklassen, Ausrüstung, Klassenmerkmale …) gelten für beide Sprachen.
+- **Grundausstattung auf Englisch** (Namen nach dem SRD 5.1, CC-BY-4.0; Texte selbst formuliert): alle Völker,
+  Klassen, Hintergrund und Talent (Name, Kurzbeschreibung, Beschreibung), Sprachen und Götter (Name, Kurzbeschreibung),
+  alle Regeln (Titel und Kurzbeschreibung; die 15 Zustände vollständig), alle 120 Standard-Gegenstände, die
+  Standard-Quellen (PHB, TCE, XGE …) und die Standard-Lebensstile. Bestehende Datenbanken werden beim Start
+  (und nach einem Gesamt-Import) ergänzt – nur dort, wo noch keine englische Fassung hinterlegt ist.
 
 ## Wiki
 

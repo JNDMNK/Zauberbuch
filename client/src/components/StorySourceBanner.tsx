@@ -14,9 +14,9 @@ export function StorySourceBanner({ what }: { what: string }) {
   const { t } = useTranslation();
   const toast = useToast();
   const { story, restricted, toGeneral } = useActiveStory();
-  const { byId } = useSources();
+  const { byId, label, abbr } = useSources();
   if (!story || !restricted) return null;
-  const list = (story.sources ?? []).map((id) => (id === HOMEBREW_SOURCE ? t('storySources.homebrew') : byId(id)?.abbreviation || byId(id)?.name)).filter(Boolean);
+  const list = (story.sources ?? []).map((id) => (id === HOMEBREW_SOURCE ? t('storySources.homebrew') : (byId(id) ? abbr(byId(id)!) || label(byId(id)!) : undefined))).filter(Boolean);
   return (
     <div
       className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-sm text-sky-900 print:hidden dark:border-sky-900 dark:bg-sky-950/50 dark:text-sky-200"

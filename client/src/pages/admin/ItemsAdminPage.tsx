@@ -3,7 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SourceSelect } from '../../components/sources/SourceFields';
 import { Pencil, Plus, Save, Search, Trash2 } from 'lucide-react';
-import type { ItemCharacterRef, ItemStoryDto, MagicItemDto } from '@zauberbuch/shared';
+import type { ItemCharacterRef, ItemStoryDto, Locale, MagicItemDto } from '@zauberbuch/shared';
+import { LangTabs } from '../../components/LangTabs';
 import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
 import { useToast } from '../../context/ToastContext';
@@ -69,7 +70,7 @@ export function ItemsAdminPage() {
       (items ?? []).filter(
         (i) =>
           (!onlyStory || !storyId || i.holders.some((h) => h.storyId === storyId)) &&
-          (!needle || `${i.name}\n${i.description}\n${i.value}\n${i.holders.map((h) => `${h.name} ${h.owner}`).join(' ')}`.toLocaleLowerCase('de').includes(needle)),
+          (!needle || `${i.name}\n${i.description}\n${i.nameEn}\n${i.descriptionEn}\n${i.value}\n${i.holders.map((h) => `${h.name} ${h.owner}`).join(' ')}`.toLocaleLowerCase('de').includes(needle)),
       ),
     [items, needle, onlyStory, storyId],
   );
@@ -276,12 +277,14 @@ function ItemDialog({
   storyId: string;
   storyName: string;
   onClose: () => void;
-  onSave: (input: { name: string; description: string; weight: number; value: string; attunement: boolean; sourceId: string | null; holderIds: string[] }) => Promise<void>;
+  onSave: (input: { name: string; description: string; nameEn: string; descriptionEn: string; weight: number; value: string; attunement: boolean; sourceId: string | null; holderIds: string[] }) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [en, setEn] = useState({ name: '', description: '' });
+  const [tab, setTab] = useState<Locale>('de');
   const [weight, setWeight] = useState('');
   const [value, setValue] = useState('');
   const [attunement, setAttunement] = useState(false);
@@ -292,6 +295,8 @@ function ItemDialog({
     if (!open) return;
     setName(item?.name ?? '');
     setDescription(item?.description ?? '');
+    setEn({ name: item?.nameEn ?? '', description: item?.descriptionEn ?? '' });
+    setTab('de');
     setWeight(item?.weight ? String(item.weight).replace('.', ',') : '');
     setValue(item?.value ?? '');
     setAttunement(item?.attunement ?? false);
@@ -308,7 +313,7 @@ function ItemDialog({
     if (!name.trim() || weightInvalid) return;
     setBusy(true);
     try {
-      await onSave({ name: name.trim(), description: description.trim(), weight: parsedWeight ?? 0, value: value.trim(), attunement, sourceId, holderIds: [...holders] });
+      await onSave({ name: name.trim(), description: description.trim(), nameEn: en.name.trim(), descriptionEn: en.description.trim(), weight: parsedWeight ?? 0, value: value.trim(), attunement, sourceId, holderIds: [...holders] });
     } catch (err) {
       toast.error(errorMessage(t, err));
     } finally {
@@ -319,11 +324,17 @@ function ItemDialog({
   return (
     <Modal open={open} title={item ? t('items.edit') : t('items.new')} onClose={onClose} size="max-w-xl">
       <form onSubmit={submit} className="space-y-4">
+        <LangTabs value={tab} onChange={setTab} missing={{ en: !en.name.trim() }} />
         <div>
           <label htmlFor="item-name" className="label">
             {t('combat.monsterName')}
+            {tab === 'en' && ' (EN)'}
           </label>
-          <input id="item-name" className="input" value={name} maxLength={100} required autoFocus onChange={(e) => setName(e.target.value)} placeholder={t('items.namePlaceholder')} />
+          {tab === 'de' ? (
+            <input id="item-name" className="input" value={name} maxLength={100} required autoFocus onChange={(e) => setName(e.target.value)} placeholder={t('items.namePlaceholder')} lang="de" />
+          ) : (
+            <input id="item-name" className="input" value={en.name} maxLength={100} onChange={(e) => setEn((x) => ({ ...x, name: e.target.value }))} placeholder={name} lang="en" />
+          )}
         </div>
         <div className="flex flex-wrap gap-4">
           <div className="max-w-[12rem]">
@@ -363,8 +374,13 @@ function ItemDialog({
         <div>
           <label htmlFor="item-desc" className="label">
             {t('bestiary.description')}
+            {tab === 'en' && ' (EN)'}
           </label>
-          <MarkdownEditor id="item-desc" value={description} onChange={(v) => setDescription(v.slice(0, 5000))} rows={8} />
+          {tab === 'de' ? (
+            <MarkdownEditor key="de" id="item-desc" value={description} onChange={(v) => setDescription(v.slice(0, 5000))} rows={8} />
+          ) : (
+            <MarkdownEditor key="en" id="item-desc" value={en.description} onChange={(v) => setEn((x) => ({ ...x, description: v.slice(0, 5000) }))} rows={8} />
+          )}
         </div>
         {!storyId ? (
           <p className="text-sm italic text-parchment-700 dark:text-parchment-400">{t('items.chooseStoryForHolders')}</p>

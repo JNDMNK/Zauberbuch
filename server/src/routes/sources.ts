@@ -56,6 +56,8 @@ async function list(): Promise<SourceDto[]> {
     id: r.id,
     name: r.name,
     abbreviation: r.abbreviation,
+    nameEn: r.nameEn,
+    abbreviationEn: r.abbreviationEn,
     usage: { wiki: r._count.wikiEntries, catalog: r._count.catalogItems, spells: bySource.get(r.name) ?? 0, monsters: monsters.get(r.name) ?? 0, magicItems: r._count.magicItems },
   }));
 }

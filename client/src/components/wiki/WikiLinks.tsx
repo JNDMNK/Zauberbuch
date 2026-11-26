@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate, type Location } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { CatalogItemDto, WikiEntryDto } from '@zauberbuch/shared';
+import { localized, type CatalogItemDto, type WikiEntryDto } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { Modal } from '../Modal';
@@ -20,6 +20,9 @@ export type LinkPart = string | { target: LinkTarget; text: string };
 
 interface LinkData {
   entries: WikiEntryDto[];
+  /** gespeicherte Einträge (deutsche und englische Namen zum Nachschlagen) */
+  raw: WikiEntryDto[];
+  rawItems: CatalogItemDto[];
   items: CatalogItemDto[];
   targets: Map<string, LinkTarget>;
   byName: Map<string, LinkTarget>;
@@ -40,22 +43,31 @@ const lower = (s: string) => s.toLocaleLowerCase('de');
 /** Kategorien der Gegenstands-Datenbank, die verlinkt werden (Abenteuerausrüstung wie „Seil“ oder „Buch“ wäre zu allgemein) */
 const LINKED_CATEGORIES = new Set(['armor', 'weapon', 'tool']);
 
-function buildData(entries: WikiEntryDto[], items: CatalogItemDto[], spells: { slug: string; name: string }[]): LinkData {
+function buildData(rawEntries: WikiEntryDto[], rawItems: CatalogItemDto[], spells: { slug: string; name: string }[], lang: string): LinkData {
+  // Anzeige in der gewählten Sprache; verlinkt werden deutsche und englische Namen
+  const entries = rawEntries.map((e) => (lang === 'en' ? { ...e, name: localized(e.name, e.nameEn, lang), summary: localized(e.summary, e.summaryEn, lang), description: localized(e.description, e.descriptionEn, lang) } : e));
+  const items = rawItems.map((i) => (lang === 'en' ? { ...i, name: localized(i.name, i.nameEn, lang), description: localized(i.description, i.descriptionEn, lang) } : i));
   const targets = new Map<string, LinkTarget>();
   const byName = new Map<string, LinkTarget>();
-  const add = (t: LinkTarget) => {
-    targets.set(t.key, t);
-    const n = lower(t.name.trim());
+  const alias = (name: string | undefined, t: LinkTarget) => {
+    const n = lower((name ?? '').trim());
     // Wiki-Einträge haben Vorrang vor Gegenständen, diese vor Zaubern (gleiche Reihenfolge wie beim Hinzufügen)
     if (n.length >= 3 && !byName.has(n)) byName.set(n, t);
   };
-  for (const e of entries) add({ key: `e-${e.id}`, kind: 'entry', id: e.id, name: e.name });
-  for (const i of items) if (!i.hidden && LINKED_CATEGORIES.has(i.category)) add({ key: `i-${i.id}`, kind: 'item', id: i.id, name: i.name });
+  const add = (t: LinkTarget, other?: string) => {
+    targets.set(t.key, t);
+    alias(t.name, t);
+    alias(other, t);
+  };
+  rawEntries.forEach((e, k) => add({ key: `e-${e.id}`, kind: 'entry', id: e.id, name: entries[k].name }, lang === 'en' ? e.name : e.nameEn));
+  rawItems.forEach((i, k) => {
+    if (!i.hidden && LINKED_CATEGORIES.has(i.category)) add({ key: `i-${i.id}`, kind: 'item', id: i.id, name: items[k].name }, lang === 'en' ? i.name : i.nameEn);
+  });
   for (const s of spells) add({ key: `s-${s.slug}`, kind: 'spell', id: s.slug, name: s.name });
   const names = [...byName.keys()].sort((a, b) => b.length - a.length).map(escapeRe);
   // Ganze Wörter; deutsche Endungen (Genitiv, Plural, Adjektivendungen wie „vergifteten“) sind erlaubt
   const regex = names.length ? new RegExp(`(?<![\\p{L}\\p{N}])(${names.join('|')})(?:e|en|er|es|em|n|s)?(?![\\p{L}\\p{N}])`, 'giu') : null;
-  return { entries, items, targets, byName, regex };
+  return { entries, raw: rawEntries, rawItems, items, targets, byName, regex };
 }
 
 /** Zerlegt einen Text in Text- und Verweis-Teile. Jedes Ziel wird nur beim ersten Vorkommen verlinkt (`seen`). */
@@ -99,6 +111,7 @@ export function WikiLinkProvider({ children }: { children: ReactNode }) {
             w.entries,
             c.items,
             s.spells.flatMap((x) => ((x[lang] ?? x.de ?? x.en) ? [{ slug: x.slug, name: (x[lang] ?? x.de ?? x.en)! }] : [])),
+            lang,
           ),
         ),
       )
@@ -138,7 +151,10 @@ export function WikiLinkProvider({ children }: { children: ReactNode }) {
           <WikiDetail
             key={entry.id}
             entry={entry}
-            findEntry={(k, name) => data.entries.find((x) => x.kind === k && lower(x.name) === lower(name))}
+            findEntry={(k, name) => {
+              const r = data.raw.find((x) => x.kind === k && (lower(x.name) === lower(name) || (x.nameEn && lower(x.nameEn) === lower(name))));
+              return r ? data.entries.find((x) => x.id === r.id) : undefined;
+            }}
             onOpen={(id) => setShown(data.targets.get(`e-${id}`) ?? null)}
           />
         )}
@@ -206,4 +222,23 @@ export function LinkedText({ text, selfKey }: { text: string; selfKey?: string }
       )}
     </>
   );
+}
+
+/**
+ * Anzeige gespeicherter deutscher Namen (Sprachen, Götter, Werkzeuge, Völker, Klassen …) in der gewählten Sprache.
+ * Gespeichert und verglichen wird weiterhin der deutsche Name; ohne englische Fassung bleibt er stehen.
+ */
+export function useContentLabels() {
+  const { i18n } = useTranslation();
+  const en = i18n.language.startsWith('en');
+  const linker = useWikiLinks(en);
+  return useMemo(() => {
+    const map = new Map<string, string>();
+    if (en && linker) {
+      for (const e of linker.data.raw) if (e.nameEn) map.set(`${e.kind}:${lower(e.name)}`, e.nameEn);
+      for (const i of linker.data.rawItems) if (i.nameEn) map.set(`item:${lower(i.name)}`, i.nameEn);
+    }
+    const get = (prefix: string) => (name: string) => (name ? (map.get(`${prefix}:${lower(name.trim())}`) ?? name) : name);
+    return { language: get('language'), god: get('god'), item: get('item'), race: get('race'), cls: get('class'), background: get('background'), feat: get('feat') };
+  }, [en, linker]);
 }

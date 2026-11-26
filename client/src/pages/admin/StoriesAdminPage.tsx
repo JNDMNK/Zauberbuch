@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { LangTabs } from '../../components/LangTabs';
+import { useContentLabels } from '../../components/wiki/WikiLinks';
 import { Archive, ArchiveRestore, BookOpen, Coins, Gem, MessagesSquare, Pencil, Plus, RotateCcw, Save, Search, Swords, Trash2, X } from 'lucide-react';
-import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, HOMEBREW_SOURCE, sourceAllowed, type Lifestyle, type Role, type StoryDto, type StoryRole } from '@zauberbuch/shared';
+import { DEFAULT_LANGUAGES, DEFAULT_LIFESTYLES, DEFAULT_TOOLS, HOMEBREW_SOURCE, sourceAllowed, type Lifestyle, type Locale, type Role, type StoryDto, type StoryRole } from '@zauberbuch/shared';
 import { api } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
 import { useAuth } from '../../context/AuthContext';
@@ -200,6 +202,7 @@ function StoryForm({ story, users, limited = false, onCancel, onSaved }: { story
   const [lifestyles, setLifestyles] = useState<Lifestyle[]>(story?.lifestyles ?? DEFAULT_LIFESTYLES);
   // Neue Geschichte: Sprachen aus dem Wiki (werden geladen); bestehende: Liste der Geschichte
   const [languages, setLanguages] = useState<string[] | null>(story?.languages ?? null);
+  const labels = useContentLabels();
   const [wikiLanguages, setWikiLanguages] = useState<string[]>([]);
   // Quellen der Auswahlmöglichkeiten (Wiki-Sprachen/-Götter, Werkzeuge der Gegenstands-Datenbank)
   const [optionSources, setOptionSources] = useState<{ languages: Option[]; gods: Option[]; tools: Option[] }>({ languages: [], gods: [], tools: [] });
@@ -312,6 +315,7 @@ function StoryForm({ story, users, limited = false, onCancel, onSaved }: { story
         lifestyles: lifestyles.map((l) => ({
           name: l.name.trim(),
           cost: l.cost.trim(),
+          ...(l.nameEn?.trim() ? { nameEn: l.nameEn.trim() } : {}),
         })),
         languages: languages ?? undefined,
         gods: gods ?? undefined,
@@ -423,6 +427,7 @@ function StoryForm({ story, users, limited = false, onCancel, onSaved }: { story
             value={languages}
             groups={[{ label: t('stories.languagesFromWiki'), names: wikiLanguages }]}
             onChange={setLanguages}
+            labelFor={labels.language}
             customLabel={t('stories.languagesCustom')}
             noCustomLabel={t('stories.languagesNoCustom')}
             placeholder={t('stories.languagePlaceholder')}
@@ -435,13 +440,14 @@ function StoryForm({ story, users, limited = false, onCancel, onSaved }: { story
             value={gods}
             groups={godGroups}
             onChange={setGods}
+            labelFor={labels.god}
             allowEmpty
             customLabel={t('stories.godsCustom')}
             noCustomLabel={t('stories.godsNoCustom')}
             placeholder={t('stories.godPlaceholder')}
           />
         )}
-        <OptionListEditor title={t('stories.tools')} hint={t('stories.toolsHint')} value={tools} defaults={DEFAULT_TOOLS} onChange={setTools} placeholder={t('stories.toolPlaceholder')} />
+        <OptionListEditor title={t('stories.tools')} hint={t('stories.toolsHint')} value={tools} defaults={DEFAULT_TOOLS} onChange={setTools} placeholder={t('stories.toolPlaceholder')} labelFor={labels.item} />
 
         <div className="flex flex-wrap justify-end gap-2">
           <button type="button" className="btn-secondary" onClick={onCancel} disabled={busy}>
@@ -472,7 +478,7 @@ function StoryForm({ story, users, limited = false, onCancel, onSaved }: { story
 /** Quellen der Geschichte: alle (keine Einschränkung) oder Auswahl inkl. „Homebrew / ohne Quelle“ */
 function SourcesEditor({ value, onChange, note }: { value: string[] | null; onChange: (v: string[] | null) => void; note?: string | null }) {
   const { t } = useTranslation();
-  const { sources } = useSources();
+  const { sources, label, abbr } = useSources();
   const all = [...sources.map((s) => s.id), HOMEBREW_SOURCE];
   const toggle = (id: string, on: boolean) => onChange(on ? [...(value ?? []), id] : (value ?? []).filter((x) => x !== id));
   return (
@@ -494,8 +500,8 @@ function SourcesEditor({ value, onChange, note }: { value: string[] | null; onCh
           {sources.map((s) => (
             <label key={s.id} className="chip-check">
               <input type="checkbox" checked={value.includes(s.id)} onChange={(e) => toggle(s.id, e.target.checked)} />
-              {s.name}
-              {s.abbreviation && <span className="opacity-70">({s.abbreviation})</span>}
+              {label(s)}
+              {abbr(s) && <span className="opacity-70">({abbr(s)})</span>}
             </label>
           ))}
           <label className="chip-check">
@@ -527,6 +533,7 @@ function LifestyleEditor({ value, onChange }: { value: Lifestyle[]; onChange: (v
   const { t } = useTranslation();
   const error = lifestyleError(value);
   const update = (i: number, patch: Partial<Lifestyle>) => onChange(value.map((l, j) => (j === i ? { ...l, ...patch } : l)));
+  const [tab, setTab] = useState<Locale>('de');
   return (
     <section className="parchment space-y-3 p-5">
       <div className="flex flex-wrap items-center gap-2">
@@ -540,6 +547,7 @@ function LifestyleEditor({ value, onChange }: { value: Lifestyle[]; onChange: (v
         </button>
       </div>
       <p className="text-sm text-parchment-700 dark:text-parchment-400">{t('stories.lifestylesHint')}</p>
+      <LangTabs value={tab} onChange={setTab} missing={{ en: value.some((l) => !l.nameEn?.trim()) }} />
       <div className="max-w-xl space-y-2 text-sm">
         <div className="grid grid-cols-[minmax(0,1fr)_9rem_2.5rem] gap-2">
           <span className="sheet-label">{t('sheet.lifestyleName')}</span>
@@ -548,7 +556,11 @@ function LifestyleEditor({ value, onChange }: { value: Lifestyle[]; onChange: (v
         </div>
         {value.map((l, i) => (
           <div key={i} className="grid grid-cols-[minmax(0,1fr)_9rem_2.5rem] items-center gap-2">
-            <input className="input !py-1" value={l.name} maxLength={50} onChange={(e) => update(i, { name: e.target.value })} aria-label={`${t('sheet.lifestyleName')} ${i + 1}`} />
+            {tab === 'de' ? (
+              <input className="input !py-1" value={l.name} maxLength={50} onChange={(e) => update(i, { name: e.target.value })} aria-label={`${t('sheet.lifestyleName')} ${i + 1}`} lang="de" />
+            ) : (
+              <input className="input !py-1" value={l.nameEn ?? ''} maxLength={50} onChange={(e) => update(i, { nameEn: e.target.value })} placeholder={l.name} aria-label={`${t('sheet.lifestyleName')} (EN) ${i + 1}`} lang="en" />
+            )}
             <input className="input !py-1" value={l.cost} maxLength={30} onChange={(e) => update(i, { cost: e.target.value })} placeholder="1 GM" aria-label={`${t('sheet.dailyCost')} ${i + 1}`} />
             <button
               type="button"
@@ -589,11 +601,14 @@ function WikiPickEditor({
   customLabel,
   noCustomLabel,
   placeholder,
+  labelFor = (n) => n,
 }: {
   title: string;
   hint: string;
   value: string[];
   groups: { label: string; names: string[] }[];
+  /** Anzeige eines Namens in der gewählten Sprache (gespeichert wird der deutsche) */
+  labelFor?: (name: string) => string;
   onChange: (v: string[]) => void;
   /** darf ganz leer sein (z. B. Welt ohne Götter) */
   allowEmpty?: boolean;
@@ -663,7 +678,7 @@ function WikiPickEditor({
                 {g.names.map((n) => (
                   <label key={n} className="chip-check">
                     <input type="checkbox" checked={has(n)} onChange={(e) => toggle(n, e.target.checked)} />
-                    {n}
+                    {labelFor(n)}
                   </label>
                 ))}
               </div>
@@ -726,7 +741,10 @@ function OptionListEditor({
   defaults,
   onChange,
   placeholder,
+  labelFor = (n) => n,
 }: {
+  /** Anzeige eines Eintrags in der gewählten Sprache */
+  labelFor?: (name: string) => string;
   title: string;
   hint: string;
   value: string[];
@@ -762,7 +780,7 @@ function OptionListEditor({
         <ul className="flex flex-wrap gap-1.5">
           {value.map((v) => (
             <li key={v} className="inline-flex items-center gap-1 rounded-full border border-parchment-400/70 bg-white/50 py-0.5 pl-3 pr-1 text-sm dark:border-night-700 dark:bg-night-950/40">
-              {v}
+              {labelFor(v)}
               <button
                 type="button"
                 className="rounded-full p-0.5 text-red-700 hover:bg-red-100 disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-950"

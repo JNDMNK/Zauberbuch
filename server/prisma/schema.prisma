@@ -482,29 +482,32 @@ model CharacterEditor {
  * Besitzer werden je Geschichte vergeben (Charakterbögen der Geschichte).
  */
 model MagicItem {
-  id          String            @id @default(cuid())
-  name        String
-  description String            @default("")
+  id            String            @id @default(cuid())
+  name          String
+  description   String            @default("")
   /**
    * Gewicht in lb – zählt zur Last der Charaktere, die den Gegenstand besitzen
    */
-  weight      Float             @default(0)
+  weight        Float             @default(0)
   /**
    * Wert als Freitext, z. B. „200 GM“
    */
-  value       String            @default("")
+  value         String            @default("")
   /**
    * Einstimmung benötigt – nur dann im Charakterbogen bei „Einstimmung“ wählbar
    */
-  attunement  Boolean           @default(false)
+  attunement    Boolean           @default(false)
   /**
    * Quelle (Buch)
    */
-  sourceId    String?
-  source      Source?           @relation(fields: [sourceId], references: [id], onDelete: SetNull)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  holders     MagicItemHolder[]
+  sourceId      String?
+  source        Source?           @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  holders       MagicItemHolder[]
+  /// Englische Fassung (leer = deutsche wird angezeigt)
+  nameEn        String            @default("")
+  descriptionEn String            @default("")
 
   @@index([name])
 }
@@ -531,36 +534,39 @@ model MagicItemHolder {
  * Geschichten erben die Standard-Datenbank live; Anpassungen überdecken den Standard-Eintrag.
  */
 model CatalogItem {
-  id          String        @id @default(cuid())
-  storyId     String?
-  story       Story?        @relation(fields: [storyId], references: [id], onDelete: Cascade)
-  baseId      String?
-  base        CatalogItem?  @relation("CatalogOverride", fields: [baseId], references: [id], onDelete: Cascade)
-  overrides   CatalogItem[] @relation("CatalogOverride")
+  id            String        @id @default(cuid())
+  storyId       String?
+  story         Story?        @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  baseId        String?
+  base          CatalogItem?  @relation("CatalogOverride", fields: [baseId], references: [id], onDelete: Cascade)
+  overrides     CatalogItem[] @relation("CatalogOverride")
   /**
    * Standard-Eintrag in dieser Geschichte ausgeblendet
    */
-  hidden      Boolean       @default(false)
-  category    String // armor | weapon | gear
-  name        String
-  description String        @default("")
-  weight      Float         @default(0)
+  hidden        Boolean       @default(false)
+  category      String // armor | weapon | gear
+  name          String
+  description   String        @default("")
+  weight        Float         @default(0)
   /**
    * Rüstungsklasse als Text, z. B. "11 + GES" oder "+2"
    */
   /// Wert als Freitext, z. B. „5 GM“
-  value       String        @default("")
-  ac          String        @default("")
+  value         String        @default("")
+  ac            String        @default("")
   /// Rüstung: benötigter Stärkewert (leer = keine Anforderung)
-  strength    Int?
-  damageDice  String?
-  damageType  String?
+  strength      Int?
+  damageDice    String?
+  damageType    String?
   /// Ausrüstung (Werkzeug): artisan | gaming | instrument | other
-  toolType    String?
-  sourceId    String?
-  source      Source?       @relation(fields: [sourceId], references: [id], onDelete: SetNull)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  toolType      String?
+  sourceId      String?
+  source        Source?       @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  /// Englische Fassung (leer = deutsche wird angezeigt)
+  nameEn        String        @default("")
+  descriptionEn String        @default("")
 
   @@unique([storyId, baseId])
   @@index([storyId, category])
@@ -632,33 +638,40 @@ model DmNoteImage {
 
 /// Wiki (Völker und Klassen nach SRD): für alle lesbar, bearbeitbar von Admin und Moderator
 model WikiEntry {
-  id          String   @id @default(cuid())
-  kind        String // race | class
-  name        String
-  summary     String   @default("")
-  description String   @default("")
+  id            String   @id @default(cuid())
+  kind          String // race | class
+  name          String
+  summary       String   @default("")
+  description   String   @default("")
   /// Detailfelder je Rubrik als JSON
-  data        String   @default("{}")
-  sourceId    String?
-  source      Source?  @relation(fields: [sourceId], references: [id], onDelete: SetNull)
-  updatedBy   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  data          String   @default("{}")
+  sourceId      String?
+  source        Source?  @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  updatedBy     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  /// Englische Fassung (leer = deutsche wird angezeigt)
+  nameEn        String   @default("")
+  summaryEn     String   @default("")
+  descriptionEn String   @default("")
 
   @@index([kind, name])
 }
 
 /// Quellen (Bücher), app-weit auswählbar (Wiki, Gegenstände, Vorschläge bei Zaubern); Admin und Moderator pflegen sie
 model Source {
-  id           String        @id @default(cuid())
-  name         String        @unique
+  id             String        @id @default(cuid())
+  name           String        @unique
   /// Kürzel, z. B. „SHB“
-  abbreviation String        @default("")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  wikiEntries  WikiEntry[]
-  catalogItems CatalogItem[]
-  magicItems   MagicItem[]
+  abbreviation   String        @default("")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  wikiEntries    WikiEntry[]
+  catalogItems   CatalogItem[]
+  magicItems     MagicItem[]
+  /// Englische Fassung (leer = deutsche wird angezeigt)
+  nameEn         String        @default("")
+  abbreviationEn String        @default("")
 }
 
 /// Persönliche Notiz zu einem Charakter: sichtbar für Besitzer und Mitbearbeiter, mit sharedWithDm auch für den DM der Geschichte

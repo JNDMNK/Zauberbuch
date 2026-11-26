@@ -26,7 +26,7 @@ import {
   Trash2,
   Users2,
 } from 'lucide-react';
-import { CATALOG_CATEGORIES, FEAT_CATEGORIES, RULE_CATEGORIES, WIKI_KINDS, type CatalogCategory, type CatalogItemDto, type WikiEntryDto, type WikiKind } from '@zauberbuch/shared';
+import { CATALOG_CATEGORIES, FEAT_CATEGORIES, RULE_CATEGORIES, WIKI_KINDS, type CatalogCategory, type CatalogItemDto, type WikiEntryDto, type WikiKind, localized } from '@zauberbuch/shared';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/errors';
 import { useAuth } from '../context/AuthContext';
@@ -73,7 +73,7 @@ const KIND_ACCENT: Record<WikiKind, string> = {
  * Admin und Moderator legen Einträge an, bearbeiten und löschen sie.
  */
 export function WikiPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const toast = useToast();
   const { isEditor } = useAuth();
   const [params, setParams] = useSearchParams();
@@ -88,7 +88,7 @@ export function WikiPage() {
   const [featCategory, setFeatCategory] = useState('');
   const [pantheon, setPantheon] = useState('');
   const [ruleCategory, setRuleCategory] = useState('');
-  const { byId } = useSources();
+  const { byId, label, abbr } = useSources();
   const invalidateLinks = useInvalidateWikiLinks();
   const [editing, setEditing] = useState<WikiEntryDto | 'new' | null>(null);
   const [toDelete, setToDelete] = useState<WikiEntryDto | null>(null);
@@ -129,6 +129,10 @@ export function WikiPage() {
   };
 
   const needle = q.trim().toLocaleLowerCase('de');
+  /** Anzeige in der gewählten Sprache (Bearbeiten nutzt weiterhin den gespeicherten Eintrag) */
+  const loc = <T extends WikiEntryDto>(e: T): T =>
+    i18n.language === 'en' ? { ...e, name: localized(e.name, e.nameEn, 'en'), summary: localized(e.summary, e.summaryEn, 'en'), description: localized(e.description, e.descriptionEn, 'en') } : e;
+
   const counts = useMemo(() => Object.fromEntries(WIKI_KINDS.map((k) => [k, (entries ?? []).filter((e) => e.kind === k).length])) as Record<WikiKind, number>, [entries]);
   const shown = useMemo(
     () =>
@@ -139,10 +143,12 @@ export function WikiPage() {
           (kind !== 'feat' || !featCategory || (e.kind === 'feat' && e.data.category === featCategory)) &&
           (kind !== 'god' || !pantheon || (e.kind === 'god' && e.data.pantheon === pantheon)) &&
           (kind !== 'rule' || !ruleCategory || (e.kind === 'rule' && e.data.category === ruleCategory)) &&
-          (!needle || `${e.name}\n${e.summary}\n${e.description}\n${JSON.stringify(e.data)}`.toLocaleLowerCase('de').includes(needle)),
+          (!needle || `${e.name}\n${e.summary}\n${e.description}\n${e.nameEn}\n${e.summaryEn}\n${e.descriptionEn}\n${JSON.stringify(e.data)}`.toLocaleLowerCase('de').includes(needle)),
       ),
     [entries, kind, needle, sourceFilter, featCategory, pantheon, ruleCategory],
   );
+  // nach dem angezeigten Namen sortieren (auf Englisch also nach dem englischen)
+  const sortedShown = useMemo(() => (i18n.language === 'en' ? [...shown].sort((a, b) => localized(a.name, a.nameEn, 'en').localeCompare(localized(b.name, b.nameEn, 'en'), 'en')) : shown), [shown, i18n.language]);
   const opened = entries?.find((e) => e.id === openId) ?? null;
   const pantheons = useMemo(() => [...new Set((entries ?? []).flatMap((e) => (e.kind === 'god' && e.data.pantheon ? [e.data.pantheon] : [])))].sort((a, b) => a.localeCompare(b, 'de')), [entries]);
 
@@ -387,7 +393,7 @@ export function WikiPage() {
                   <div className="parchment px-6 py-12 text-center italic">{needle ? t('wiki.noHits') : t('wiki.empty')}</div>
                 ) : (
                   <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
-                    {shown.map((e) => {
+                    {sortedShown.map((e) => {
                       const Icon = KIND_ICON[e.kind];
                       const sub =
                         e.kind === 'race'
@@ -407,12 +413,12 @@ export function WikiPage() {
                                   className="text-left outline-none after:absolute after:inset-0 after:z-[5] after:content-[''] focus-visible:underline"
                                   aria-haspopup="dialog"
                                 >
-                                  {e.name}
+                                  {loc(e).name}
                                 </button>
                               </h2>
                               {isEditor && (
                                 <div className="relative z-10 flex shrink-0 gap-1">
-                                  <button type="button" className="btn-icon" onClick={() => setEditing(e)} title={t('common.edit')} aria-label={`${t('common.edit')}: ${e.name}`}>
+                                  <button type="button" className="btn-icon" onClick={() => setEditing(e)} title={t('common.edit')} aria-label={`${t('common.edit')}: ${loc(e).name}`}>
                                     <Pencil className="h-4 w-4" />
                                   </button>
                                   <button
@@ -420,14 +426,14 @@ export function WikiPage() {
                                     className="btn-icon text-red-700 dark:text-red-400"
                                     onClick={() => setToDelete(e)}
                                     title={t('common.delete')}
-                                    aria-label={`${t('common.delete')}: ${e.name}`}
+                                    aria-label={`${t('common.delete')}: ${loc(e).name}`}
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </button>
                                 </div>
                               )}
                             </div>
-                            {e.summary && <p className="line-clamp-3 text-sm italic">{e.summary}</p>}
+                            {loc(e).summary && <p className="line-clamp-3 text-sm italic">{loc(e).summary}</p>}
                             <dl className="space-y-1 pt-1 text-sm">
                               {facts(e)
                                 .filter((f) => f.value)
@@ -447,10 +453,10 @@ export function WikiPage() {
                                     <span
                                       key={s.name}
                                       className="badge bg-parchment-200 text-parchment-900 dark:bg-night-700 dark:text-parchment-200"
-                                      title={src ? `${t('sources.source')}: ${src.name}` : undefined}
+                                      title={src ? `${t('sources.source')}: ${label(src)}` : undefined}
                                     >
                                       {s.name}
-                                      {src?.abbreviation && <span className="ml-1 font-normal opacity-70">· {src.abbreviation}</span>}
+                                      {src && abbr(src) && <span className="ml-1 font-normal opacity-70">· {abbr(src)}</span>}
                                     </span>
                                   );
                                 })}
@@ -471,7 +477,7 @@ export function WikiPage() {
         <Modal open={!!openItem} title={openItem?.name ?? ''} onClose={() => setParam({ item: null })} size="max-w-2xl">
           {openItem && <CatalogCard item={openItem} />}
         </Modal>
-        <Modal open={!!opened} title={opened?.name ?? ''} onClose={() => setParam({ entry: null })} size="max-w-3xl">
+        <Modal open={!!opened} title={opened ? loc(opened).name : ''} onClose={() => setParam({ entry: null })} size="max-w-3xl">
           {opened && (
             <div className="space-y-3">
               {isEditor && (
@@ -483,8 +489,8 @@ export function WikiPage() {
                 </div>
               )}
               <WikiDetail
-                entry={opened}
-                findEntry={(k, name) => entries.find((x) => x.kind === k && x.name.toLocaleLowerCase('de') === name.toLocaleLowerCase('de'))}
+                entry={loc(opened)}
+                findEntry={(k, name) => entries.find((x) => x.kind === k && [x.name, x.nameEn].some((n) => n && n.toLocaleLowerCase('de') === name.toLocaleLowerCase('de')))}
                 onOpen={(id) => setParam({ entry: id, tab: entries.find((x) => x.id === id)?.kind ?? null })}
               />
             </div>
