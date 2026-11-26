@@ -324,7 +324,7 @@ charactersRouter.post('/:id/duplicate', async (req, res) => {
   const count = await prisma.character.count({ where: { userId: req.user!.id } });
   if (count >= MAX_PER_USER) throw forbidden('too_many_characters', 'Character limit reached');
   const sheet = parseSheet(c.data);
-  sheet.identity.name = sheet.identity.name ? `${sheet.identity.name} (Kopie)` : '';
+  sheet.identity.name = sheet.identity.name ? `${sheet.identity.name} (${req.user!.language === 'en' ? 'Copy' : 'Kopie'})` : '';
   const copy = await prisma.character.create({
     data: { userId: req.user!.id, ...summaryFields(sheet), data: JSON.stringify(sheet), storyId: c.storyId },
     include: { story: { select: { id: true, name: true, lifestyles: true, languages: true, tools: true, gods: true } } },

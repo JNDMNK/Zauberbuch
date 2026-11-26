@@ -1379,7 +1379,8 @@
       "languages": "Sprachen",
       "traits": "Merkmale",
       "subraces": "Unterrassen",
-      "subraceName": "Unterrasse"
+      "subraceName": "Unterrasse",
+      "abilityIncreasePlaceholder": "Konstitution +2"
     },
     "class": {
       "hitPoints": "Trefferpunkte",
@@ -1481,7 +1482,8 @@
       "abilityScoresShort": "Attribute",
       "abilityScoresHint": "Attribute, aus denen die Erhöhungen verteilt werden (nach den aktuellen Regeln drei: +2/+1 oder je +1).",
       "feat": "Talent",
-      "featPlaceholder": "z. B. Eingeweihter der Magie (Kleriker)"
+      "featPlaceholder": "z. B. Eingeweihter der Magie (Kleriker)",
+      "skillsPlaceholder": "Motiv erkennen, Religion"
     },
     "language": {
       "title": "Sprache",
@@ -1565,7 +1567,8 @@
     "deleteTitle": "Quelle löschen?",
     "deleteText": "„{{name}}“ wird gelöscht. Wiki-Einträge und Gegenstände verlieren die Angabe; Zauber behalten ihren Quellentext.",
     "renameHint": "Beim Umbenennen werden Zauber und Monster mit dieser Quelle automatisch angepasst.",
-    "notInList": "{{name}} (nicht in der Quellen-Liste)"
+    "notInList": "{{name}} (nicht in der Quellen-Liste)",
+    "abbreviationPlaceholder": "SHB"
   },
   "backup": {
     "section": "Gesamtsicherung",
@@ -1686,7 +1689,8 @@
     "noStory": "Ohne Geschichte",
     "noStoryHint": "Alle Inhalte; die Geschichte lässt sich später im Bogen unter Einstellungen zuordnen.",
     "storySources": "Quellen der Geschichte: {{list}}",
-    "excludedLanguages": "Nicht in der Geschichte „{{story}}“ verfügbar und daher nicht übernommen: {{list}}"
+    "excludedLanguages": "Nicht in der Geschichte „{{story}}“ verfügbar und daher nicht übernommen: {{list}}",
+    "equipmentHeading": "Startausrüstung"
   },
   "levelUp": {
     "open": "Stufenaufstieg",

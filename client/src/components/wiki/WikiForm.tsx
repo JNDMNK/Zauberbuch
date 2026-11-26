@@ -179,7 +179,7 @@ function RaceFields({ d, set }: { d: WikiRaceData; set: (d: WikiRaceData) => voi
     <>
       <Group title={t('wiki.race.traitsTitle')}>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <TextInput id="w-ai" label={t('wiki.race.abilityIncrease')} value={d.abilityIncrease} onChange={(v) => f('abilityIncrease', v)} max={200} placeholder="Konstitution +2" />
+          <TextInput id="w-ai" label={t('wiki.race.abilityIncrease')} value={d.abilityIncrease} onChange={(v) => f('abilityIncrease', v)} max={200} placeholder={t('wiki.race.abilityIncreasePlaceholder')} />
           <TextInput id="w-speed" label={t('wiki.race.speed')} value={d.speed} onChange={(v) => f('speed', v)} max={200} placeholder="9 m" />
         </div>
         <TextArea id="w-age" label={t('wiki.race.age')} value={d.age} onChange={(v) => f('age', v)} />
@@ -624,7 +624,7 @@ function BackgroundFields({ d, set, featNames }: { d: WikiBackgroundData; set: (
       </Group>
       <Group title={t('wiki.background.proficiencies')}>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <TextInput id="w-bskills" label={t('wiki.background.skills')} value={d.skills} onChange={(v) => f('skills', v)} placeholder="Motiv erkennen, Religion" />
+          <TextInput id="w-bskills" label={t('wiki.background.skills')} value={d.skills} onChange={(v) => f('skills', v)} placeholder={t('wiki.background.skillsPlaceholder')} />
           <TextInput id="w-btools" label={t('wiki.background.tools')} value={d.tools} onChange={(v) => f('tools', v)} />
           <TextInput id="w-blang" label={t('wiki.background.languages')} value={d.languages} onChange={(v) => f('languages', v)} />
         </div>

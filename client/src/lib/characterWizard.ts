@@ -114,6 +114,8 @@ const featureLines = (list: { name: string; text: string }[]) => list.map((f) =>
 const pick = <T>(list: T[]) => (list.length ? list[Math.floor(Math.random() * list.length)] : undefined);
 
 export interface WizardResult {
+  /** Überschrift für die Startausrüstung im Bogen (in der Sprache der Oberfläche) */
+  equipmentHeading?: string;
   name: string;
   playerName: string;
   race: RaceEntry | null;
@@ -209,7 +211,7 @@ export function buildSheet(r: WizardResult): CharacterSheet {
   if (r.inventory) {
     sheet.inventory = r.inventory.slice(0, 300);
     for (const [k, v] of Object.entries(r.coins)) sheet.coins[k as keyof CharacterSheet['coins']] += v ?? 0;
-  } else if (equipment.length) sheet.features.moreFeatures = [sheet.features.moreFeatures, `Startausrüstung –\n${equipment.join('\n\n')}`].filter(Boolean).join('\n\n');
+  } else if (equipment.length) sheet.features.moreFeatures = [sheet.features.moreFeatures, `${r.equipmentHeading ?? 'Startausrüstung'} –\n${equipment.join('\n\n')}`].filter(Boolean).join('\n\n');
 
   // Zauberwirken (Klasse im Wiki bzw. automatisch nach SRD-Klasse): Klasse, Attribut, Plätze der Stufe 1
   if (cls && r.caster) {

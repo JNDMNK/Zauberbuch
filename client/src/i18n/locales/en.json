@@ -1379,7 +1379,8 @@
       "languages": "Languages",
       "traits": "Traits",
       "subraces": "Subraces",
-      "subraceName": "Subrace"
+      "subraceName": "Subrace",
+      "abilityIncreasePlaceholder": "Constitution +2"
     },
     "class": {
       "hitPoints": "Hit points",
@@ -1481,7 +1482,8 @@
       "abilityScoresShort": "Abilities",
       "abilityScoresHint": "Abilities the increases are distributed among (current rules: three, +2/+1 or +1 each).",
       "feat": "Feat",
-      "featPlaceholder": "e.g. Magic Initiate (Cleric)"
+      "featPlaceholder": "e.g. Magic Initiate (Cleric)",
+      "skillsPlaceholder": "Insight, Religion"
     },
     "language": {
       "title": "Language",
@@ -1565,7 +1567,8 @@
     "deleteTitle": "Delete source?",
     "deleteText": "“{{name}}” will be deleted. Wiki entries and items lose the reference; spells keep their source text.",
     "renameHint": "Renaming updates spells and monsters with this source automatically.",
-    "notInList": "{{name}} (not in the source list)"
+    "notInList": "{{name}} (not in the source list)",
+    "abbreviationPlaceholder": "PHB"
   },
   "backup": {
     "section": "Full backup",
@@ -1686,7 +1689,8 @@
     "noStory": "No story",
     "noStoryHint": "All content; the story can be assigned later in the sheet settings.",
     "storySources": "Sources of the story: {{list}}",
-    "excludedLanguages": "Not available in the story “{{story}}” and therefore not added: {{list}}"
+    "excludedLanguages": "Not available in the story “{{story}}” and therefore not added: {{list}}",
+    "equipmentHeading": "Starting equipment"
   },
   "levelUp": {
     "open": "Level up",

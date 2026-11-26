@@ -348,6 +348,7 @@ export function CharacterWizard({ open, onClose, onCreated }: { open: boolean; o
         rollPersonality,
         abilityNames,
         inventory: takeEquipment ? startingEquipment.items : null,
+        equipmentHeading: t('wizard.equipmentHeading'),
         coins: takeEquipment ? startingEquipment.coins : {},
       });
       const { character } = await api.createCharacter(name.trim(), storyId || null);

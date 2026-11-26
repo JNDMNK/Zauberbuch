@@ -124,7 +124,7 @@ function SourceForm({ source, onCancel, onSaved }: { source?: SourceDto; onCance
         <label htmlFor={`src-abbr-${id}`} className="label">
           {t('sources.abbreviation')}
         </label>
-        <input id={`src-abbr-${id}`} className="input" value={abbreviation} maxLength={12} onChange={(e) => setAbbreviation(e.target.value)} placeholder="SHB" />
+        <input id={`src-abbr-${id}`} className="input" value={abbreviation} maxLength={12} onChange={(e) => setAbbreviation(e.target.value)} placeholder={t('sources.abbreviationPlaceholder')} />
       </div>
       <div className="flex gap-2">
         <button type="button" className="btn-secondary" onClick={onCancel}>
